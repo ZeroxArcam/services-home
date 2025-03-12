@@ -62,23 +62,25 @@ public class CategoryController {
         return ResponseEntity.ok(categoryService.getCategories(page, size, orderAsc));
     }
 
-    /**
-     * Retrieves a simplified CategoryResponse by name.
-     *
-     * @param name The name of the category to retrieve.
-     * @return A ResponseEntity containing the simplified CategoryResponse if found, or a NOT_FOUND response.
-     */
-    @GetMapping("/simple/{name}")
-    @Operation(summary = "Get a simplified category by name", description = "Searches for a category by name and returns a simplified version.")
-    @ApiResponse(responseCode = "200", description = "Category found", content = @Content(schema = @Schema(implementation = CategoryResponse.class)))
-    @ApiResponse(responseCode = "404", description = "Category not found", content = @Content(schema = @Schema(implementation = String.class)))
-    public ResponseEntity<Object> getSimpleCategoryByName(
-            @Parameter(description = "Category name to search", required = true) @PathVariable String name) {
-        CategoryResponse category = categoryService.getCategoryByName(name);
-        if (category != null) {
-            return ResponseEntity.ok(category);
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Constants.NOT_FOUMD_CATEGORY_RESPONSE_MESSAGE);
-        }
-    }
+//    //Delete this
+//    /**
+//     * Retrieves a simplified CategoryResponse by name.
+//     *
+//     * @param name The name of the category to retrieve.
+//     * @return A ResponseEntity containing the simplified CategoryResponse if found, or a NOT_FOUND response.
+//     */
+//    @GetMapping("/simple/{name}")
+//    @Operation(summary = "Get a simplified category by name", description = "Searches for a category by name and returns a simplified version.")
+//    @ApiResponse(responseCode = "200", description = "Category found", content = @Content(schema = @Schema(implementation = CategoryResponse.class)))
+//    @ApiResponse(responseCode = "404", description = "Category not found", content = @Content(schema = @Schema(implementation = String.class)))
+//    public ResponseEntity<Object> getSimpleCategoryByName(
+//            @Parameter(description = "Category name to search", required = true) @PathVariable String name) {
+//        CategoryResponse category = categoryService.getCategoryByName(name);
+//        if (category != null) {
+//            return ResponseEntity.ok(category);
+//        } else {
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Constants.NOT_FOUMD_CATEGORY_RESPONSE_MESSAGE);
+//        }
+//        //make in the domain (with exception) not null here (controller advisor)
+//    }
 }

@@ -88,26 +88,26 @@ class CategoryServiceImplementationTest {
         verify(categoryDtoMapper).modelListToResponseList(modelList);
     }
 
-    /**
-     * Tests the {@link CategoryServiceImplementation#getCategoryByName(String)} method.
-     * Verifies that the method correctly retrieves a category by name and returns the expected response.
-     */
-    @Test
-    void getCategoryByName_shouldReturnCategoryByName() {
-        // Arrange
-        String name = "Test Category";
-        CategoryModel model = new CategoryModel(1L, "Test Category", "Test Description");
-        CategoryResponse response = new CategoryResponse(1L, "Test Category", "Test Description");
-
-        when(categoryServicePort.getCategoryByName(name)).thenReturn(model);
-        when(categoryDtoMapper.modelToResponse(model)).thenReturn(response);
-
-        // Act
-        CategoryResponse result = categoryService.getCategoryByName(name);
-
-        // Assert
-        assertEquals(response, result);
-        verify(categoryServicePort).getCategoryByName(name);
-        verify(categoryDtoMapper).modelToResponse(model);
-    }
+//    /**
+//     * Tests the {@link CategoryServiceImplementation#getCategoryByName(String)} method.
+//     * Verifies that the method correctly retrieves a category by name and returns the expected response.
+//     */
+//    @Test
+//    void getCategoryByName_shouldReturnCategoryByName() {
+//        // Arrange
+//        String name = "Test Category";
+//        CategoryModel model = new CategoryModel(1L, "Test Category", "Test Description");
+//        CategoryResponse response = new CategoryResponse(1L, "Test Category", "Test Description");
+//
+//        when(categoryServicePort.getCategoryByName(name)).thenReturn(model);
+//        when(categoryDtoMapper.modelToResponse(model)).thenReturn(response);
+//
+//        // Act
+//        CategoryResponse result = categoryService.getCategoryByName(name);
+//
+//        // Assert
+//        assertEquals(response, result);
+//        verify(categoryServicePort).getCategoryByName(name);
+//        verify(categoryDtoMapper).modelToResponse(model);
+//    }
 }

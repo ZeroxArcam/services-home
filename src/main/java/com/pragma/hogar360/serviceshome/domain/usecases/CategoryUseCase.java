@@ -50,6 +50,7 @@ public class CategoryUseCase implements CategoryServicePort {
     public List<CategoryModel> getCategories(Integer page, Integer size, boolean orderAsc) {
         return categoryPersistencePort.getCategories(page, size, orderAsc);
     }
+    //make an exception
 
     /**
      * Retrieves a CategoryModel by its name.
