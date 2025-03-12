@@ -48,7 +48,12 @@ public class CategoryServiceImplementation implements CategoryService {
         return categoryDtoMapper.modelListToResponseList(categoryServicePort.getCategories(page, size, orderAsc));
     }
 
-
+    /**
+     * Retrieves a category by its name and returns a CategoryResponse.
+     *
+     * @param name The name of the category to retrieve.
+     * @return A CategoryResponse object representing the retrieved category, or null if not found.
+     */
     @Override
     public CategoryResponse getCategoryByName(String name) {
         return categoryDtoMapper.modelToResponse(categoryServicePort.getCategoryByName(name));

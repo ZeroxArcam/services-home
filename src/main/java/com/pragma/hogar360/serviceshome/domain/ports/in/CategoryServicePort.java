@@ -26,5 +26,11 @@ public interface CategoryServicePort {
      */
     List<CategoryModel> getCategories(Integer page, Integer size, boolean orderAsc);
 
+    /**
+     * Retrieves a CategoryModel by its name.
+     *
+     * @param name The name of the category to retrieve.
+     * @return The CategoryModel object if found, or null if not found.
+     */
     CategoryModel getCategoryByName(String name);
 }
