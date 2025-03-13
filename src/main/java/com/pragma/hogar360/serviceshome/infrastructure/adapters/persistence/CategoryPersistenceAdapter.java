@@ -60,6 +60,7 @@ public class CategoryPersistenceAdapter implements CategoryPersistencePort {
         Pageable pagination;
         if (orderAsc) pagination = PageRequest.of(page, size, Sort.by(Constants.PAGEABLE_FIELD_NAME).ascending());
         else pagination = PageRequest.of(page, size, Sort.by(Constants.PAGEABLE_FIELD_NAME).descending());
+
         return categoryEntityMapper.categoryEntityListToCategoryModelList(categoryRepository.findAll(pagination).getContent());
     }
     //made pageable with metadata
