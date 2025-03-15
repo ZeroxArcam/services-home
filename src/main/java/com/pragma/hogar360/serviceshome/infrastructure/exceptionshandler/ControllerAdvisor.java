@@ -71,4 +71,15 @@ public class ControllerAdvisor {
         return ResponseEntity.badRequest().body(new ExceptionResponse(ExceptionConstants.CATEGORY_EXISTS_EXCEPTION,
                 LocalDateTime.now()));
     }
+
+    @ExceptionHandler(NumberPageException.class)
+    public ResponseEntity<ExceptionResponse> handleNumberPageException(NumberPageException exception) {
+        return ResponseEntity.badRequest().body(new ExceptionResponse(ExceptionConstants.NUMBER_PAGE,
+                LocalDateTime.now()));
+    }
+    @ExceptionHandler(SizePageException.class)
+    public ResponseEntity<ExceptionResponse> handleSizePageException(SizePageException exception) {
+        return ResponseEntity.badRequest().body(new ExceptionResponse(ExceptionConstants.SIZE_PAGE,
+                LocalDateTime.now()));
+    }
 }

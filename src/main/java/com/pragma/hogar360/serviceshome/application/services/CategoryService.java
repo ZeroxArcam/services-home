@@ -3,6 +3,7 @@ package com.pragma.hogar360.serviceshome.application.services;
 import com.pragma.hogar360.serviceshome.application.dto.request.SaveCategoryRequest;
 import com.pragma.hogar360.serviceshome.application.dto.response.CategoryResponse;
 import com.pragma.hogar360.serviceshome.application.dto.response.SaveCategoryResponse;
+import com.pragma.hogar360.serviceshome.application.dto.response.PagedCategoryResponse;
 
 import java.util.List;
 
@@ -20,25 +21,17 @@ public interface CategoryService {
      */
     SaveCategoryResponse save(SaveCategoryRequest request);
 
+
+
     /**
-     * Retrieves a paginated list of categories.
+     * Retrieves a paginated list of categories with metadata.
      *
      * @param page      The page number (0-based).
      * @param size      The number of categories per page.
      * @param orderAsc  True for ascending order, false for descending order.
-     * @return A list of CategoryResponse DTOs representing the requested page.
+     * @return A CategoryPageResponse DTO containing the list of categories and pagination metadata.
      */
-    List<CategoryResponse> getCategories(Integer page, Integer size, boolean orderAsc);
-
-//    /**
-//     * Retrieves a paginated list of categories with metadata.
-//     *
-//     * @param page      The page number (0-based).
-//     * @param size      The number of categories per page.
-//     * @param orderAsc  True for ascending order, false for descending order.
-//     * @return A CategoryPageResponse DTO containing the list of categories and pagination metadata.
-//     */
-//    CategoryPageResponse getCategories(Integer page, Integer size, boolean orderAsc);
+    PagedCategoryResponse getCategories(Integer page, Integer size, boolean orderAsc);
 
     /**
      * Retrieves a CategoryResponse by its name.

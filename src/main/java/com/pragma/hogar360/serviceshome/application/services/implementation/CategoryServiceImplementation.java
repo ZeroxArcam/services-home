@@ -1,12 +1,15 @@
 package com.pragma.hogar360.serviceshome.application.services.implementation;
 
 import com.pragma.hogar360.serviceshome.application.dto.request.SaveCategoryRequest;
+import com.pragma.hogar360.serviceshome.application.dto.response.PagedCategoryResponse;
 import com.pragma.hogar360.serviceshome.application.dto.response.SaveCategoryResponse;
 import com.pragma.hogar360.serviceshome.commons.configurations.utils.Constants;
 import com.pragma.hogar360.serviceshome.application.dto.response.CategoryResponse;
 import com.pragma.hogar360.serviceshome.application.mappers.CategoryDtoMapper;
 import com.pragma.hogar360.serviceshome.application.services.CategoryService;
+import com.pragma.hogar360.serviceshome.domain.model.CategoryModel;
 import com.pragma.hogar360.serviceshome.domain.ports.in.CategoryServicePort;
+import com.pragma.hogar360.serviceshome.domain.utils.constants.Pagination;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
@@ -44,8 +47,23 @@ public class CategoryServiceImplementation implements CategoryService {
      * @return A list of CategoryResponse DTOs representing the requested page.
      */
     @Override
-    public List<CategoryResponse> getCategories(Integer page, Integer size, boolean orderAsc) {
-        return categoryDtoMapper.modelListToResponseList(categoryServicePort.getCategories(page, size, orderAsc));
+
+    public PagedCategoryResponse getCategories(Integer page, Integer size, boolean orderAsc) {
+        Pagination<CategoryModel> categoryPagination = categoryServicePort.getCategories(page, size, orderAsc);
+
+        // Convert the list of CategoryModel to CategoryResponse
+        List<CategoryResponse> categoryResponses = categoryPagination.getItems().stream()
+                .map(categoryDtoMapper::modelToResponse)
+                .toList();
+
+        // Return the DTO with the correct conversion
+        return new PagedCategoryResponse(
+                categoryResponses, // converted list
+                categoryPagination.getTotalElements(),
+                categoryPagination.getTotalPages(),
+                categoryPagination.getPageNumber(),
+                categoryPagination.getPageSize()
+        );
     }
 
     /**

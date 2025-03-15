@@ -1,11 +1,11 @@
 package com.pragma.hogar360.serviceshome.infrastructure.mappers;
 
 import com.pragma.hogar360.serviceshome.domain.model.CategoryModel;
+import com.pragma.hogar360.serviceshome.domain.utils.constants.Pagination;
 import com.pragma.hogar360.serviceshome.infrastructure.entities.CategoryEntity;
 import org.mapstruct.Mapper;
-
-import java.util.List;
-
+import org.mapstruct.Mapping;
+import org.springframework.data.domain.Page;
 /**
  * Mapper interface for converting between CategoryEntity and CategoryModel.
  * Uses MapStruct for automatic code generation.
@@ -30,10 +30,16 @@ public interface CategoryEntityMapper {
     CategoryEntity categoryModelToCategoryEntity(CategoryModel categoryModel);
 
     /**
-     * Converts a list of CategoryEntity objects to a list of CategoryModel objects.
+     * Converts a Page of CategoryEntity objects to a Pagination of CategoryModel objects.
      *
-     * @param categories The list of CategoryEntity objects to convert.
-     * @return A list of CategoryModel objects representing the converted entities.
+     * @param categoryPage The Page of CategoryEntity objects to convert.
+     * @return A Pagination of CategoryModel objects representing the converted entities and pagination metadata.
      */
-    List<CategoryModel> categoryEntityListToCategoryModelList(List<CategoryEntity> categories);
+    @Mapping(target = "items", expression = "java(categoryPage.getContent().stream().map(this::categoryEntityToCategoryModel).toList())")
+    @Mapping(target = "totalElements", expression = "java(categoryPage.getTotalElements())")
+    @Mapping(target = "totalPages", expression = "java(categoryPage.getTotalPages())")
+    @Mapping(target = "pageNumber", expression = "java(categoryPage.getNumber())")
+    @Mapping(target = "pageSize", expression = "java(categoryPage.getSize())")
+
+    Pagination<CategoryModel> categoryEntityPageToCategoryModelPagination(Page<CategoryEntity> categoryPage);
 }

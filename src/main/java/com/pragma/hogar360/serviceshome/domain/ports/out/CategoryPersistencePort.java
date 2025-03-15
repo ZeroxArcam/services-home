@@ -1,6 +1,8 @@
 package com.pragma.hogar360.serviceshome.domain.ports.out;
 
 import com.pragma.hogar360.serviceshome.domain.model.CategoryModel;
+import com.pragma.hogar360.serviceshome.domain.utils.constants.Pagination;
+
 import java.util.List;
 
 /**
@@ -32,5 +34,5 @@ public interface CategoryPersistencePort {
      * @param orderAsc  True for ascending order, false for descending order.
      * @return A list of CategoryModels representing the requested page.
      */
-    List<CategoryModel> getCategories(Integer page, Integer size, boolean orderAsc);
+    Pagination<CategoryModel> getCategories(Integer page, Integer size, boolean orderAsc);
 }

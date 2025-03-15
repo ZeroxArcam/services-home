@@ -33,4 +33,9 @@ public final class ExceptionConstants {
     public static final String DESCRIPTION_EMPTY = "The description of the category can not be empty";
 
     public static final String NAME_EMPTY = "The name of the category can not be empty";
+
+    public static final String NUMBER_PAGE = "The number of pages can not be less than 0";
+
+    public static final String SIZE_PAGE = "The size of the page can not be less than 1";
+
 }

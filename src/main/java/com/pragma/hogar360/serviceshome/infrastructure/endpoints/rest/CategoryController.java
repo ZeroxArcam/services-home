@@ -1,10 +1,9 @@
 package com.pragma.hogar360.serviceshome.infrastructure.endpoints.rest;
 
 import com.pragma.hogar360.serviceshome.application.dto.request.SaveCategoryRequest;
+import com.pragma.hogar360.serviceshome.application.dto.response.PagedCategoryResponse;
 import com.pragma.hogar360.serviceshome.application.dto.response.SaveCategoryResponse;
-import com.pragma.hogar360.serviceshome.application.dto.response.CategoryResponse;
 import com.pragma.hogar360.serviceshome.application.services.CategoryService;
-import com.pragma.hogar360.serviceshome.commons.configurations.utils.Constants;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -16,7 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 /**
  * REST controller for managing category operations.
@@ -45,21 +43,25 @@ public class CategoryController {
     }
 
     /**
-     * Endpoint to retrieve all categories with pagination.
+     * Endpoint to retrieve all categories with pagination and metadata.
      *
      * @param page      The page number.
      * @param size      The number of categories per page.
      * @param orderAsc  True for ascending order, false for descending order.
-     * @return A ResponseEntity with the list of categories.
+     * @return A ResponseEntity with the PagedCategoryResponse DTO.
      */
-    @GetMapping("/")
-    @Operation(summary = "Get all categories paginated", description = "Retrieves a list of all categories with pagination.")
-    @ApiResponse(responseCode = "200", description = "List of categories", content = @Content(schema = @Schema(implementation = CategoryResponse.class)))
-    public ResponseEntity<List<CategoryResponse>> getAllCategories(
+    @GetMapping("")
+    @Operation(summary = "Get all categories paginated", description = "Retrieves a list of all categories with pagination and metadata.")
+    @ApiResponse(responseCode = "200", description = "Paged list of categories with metadata", content = @Content(schema = @Schema(implementation = PagedCategoryResponse.class)))
+    public ResponseEntity<PagedCategoryResponse> getAllCategories(
             @Parameter(description = "Page number", required = true) @RequestParam Integer page,
             @Parameter(description = "Page size", required = true) @RequestParam Integer size,
             @Parameter(description = "Ascending order (true) or descending (false)", required = true) @RequestParam boolean orderAsc) {
-        return ResponseEntity.ok(categoryService.getCategories(page, size, orderAsc));
+        PagedCategoryResponse pagedCategoryResponse = categoryService.getCategories(page, size, orderAsc);
+        return ResponseEntity.ok(pagedCategoryResponse);
     }
 
 }
+
+
+

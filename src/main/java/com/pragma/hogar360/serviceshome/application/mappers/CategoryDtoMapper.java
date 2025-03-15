@@ -2,7 +2,9 @@ package com.pragma.hogar360.serviceshome.application.mappers;
 
 import com.pragma.hogar360.serviceshome.application.dto.request.SaveCategoryRequest;
 import com.pragma.hogar360.serviceshome.application.dto.response.CategoryResponse;
+import com.pragma.hogar360.serviceshome.application.dto.response.PagedCategoryResponse;
 import com.pragma.hogar360.serviceshome.domain.model.CategoryModel;
+import com.pragma.hogar360.serviceshome.domain.utils.constants.Pagination;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 
@@ -33,10 +35,10 @@ public interface CategoryDtoMapper {
     CategoryResponse modelToResponse(CategoryModel categoryModel);
 
     /**
-     * Converts a list of CategoryModel domain models to a list of CategoryResponse DTOs.
+     * Converts a Pagination<CategoryModel> domain model to a PagedCategoryResponse DTO.
      *
-     * @param categories The list of CategoryModel domain models to convert.
-     * @return The corresponding list of CategoryResponse DTOs.
+     * @param categoryPage The Pagination<CategoryModel> domain model containing paginated categories and metadata.
+     * @return The corresponding PagedCategoryResponse DTO.
      */
-    List<CategoryResponse> modelListToResponseList(List<CategoryModel> categories);
+    PagedCategoryResponse modelPageToPagedResponse(Pagination<CategoryModel> categoryPage);
 }

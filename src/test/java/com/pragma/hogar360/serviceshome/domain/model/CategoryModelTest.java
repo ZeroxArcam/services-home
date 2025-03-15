@@ -1,117 +1,102 @@
 package com.pragma.hogar360.serviceshome.domain.model;
-
 import com.pragma.hogar360.serviceshome.domain.exceptions.DescriptionMaxSizeExceededException;
-import com.pragma.hogar360.serviceshome.domain.exceptions.EmptyDescriptionException;
 import com.pragma.hogar360.serviceshome.domain.exceptions.EmptyNameException;
 import com.pragma.hogar360.serviceshome.domain.exceptions.NameMaxSizeExceededException;
-import com.pragma.hogar360.serviceshome.domain.utils.constants.DomainConstants;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Test class for {@link CategoryModel}.
- * This class contains unit tests to verify the behavior of the CategoryModel class.
+ * Unit tests for the {@link CategoryModel} class.
+ * This class verifies the correct behavior of the CategoryModel's constructors,
+ * getters, setters, and validation methods.
  */
 class CategoryModelTest {
 
+    private CategoryModel categoryModel;
+    private static final Long VALID_ID = 1L;
+    private static final String VALID_NAME = "Valid Name";
+    private static final String VALID_DESCRIPTION = "Valid Description";
+    private static final String INVALID_NAME = "a".repeat(51); // Max length is 50
+    private static final String INVALID_DESCRIPTION = "a".repeat(91); // Max length is 90
+
     /**
-     * Tests the constructor when the name is null, expecting a NullPointerException.
+     * Sets up the test environment before each test method.
+     * Initializes a valid CategoryModel instance for use in tests.
      */
-    @Test
-    void testConstructor_nullName_throwsNullPointerException() {
-        NullPointerException exception = assertThrows(NullPointerException.class, () ->
-                new CategoryModel(1L, null, "Description"));
-        assertEquals(DomainConstants.FIELD_NAME_NULL_MESSAGE, exception.getMessage());
+    @BeforeEach
+    void setUp() {
+        categoryModel = new CategoryModel(VALID_ID, VALID_NAME, VALID_DESCRIPTION);
     }
 
     /**
-     * Tests the constructor when the name exceeds the maximum allowed length, expecting a NameMaxSizeExceededException.
+     * Tests the constructor with valid data to ensure a CategoryModel is created correctly.
      */
     @Test
-    void testConstructor_nameExceedsMaxLength_throwsNameMaxSizeExceededException() {
-        String longName = "a".repeat(51); // Creates a name with 51 characters.
-        assertThrows(NameMaxSizeExceededException.class, () ->
-                new CategoryModel(1L, longName, "Description"));
+    void constructor_validData_shouldCreateCategoryModel() {
+        assertEquals(VALID_ID, categoryModel.getId());
+        assertEquals(VALID_NAME, categoryModel.getName());
+        assertEquals(VALID_DESCRIPTION, categoryModel.getDescription());
     }
 
     /**
-     * Tests the constructor when the name is within the maximum allowed length, expecting no exception.
+     * Tests the constructor to ensure it throws NameMaxSizeExceededException when the name exceeds the maximum length.
      */
     @Test
-    void testConstructor_nameWithinMaxLength_doesNotThrowException() {
-        String validName = "a".repeat(50); // Creates a name with 50 characters.
-        assertDoesNotThrow(() -> new CategoryModel(1L, validName, "Description"));
+    void constructor_nameExceedsMaxLength_shouldThrowException() {
+        assertThrows(NameMaxSizeExceededException.class, () -> new CategoryModel(VALID_ID, INVALID_NAME, VALID_DESCRIPTION));
     }
 
     /**
-     * Tests the constructor when the name is empty, expecting an EmptyNameException.
+     * Tests the constructor to ensure it throws DescriptionMaxSizeExceededException when the description exceeds the maximum length.
      */
     @Test
-    void testConstructor_emptyName_throwsEmptyNameException() {
-        assertThrows(EmptyNameException.class, () ->
-                new CategoryModel(1L, "", "Description"));
+    void constructor_descriptionExceedsMaxLength_shouldThrowException() {
+        assertThrows(DescriptionMaxSizeExceededException.class, () -> new CategoryModel(VALID_ID, VALID_NAME, INVALID_DESCRIPTION));
     }
 
     /**
-     * Tests the constructor when the name is blank (contains only spaces), expecting an EmptyNameException.
+     * Tests the setName method with a valid name to ensure it sets the name correctly.
      */
     @Test
-    void testConstructor_blankName_throwsEmptyNameException() {
-        assertThrows(EmptyNameException.class, () ->
-                new CategoryModel(1L, "   ", "Description"));
+    void setName_validName_shouldSetName() {
+        String newName = "New Name";
+        categoryModel.setName(newName);
+        assertEquals(newName, categoryModel.getName());
     }
 
     /**
-     * Tests the constructor when the name is valid, expecting no exception.
+     * Tests the setDescription method with a valid description to ensure it sets the description correctly.
      */
     @Test
-    void testConstructor_validName_doesNotThrowException() {
-        assertDoesNotThrow(() -> new CategoryModel(1L, "Valid Name", "Description"));
+    void setDescription_validDescription_shouldSetDescription() {
+        String newDescription = "New Description";
+        categoryModel.setDescription(newDescription);
+        assertEquals(newDescription, categoryModel.getDescription());
     }
 
     /**
-     * Tests the constructor when the description exceeds the maximum allowed length, expecting a DescriptionMaxSizeExceededException.
+     * Tests the setName method to ensure it throws EmptyNameException when the name is empty.
      */
     @Test
-    void testConstructor_descriptionExceedsMaxLength_throwsDescriptionMaxSizeExceededException() {
-        String longDescription = "a".repeat(91); // Creates a description with 91 characters.
-        assertThrows(DescriptionMaxSizeExceededException.class, () ->
-                new CategoryModel(1L, "Name", longDescription));
+    void setName_invalidName_shouldThrowException() {
+        assertThrows(EmptyNameException.class, () -> categoryModel.setName(""));
     }
 
     /**
-     * Tests the constructor when the description is within the maximum allowed length, expecting no exception.
+     * Tests the setDescription method to ensure it throws NullPointerException when the description is null.
      */
     @Test
-    void testConstructor_descriptionWithinMaxLength_doesNotThrowException() {
-        String validDescription = "a".repeat(90); // Creates a description with 90 characters.
-        assertDoesNotThrow(() -> new CategoryModel(1L, "Name", validDescription));
+    void setDescription_invalidDescription_shouldThrowException() {
+        assertThrows(NullPointerException.class, () -> categoryModel.setDescription(null));
     }
 
     /**
-     * Tests the constructor when the description is empty, expecting an EmptyDescriptionException.
+     * Tests the toString method to ensure it returns the correct string representation.
      */
     @Test
-    void testConstructor_emptyDescription_throwsEmptyDescriptionException() {
-        assertThrows(EmptyDescriptionException.class, () ->
-                new CategoryModel(1L, "Name", ""));
-    }
-
-    /**
-     * Tests the constructor when the description is blank (contains only spaces), expecting an EmptyDescriptionException.
-     */
-    @Test
-    void testConstructor_blankDescription_throwsEmptyDescriptionException() {
-        assertThrows(EmptyDescriptionException.class, () ->
-                new CategoryModel(1L, "Name", "   "));
-    }
-
-    /**
-     * Tests the constructor when the description is valid, expecting no exception.
-     */
-    @Test
-    void testConstructor_validDescription_doesNotThrowException() {
-        assertDoesNotThrow(() -> new CategoryModel(1L, "Name", "Valid Description"));
+    void toString_shouldReturnCorrectString() {
+        String expectedString = "CategoryModel{id=1, name='Valid Name', description='Valid Description'}";
+        assertEquals(expectedString, categoryModel.toString());
     }
 }

@@ -4,15 +4,12 @@ import com.pragma.hogar360.serviceshome.domain.exceptions.DescriptionMaxSizeExce
 import com.pragma.hogar360.serviceshome.domain.exceptions.EmptyDescriptionException;
 import com.pragma.hogar360.serviceshome.domain.exceptions.EmptyNameException;
 import com.pragma.hogar360.serviceshome.domain.exceptions.NameMaxSizeExceededException;
-import com.pragma.hogar360.serviceshome.domain.utils.constants.DomainConstants;
-
-import java.util.Objects;
+import com.pragma.hogar360.serviceshome.domain.utils.constants.Validate;
 
 /**
  * Represents a category within the services home domain.
  * This class encapsulates the data and validation logic for a category.
  */
-
 public class CategoryModel {
     private Long id;
     private String name;
@@ -37,42 +34,8 @@ public class CategoryModel {
      */
     public CategoryModel(Long id, String name, String description) {
         this.id = id;
-        this.name = Objects.requireNonNull(name, DomainConstants.FIELD_NAME_NULL_MESSAGE);
-        this.description = Objects.requireNonNull(description, DomainConstants.FIELD_DESCRIPTION_NULL_MESSAGE);
-        validateName(name);
-        validateDescription(description);
-    }
-
-    /**
-     * Validates the name of the category.
-     *
-     * @param name The name to validate.
-     * @throws NameMaxSizeExceededException If the name exceeds the maximum allowed length.
-     * @throws IllegalArgumentException     If the name is blank.
-     */
-    private void validateName(String name) {
-        if (name.length() > 50) {
-            throw new NameMaxSizeExceededException(DomainConstants.FIELD_NAME_MAX_LENGTH_MESSAGE);
-        }
-        if (name.isBlank()) {
-            throw new EmptyNameException(DomainConstants.FIELD_NAME_EMPTY_MESSAGE);
-        }
-    }
-
-    /**
-     * Validates the description of the category.
-     *
-     * @param description The description to validate.
-     * @throws DescriptionMaxSizeExceededException If the description exceeds the maximum allowed length.
-     * @throws IllegalArgumentException             If the description is blank.
-     */
-    private void validateDescription(String description) {
-        if (description.length() > 90) {
-            throw new DescriptionMaxSizeExceededException(DomainConstants.FIELD_DESCRIPTION_MAX_LENGTH_MESSAGE);
-        }
-        if (description.isBlank()) {
-            throw new EmptyDescriptionException(DomainConstants.FIELD_DESCRIPTION_EMPTY_MESSAGE);
-        }
+        setName(name);
+        setDescription(description);
     }
 
     /**
@@ -102,40 +65,48 @@ public class CategoryModel {
         return description;
     }
 
-
     /**
      * Sets the unique identifier of the category.
      *
      * @param id The new category ID.
      */
-    public void setId(Long id) {this.id = id;}
-
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     /**
-     * Sets the name of the category, validating it first.
+     * Sets the name of the category, validating it using {@link Validate#validateName(String)}.
      *
      * @param name The new category name.
      * @throws NameMaxSizeExceededException If the name exceeds the maximum allowed length.
-     * @throws IllegalArgumentException     If the name is blank.
-     * @throws NullPointerException         If the name is null.
+     * @throws EmptyNameException If the name is blank.
+     * @throws NullPointerException If the name is null.
      */
     public void setName(String name) {
-        this.name = Objects.requireNonNull(name, DomainConstants.FIELD_NAME_NULL_MESSAGE);
-        validateName(name);
+        Validate.validateName(name);
+        this.name = name;
     }
 
     /**
-     * Sets the description of the category, validating it first.
+     * Sets the description of the category, validating it using {@link Validate#validateDescription(String)}.
      *
      * @param description The new category description.
      * @throws DescriptionMaxSizeExceededException If the description exceeds the maximum allowed length.
-     * @throws IllegalArgumentException             If the description is blank.
-     * @throws NullPointerException                 If the description is null.
+     * @throws EmptyDescriptionException If the description is blank.
+     * @throws NullPointerException If the description is null.
      */
     public void setDescription(String description) {
-        this.description = Objects.requireNonNull(description, DomainConstants.FIELD_DESCRIPTION_NULL_MESSAGE);
-        validateDescription(description);
+        Validate.validateDescription(description);
+        this.description = description;
     }
 
-
+    /**
+     * Returns a string representation of the CategoryModel.
+     *
+     * @return A string representation of the CategoryModel.
+     */
+    @Override
+    public String toString() {
+        return "CategoryModel{id=" + id + ", name='" + name + "', description='" + description + "'}";
+    }
 }
