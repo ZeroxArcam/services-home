@@ -4,7 +4,7 @@ import com.pragma.hogar360.serviceshome.domain.exceptions.DescriptionMaxSizeExce
 import com.pragma.hogar360.serviceshome.domain.exceptions.EmptyDescriptionException;
 import com.pragma.hogar360.serviceshome.domain.exceptions.EmptyNameException;
 import com.pragma.hogar360.serviceshome.domain.exceptions.NameMaxSizeExceededException;
-import com.pragma.hogar360.serviceshome.domain.utils.constants.Validate;
+import com.pragma.hogar360.serviceshome.domain.utils.constants.Validation;
 
 /**
  * Represents a category within the services home domain.
@@ -39,6 +39,7 @@ public class CategoryModel {
     }
 
     /**
+     *
      * Gets the unique identifier of the category.
      *
      * @return The category ID.
@@ -75,7 +76,7 @@ public class CategoryModel {
     }
 
     /**
-     * Sets the name of the category, validating it using {@link Validate#validateName(String)}.
+     * Sets the name of the category, validating it using {@link Validation#validateName(String)}.
      *
      * @param name The new category name.
      * @throws NameMaxSizeExceededException If the name exceeds the maximum allowed length.
@@ -83,12 +84,12 @@ public class CategoryModel {
      * @throws NullPointerException If the name is null.
      */
     public void setName(String name) {
-        Validate.validateName(name);
+        Validation.validateName(name);
         this.name = name;
     }
 
     /**
-     * Sets the description of the category, validating it using {@link Validate#validateDescription(String)}.
+     * Sets the description of the category, validating it using {@link Validation#validateDescription(String)}.
      *
      * @param description The new category description.
      * @throws DescriptionMaxSizeExceededException If the description exceeds the maximum allowed length.
@@ -96,7 +97,7 @@ public class CategoryModel {
      * @throws NullPointerException If the description is null.
      */
     public void setDescription(String description) {
-        Validate.validateDescription(description);
+        Validation.validateDescription(description);
         this.description = description;
     }
 

@@ -3,7 +3,7 @@ package com.pragma.hogar360.serviceshome.domain.ports.in;
 import com.pragma.hogar360.serviceshome.domain.model.CategoryModel;
 import com.pragma.hogar360.serviceshome.domain.utils.constants.Pagination;
 
-import java.util.List;
+
 
 /**
  * Port interface for category service operations.

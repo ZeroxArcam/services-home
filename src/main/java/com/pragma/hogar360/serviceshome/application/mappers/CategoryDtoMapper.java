@@ -8,8 +8,6 @@ import com.pragma.hogar360.serviceshome.domain.utils.constants.Pagination;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 
-import java.util.List;
-
 /**
  * Mapper interface for converting between Category DTOs and Category domain models.
  * Uses MapStruct for automatic implementation generation.

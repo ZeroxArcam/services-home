@@ -5,8 +5,6 @@ import com.pragma.hogar360.serviceshome.application.dto.response.CategoryRespons
 import com.pragma.hogar360.serviceshome.application.dto.response.SaveCategoryResponse;
 import com.pragma.hogar360.serviceshome.application.dto.response.PagedCategoryResponse;
 
-import java.util.List;
-
 /**
  * Service interface for category operations.
  * Defines the contract for category-related business logic.

@@ -1,9 +1,7 @@
 package com.pragma.hogar360.serviceshome.application.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.List;
-
 import io.swagger.v3.oas.annotations.media.Schema;
 
 public record PagedCategoryResponse(
