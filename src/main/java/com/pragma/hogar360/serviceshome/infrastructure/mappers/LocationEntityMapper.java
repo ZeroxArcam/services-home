@@ -1,12 +1,14 @@
 package com.pragma.hogar360.serviceshome.infrastructure.mappers;
 
 import com.pragma.hogar360.serviceshome.domain.model.LocationModel;
+import com.pragma.hogar360.serviceshome.domain.utils.constants.Pagination;
 import com.pragma.hogar360.serviceshome.infrastructure.entities.CityEntity;
 import com.pragma.hogar360.serviceshome.infrastructure.entities.DepartmentEntity;
 import com.pragma.hogar360.serviceshome.infrastructure.entities.LocationEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
+import org.springframework.data.domain.Page;
 
 /**
  * Mapper interface for converting between Location domain models and entities.
@@ -49,4 +51,17 @@ public interface LocationEntityMapper {
     default LocationEntity toEntity(LocationModel model, CityEntity city, DepartmentEntity department) {
         return new LocationEntity(null, city, department);
     }
+    /**
+     * Converts a Page of LocationEntity objects to a Pagination of LocationModel objects.
+     *
+     * @param locationPage The Page of LocationEntity objects to convert.
+     * @return A Pagination of LocationModel objects representing the converted entities and pagination metadata.
+     */
+    @Mapping(target = "items", expression = "java(locationPage.getContent().stream().map(this::toModel).toList())")
+    @Mapping(target = "totalElements", expression = "java(locationPage.getTotalElements())")
+    @Mapping(target = "totalPages", expression = "java(locationPage.getTotalPages())")
+    @Mapping(target = "pageNumber", expression = "java(locationPage.getNumber())")
+    @Mapping(target = "pageSize", expression = "java(locationPage.getSize())")
+    Pagination<LocationModel> locationEntityPageToLocationModelPagination(Page<LocationEntity> locationPage);
+
 }

@@ -3,6 +3,7 @@ package com.pragma.hogar360.serviceshome.domain.utils.constants;
 import com.pragma.hogar360.serviceshome.domain.exceptions.*;
 
 import java.util.Objects;
+import java.text.Normalizer;
 
 public class Validation {
 
@@ -66,6 +67,24 @@ public class Validation {
         }
         if (description.isBlank()) {
             throw new EmptyDescriptionException(DomainConstants.FIELD_DESCRIPTION_EMPTY_MESSAGE);
+        }
+    }
+
+
+    public static String normalizeText(String text) {
+        if (text == null) {
+            return null;
+        }
+        String normalized = Normalizer.normalize(text, Normalizer.Form.NFD);
+        return normalized.replaceAll("[^\\p{ASCII}]", "").toLowerCase();
+    }
+
+    public static void ValidatePageAndSize(Integer page, Integer size) {
+        if (page < DomainConstants.NUMBER_PAGE_INT) {
+            throw new NumberPageException(DomainConstants.NUMBER_PAGE);
+        }
+        if (size < DomainConstants.SIZE_PAGE_INT) {
+            throw new SizePageException(DomainConstants.SIZE_PAGE);
         }
     }
 

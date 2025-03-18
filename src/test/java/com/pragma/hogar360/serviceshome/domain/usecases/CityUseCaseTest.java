@@ -4,20 +4,19 @@ import com.pragma.hogar360.serviceshome.domain.exceptions.DuplicateDepartmentNam
 import com.pragma.hogar360.serviceshome.domain.model.CityModel;
 import com.pragma.hogar360.serviceshome.domain.ports.out.CityPersistencePort;
 import com.pragma.hogar360.serviceshome.domain.ports.out.DepartmentPersistencePort;
+import com.pragma.hogar360.serviceshome.factory.CityModelFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.MockitoAnnotations;
 
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
-class CityUseCaseTest {
+public class CityUseCaseTest {
 
     @Mock
     private CityPersistencePort cityPersistencePort;
@@ -28,52 +27,66 @@ class CityUseCaseTest {
     @InjectMocks
     private CityUseCase cityUseCase;
 
-    private CityModel cityModel;
-
     @BeforeEach
-    void setUp() {
-        cityModel = new CityModel(1L, "Test City", "Test Description");
+    public void setUp() {
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    void createCity_shouldCreateCity_whenNameIsUnique() {
-        when(cityPersistencePort.existsByName("Test City")).thenReturn(false);
+    public void testCreateCity_Success() {
+        // Arrange
+        CityModel cityModel = CityModelFactory.createDefaultCityModel();
+        when(cityPersistencePort.existsByName(cityModel.getName())).thenReturn(false);
         when(cityPersistencePort.saveCity(cityModel)).thenReturn(cityModel);
 
+        // Act
         CityModel result = cityUseCase.createCity(cityModel);
 
+        // Assert
+        assertNotNull(result);
         assertEquals(cityModel, result);
-        verify(cityPersistencePort).existsByName("Test City");
-        verify(cityPersistencePort).saveCity(cityModel);
+        verify(cityPersistencePort, times(1)).existsByName(cityModel.getName());
+        verify(cityPersistencePort, times(1)).saveCity(cityModel);
     }
 
     @Test
-    void createCity_shouldThrowDuplicateDepartmentNameException_whenNameExists() {
-        when(cityPersistencePort.existsByName("Test City")).thenReturn(true);
+    public void testCreateCity_DuplicateName() {
+        // Arrange
+        CityModel cityModel = CityModelFactory.createDefaultCityModel();
+        when(cityPersistencePort.existsByName(cityModel.getName())).thenReturn(true);
 
+        // Act & Assert
         assertThrows(DuplicateDepartmentNameException.class, () -> cityUseCase.createCity(cityModel));
-        verify(cityPersistencePort).existsByName("Test City");
-        verify(cityPersistencePort, never()).saveCity(any());
+        verify(cityPersistencePort, times(1)).existsByName(cityModel.getName());
+        verify(cityPersistencePort, never()).saveCity(cityModel);
     }
 
     @Test
-    void getCityByName_shouldReturnCity_whenCityExists() {
-        when(cityPersistencePort.findByName("Test City")).thenReturn(Optional.of(cityModel));
+    public void testGetCityByName_Success() {
+        // Arrange
+        CityModel cityModel = CityModelFactory.createDefaultCityModel();
+        when(cityPersistencePort.findByName(cityModel.getName())).thenReturn(Optional.of(cityModel));
 
-        Optional<CityModel> result = cityUseCase.getCityByName("Test City");
+        // Act
+        Optional<CityModel> result = cityUseCase.getCityByName(cityModel.getName());
 
+        // Assert
         assertTrue(result.isPresent());
         assertEquals(cityModel, result.get());
-        verify(cityPersistencePort).findByName("Test City");
+        verify(cityPersistencePort, times(1)).findByName(cityModel.getName());
     }
 
     @Test
-    void getCityByName_shouldReturnEmptyOptional_whenCityDoesNotExist() {
-        when(cityPersistencePort.findByName("Nonexistent City")).thenReturn(Optional.empty());
+    public void testGetCityByName_NotFound() {
+        // Arrange
+        String cityName = "Nonexistent City";
+        when(cityPersistencePort.findByName(cityName)).thenReturn(Optional.empty());
 
-        Optional<CityModel> result = cityUseCase.getCityByName("Nonexistent City");
+        // Act
+        Optional<CityModel> result = cityUseCase.getCityByName(cityName);
 
+        // Assert
         assertFalse(result.isPresent());
-        verify(cityPersistencePort).findByName("Nonexistent City");
+        verify(cityPersistencePort, times(1)).findByName(cityName);
     }
 }

@@ -1,6 +1,8 @@
 package com.pragma.hogar360.serviceshome.infrastructure.repositories.mysql;
 
 import com.pragma.hogar360.serviceshome.infrastructure.entities.LocationEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -35,4 +37,17 @@ public interface LocationRepository extends JpaRepository<LocationEntity, Long> 
      */
     @EntityGraph(attributePaths = {"city", "department"})
     Optional<LocationEntity> findByCityNameAndDepartmentName(String cityName, String departmentName);
+
+
+    /**
+     * Retrieves a paginated list of all Location entities.
+     *
+     * @param pageable The pagination information.
+     * @return A Page containing the Location entities.
+     */
+    Page<LocationEntity> findByCityNameContainingIgnoreCaseOrDepartmentNameContainingIgnoreCase(String cityName, String departmentName, Pageable pageable);
+    Page<LocationEntity> findByCityNameContainingIgnoreCase(String cityName, Pageable pageable);
+    Page<LocationEntity> findByDepartmentNameContainingIgnoreCase(String departmentName, Pageable pageable);
+
+
 }

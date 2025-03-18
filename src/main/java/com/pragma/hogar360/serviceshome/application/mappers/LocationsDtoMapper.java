@@ -2,7 +2,9 @@ package com.pragma.hogar360.serviceshome.application.mappers;
 
 import com.pragma.hogar360.serviceshome.application.dto.request.SaveLocationRequest;
 import com.pragma.hogar360.serviceshome.application.dto.response.LocationResponse;
+import com.pragma.hogar360.serviceshome.application.dto.response.PagedLocationResponse;
 import com.pragma.hogar360.serviceshome.domain.model.LocationModel;
+import com.pragma.hogar360.serviceshome.domain.utils.constants.Pagination;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 
@@ -11,7 +13,7 @@ import org.mapstruct.ReportingPolicy;
  * Utilizes MapStruct for automatic mapping code generation.
  *
  * @author [Ciro Alfonso Pallares Fragozo]
- * @version 1.0
+ * @version 1.1
  * @since [16/3/2025]
  */
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
@@ -39,4 +41,12 @@ public interface LocationsDtoMapper {
                 locationModel.getDepartment().getName()
         );
     }
+
+    /**
+     * Converts a paginated list of {@link LocationModel} objects to a {@link PagedLocationResponse}.
+     *
+     * @param locationPage The paginated domain model.
+     * @return The resulting paginated response DTO.
+     */
+    PagedLocationResponse modelPageToPagedResponse(Pagination<LocationModel> locationPage);
 }

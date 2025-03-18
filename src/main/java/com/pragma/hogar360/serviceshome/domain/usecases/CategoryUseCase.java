@@ -1,13 +1,11 @@
 package com.pragma.hogar360.serviceshome.domain.usecases;
 
 import com.pragma.hogar360.serviceshome.domain.exceptions.CategoryAlreadyExistsException;
-import com.pragma.hogar360.serviceshome.domain.exceptions.NumberPageException;
-import com.pragma.hogar360.serviceshome.domain.exceptions.SizePageException;
 import com.pragma.hogar360.serviceshome.domain.model.CategoryModel;
 import com.pragma.hogar360.serviceshome.domain.ports.in.CategoryServicePort;
 import com.pragma.hogar360.serviceshome.domain.ports.out.CategoryPersistencePort;
-import com.pragma.hogar360.serviceshome.domain.utils.constants.DomainConstants;
 import com.pragma.hogar360.serviceshome.domain.utils.constants.Pagination;
+import com.pragma.hogar360.serviceshome.domain.utils.constants.Validation;
 
 /**
  * Use case implementation for category operations.
@@ -50,12 +48,7 @@ public class CategoryUseCase implements CategoryServicePort {
      */
     @Override
     public Pagination<CategoryModel> getCategories(Integer page, Integer size, boolean orderAsc) {
-        if (page == null || page < 0) {
-            throw new NumberPageException(DomainConstants.NUMBER_PAGE);
-        }
-        if (size == null || size < 1) {
-            throw new SizePageException(DomainConstants.SIZE_PAGE);
-        }
+        Validation.ValidatePageAndSize(page,size);
         return categoryPersistencePort.getCategories(page, size, orderAsc);
     }
 

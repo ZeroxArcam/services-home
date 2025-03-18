@@ -1,9 +1,11 @@
 package com.pragma.hogar360.serviceshome.infrastructure.endpoints.rest;
 
 import com.pragma.hogar360.serviceshome.application.dto.request.SaveLocationRequest;
+import com.pragma.hogar360.serviceshome.application.dto.response.PagedLocationResponse;
 import com.pragma.hogar360.serviceshome.application.dto.response.SaveLocationResponse;
 import com.pragma.hogar360.serviceshome.application.services.LocationService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -18,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
  * REST controller for managing location operations.
  *
  * @author [Ciro Alfonso Pallares Fragozo]
- * @version 1.0
+ * @version 1.1
  * @since [16/3/2025]
  *
  */
@@ -54,5 +56,29 @@ public class LocationController {
             )
             @RequestBody SaveLocationRequest saveLocationRequest) {
         return ResponseEntity.status(HttpStatus.CREATED).body(locationService.createLocation(saveLocationRequest));
+    }
+
+    /**
+     * Endpoint to search locations with pagination and sorting.
+     *
+     * @param page          The page number (0-based).
+     * @param size          The number of locations per page.
+     * @param sortBy        The field to sort by ("cityName" or "departmentName").
+     * @param sortDirection The sorting direction ("ASC" or "DESC").
+     * @param text          The search text for filtering locations.
+     * @return A ResponseEntity with the paged location response.
+     */
+    @GetMapping("/search")
+    @Operation(summary = "Search locations", description = "Searches locations with pagination and sorting.")
+    @ApiResponse(responseCode = "200", description = "Search results", content = @Content(schema = @Schema(implementation = PagedLocationResponse.class)))
+    @ApiResponse(responseCode = "400", description = "Bad request", content = @Content(schema = @Schema(implementation = String.class)))
+    public ResponseEntity<PagedLocationResponse> search(
+            @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") Integer page,
+            @Parameter(description = "Number of locations per page") @RequestParam(defaultValue = "10") Integer size,
+            @Parameter(description = "Field to sort by (cityName or departmentName)") @RequestParam(defaultValue = "cityName") String sortBy,
+            @Parameter(description = "Sorting direction (ASC or DESC)") @RequestParam(defaultValue = "ASC") String sortDirection,
+            @Parameter(description = "Search text for filtering locations") @RequestParam(defaultValue = "") String text) {
+
+        return ResponseEntity.ok(locationService.getLocations(page, size, sortBy, sortDirection, text));
     }
 }

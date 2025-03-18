@@ -1,21 +1,21 @@
 package com.pragma.hogar360.serviceshome.domain.usecases;
 
-import com.pragma.hogar360.serviceshome.domain.exceptions.CityNotFoundException;
-import com.pragma.hogar360.serviceshome.domain.exceptions.DepartmentNotFoundException;
-import com.pragma.hogar360.serviceshome.domain.exceptions.DuplicateLocationException;
+import com.pragma.hogar360.serviceshome.domain.exceptions.*;
 import com.pragma.hogar360.serviceshome.domain.model.LocationModel;
 import com.pragma.hogar360.serviceshome.domain.ports.in.LocationServicePort;
 import com.pragma.hogar360.serviceshome.domain.ports.out.CityPersistencePort;
 import com.pragma.hogar360.serviceshome.domain.ports.out.DepartmentPersistencePort;
 import com.pragma.hogar360.serviceshome.domain.ports.out.LocationPersistencePort;
 import com.pragma.hogar360.serviceshome.domain.utils.constants.DomainConstants;
+import com.pragma.hogar360.serviceshome.domain.utils.constants.Pagination;
+import com.pragma.hogar360.serviceshome.domain.utils.constants.Validation;
 
 /**
  * Use case implementation for location-related domain operations.
  * This class handles the creation of location domain models, including validation for city, department, and duplicate locations.
  *
  * @author [Ciro Alfonso Pallares Fragozo]
- * @version 1.0
+ * @version 1.1
  * @since [16/3/2025]
  */
 public class LocationUseCase implements LocationServicePort {
@@ -104,4 +104,30 @@ public class LocationUseCase implements LocationServicePort {
             throw new DuplicateLocationException(DomainConstants.ALREADY_EXISTS);
         }
     }
+
+    /**
+     * Retrieves a paginated list of CategoryModels.
+     *
+     * @param page    The page number (0-based).
+     * @param size    The number of categories per page.
+     * @param sortBy  True for ascending order, false for descending order.
+     * @return A list of CategoryModels representing the requested page.
+     */
+    @Override
+    public Pagination<LocationModel> getLocations(Integer page, Integer size, String sortBy, String sortDirection, String text){
+
+        Validation.ValidatePageAndSize(page,size);
+        if (!sortBy.equalsIgnoreCase("cityName") && !sortBy.equalsIgnoreCase("departmentName")) {
+            throw new IllegalArgumentException("Invalid sortBy parameter: " + sortBy);
+        }
+        if (!sortDirection.equalsIgnoreCase("ASC") && !sortDirection.equalsIgnoreCase("DESC")) {
+            throw new IllegalArgumentException("Invalid sortDirection parameter: " + sortDirection);
+        }
+
+        String normalizedText = Validation.normalizeText(text);
+        return locationPersistencePort.getLocations(page, size, sortBy,sortDirection,normalizedText);
+    }
+
+
+
 }

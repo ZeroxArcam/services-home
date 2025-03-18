@@ -14,8 +14,10 @@ public final class DomainConstants {
     public static final int FIELD_NAME_MAX_LENGTH = 50;
     public static final int FIELD_DESCRIPTION_MAX_LENGTH = 90;
     public static final int FIELD_DESCRIPTION_CITY_DEPARTMENT_MAX_LENGTH=120;
+    public static final int SIZE_PAGE_INT = 1;
+    public static final int NUMBER_PAGE_INT = 0;
     public static final String NUMBER_PAGE = "The number of pages can not be less than 0";
-    public static final String SIZE_PAGE = "The size of pagas can not be less than 0";
+    public static final String SIZE_PAGE = "The size of pagas can not be less than 1";
     public static final String NOT_FOUND = "No such data exists.";
     public static final String ALREADY_EXISTS = "Data already exists.";
 

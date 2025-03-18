@@ -4,6 +4,7 @@ import com.pragma.hogar360.serviceshome.commons.configurations.utils.Constants;
 import com.pragma.hogar360.serviceshome.domain.exceptions.DuplicateLocationException;
 import com.pragma.hogar360.serviceshome.domain.model.LocationModel;
 import com.pragma.hogar360.serviceshome.domain.ports.out.LocationPersistencePort;
+import com.pragma.hogar360.serviceshome.domain.utils.constants.Pagination;
 import com.pragma.hogar360.serviceshome.infrastructure.entities.CityEntity;
 import com.pragma.hogar360.serviceshome.infrastructure.entities.DepartmentEntity;
 import com.pragma.hogar360.serviceshome.infrastructure.entities.LocationEntity;
@@ -14,10 +15,16 @@ import com.pragma.hogar360.serviceshome.infrastructure.repositories.mysql.Locati
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+
 
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Adapter class for location persistence operations using JPA.
@@ -103,4 +110,47 @@ public class LocationPersistenceAdapter implements LocationPersistencePort {
         Optional<LocationEntity> locationEntity = locationRepository.findByCityNameAndDepartmentName(cityName, departmentName);
         return locationEntity.map(locationEntityMapper::toModel);
     }
+
+
+    @Override
+    public Pagination<LocationModel> getLocations(Integer page, Integer size, String sortBy, String sortDirection, String text) {
+        Pageable pageable;
+
+        // Crear el objeto Sort basado en sortBy y sortDirection
+        Sort sort;
+        if (sortDirection.equalsIgnoreCase("ASC")) {
+            sort = Sort.by(sortBy).ascending();
+        } else {
+            sort = Sort.by(sortBy).descending();
+        }
+
+        // Crear el objeto Pageable con paginación y ordenamiento
+        pageable = PageRequest.of(page, size, sort);
+
+        // Realizar la búsqueda insensible en ciudad y departamento
+        log.info("Fetching locations from DB - Page: {}, Size: {}, SortBy: {}, SortDirection: {}, Text: {}", page, size, sortBy, sortDirection, text);
+        Page<LocationEntity> locationPage = locationRepository
+                .findByCityNameContainingIgnoreCaseOrDepartmentNameContainingIgnoreCase(text, text, pageable);
+        log.info("Locations fetched. Total Elements: {}, Total Pages: {}", locationPage.getTotalElements(), locationPage.getTotalPages());
+
+        // Mapear LocationEntity a LocationModel
+        Pagination<LocationModel> result = locationEntityMapper.locationEntityPageToLocationModelPagination(locationPage);
+        log.info("Mapped Locations: {}", result.getItems());
+
+        log.info("Pagination mapped successfully. Returning response...");
+        return result;
+    }
+
+
+//    @Override
+//    public Optional<LocationModel> findByName(String name) {
+//        // Suponiendo que en tu repositorio tienes un método similar a:
+//        // Optional<LocationEntity> findByCityNameContainingIgnoreCaseOrDepartmentNameContainingIgnoreCase(String cityName, String departmentName);
+//        Optional<LocationEntity> locationEntity = locationRepository
+//                .findByCityNameContainingIgnoreCaseOrDepartmentNameContainingIgnoreCase(name, name);
+//
+//        return locationEntity.map(locationEntityMapper::toModel);
+//    }
+
+
 }

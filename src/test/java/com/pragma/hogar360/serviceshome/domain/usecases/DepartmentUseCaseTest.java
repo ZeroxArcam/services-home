@@ -3,20 +3,19 @@ package com.pragma.hogar360.serviceshome.domain.usecases;
 import com.pragma.hogar360.serviceshome.domain.exceptions.DuplicateDepartmentNameException;
 import com.pragma.hogar360.serviceshome.domain.model.DepartmentModel;
 import com.pragma.hogar360.serviceshome.domain.ports.out.DepartmentPersistencePort;
+import com.pragma.hogar360.serviceshome.factory.DepartmentModelFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.MockitoAnnotations;
 
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
-class DepartmentUseCaseTest {
+public class DepartmentUseCaseTest {
 
     @Mock
     private DepartmentPersistencePort departmentPersistencePort;
@@ -24,52 +23,66 @@ class DepartmentUseCaseTest {
     @InjectMocks
     private DepartmentUseCase departmentUseCase;
 
-    private DepartmentModel departmentModel;
-
     @BeforeEach
-    void setUp() {
-        departmentModel = new DepartmentModel(1L, "Test Department", "Test Description");
+    public void setUp() {
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    void createDepartment_shouldCreateDepartment_whenNameIsUnique() {
-        when(departmentPersistencePort.existsByName("Test Department")).thenReturn(false);
+    public void testCreateDepartment_Success() {
+        // Arrange
+        DepartmentModel departmentModel = DepartmentModelFactory.createDefaultDepartmentModel();
+        when(departmentPersistencePort.existsByName(departmentModel.getName())).thenReturn(false);
         when(departmentPersistencePort.saveDepartment(departmentModel)).thenReturn(departmentModel);
 
+        // Act
         DepartmentModel result = departmentUseCase.createDepartment(departmentModel);
 
+        // Assert
+        assertNotNull(result);
         assertEquals(departmentModel, result);
-        verify(departmentPersistencePort).existsByName("Test Department");
-        verify(departmentPersistencePort).saveDepartment(departmentModel);
+        verify(departmentPersistencePort, times(1)).existsByName(departmentModel.getName());
+        verify(departmentPersistencePort, times(1)).saveDepartment(departmentModel);
     }
 
     @Test
-    void createDepartment_shouldThrowDuplicateDepartmentNameException_whenNameExists() {
-        when(departmentPersistencePort.existsByName("Test Department")).thenReturn(true);
+    public void testCreateDepartment_DuplicateName() {
+        // Arrange
+        DepartmentModel departmentModel = DepartmentModelFactory.createDefaultDepartmentModel();
+        when(departmentPersistencePort.existsByName(departmentModel.getName())).thenReturn(true);
 
+        // Act & Assert
         assertThrows(DuplicateDepartmentNameException.class, () -> departmentUseCase.createDepartment(departmentModel));
-        verify(departmentPersistencePort).existsByName("Test Department");
-        verify(departmentPersistencePort, never()).saveDepartment(any());
+        verify(departmentPersistencePort, times(1)).existsByName(departmentModel.getName());
+        verify(departmentPersistencePort, never()).saveDepartment(departmentModel);
     }
 
     @Test
-    void getDepartmentByName_shouldReturnDepartment_whenDepartmentExists() {
-        when(departmentPersistencePort.findByName("Test Department")).thenReturn(Optional.of(departmentModel));
+    public void testGetDepartmentByName_Success() {
+        // Arrange
+        DepartmentModel departmentModel = DepartmentModelFactory.createDefaultDepartmentModel();
+        when(departmentPersistencePort.findByName(departmentModel.getName())).thenReturn(Optional.of(departmentModel));
 
-        Optional<DepartmentModel> result = departmentUseCase.getDepartmentByName("Test Department");
+        // Act
+        Optional<DepartmentModel> result = departmentUseCase.getDepartmentByName(departmentModel.getName());
 
+        // Assert
         assertTrue(result.isPresent());
         assertEquals(departmentModel, result.get());
-        verify(departmentPersistencePort).findByName("Test Department");
+        verify(departmentPersistencePort, times(1)).findByName(departmentModel.getName());
     }
 
     @Test
-    void getDepartmentByName_shouldReturnEmptyOptional_whenDepartmentDoesNotExist() {
-        when(departmentPersistencePort.findByName("Nonexistent Department")).thenReturn(Optional.empty());
+    public void testGetDepartmentByName_NotFound() {
+        // Arrange
+        String departmentName = "Nonexistent Department";
+        when(departmentPersistencePort.findByName(departmentName)).thenReturn(Optional.empty());
 
-        Optional<DepartmentModel> result = departmentUseCase.getDepartmentByName("Nonexistent Department");
+        // Act
+        Optional<DepartmentModel> result = departmentUseCase.getDepartmentByName(departmentName);
 
+        // Assert
         assertFalse(result.isPresent());
-        verify(departmentPersistencePort).findByName("Nonexistent Department");
+        verify(departmentPersistencePort, times(1)).findByName(departmentName);
     }
 }
