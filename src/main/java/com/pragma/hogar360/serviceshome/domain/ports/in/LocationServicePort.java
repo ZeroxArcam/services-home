@@ -1,5 +1,7 @@
 package com.pragma.hogar360.serviceshome.domain.ports.in;
 
+import com.pragma.hogar360.serviceshome.application.dto.response.PagedCategoryResponse;
+import com.pragma.hogar360.serviceshome.application.dto.response.PagedLocationResponse;
 import com.pragma.hogar360.serviceshome.domain.model.LocationModel;
 import com.pragma.hogar360.serviceshome.domain.utils.constants.Pagination;
 
@@ -35,6 +37,8 @@ public interface LocationServicePort {
      * @return A PagedLocationResponse DTO containing the list of locations and pagination metadata.
      */
     Pagination<LocationModel> getLocations(Integer page, Integer size, String sortBy, String sortDirection, String text);
+
+    //PagedLocationResponse getLocations(Integer page, Integer size, String sortBy, String sortDirection, String text);
 
 //    /**
 //     * Finds a location by either city or department name.

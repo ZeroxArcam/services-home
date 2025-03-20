@@ -1,0 +1,403 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > InstrumentationMemberAccessor</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.mockito.internal.util.reflection</a>
+</div>
+
+<h1>Coverage Summary for Class: InstrumentationMemberAccessor (org.mockito.internal.util.reflection)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">InstrumentationMemberAccessor</td>
+<td class="coverageStat">
+  <span class="percent">
+    90%
+  </span>
+  <span class="absValue">
+    (9/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    41.3%
+  </span>
+  <span class="absValue">
+    (19/46)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    67.9%
+  </span>
+  <span class="absValue">
+    (125/184)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">InstrumentationMemberAccessor$Dispatcher</td>
+  </tr>
+  <tr>
+    <td class="name">InstrumentationMemberAccessor$Dispatcher$ByteBuddy$ZXQ6YJIG</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    90%
+  </span>
+  <span class="absValue">
+    (9/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    41.3%
+  </span>
+  <span class="absValue">
+    (19/46)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    67.9%
+  </span>
+  <span class="absValue">
+    (125/184)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.mockito.internal.util.reflection;
+&nbsp;
+&nbsp;import java.lang.instrument.Instrumentation;
+&nbsp;import java.lang.invoke.MethodHandle;
+&nbsp;import java.lang.invoke.MethodHandles;
+&nbsp;import java.lang.invoke.MethodType;
+&nbsp;import java.lang.reflect.AccessibleObject;
+&nbsp;import java.lang.reflect.Constructor;
+&nbsp;import java.lang.reflect.Field;
+&nbsp;import java.lang.reflect.InvocationTargetException;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;import java.lang.reflect.Modifier;
+&nbsp;import java.util.Arrays;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.concurrent.atomic.AtomicBoolean;
+&nbsp;import net.bytebuddy.ByteBuddy;
+&nbsp;import net.bytebuddy.dynamic.loading.ClassLoadingStrategy.Default;
+&nbsp;import net.bytebuddy.implementation.MethodCall;
+&nbsp;import net.bytebuddy.matcher.ElementMatchers;
+&nbsp;import org.mockito.exceptions.base.MockitoInitializationException;
+<b class="fc">&nbsp;import org.mockito.internal.PremainAttachAccess;</b>
+&nbsp;import org.mockito.internal.SuppressSignatureCheck;
+&nbsp;import org.mockito.internal.util.StringUtil;
+&nbsp;import org.mockito.plugins.MemberAccessor;
+&nbsp;
+&nbsp;@SuppressSignatureCheck
+&nbsp;class InstrumentationMemberAccessor implements MemberAccessor {
+&nbsp;    private static final Map&lt;Class&lt;?&gt;, Class&lt;?&gt;&gt; WRAPPERS = new HashMap();
+<b class="fc">&nbsp;    private static final Instrumentation INSTRUMENTATION;</b>
+<b class="fc">&nbsp;    private static final Dispatcher DISPATCHER;</b>
+<b class="fc">&nbsp;    private static final Throwable INITIALIZATION_ERROR;</b>
+<b class="fc">&nbsp;    private final MethodHandle getModule;</b>
+<b class="fc">&nbsp;    private final MethodHandle isOpen;</b>
+<b class="fc">&nbsp;    private final MethodHandle redefineModule;</b>
+<b class="fc">&nbsp;    private final MethodHandle privateLookupIn;</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    InstrumentationMemberAccessor() {
+&nbsp;        if (INITIALIZATION_ERROR != null) {
+&nbsp;            throw new MockitoInitializationException(StringUtil.join(new Object[]{&quot;Could not initialize the Mockito instrumentation member accessor&quot;, &quot;&quot;, &quot;This is unexpected on JVMs from Java 9 or later - possibly, the instrumentation API could not be resolved&quot;}), INITIALIZATION_ERROR);
+&nbsp;        } else {
+<b class="fc">&nbsp;            try {</b>
+&nbsp;                Class&lt;?&gt; module = Class.forName(&quot;java.lang.Module&quot;);
+&nbsp;                this.getModule = MethodHandles.publicLookup().findVirtual(Class.class, &quot;getModule&quot;, MethodType.methodType(module));
+&nbsp;                this.isOpen = MethodHandles.publicLookup().findVirtual(module, &quot;isOpen&quot;, MethodType.methodType(Boolean.TYPE, String.class));
+&nbsp;                this.redefineModule = MethodHandles.publicLookup().findVirtual(Instrumentation.class, &quot;redefineModule&quot;, MethodType.methodType(Void.TYPE, module, Set.class, Map.class, Map.class, Set.class, Map.class));
+&nbsp;                this.privateLookupIn = MethodHandles.publicLookup().findStatic(MethodHandles.class, &quot;privateLookupIn&quot;, MethodType.methodType(MethodHandles.Lookup.class, Class.class, MethodHandles.Lookup.class));
+<b class="fc">&nbsp;            } catch (Throwable t) {</b>
+&nbsp;                throw new MockitoInitializationException(&quot;Could not resolve instrumentation invoker&quot;, t);
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public Object newInstance(Constructor&lt;?&gt; constructor, Object... arguments) throws InstantiationException, InvocationTargetException {</b>
+<b class="fc">&nbsp;        return this.newInstance(constructor, MemberAccessor.ConstructionDispatcher::newInstance, arguments);</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public Object newInstance(Constructor&lt;?&gt; constructor, MemberAccessor.OnConstruction onConstruction, Object... arguments) throws InstantiationException, InvocationTargetException {</b>
+<b class="fc">&nbsp;        if (Modifier.isAbstract(constructor.getDeclaringClass().getModifiers())) {</b>
+<b class="fc">&nbsp;            throw new InstantiationException(&quot;Cannot instantiate abstract &quot; + constructor.getDeclaringClass().getTypeName());</b>
+<b class="fc">&nbsp;        } else {</b>
+<b class="fc">&nbsp;            assureArguments(constructor, (Object)null, (Class)null, arguments, constructor.getParameterTypes());</b>
+&nbsp;
+<b class="fc">&nbsp;            try {</b>
+<b class="fc">&nbsp;                Object module = DISPATCHER.invokeWithArguments(this.getModule.bindTo(constructor.getDeclaringClass()));</b>
+<b class="fc">&nbsp;                String packageName = constructor.getDeclaringClass().getPackage().getName();</b>
+<b class="fc">&nbsp;                this.assureOpen(module, packageName);</b>
+<b class="fc">&nbsp;                MethodHandle handle = ((MethodHandles.Lookup)DISPATCHER.invokeWithArguments(this.privateLookupIn, constructor.getDeclaringClass(), DISPATCHER.getLookup())).unreflectConstructor(constructor);</b>
+<b class="fc">&nbsp;                AtomicBoolean thrown = new AtomicBoolean();</b>
+&nbsp;                Object value = onConstruction.invoke(() -&gt; {
+<b class="fc">&nbsp;                    try {</b>
+<b class="fc">&nbsp;                        return DISPATCHER.invokeWithArguments(handle.asFixedArity(), arguments);</b>
+<b class="fc">&nbsp;                    } catch (Throwable throwable) {</b>
+<b class="fc">&nbsp;                        thrown.set(true);</b>
+<b class="fc">&nbsp;                        return throwable;</b>
+&nbsp;                    }
+<b class="fc">&nbsp;                });</b>
+<b class="fc">&nbsp;                if (thrown.get()) {</b>
+<b class="fc">&nbsp;                    throw new InvocationTargetException((Throwable)value);</b>
+<b class="fc">&nbsp;                } else {</b>
+&nbsp;                    return value;
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            } catch (InvocationTargetException e) {</b>
+<b class="nc">&nbsp;                throw e;</b>
+&nbsp;            } catch (Throwable t) {
+<b class="fc">&nbsp;                throw new IllegalStateException(&quot;Could not construct &quot; + String.valueOf(constructor) + &quot; with arguments &quot; + Arrays.toString(arguments), t);</b>
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Object invoke(Method method, Object target, Object... arguments) throws InvocationTargetException {
+&nbsp;        assureArguments(method, Modifier.isStatic(method.getModifiers()) ? null : target, method.getDeclaringClass(), arguments, method.getParameterTypes());
+&nbsp;
+&nbsp;        try {
+&nbsp;            Object module = DISPATCHER.invokeWithArguments(this.getModule.bindTo(method.getDeclaringClass()));
+&nbsp;            String packageName = method.getDeclaringClass().getPackage().getName();
+&nbsp;            this.assureOpen(module, packageName);
+&nbsp;            MethodHandle handle = ((MethodHandles.Lookup)DISPATCHER.invokeWithArguments(this.privateLookupIn, method.getDeclaringClass(), DISPATCHER.getLookup())).unreflect(method);
+&nbsp;            if (!Modifier.isStatic(method.getModifiers())) {
+&nbsp;                handle = handle.bindTo(target);
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if (handle.isVarargsCollector()) {</b>
+<b class="pc">&nbsp;                handle = handle.asFixedArity();</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            try {
+&nbsp;                return DISPATCHER.invokeWithArguments(handle, arguments);
+&nbsp;            } catch (Throwable t) {
+&nbsp;                throw new InvocationTargetException(t);
+&nbsp;            }
+&nbsp;        } catch (InvocationTargetException e) {
+<b class="fc">&nbsp;            throw e;</b>
+<b class="fc">&nbsp;        } catch (Throwable t) {</b>
+<b class="fc">&nbsp;            throw new IllegalStateException(&quot;Could not invoke &quot; + String.valueOf(method) + &quot; on &quot; + String.valueOf(target) + &quot; with arguments &quot; + Arrays.toString(arguments), t);</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public Object get(Field field, Object target) {</b>
+&nbsp;        assureArguments(field, Modifier.isStatic(field.getModifiers()) ? null : target, field.getDeclaringClass(), new Object[0], new Class[0]);
+&nbsp;
+<b class="fc">&nbsp;        try {</b>
+<b class="fc">&nbsp;            Object module = DISPATCHER.invokeWithArguments(this.getModule.bindTo(field.getDeclaringClass()));</b>
+<b class="fc">&nbsp;            String packageName = field.getDeclaringClass().getPackage().getName();</b>
+<b class="fc">&nbsp;            this.assureOpen(module, packageName);</b>
+&nbsp;            MethodHandle handle = ((MethodHandles.Lookup)DISPATCHER.invokeWithArguments(this.privateLookupIn, field.getDeclaringClass(), DISPATCHER.getLookup())).unreflectGetter(field);
+&nbsp;            if (!Modifier.isStatic(field.getModifiers())) {
+<b class="fc">&nbsp;                handle = handle.bindTo(target);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            return DISPATCHER.invokeWithArguments(handle);
+&nbsp;        } catch (Throwable t) {
+&nbsp;            throw new IllegalStateException(&quot;Could not read &quot; + String.valueOf(field) + &quot; on &quot; + String.valueOf(target), t);
+&nbsp;        }
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public void set(Field field, Object target, Object value) throws IllegalAccessException {</b>
+<b class="fc">&nbsp;        assureArguments(field, Modifier.isStatic(field.getModifiers()) ? null : target, field.getDeclaringClass(), new Object[]{value}, new Class[]{field.getType()});</b>
+&nbsp;        boolean illegalAccess = false;
+&nbsp;
+<b class="fc">&nbsp;        try {</b>
+&nbsp;            Object module = DISPATCHER.invokeWithArguments(this.getModule.bindTo(field.getDeclaringClass()));
+&nbsp;            String packageName = field.getDeclaringClass().getPackage().getName();
+&nbsp;            this.assureOpen(module, packageName);
+&nbsp;            boolean isFinal;
+<b class="nc">&nbsp;            if (Modifier.isFinal(field.getModifiers())) {</b>
+&nbsp;                isFinal = true;
+&nbsp;
+&nbsp;                try {
+&nbsp;                    DISPATCHER.setAccessible(field, true);
+&nbsp;                } catch (Throwable var13) {
+&nbsp;                    illegalAccess = true;
+&nbsp;                    throw new IllegalAccessException(&quot;Could not make final field &quot; + String.valueOf(field) + &quot; accessible&quot;);
+<b class="fc">&nbsp;                }</b>
+&nbsp;            } else {
+&nbsp;                isFinal = false;
+&nbsp;            }
+&nbsp;
+&nbsp;            try {
+&nbsp;                MethodHandle handle = ((MethodHandles.Lookup)DISPATCHER.invokeWithArguments(this.privateLookupIn, field.getDeclaringClass(), DISPATCHER.getLookup())).unreflectSetter(field);
+<b class="pc">&nbsp;                if (!Modifier.isStatic(field.getModifiers())) {</b>
+<b class="nc">&nbsp;                    handle = handle.bindTo(target);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="fc">&nbsp;                DISPATCHER.invokeWithArguments(handle, value);</b>
+&nbsp;            } finally {
+<b class="fc">&nbsp;                if (isFinal) {</b>
+<b class="fc">&nbsp;                    DISPATCHER.setAccessible(field, false);</b>
+<b class="fc">&nbsp;                }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;        } catch (Throwable t) {
+<b class="fc">&nbsp;            if (illegalAccess) {</b>
+&nbsp;                throw (IllegalAccessException)t;
+<b class="fc">&nbsp;            } else {</b>
+<b class="fc">&nbsp;                throw new IllegalStateException(&quot;Could not read &quot; + String.valueOf(field) + &quot; on &quot; + String.valueOf(target), t);</b>
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    private void assureOpen(Object module, String packageName) throws Throwable {
+&nbsp;        if (!(Boolean)DISPATCHER.invokeWithArguments(this.isOpen, module, packageName)) {
+&nbsp;            DISPATCHER.invokeWithArguments(this.redefineModule.bindTo(INSTRUMENTATION), module, Collections.emptySet(), Collections.emptyMap(), Collections.singletonMap(packageName, Collections.singleton(DISPATCHER.getModule())), Collections.emptySet(), Collections.emptyMap());
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private static void assureArguments(AccessibleObject target, Object owner, Class&lt;?&gt; type, Object[] values, Class&lt;?&gt;[] types) {
+&nbsp;        if (owner != null &amp;&amp; !type.isAssignableFrom(owner.getClass())) {
+&nbsp;            String var10 = String.valueOf(target);
+<b class="fc">&nbsp;            throw new IllegalArgumentException(&quot;Cannot access &quot; + var10 + &quot; on &quot; + String.valueOf(owner));</b>
+<b class="fc">&nbsp;        } else {</b>
+&nbsp;            Object[] args = values;
+<b class="nc">&nbsp;            if (values == null) {</b>
+<b class="nc">&nbsp;                args = new Object[0];</b>
+&nbsp;            }
+&nbsp;
+<b class="pc">&nbsp;            if (types.length != args.length) {</b>
+<b class="nc">&nbsp;                String var9 = String.valueOf(target);</b>
+&nbsp;                throw new IllegalArgumentException(&quot;Incorrect number of arguments for &quot; + var9 + &quot;: expected &quot; + types.length + &quot; but recevied &quot; + args.length);
+<b class="fc">&nbsp;            } else {</b>
+&nbsp;                for(int index = 0; index &lt; args.length; ++index) {
+&nbsp;                    if (args[index] == null) {
+&nbsp;                        if (types[index].isPrimitive()) {
+&nbsp;                            String var10002 = types[index].getTypeName();
+<b class="nc">&nbsp;                            throw new IllegalArgumentException(&quot;Cannot assign null to primitive type &quot; + var10002 + &quot; for &quot; + index + &quot; parameter of &quot; + String.valueOf(target));</b>
+&nbsp;                        }
+&nbsp;                    } else {
+&nbsp;                        Class&lt;?&gt; resolved = (Class)WRAPPERS.getOrDefault(types[index], types[index]);
+<b class="nc">&nbsp;                        if (!resolved.isAssignableFrom(args[index].getClass())) {</b>
+&nbsp;                            String var8 = String.valueOf(args[index].getClass());
+&nbsp;                            throw new IllegalArgumentException(&quot;Cannot assign value of type &quot; + var8 + &quot; to &quot; + String.valueOf(resolved) + &quot; for &quot; + index + &quot; parameter of &quot; + String.valueOf(target));
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    static {</b>
+&nbsp;        WRAPPERS.put(Boolean.TYPE, Boolean.class);
+<b class="nc">&nbsp;        WRAPPERS.put(Byte.TYPE, Byte.class);</b>
+&nbsp;        WRAPPERS.put(Short.TYPE, Short.class);
+<b class="nc">&nbsp;        WRAPPERS.put(Character.TYPE, Character.class);</b>
+<b class="nc">&nbsp;        WRAPPERS.put(Integer.TYPE, Integer.class);</b>
+<b class="nc">&nbsp;        WRAPPERS.put(Long.TYPE, Long.class);</b>
+<b class="nc">&nbsp;        WRAPPERS.put(Float.TYPE, Float.class);</b>
+<b class="nc">&nbsp;        WRAPPERS.put(Double.TYPE, Double.class);</b>
+&nbsp;
+<b class="nc">&nbsp;        Instrumentation instrumentation;</b>
+&nbsp;        Dispatcher dispatcher;
+<b class="nc">&nbsp;        Throwable throwable;</b>
+<b class="nc">&nbsp;        try {</b>
+<b class="nc">&nbsp;            instrumentation = PremainAttachAccess.getInstrumentation();</b>
+<b class="nc">&nbsp;            dispatcher = (Dispatcher)(new ByteBuddy()).subclass(Dispatcher.class).method(ElementMatchers.named(&quot;getLookup&quot;)).intercept(MethodCall.invoke(MethodHandles.class.getMethod(&quot;lookup&quot;))).method(ElementMatchers.named(&quot;getModule&quot;)).intercept(MethodCall.invoke(Class.class.getMethod(&quot;getModule&quot;)).onMethodCall(MethodCall.invoke(Object.class.getMethod(&quot;getClass&quot;)))).method(ElementMatchers.named(&quot;setAccessible&quot;)).intercept(MethodCall.invoke(AccessibleObject.class.getMethod(&quot;setAccessible&quot;, Boolean.TYPE)).onArgument(0).withArgument(new int[]{1})).method(ElementMatchers.named(&quot;invokeWithArguments&quot;)).intercept(MethodCall.invoke(MethodHandle.class.getMethod(&quot;invokeWithArguments&quot;, Object[].class)).onArgument(0).withArgument(new int[]{1})).make().load(InstrumentationMemberAccessor.class.getClassLoader(), Default.WRAPPER).getLoaded().getConstructor().newInstance();</b>
+<b class="nc">&nbsp;            throwable = null;</b>
+&nbsp;        } catch (Throwable t) {
+<b class="nc">&nbsp;            instrumentation = null;</b>
+<b class="nc">&nbsp;            dispatcher = null;</b>
+&nbsp;            throwable = t;
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        INSTRUMENTATION = instrumentation;
+<b class="nc">&nbsp;        DISPATCHER = dispatcher;</b>
+&nbsp;        INITIALIZATION_ERROR = throwable;
+&nbsp;    }
+&nbsp;
+&nbsp;    public interface Dispatcher {
+<b class="nc">&nbsp;        MethodHandles.Lookup getLookup();</b>
+&nbsp;
+&nbsp;        Object getModule();
+&nbsp;
+&nbsp;        void setAccessible(AccessibleObject var1, boolean var2);
+&nbsp;
+<b class="nc">&nbsp;        Object invokeWithArguments(MethodHandle var1, Object... var2) throws Throwable;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-20 13:41</div>
+</div>
+</body>
+</html>

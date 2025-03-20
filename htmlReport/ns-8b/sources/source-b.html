@@ -1,0 +1,195 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > EngineDiscoveryResultValidator</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.platform.launcher.core</a>
+</div>
+
+<h1>Coverage Summary for Class: EngineDiscoveryResultValidator (org.junit.platform.launcher.core)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">EngineDiscoveryResultValidator</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    42.9%
+  </span>
+  <span class="absValue">
+    (3/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    58.3%
+  </span>
+  <span class="absValue">
+    (7/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    47.2%
+  </span>
+  <span class="absValue">
+    (17/36)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.junit.platform.launcher.core;
+&nbsp;
+&nbsp;import java.util.ArrayDeque;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Optional;
+&nbsp;import java.util.Queue;
+&nbsp;import java.util.stream.Collectors;
+&nbsp;import org.junit.platform.commons.util.Preconditions;
+&nbsp;import org.junit.platform.engine.TestDescriptor;
+&nbsp;import org.junit.platform.engine.TestEngine;
+&nbsp;import org.junit.platform.engine.UniqueId;
+&nbsp;
+&nbsp;class EngineDiscoveryResultValidator {
+&nbsp;    EngineDiscoveryResultValidator() {
+&nbsp;    }
+&nbsp;
+&nbsp;    void validate(TestEngine testEngine, TestDescriptor root) {
+&nbsp;        Preconditions.notNull(root, () -&gt; String.format(&quot;The discover() method for TestEngine with ID &#39;%s&#39; must return a non-null root TestDescriptor.&quot;, testEngine.getId()));
+&nbsp;        Optional&lt;String&gt; cyclicGraphInfo = this.getCyclicGraphInfo(root);
+&nbsp;        Preconditions.condition(!cyclicGraphInfo.isPresent(), () -&gt; String.format(&quot;The discover() method for TestEngine with ID &#39;%s&#39; returned a cyclic graph; %s&quot;, testEngine.getId(), cyclicGraphInfo.get()));
+&nbsp;    }
+&nbsp;
+&nbsp;    private Optional&lt;String&gt; getCyclicGraphInfo(TestDescriptor root) {
+&nbsp;        Map&lt;UniqueId, Optional&lt;UniqueId&gt;&gt; visited = new HashMap();
+<b class="fc">&nbsp;        visited.put(root.getUniqueId(), Optional.empty());</b>
+&nbsp;        Queue&lt;TestDescriptor&gt; queue = new ArrayDeque();
+&nbsp;        queue.add(root);
+&nbsp;
+&nbsp;        while(!queue.isEmpty()) {
+&nbsp;            TestDescriptor parent = (TestDescriptor)queue.remove();
+&nbsp;
+&nbsp;            for(TestDescriptor child : parent.getChildren()) {
+<b class="fc">&nbsp;                UniqueId uid = child.getUniqueId();</b>
+<b class="nc">&nbsp;                if (visited.containsKey(uid)) {</b>
+&nbsp;                    List&lt;UniqueId&gt; path1 = findPath(visited, uid);
+<b class="nc">&nbsp;                    List&lt;UniqueId&gt; path2 = findPath(visited, parent.getUniqueId());</b>
+<b class="fc">&nbsp;                    path2.add(uid);</b>
+<b class="fc">&nbsp;                    return Optional.of(String.format(&quot;%s exists in at least two paths:\n(1) %s\n(2) %s&quot;, uid, this.formatted(path1), this.formatted(path2)));</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                visited.put(uid, Optional.of(parent.getUniqueId()));
+&nbsp;                if (child.isContainer()) {
+&nbsp;                    queue.add(child);
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        return Optional.empty();</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+<b class="fc">&nbsp;    private String formatted(List&lt;UniqueId&gt; path) {</b>
+<b class="fc">&nbsp;        return (String)path.stream().map(UniqueId::toString).collect(Collectors.joining(&quot; -&gt; &quot;));</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private static List&lt;UniqueId&gt; findPath(Map&lt;UniqueId, Optional&lt;UniqueId&gt;&gt; visited, UniqueId target) {</b>
+<b class="fc">&nbsp;        List&lt;UniqueId&gt; path = new ArrayList();</b>
+<b class="fc">&nbsp;        path.add(target);</b>
+<b class="pc">&nbsp;</b>
+&nbsp;        Optional&lt;UniqueId&gt; backTraced;
+<b class="nc">&nbsp;        for(UniqueId current = target; visited.containsKey(current); current = (UniqueId)backTraced.get()) {</b>
+<b class="nc">&nbsp;            backTraced = (Optional)visited.get(current);</b>
+<b class="nc">&nbsp;            if (!backTraced.isPresent()) {</b>
+&nbsp;                break;
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            path.add(0, (UniqueId)backTraced.get());
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+&nbsp;        return path;
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-20 13:42</div>
+</div>
+</body>
+</html>

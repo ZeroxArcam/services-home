@@ -6,6 +6,8 @@ import com.pragma.hogar360.serviceshome.domain.ports.in.CityServicePort;
 import com.pragma.hogar360.serviceshome.domain.ports.out.CityPersistencePort;
 import com.pragma.hogar360.serviceshome.domain.ports.out.DepartmentPersistencePort;
 import com.pragma.hogar360.serviceshome.domain.utils.constants.DomainConstants;
+import com.pragma.hogar360.serviceshome.domain.utils.constants.Validation;
+
 import java.util.Optional;
 
 /**
@@ -48,6 +50,9 @@ public class CityUseCase implements CityServicePort {
      */
     @Override
     public CityModel createCity(CityModel city) {
+        Validation.validateName(city.getName());
+        Validation.validationCityDepartmentDescription(city.getDescription());
+
         if (cityPersistencePort.existsByName(city.getName())) {
             throw new DuplicateDepartmentNameException(DomainConstants.ALREADY_EXISTS);
         }

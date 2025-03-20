@@ -1,0 +1,2845 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ClassReader</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">net.bytebuddy.jar.asm</a>
+</div>
+
+<h1>Coverage Summary for Class: ClassReader (net.bytebuddy.jar.asm)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ClassReader</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    38.5%
+  </span>
+  <span class="absValue">
+    (20/52)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    9.2%
+  </span>
+  <span class="absValue">
+    (123/1344)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    20.2%
+  </span>
+  <span class="absValue">
+    (279/1383)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package net.bytebuddy.jar.asm;
+&nbsp;
+&nbsp;import java.io.ByteArrayOutputStream;
+&nbsp;import java.io.IOException;
+&nbsp;import java.io.InputStream;
+&nbsp;
+&nbsp;public class ClassReader {
+&nbsp;    public static final int SKIP_CODE = 1;
+&nbsp;    public static final int SKIP_DEBUG = 2;
+&nbsp;    public static final int SKIP_FRAMES = 4;
+&nbsp;    public static final int EXPAND_FRAMES = 8;
+&nbsp;    static final int EXPAND_ASM_INSNS = 256;
+&nbsp;    private static final int MAX_BUFFER_SIZE = 1048576;
+&nbsp;    private static final int INPUT_STREAM_DATA_CHUNK_SIZE = 4096;
+&nbsp;    /** @deprecated */
+&nbsp;    @Deprecated
+&nbsp;    public final byte[] b;
+&nbsp;    public final int header;
+&nbsp;    final byte[] classFileBuffer;
+&nbsp;    private final int[] cpInfoOffsets;
+&nbsp;    private final String[] constantUtf8Values;
+&nbsp;    private final ConstantDynamic[] constantDynamicValues;
+&nbsp;    private final int[] bootstrapMethodOffsets;
+&nbsp;    private final int maxStringLength;
+&nbsp;
+&nbsp;    public ClassReader(byte[] classFile) {
+&nbsp;        this(classFile, 0, classFile.length);
+&nbsp;    }
+&nbsp;
+&nbsp;    public ClassReader(byte[] classFileBuffer, int classFileOffset, int classFileLength) {
+&nbsp;        this(classFileBuffer, classFileOffset, true);
+&nbsp;    }
+&nbsp;
+&nbsp;    ClassReader(byte[] classFileBuffer, int classFileOffset, boolean checkClassVersion) {
+&nbsp;        this.classFileBuffer = classFileBuffer;
+&nbsp;        this.b = classFileBuffer;
+&nbsp;        if (checkClassVersion &amp;&amp; this.readShort(classFileOffset + 6) &gt; 68) {
+&nbsp;            throw new IllegalArgumentException(stringConcat$0(this.readShort(classFileOffset + 6)));
+&nbsp;        } else {
+&nbsp;            int constantPoolCount = this.readUnsignedShort(classFileOffset + 8);
+&nbsp;            this.cpInfoOffsets = new int[constantPoolCount];
+&nbsp;            this.constantUtf8Values = new String[constantPoolCount];
+&nbsp;            int currentCpInfoIndex = 1;
+&nbsp;            int currentCpInfoOffset = classFileOffset + 10;
+&nbsp;            int currentMaxStringLength = 0;
+&nbsp;            boolean hasBootstrapMethods = false;
+&nbsp;
+&nbsp;            boolean hasConstantDynamic;
+&nbsp;            int cpInfoSize;
+&nbsp;            for(hasConstantDynamic = false; currentCpInfoIndex &lt; constantPoolCount; currentCpInfoOffset += cpInfoSize) {
+&nbsp;                this.cpInfoOffsets[currentCpInfoIndex++] = currentCpInfoOffset + 1;
+&nbsp;                switch (classFileBuffer[currentCpInfoOffset]) {
+&nbsp;                    case 1:
+&nbsp;                        cpInfoSize = 3 + this.readUnsignedShort(currentCpInfoOffset + 1);
+&nbsp;                        if (cpInfoSize &gt; currentMaxStringLength) {
+&nbsp;                            currentMaxStringLength = cpInfoSize;
+&nbsp;                        }
+&nbsp;                        break;
+&nbsp;                    case 2:
+&nbsp;                    case 13:
+&nbsp;                    case 14:
+&nbsp;                    default:
+&nbsp;                        throw new IllegalArgumentException();
+&nbsp;                    case 3:
+&nbsp;                    case 4:
+&nbsp;                    case 9:
+&nbsp;                    case 10:
+&nbsp;                    case 11:
+&nbsp;                    case 12:
+&nbsp;                        cpInfoSize = 5;
+&nbsp;                        break;
+&nbsp;                    case 5:
+&nbsp;                    case 6:
+&nbsp;                        cpInfoSize = 9;
+&nbsp;                        ++currentCpInfoIndex;
+&nbsp;                        break;
+&nbsp;                    case 7:
+&nbsp;                    case 8:
+&nbsp;                    case 16:
+&nbsp;                    case 19:
+&nbsp;                    case 20:
+&nbsp;                        cpInfoSize = 3;
+&nbsp;                        break;
+&nbsp;                    case 15:
+&nbsp;                        cpInfoSize = 4;
+&nbsp;                        break;
+&nbsp;                    case 17:
+&nbsp;                        cpInfoSize = 5;
+&nbsp;                        hasBootstrapMethods = true;
+&nbsp;                        hasConstantDynamic = true;
+&nbsp;                        break;
+&nbsp;                    case 18:
+&nbsp;                        cpInfoSize = 5;
+&nbsp;                        hasBootstrapMethods = true;
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            this.maxStringLength = currentMaxStringLength;
+&nbsp;            this.header = currentCpInfoOffset;
+&nbsp;            this.constantDynamicValues = hasConstantDynamic ? new ConstantDynamic[constantPoolCount] : null;
+&nbsp;            this.bootstrapMethodOffsets = hasBootstrapMethods ? this.readBootstrapMethodsAttribute(currentMaxStringLength) : null;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public ClassReader(InputStream inputStream) throws IOException {
+&nbsp;        this(readStream(inputStream, false));
+&nbsp;    }
+&nbsp;
+&nbsp;    public ClassReader(String className) throws IOException {
+&nbsp;        this(readStream(ClassLoader.getSystemResourceAsStream(stringConcat$1(className.replace(&#39;.&#39;, &#39;/&#39;))), true));
+&nbsp;    }
+&nbsp;
+&nbsp;    private static byte[] readStream(InputStream inputStream, boolean close) throws IOException {
+&nbsp;        if (inputStream == null) {
+&nbsp;            throw new IOException(&quot;Class not found&quot;);
+&nbsp;        } else {
+&nbsp;            int bufferSize = computeBufferSize(inputStream);
+&nbsp;
+&nbsp;            byte[] var15;
+&nbsp;            try {
+&nbsp;                ByteArrayOutputStream outputStream;
+&nbsp;                label140: {
+&nbsp;                    outputStream = new ByteArrayOutputStream();
+&nbsp;
+&nbsp;                    try {
+&nbsp;                        byte[] data = new byte[bufferSize];
+&nbsp;
+&nbsp;                        int bytesRead;
+&nbsp;                        int readCount;
+&nbsp;                        for(readCount = 0; (bytesRead = inputStream.read(data, 0, bufferSize)) != -1; ++readCount) {
+&nbsp;                            outputStream.write(data, 0, bytesRead);
+&nbsp;                        }
+&nbsp;
+&nbsp;                        outputStream.flush();
+&nbsp;                        if (readCount == 1) {
+&nbsp;                            var15 = data;
+&nbsp;                            break label140;
+&nbsp;                        }
+&nbsp;
+&nbsp;                        var15 = outputStream.toByteArray();
+&nbsp;                    } catch (Throwable var13) {
+&nbsp;                        try {
+&nbsp;                            outputStream.close();
+&nbsp;                        } catch (Throwable var12) {
+&nbsp;                        }
+&nbsp;
+&nbsp;                        throw var13;
+&nbsp;                    }
+&nbsp;
+&nbsp;                    outputStream.close();
+&nbsp;                    return var15;
+&nbsp;                }
+&nbsp;
+&nbsp;                outputStream.close();
+&nbsp;            } finally {
+&nbsp;                if (close) {
+&nbsp;                    inputStream.close();
+&nbsp;                }
+&nbsp;
+&nbsp;            }
+<b class="fc">&nbsp;</b>
+&nbsp;            return var15;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static int computeBufferSize(InputStream inputStream) throws IOException {
+&nbsp;        int expectedLength = inputStream.available();
+&nbsp;        return expectedLength &lt; 256 ? 4096 : Math.min(expectedLength, 1048576);
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getAccess() {
+&nbsp;        return this.readUnsignedShort(this.header);
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public String getClassName() {</b>
+&nbsp;        return this.readClass(this.header + 2, new char[this.maxStringLength]);
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getSuperName() {
+&nbsp;        return this.readClass(this.header + 4, new char[this.maxStringLength]);
+&nbsp;    }
+&nbsp;
+&nbsp;    public String[] getInterfaces() {
+&nbsp;        int currentOffset = this.header + 6;
+&nbsp;        int interfacesCount = this.readUnsignedShort(currentOffset);
+&nbsp;        String[] interfaces = new String[interfacesCount];
+&nbsp;        if (interfacesCount &gt; 0) {
+<b class="fc">&nbsp;            char[] charBuffer = new char[this.maxStringLength];</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;            for(int i = 0; i &lt; interfacesCount; ++i) {</b>
+&nbsp;                currentOffset += 2;
+&nbsp;                interfaces[i] = this.readClass(currentOffset, charBuffer);
+<b class="pc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return interfaces;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public void accept(ClassVisitor classVisitor, int parsingOptions) {</b>
+<b class="fc">&nbsp;        this.accept(classVisitor, new Attribute[0], parsingOptions);</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void accept(ClassVisitor classVisitor, Attribute[] attributePrototypes, int parsingOptions) {
+&nbsp;        Context context = new Context();
+&nbsp;        context.attributePrototypes = attributePrototypes;
+<b class="fc">&nbsp;        context.parsingOptions = parsingOptions;</b>
+<b class="fc">&nbsp;        context.charBuffer = new char[this.maxStringLength];</b>
+<b class="fc">&nbsp;        char[] charBuffer = context.charBuffer;</b>
+<b class="fc">&nbsp;        int currentOffset = this.header;</b>
+<b class="fc">&nbsp;        int accessFlags = this.readUnsignedShort(currentOffset);</b>
+&nbsp;        String thisClass = this.readClass(currentOffset + 2, charBuffer);
+<b class="fc">&nbsp;        String superClass = this.readClass(currentOffset + 4, charBuffer);</b>
+<b class="fc">&nbsp;        String[] interfaces = new String[this.readUnsignedShort(currentOffset + 6)];</b>
+&nbsp;        currentOffset += 8;
+<b class="pc">&nbsp;</b>
+&nbsp;        for(int i = 0; i &lt; interfaces.length; ++i) {
+&nbsp;            interfaces[i] = this.readClass(currentOffset, charBuffer);
+&nbsp;            currentOffset += 2;
+&nbsp;        }
+&nbsp;
+&nbsp;        int innerClassesOffset = 0;
+<b class="fc">&nbsp;        int enclosingMethodOffset = 0;</b>
+&nbsp;        String signature = null;
+&nbsp;        String sourceFile = null;
+<b class="nc">&nbsp;        String sourceDebugExtension = null;</b>
+<b class="nc">&nbsp;        int runtimeVisibleAnnotationsOffset = 0;</b>
+<b class="nc">&nbsp;        int runtimeInvisibleAnnotationsOffset = 0;</b>
+&nbsp;        int runtimeVisibleTypeAnnotationsOffset = 0;
+&nbsp;        int runtimeInvisibleTypeAnnotationsOffset = 0;
+<b class="fc">&nbsp;        int moduleOffset = 0;</b>
+<b class="fc">&nbsp;        int modulePackagesOffset = 0;</b>
+&nbsp;        String moduleMainClass = null;
+&nbsp;        String nestHostClass = null;
+&nbsp;        int nestMembersOffset = 0;
+<b class="nc">&nbsp;        int permittedSubclassesOffset = 0;</b>
+<b class="nc">&nbsp;        int recordOffset = 0;</b>
+&nbsp;        Attribute attributes = null;
+&nbsp;        int currentAttributeOffset = this.getFirstAttributeOffset();
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;        for(int i = this.readUnsignedShort(currentAttributeOffset - 2); i &gt; 0; --i) {</b>
+&nbsp;            String attributeName = this.readUTF8(currentAttributeOffset, charBuffer);
+&nbsp;            int attributeLength = this.readInt(currentAttributeOffset + 2);
+&nbsp;            currentAttributeOffset += 6;
+<b class="fc">&nbsp;            if (&quot;SourceFile&quot;.equals(attributeName)) {</b>
+&nbsp;                sourceFile = this.readUTF8(currentAttributeOffset, charBuffer);
+&nbsp;            } else if (&quot;InnerClasses&quot;.equals(attributeName)) {
+&nbsp;                innerClassesOffset = currentAttributeOffset;
+<b class="fc">&nbsp;            } else if (&quot;EnclosingMethod&quot;.equals(attributeName)) {</b>
+&nbsp;                enclosingMethodOffset = currentAttributeOffset;
+&nbsp;            } else if (&quot;NestHost&quot;.equals(attributeName)) {
+&nbsp;                nestHostClass = this.readClass(currentAttributeOffset, charBuffer);
+&nbsp;            } else if (&quot;NestMembers&quot;.equals(attributeName)) {
+&nbsp;                nestMembersOffset = currentAttributeOffset;
+&nbsp;            } else if (&quot;PermittedSubclasses&quot;.equals(attributeName)) {
+<b class="fc">&nbsp;                permittedSubclassesOffset = currentAttributeOffset;</b>
+&nbsp;            } else if (&quot;Signature&quot;.equals(attributeName)) {
+&nbsp;                signature = this.readUTF8(currentAttributeOffset, charBuffer);
+<b class="nc">&nbsp;            } else if (&quot;RuntimeVisibleAnnotations&quot;.equals(attributeName)) {</b>
+&nbsp;                runtimeVisibleAnnotationsOffset = currentAttributeOffset;
+<b class="fc">&nbsp;            } else if (&quot;RuntimeVisibleTypeAnnotations&quot;.equals(attributeName)) {</b>
+&nbsp;                runtimeVisibleTypeAnnotationsOffset = currentAttributeOffset;
+<b class="fc">&nbsp;            } else if (&quot;Deprecated&quot;.equals(attributeName)) {</b>
+&nbsp;                accessFlags |= 131072;
+<b class="fc">&nbsp;            } else if (&quot;Synthetic&quot;.equals(attributeName)) {</b>
+&nbsp;                accessFlags |= 4096;
+&nbsp;            } else if (&quot;SourceDebugExtension&quot;.equals(attributeName)) {
+<b class="pc">&nbsp;                if (attributeLength &gt; this.classFileBuffer.length - currentAttributeOffset) {</b>
+&nbsp;                    throw new IllegalArgumentException();
+&nbsp;                }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;                sourceDebugExtension = this.readUtf(currentAttributeOffset, attributeLength, new char[attributeLength]);</b>
+&nbsp;            } else if (&quot;RuntimeInvisibleAnnotations&quot;.equals(attributeName)) {
+&nbsp;                runtimeInvisibleAnnotationsOffset = currentAttributeOffset;
+&nbsp;            } else if (&quot;RuntimeInvisibleTypeAnnotations&quot;.equals(attributeName)) {
+&nbsp;                runtimeInvisibleTypeAnnotationsOffset = currentAttributeOffset;
+&nbsp;            } else if (&quot;Record&quot;.equals(attributeName)) {
+&nbsp;                recordOffset = currentAttributeOffset;
+&nbsp;                accessFlags |= 65536;
+&nbsp;            } else if (&quot;Module&quot;.equals(attributeName)) {
+&nbsp;                moduleOffset = currentAttributeOffset;
+&nbsp;            } else if (&quot;ModuleMainClass&quot;.equals(attributeName)) {
+&nbsp;                moduleMainClass = this.readClass(currentAttributeOffset, charBuffer);
+<b class="nc">&nbsp;            } else if (&quot;ModulePackages&quot;.equals(attributeName)) {</b>
+&nbsp;                modulePackagesOffset = currentAttributeOffset;
+&nbsp;            } else if (!&quot;BootstrapMethods&quot;.equals(attributeName)) {
+&nbsp;                Attribute attribute = this.readAttribute(attributePrototypes, attributeName, currentAttributeOffset, attributeLength, charBuffer, -1, (Label[])null);
+&nbsp;                attribute.nextAttribute = attributes;
+&nbsp;                attributes = attribute;
+&nbsp;            }
+&nbsp;
+&nbsp;            currentAttributeOffset += attributeLength;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        classVisitor.visit(this.readInt(this.cpInfoOffsets[1] - 7), accessFlags, thisClass, signature, superClass, interfaces);</b>
+<b class="nc">&nbsp;        if ((parsingOptions &amp; 2) == 0 &amp;&amp; (sourceFile != null || sourceDebugExtension != null)) {</b>
+<b class="nc">&nbsp;            classVisitor.visitSource(sourceFile, sourceDebugExtension);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        if (moduleOffset != 0) {
+&nbsp;            this.readModuleAttributes(classVisitor, context, moduleOffset, modulePackagesOffset, moduleMainClass);
+&nbsp;        }
+&nbsp;
+&nbsp;        if (nestHostClass != null) {
+&nbsp;            classVisitor.visitNestHost(nestHostClass);
+&nbsp;        }
+&nbsp;
+&nbsp;        if (enclosingMethodOffset != 0) {
+&nbsp;            String className = this.readClass(enclosingMethodOffset, charBuffer);
+&nbsp;            int methodIndex = this.readUnsignedShort(enclosingMethodOffset + 2);
+<b class="nc">&nbsp;            String name = methodIndex == 0 ? null : this.readUTF8(this.cpInfoOffsets[methodIndex], charBuffer);</b>
+<b class="nc">&nbsp;            String type = methodIndex == 0 ? null : this.readUTF8(this.cpInfoOffsets[methodIndex] + 2, charBuffer);</b>
+&nbsp;            classVisitor.visitOuterClass(className, name, type);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if (runtimeVisibleAnnotationsOffset != 0) {</b>
+&nbsp;            int numAnnotations = this.readUnsignedShort(runtimeVisibleAnnotationsOffset);
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            int currentAnnotationOffset;</b>
+<b class="nc">&nbsp;            String annotationDescriptor;</b>
+<b class="nc">&nbsp;            for(currentAnnotationOffset = runtimeVisibleAnnotationsOffset + 2; numAnnotations-- &gt; 0; currentAnnotationOffset = this.readElementValues(classVisitor.visitAnnotation(annotationDescriptor, true), currentAnnotationOffset, true, charBuffer)) {</b>
+&nbsp;                annotationDescriptor = this.readUTF8(currentAnnotationOffset, charBuffer);
+<b class="nc">&nbsp;                currentAnnotationOffset += 2;</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        if (runtimeInvisibleAnnotationsOffset != 0) {</b>
+&nbsp;            int numAnnotations = this.readUnsignedShort(runtimeInvisibleAnnotationsOffset);
+<b class="nc">&nbsp;</b>
+&nbsp;            int currentAnnotationOffset;
+&nbsp;            String annotationDescriptor;
+&nbsp;            for(currentAnnotationOffset = runtimeInvisibleAnnotationsOffset + 2; numAnnotations-- &gt; 0; currentAnnotationOffset = this.readElementValues(classVisitor.visitAnnotation(annotationDescriptor, false), currentAnnotationOffset, true, charBuffer)) {
+&nbsp;                annotationDescriptor = this.readUTF8(currentAnnotationOffset, charBuffer);
+&nbsp;                currentAnnotationOffset += 2;
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        if (runtimeVisibleTypeAnnotationsOffset != 0) {
+&nbsp;            int numAnnotations = this.readUnsignedShort(runtimeVisibleTypeAnnotationsOffset);
+&nbsp;
+&nbsp;            int currentAnnotationOffset;
+<b class="nc">&nbsp;            String annotationDescriptor;</b>
+<b class="nc">&nbsp;            for(currentAnnotationOffset = runtimeVisibleTypeAnnotationsOffset + 2; numAnnotations-- &gt; 0; currentAnnotationOffset = this.readElementValues(classVisitor.visitTypeAnnotation(context.currentTypeAnnotationTarget, context.currentTypeAnnotationTargetPath, annotationDescriptor, true), currentAnnotationOffset, true, charBuffer)) {</b>
+&nbsp;                currentAnnotationOffset = this.readTypeAnnotationTarget(context, currentAnnotationOffset);
+<b class="nc">&nbsp;                annotationDescriptor = this.readUTF8(currentAnnotationOffset, charBuffer);</b>
+&nbsp;                currentAnnotationOffset += 2;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        if (runtimeInvisibleTypeAnnotationsOffset != 0) {
+&nbsp;            int numAnnotations = this.readUnsignedShort(runtimeInvisibleTypeAnnotationsOffset);
+&nbsp;
+&nbsp;            int currentAnnotationOffset;
+&nbsp;            String annotationDescriptor;
+&nbsp;            for(currentAnnotationOffset = runtimeInvisibleTypeAnnotationsOffset + 2; numAnnotations-- &gt; 0; currentAnnotationOffset = this.readElementValues(classVisitor.visitTypeAnnotation(context.currentTypeAnnotationTarget, context.currentTypeAnnotationTargetPath, annotationDescriptor, false), currentAnnotationOffset, true, charBuffer)) {
+&nbsp;                currentAnnotationOffset = this.readTypeAnnotationTarget(context, currentAnnotationOffset);
+&nbsp;                annotationDescriptor = this.readUTF8(currentAnnotationOffset, charBuffer);
+&nbsp;                currentAnnotationOffset += 2;
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        while(attributes != null) {
+&nbsp;            Attribute nextAttribute = attributes.nextAttribute;
+&nbsp;            attributes.nextAttribute = null;
+&nbsp;            classVisitor.visitAttribute(attributes);
+&nbsp;            attributes = nextAttribute;
+&nbsp;        }
+&nbsp;
+&nbsp;        if (nestMembersOffset != 0) {
+&nbsp;            int numberOfNestMembers = this.readUnsignedShort(nestMembersOffset);
+<b class="nc">&nbsp;</b>
+&nbsp;            for(int currentNestMemberOffset = nestMembersOffset + 2; numberOfNestMembers-- &gt; 0; currentNestMemberOffset += 2) {
+&nbsp;                classVisitor.visitNestMember(this.readClass(currentNestMemberOffset, charBuffer));
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        if (permittedSubclassesOffset != 0) {
+&nbsp;            int numberOfPermittedSubclasses = this.readUnsignedShort(permittedSubclassesOffset);
+&nbsp;
+&nbsp;            for(int currentPermittedSubclassesOffset = permittedSubclassesOffset + 2; numberOfPermittedSubclasses-- &gt; 0; currentPermittedSubclassesOffset += 2) {
+&nbsp;                classVisitor.visitPermittedSubclass(this.readClass(currentPermittedSubclassesOffset, charBuffer));
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        if (innerClassesOffset != 0) {
+&nbsp;            int numberOfClasses = this.readUnsignedShort(innerClassesOffset);
+&nbsp;
+&nbsp;            for(int currentClassesOffset = innerClassesOffset + 2; numberOfClasses-- &gt; 0; currentClassesOffset += 8) {
+&nbsp;                classVisitor.visitInnerClass(this.readClass(currentClassesOffset, charBuffer), this.readClass(currentClassesOffset + 2, charBuffer), this.readUTF8(currentClassesOffset + 4, charBuffer), this.readUnsignedShort(currentClassesOffset + 6));
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        if (recordOffset != 0) {
+&nbsp;            int recordComponentsCount = this.readUnsignedShort(recordOffset);
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            for(int var37 = recordOffset + 2; recordComponentsCount-- &gt; 0; var37 = this.readRecordComponent(classVisitor, context, var37)) {</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        int fieldsCount = this.readUnsignedShort(currentOffset);</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        for(currentOffset += 2; fieldsCount-- &gt; 0; currentOffset = this.readField(classVisitor, context, currentOffset)) {</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        int methodsCount = this.readUnsignedShort(currentOffset);</b>
+&nbsp;
+&nbsp;        for(int var35 = currentOffset + 2; methodsCount-- &gt; 0; var35 = this.readMethod(classVisitor, context, var35)) {
+&nbsp;        }
+&nbsp;
+&nbsp;        classVisitor.visitEnd();
+&nbsp;    }
+&nbsp;
+&nbsp;    private void readModuleAttributes(ClassVisitor classVisitor, Context context, int moduleOffset, int modulePackagesOffset, String moduleMainClass) {
+&nbsp;        char[] buffer = context.charBuffer;
+&nbsp;        String moduleName = this.readModule(moduleOffset, buffer);
+&nbsp;        int moduleFlags = this.readUnsignedShort(moduleOffset + 2);
+&nbsp;        String moduleVersion = this.readUTF8(moduleOffset + 4, buffer);
+&nbsp;        int currentOffset = moduleOffset + 6;
+&nbsp;        ModuleVisitor moduleVisitor = classVisitor.visitModule(moduleName, moduleFlags, moduleVersion);
+&nbsp;        if (moduleVisitor != null) {
+<b class="nc">&nbsp;            if (moduleMainClass != null) {</b>
+&nbsp;                moduleVisitor.visitMainClass(moduleMainClass);
+&nbsp;            }
+&nbsp;
+&nbsp;            if (modulePackagesOffset != 0) {
+&nbsp;                int packageCount = this.readUnsignedShort(modulePackagesOffset);
+&nbsp;
+&nbsp;                for(int currentPackageOffset = modulePackagesOffset + 2; packageCount-- &gt; 0; currentPackageOffset += 2) {
+&nbsp;                    moduleVisitor.visitPackage(this.readPackage(currentPackageOffset, buffer));
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            int requiresCount = this.readUnsignedShort(currentOffset);
+&nbsp;            currentOffset += 2;
+&nbsp;
+&nbsp;            while(requiresCount-- &gt; 0) {
+&nbsp;                String requires = this.readModule(currentOffset, buffer);
+&nbsp;                int requiresFlags = this.readUnsignedShort(currentOffset + 2);
+&nbsp;                String requiresVersion = this.readUTF8(currentOffset + 4, buffer);
+&nbsp;                currentOffset += 6;
+&nbsp;                moduleVisitor.visitRequire(requires, requiresFlags, requiresVersion);
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;            int exportsCount = this.readUnsignedShort(currentOffset);</b>
+<b class="fc">&nbsp;</b>
+&nbsp;            String[] exportsTo;
+&nbsp;            String exports;
+<b class="fc">&nbsp;            int exportsFlags;</b>
+<b class="fc">&nbsp;            for(currentOffset += 2; exportsCount-- &gt; 0; moduleVisitor.visitExport(exports, exportsFlags, exportsTo)) {</b>
+<b class="fc">&nbsp;                exports = this.readPackage(currentOffset, buffer);</b>
+<b class="fc">&nbsp;                exportsFlags = this.readUnsignedShort(currentOffset + 2);</b>
+<b class="fc">&nbsp;                int exportsToCount = this.readUnsignedShort(currentOffset + 4);</b>
+<b class="fc">&nbsp;                currentOffset += 6;</b>
+<b class="fc">&nbsp;                exportsTo = null;</b>
+<b class="fc">&nbsp;                if (exportsToCount != 0) {</b>
+<b class="fc">&nbsp;                    exportsTo = new String[exportsToCount];</b>
+<b class="fc">&nbsp;</b>
+&nbsp;                    for(int i = 0; i &lt; exportsToCount; ++i) {
+&nbsp;                        exportsTo[i] = this.readModule(currentOffset, buffer);
+&nbsp;                        currentOffset += 2;
+&nbsp;                    }
+&nbsp;                }
+<b class="fc">&nbsp;            }</b>
+&nbsp;
+<b class="fc">&nbsp;            int opensCount = this.readUnsignedShort(currentOffset);</b>
+&nbsp;
+<b class="fc">&nbsp;            int opensFlags;</b>
+&nbsp;            String[] opensTo;
+<b class="fc">&nbsp;            for(currentOffset += 2; opensCount-- &gt; 0; moduleVisitor.visitOpen(opens, opensFlags, opensTo)) {</b>
+&nbsp;                opens = this.readPackage(currentOffset, buffer);
+<b class="fc">&nbsp;                opensFlags = this.readUnsignedShort(currentOffset + 2);</b>
+&nbsp;                int opensToCount = this.readUnsignedShort(currentOffset + 4);
+<b class="fc">&nbsp;                currentOffset += 6;</b>
+&nbsp;                opensTo = null;
+<b class="fc">&nbsp;                if (opensToCount != 0) {</b>
+&nbsp;                    opensTo = new String[opensToCount];
+<b class="fc">&nbsp;</b>
+&nbsp;                    for(int i = 0; i &lt; opensToCount; ++i) {
+<b class="fc">&nbsp;                        opensTo[i] = this.readModule(currentOffset, buffer);</b>
+&nbsp;                        currentOffset += 2;
+<b class="fc">&nbsp;                    }</b>
+&nbsp;                }
+<b class="fc">&nbsp;            }</b>
+&nbsp;
+<b class="fc">&nbsp;            exportsFlags = this.readUnsignedShort(currentOffset);</b>
+&nbsp;
+<b class="fc">&nbsp;            for(currentOffset += 2; exportsFlags-- &gt; 0; currentOffset += 2) {</b>
+&nbsp;                moduleVisitor.visitUse(this.readClass(currentOffset, buffer));
+<b class="fc">&nbsp;            }</b>
+&nbsp;
+<b class="fc">&nbsp;            opensFlags = this.readUnsignedShort(currentOffset);</b>
+&nbsp;            currentOffset += 2;
+<b class="fc">&nbsp;</b>
+&nbsp;            while(opensFlags-- &gt; 0) {
+&nbsp;                exportsTo = this.readClass(currentOffset, buffer);
+<b class="fc">&nbsp;                int providesWithCount = this.readUnsignedShort(currentOffset + 2);</b>
+&nbsp;                currentOffset += 4;
+<b class="fc">&nbsp;                String[] providesWith = new String[providesWithCount];</b>
+<b class="fc">&nbsp;</b>
+&nbsp;                for(int i = 0; i &lt; providesWithCount; ++i) {
+<b class="fc">&nbsp;                    providesWith[i] = this.readClass(currentOffset, buffer);</b>
+<b class="fc">&nbsp;                    currentOffset += 2;</b>
+<b class="fc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                moduleVisitor.visitProvide(exportsTo, providesWith);
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;            moduleVisitor.visitEnd();</b>
+<b class="fc">&nbsp;        }</b>
+<b class="pc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="pc">&nbsp;    private int readRecordComponent(ClassVisitor classVisitor, Context context, int recordComponentOffset) {</b>
+<b class="nc">&nbsp;        char[] charBuffer = context.charBuffer;</b>
+<b class="pc">&nbsp;        String name = this.readUTF8(recordComponentOffset, charBuffer);</b>
+<b class="fc">&nbsp;        String descriptor = this.readUTF8(recordComponentOffset + 2, charBuffer);</b>
+<b class="nc">&nbsp;        int currentOffset = recordComponentOffset + 4;</b>
+<b class="nc">&nbsp;        String signature = null;</b>
+<b class="nc">&nbsp;        int runtimeVisibleAnnotationsOffset = 0;</b>
+<b class="nc">&nbsp;        int runtimeInvisibleAnnotationsOffset = 0;</b>
+<b class="nc">&nbsp;        int runtimeVisibleTypeAnnotationsOffset = 0;</b>
+<b class="nc">&nbsp;        int runtimeInvisibleTypeAnnotationsOffset = 0;</b>
+<b class="nc">&nbsp;        Attribute attributes = null;</b>
+<b class="nc">&nbsp;        int attributesCount = this.readUnsignedShort(currentOffset);</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        int attributeLength;</b>
+<b class="nc">&nbsp;        for(currentOffset += 2; attributesCount-- &gt; 0; currentOffset += attributeLength) {</b>
+<b class="nc">&nbsp;            String attributeName = this.readUTF8(currentOffset, charBuffer);</b>
+<b class="nc">&nbsp;            attributeLength = this.readInt(currentOffset + 2);</b>
+<b class="nc">&nbsp;            currentOffset += 6;</b>
+<b class="nc">&nbsp;            if (&quot;Signature&quot;.equals(attributeName)) {</b>
+&nbsp;                signature = this.readUTF8(currentOffset, charBuffer);
+<b class="nc">&nbsp;            } else if (&quot;RuntimeVisibleAnnotations&quot;.equals(attributeName)) {</b>
+<b class="nc">&nbsp;                runtimeVisibleAnnotationsOffset = currentOffset;</b>
+<b class="nc">&nbsp;            } else if (&quot;RuntimeVisibleTypeAnnotations&quot;.equals(attributeName)) {</b>
+<b class="nc">&nbsp;                runtimeVisibleTypeAnnotationsOffset = currentOffset;</b>
+<b class="nc">&nbsp;            } else if (&quot;RuntimeInvisibleAnnotations&quot;.equals(attributeName)) {</b>
+<b class="nc">&nbsp;                runtimeInvisibleAnnotationsOffset = currentOffset;</b>
+<b class="nc">&nbsp;            } else if (&quot;RuntimeInvisibleTypeAnnotations&quot;.equals(attributeName)) {</b>
+<b class="nc">&nbsp;                runtimeInvisibleTypeAnnotationsOffset = currentOffset;</b>
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                Attribute attribute = this.readAttribute(context.attributePrototypes, attributeName, currentOffset, attributeLength, charBuffer, -1, (Label[])null);</b>
+<b class="nc">&nbsp;                attribute.nextAttribute = attributes;</b>
+<b class="nc">&nbsp;                attributes = attribute;</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        RecordComponentVisitor recordComponentVisitor = classVisitor.visitRecordComponent(name, descriptor, signature);</b>
+&nbsp;        if (recordComponentVisitor == null) {
+<b class="nc">&nbsp;            return currentOffset;</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            if (runtimeVisibleAnnotationsOffset != 0) {
+&nbsp;                attributeLength = this.readUnsignedShort(runtimeVisibleAnnotationsOffset);
+&nbsp;
+&nbsp;                String annotationDescriptor;
+&nbsp;                int currentAnnotationOffset;
+&nbsp;                for(currentAnnotationOffset = runtimeVisibleAnnotationsOffset + 2; attributeLength-- &gt; 0; currentAnnotationOffset = this.readElementValues(recordComponentVisitor.visitAnnotation(annotationDescriptor, true), currentAnnotationOffset, true, charBuffer)) {
+&nbsp;                    annotationDescriptor = this.readUTF8(currentAnnotationOffset, charBuffer);
+<b class="nc">&nbsp;                    currentAnnotationOffset += 2;</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+<b class="fc">&nbsp;</b>
+&nbsp;            if (runtimeInvisibleAnnotationsOffset != 0) {
+&nbsp;                attributeLength = this.readUnsignedShort(runtimeInvisibleAnnotationsOffset);
+&nbsp;
+&nbsp;                int currentAnnotationOffset;
+<b class="fc">&nbsp;                String annotationDescriptor;</b>
+<b class="fc">&nbsp;                for(currentAnnotationOffset = runtimeInvisibleAnnotationsOffset + 2; attributeLength-- &gt; 0; currentAnnotationOffset = this.readElementValues(recordComponentVisitor.visitAnnotation(annotationDescriptor, false), currentAnnotationOffset, true, charBuffer)) {</b>
+&nbsp;                    annotationDescriptor = this.readUTF8(currentAnnotationOffset, charBuffer);
+&nbsp;                    currentAnnotationOffset += 2;
+<b class="pc">&nbsp;                }</b>
+&nbsp;            }
+<b class="fc">&nbsp;</b>
+&nbsp;            if (runtimeVisibleTypeAnnotationsOffset != 0) {
+&nbsp;                attributeLength = this.readUnsignedShort(runtimeVisibleTypeAnnotationsOffset);
+&nbsp;
+<b class="pc">&nbsp;                int currentAnnotationOffset;</b>
+<b class="nc">&nbsp;                String annotationDescriptor;</b>
+&nbsp;                for(currentAnnotationOffset = runtimeVisibleTypeAnnotationsOffset + 2; attributeLength-- &gt; 0; currentAnnotationOffset = this.readElementValues(recordComponentVisitor.visitTypeAnnotation(context.currentTypeAnnotationTarget, context.currentTypeAnnotationTargetPath, annotationDescriptor, true), currentAnnotationOffset, true, charBuffer)) {
+&nbsp;                    currentAnnotationOffset = this.readTypeAnnotationTarget(context, currentAnnotationOffset);
+&nbsp;                    annotationDescriptor = this.readUTF8(currentAnnotationOffset, charBuffer);
+&nbsp;                    currentAnnotationOffset += 2;
+<b class="pc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            if (runtimeInvisibleTypeAnnotationsOffset != 0) {
+&nbsp;                attributeLength = this.readUnsignedShort(runtimeInvisibleTypeAnnotationsOffset);
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;                int currentAnnotationOffset;</b>
+<b class="nc">&nbsp;                String annotationDescriptor;</b>
+<b class="nc">&nbsp;                for(currentAnnotationOffset = runtimeInvisibleTypeAnnotationsOffset + 2; attributeLength-- &gt; 0; currentAnnotationOffset = this.readElementValues(recordComponentVisitor.visitTypeAnnotation(context.currentTypeAnnotationTarget, context.currentTypeAnnotationTargetPath, annotationDescriptor, false), currentAnnotationOffset, true, charBuffer)) {</b>
+<b class="nc">&nbsp;                    currentAnnotationOffset = this.readTypeAnnotationTarget(context, currentAnnotationOffset);</b>
+<b class="nc">&nbsp;                    annotationDescriptor = this.readUTF8(currentAnnotationOffset, charBuffer);</b>
+&nbsp;                    currentAnnotationOffset += 2;
+&nbsp;                }
+&nbsp;            }
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;            while(attributes != null) {</b>
+<b class="nc">&nbsp;                Attribute nextAttribute = attributes.nextAttribute;</b>
+<b class="nc">&nbsp;                attributes.nextAttribute = null;</b>
+&nbsp;                recordComponentVisitor.visitAttribute(attributes);
+<b class="nc">&nbsp;                attributes = nextAttribute;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            recordComponentVisitor.visitEnd();</b>
+<b class="nc">&nbsp;            return currentOffset;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private int readField(ClassVisitor classVisitor, Context context, int fieldInfoOffset) {
+&nbsp;        char[] charBuffer = context.charBuffer;
+&nbsp;        int accessFlags = this.readUnsignedShort(fieldInfoOffset);
+&nbsp;        String name = this.readUTF8(fieldInfoOffset + 2, charBuffer);
+&nbsp;        String descriptor = this.readUTF8(fieldInfoOffset + 4, charBuffer);
+<b class="pc">&nbsp;        int currentOffset = fieldInfoOffset + 6;</b>
+<b class="nc">&nbsp;        Object constantValue = null;</b>
+<b class="nc">&nbsp;        String signature = null;</b>
+<b class="nc">&nbsp;        int runtimeVisibleAnnotationsOffset = 0;</b>
+&nbsp;        int runtimeInvisibleAnnotationsOffset = 0;
+<b class="nc">&nbsp;        int runtimeVisibleTypeAnnotationsOffset = 0;</b>
+<b class="nc">&nbsp;        int runtimeInvisibleTypeAnnotationsOffset = 0;</b>
+&nbsp;        Attribute attributes = null;
+<b class="nc">&nbsp;        int attributesCount = this.readUnsignedShort(currentOffset);</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        int attributeLength;</b>
+&nbsp;        for(currentOffset += 2; attributesCount-- &gt; 0; currentOffset += attributeLength) {
+&nbsp;            String attributeName = this.readUTF8(currentOffset, charBuffer);
+&nbsp;            attributeLength = this.readInt(currentOffset + 2);
+&nbsp;            currentOffset += 6;
+&nbsp;            if (&quot;ConstantValue&quot;.equals(attributeName)) {
+&nbsp;                int constantvalueIndex = this.readUnsignedShort(currentOffset);
+&nbsp;                constantValue = constantvalueIndex == 0 ? null : this.readConst(constantvalueIndex, charBuffer);
+<b class="pc">&nbsp;            } else if (&quot;Signature&quot;.equals(attributeName)) {</b>
+<b class="nc">&nbsp;                signature = this.readUTF8(currentOffset, charBuffer);</b>
+<b class="nc">&nbsp;            } else if (&quot;Deprecated&quot;.equals(attributeName)) {</b>
+<b class="nc">&nbsp;                accessFlags |= 131072;</b>
+&nbsp;            } else if (&quot;Synthetic&quot;.equals(attributeName)) {
+<b class="nc">&nbsp;                accessFlags |= 4096;</b>
+&nbsp;            } else if (&quot;RuntimeVisibleAnnotations&quot;.equals(attributeName)) {
+<b class="nc">&nbsp;                runtimeVisibleAnnotationsOffset = currentOffset;</b>
+<b class="nc">&nbsp;            } else if (&quot;RuntimeVisibleTypeAnnotations&quot;.equals(attributeName)) {</b>
+&nbsp;                runtimeVisibleTypeAnnotationsOffset = currentOffset;
+<b class="nc">&nbsp;            } else if (&quot;RuntimeInvisibleAnnotations&quot;.equals(attributeName)) {</b>
+<b class="nc">&nbsp;                runtimeInvisibleAnnotationsOffset = currentOffset;</b>
+<b class="nc">&nbsp;            } else if (&quot;RuntimeInvisibleTypeAnnotations&quot;.equals(attributeName)) {</b>
+&nbsp;                runtimeInvisibleTypeAnnotationsOffset = currentOffset;
+&nbsp;            } else {
+&nbsp;                Attribute attribute = this.readAttribute(context.attributePrototypes, attributeName, currentOffset, attributeLength, charBuffer, -1, (Label[])null);
+&nbsp;                attribute.nextAttribute = attributes;
+&nbsp;                attributes = attribute;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        FieldVisitor fieldVisitor = classVisitor.visitField(accessFlags, name, descriptor, signature, constantValue);
+&nbsp;        if (fieldVisitor == null) {
+&nbsp;            return currentOffset;
+<b class="pc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            if (runtimeVisibleAnnotationsOffset != 0) {</b>
+<b class="nc">&nbsp;                attributeLength = this.readUnsignedShort(runtimeVisibleAnnotationsOffset);</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                String annotationDescriptor;
+<b class="nc">&nbsp;                int currentAnnotationOffset;</b>
+&nbsp;                for(currentAnnotationOffset = runtimeVisibleAnnotationsOffset + 2; attributeLength-- &gt; 0; currentAnnotationOffset = this.readElementValues(fieldVisitor.visitAnnotation(annotationDescriptor, true), currentAnnotationOffset, true, charBuffer)) {
+<b class="nc">&nbsp;                    annotationDescriptor = this.readUTF8(currentAnnotationOffset, charBuffer);</b>
+<b class="nc">&nbsp;                    currentAnnotationOffset += 2;</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            if (runtimeInvisibleAnnotationsOffset != 0) {</b>
+&nbsp;                attributeLength = this.readUnsignedShort(runtimeInvisibleAnnotationsOffset);
+&nbsp;
+&nbsp;                int currentAnnotationOffset;
+&nbsp;                String annotationDescriptor;
+&nbsp;                for(currentAnnotationOffset = runtimeInvisibleAnnotationsOffset + 2; attributeLength-- &gt; 0; currentAnnotationOffset = this.readElementValues(fieldVisitor.visitAnnotation(annotationDescriptor, false), currentAnnotationOffset, true, charBuffer)) {
+&nbsp;                    annotationDescriptor = this.readUTF8(currentAnnotationOffset, charBuffer);
+&nbsp;                    currentAnnotationOffset += 2;
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            if (runtimeVisibleTypeAnnotationsOffset != 0) {
+<b class="pc">&nbsp;                attributeLength = this.readUnsignedShort(runtimeVisibleTypeAnnotationsOffset);</b>
+&nbsp;
+<b class="nc">&nbsp;                int currentAnnotationOffset;</b>
+<b class="nc">&nbsp;                String annotationDescriptor;</b>
+<b class="nc">&nbsp;                for(currentAnnotationOffset = runtimeVisibleTypeAnnotationsOffset + 2; attributeLength-- &gt; 0; currentAnnotationOffset = this.readElementValues(fieldVisitor.visitTypeAnnotation(context.currentTypeAnnotationTarget, context.currentTypeAnnotationTargetPath, annotationDescriptor, true), currentAnnotationOffset, true, charBuffer)) {</b>
+<b class="nc">&nbsp;                    currentAnnotationOffset = this.readTypeAnnotationTarget(context, currentAnnotationOffset);</b>
+&nbsp;                    annotationDescriptor = this.readUTF8(currentAnnotationOffset, charBuffer);
+&nbsp;                    currentAnnotationOffset += 2;
+&nbsp;                }
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;            if (runtimeInvisibleTypeAnnotationsOffset != 0) {</b>
+<b class="fc">&nbsp;                attributeLength = this.readUnsignedShort(runtimeInvisibleTypeAnnotationsOffset);</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;                int currentAnnotationOffset;</b>
+&nbsp;                String annotationDescriptor;
+&nbsp;                for(currentAnnotationOffset = runtimeInvisibleTypeAnnotationsOffset + 2; attributeLength-- &gt; 0; currentAnnotationOffset = this.readElementValues(fieldVisitor.visitTypeAnnotation(context.currentTypeAnnotationTarget, context.currentTypeAnnotationTargetPath, annotationDescriptor, false), currentAnnotationOffset, true, charBuffer)) {
+&nbsp;                    currentAnnotationOffset = this.readTypeAnnotationTarget(context, currentAnnotationOffset);
+&nbsp;                    annotationDescriptor = this.readUTF8(currentAnnotationOffset, charBuffer);
+<b class="pc">&nbsp;                    currentAnnotationOffset += 2;</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            while(attributes != null) {</b>
+<b class="nc">&nbsp;                Attribute nextAttribute = attributes.nextAttribute;</b>
+<b class="nc">&nbsp;                attributes.nextAttribute = null;</b>
+&nbsp;                fieldVisitor.visitAttribute(attributes);
+&nbsp;                attributes = nextAttribute;
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            fieldVisitor.visitEnd();</b>
+<b class="fc">&nbsp;            return currentOffset;</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private int readMethod(ClassVisitor classVisitor, Context context, int methodInfoOffset) {</b>
+<b class="fc">&nbsp;        char[] charBuffer = context.charBuffer;</b>
+<b class="fc">&nbsp;        context.currentMethodAccessFlags = this.readUnsignedShort(methodInfoOffset);</b>
+<b class="fc">&nbsp;        context.currentMethodName = this.readUTF8(methodInfoOffset + 2, charBuffer);</b>
+<b class="fc">&nbsp;        context.currentMethodDescriptor = this.readUTF8(methodInfoOffset + 4, charBuffer);</b>
+&nbsp;        int currentOffset = methodInfoOffset + 6;
+&nbsp;        int codeOffset = 0;
+&nbsp;        int exceptionsOffset = 0;
+&nbsp;        String[] exceptions = null;
+<b class="pc">&nbsp;        boolean synthetic = false;</b>
+<b class="nc">&nbsp;        int signatureIndex = 0;</b>
+<b class="nc">&nbsp;        int runtimeVisibleAnnotationsOffset = 0;</b>
+<b class="nc">&nbsp;        int runtimeInvisibleAnnotationsOffset = 0;</b>
+<b class="nc">&nbsp;        int runtimeVisibleParameterAnnotationsOffset = 0;</b>
+&nbsp;        int runtimeInvisibleParameterAnnotationsOffset = 0;
+&nbsp;        int runtimeVisibleTypeAnnotationsOffset = 0;
+&nbsp;        int runtimeInvisibleTypeAnnotationsOffset = 0;
+&nbsp;        int annotationDefaultOffset = 0;
+<b class="fc">&nbsp;        int methodParametersOffset = 0;</b>
+<b class="fc">&nbsp;        Attribute attributes = null;</b>
+<b class="fc">&nbsp;        int attributesCount = this.readUnsignedShort(currentOffset);</b>
+<b class="fc">&nbsp;</b>
+&nbsp;        int attributeLength;
+<b class="fc">&nbsp;        for(currentOffset += 2; attributesCount-- &gt; 0; currentOffset += attributeLength) {</b>
+<b class="fc">&nbsp;            String attributeName = this.readUTF8(currentOffset, charBuffer);</b>
+<b class="fc">&nbsp;            attributeLength = this.readInt(currentOffset + 2);</b>
+<b class="fc">&nbsp;            currentOffset += 6;</b>
+&nbsp;            if (&quot;Code&quot;.equals(attributeName)) {
+&nbsp;                if ((context.parsingOptions &amp; 1) == 0) {
+&nbsp;                    codeOffset = currentOffset;
+<b class="fc">&nbsp;                }</b>
+&nbsp;            } else if (&quot;Exceptions&quot;.equals(attributeName)) {
+&nbsp;                exceptionsOffset = currentOffset;
+&nbsp;                exceptions = new String[this.readUnsignedShort(currentOffset)];
+&nbsp;                int currentExceptionOffset = currentOffset + 2;
+&nbsp;
+&nbsp;                for(int i = 0; i &lt; exceptions.length; ++i) {
+&nbsp;                    exceptions[i] = this.readClass(currentExceptionOffset, charBuffer);
+&nbsp;                    currentExceptionOffset += 2;
+&nbsp;                }
+&nbsp;            } else if (&quot;Signature&quot;.equals(attributeName)) {
+&nbsp;                signatureIndex = this.readUnsignedShort(currentOffset);
+&nbsp;            } else if (&quot;Deprecated&quot;.equals(attributeName)) {
+&nbsp;                context.currentMethodAccessFlags |= 131072;
+&nbsp;            } else if (&quot;RuntimeVisibleAnnotations&quot;.equals(attributeName)) {
+&nbsp;                runtimeVisibleAnnotationsOffset = currentOffset;
+&nbsp;            } else if (&quot;RuntimeVisibleTypeAnnotations&quot;.equals(attributeName)) {
+&nbsp;                runtimeVisibleTypeAnnotationsOffset = currentOffset;
+&nbsp;            } else if (&quot;AnnotationDefault&quot;.equals(attributeName)) {
+&nbsp;                annotationDefaultOffset = currentOffset;
+&nbsp;            } else if (&quot;Synthetic&quot;.equals(attributeName)) {
+&nbsp;                synthetic = true;
+&nbsp;                context.currentMethodAccessFlags |= 4096;
+&nbsp;            } else if (&quot;RuntimeInvisibleAnnotations&quot;.equals(attributeName)) {
+&nbsp;                runtimeInvisibleAnnotationsOffset = currentOffset;
+<b class="nc">&nbsp;            } else if (&quot;RuntimeInvisibleTypeAnnotations&quot;.equals(attributeName)) {</b>
+&nbsp;                runtimeInvisibleTypeAnnotationsOffset = currentOffset;
+&nbsp;            } else if (&quot;RuntimeVisibleParameterAnnotations&quot;.equals(attributeName)) {
+<b class="nc">&nbsp;                runtimeVisibleParameterAnnotationsOffset = currentOffset;</b>
+<b class="nc">&nbsp;            } else if (&quot;RuntimeInvisibleParameterAnnotations&quot;.equals(attributeName)) {</b>
+<b class="nc">&nbsp;                runtimeInvisibleParameterAnnotationsOffset = currentOffset;</b>
+<b class="nc">&nbsp;            } else if (&quot;MethodParameters&quot;.equals(attributeName)) {</b>
+<b class="nc">&nbsp;                methodParametersOffset = currentOffset;</b>
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                Attribute attribute = this.readAttribute(context.attributePrototypes, attributeName, currentOffset, attributeLength, charBuffer, -1, (Label[])null);</b>
+&nbsp;                attribute.nextAttribute = attributes;
+&nbsp;                attributes = attribute;
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        MethodVisitor methodVisitor = classVisitor.visitMethod(context.currentMethodAccessFlags, context.currentMethodName, context.currentMethodDescriptor, signatureIndex == 0 ? null : this.readUtf(signatureIndex, charBuffer), exceptions);</b>
+&nbsp;        if (methodVisitor == null) {
+&nbsp;            return currentOffset;
+&nbsp;        } else {
+<b class="nc">&nbsp;            if (methodVisitor instanceof MethodWriter) {</b>
+<b class="nc">&nbsp;                MethodWriter methodWriter = (MethodWriter)methodVisitor;</b>
+<b class="nc">&nbsp;                if (methodWriter.canCopyMethodAttributes(this, synthetic, (context.currentMethodAccessFlags &amp; 131072) != 0, this.readUnsignedShort(methodInfoOffset + 4), signatureIndex, exceptionsOffset)) {</b>
+<b class="nc">&nbsp;                    methodWriter.setMethodAttributesSource(methodInfoOffset, currentOffset - methodInfoOffset);</b>
+<b class="nc">&nbsp;                    return currentOffset;</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            if (methodParametersOffset != 0 &amp;&amp; (context.parsingOptions &amp; 2) == 0) {
+&nbsp;                attributeLength = this.readByte(methodParametersOffset);
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                for(int currentParameterOffset = methodParametersOffset + 1; attributeLength-- &gt; 0; currentParameterOffset += 4) {</b>
+<b class="nc">&nbsp;                    methodVisitor.visitParameter(this.readUTF8(currentParameterOffset, charBuffer), this.readUnsignedShort(currentParameterOffset + 2));</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            if (annotationDefaultOffset != 0) {</b>
+<b class="nc">&nbsp;                AnnotationVisitor annotationVisitor = methodVisitor.visitAnnotationDefault();</b>
+<b class="nc">&nbsp;                this.readElementValue(annotationVisitor, annotationDefaultOffset, (String)null, charBuffer);</b>
+&nbsp;                if (annotationVisitor != null) {
+&nbsp;                    annotationVisitor.visitEnd();
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            if (runtimeVisibleAnnotationsOffset != 0) {</b>
+&nbsp;                attributeLength = this.readUnsignedShort(runtimeVisibleAnnotationsOffset);
+&nbsp;
+<b class="nc">&nbsp;                int currentAnnotationOffset;</b>
+<b class="nc">&nbsp;                String annotationDescriptor;</b>
+<b class="nc">&nbsp;                for(currentAnnotationOffset = runtimeVisibleAnnotationsOffset + 2; attributeLength-- &gt; 0; currentAnnotationOffset = this.readElementValues(methodVisitor.visitAnnotation(annotationDescriptor, true), currentAnnotationOffset, true, charBuffer)) {</b>
+<b class="nc">&nbsp;                    annotationDescriptor = this.readUTF8(currentAnnotationOffset, charBuffer);</b>
+<b class="nc">&nbsp;                    currentAnnotationOffset += 2;</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            if (runtimeInvisibleAnnotationsOffset != 0) {</b>
+<b class="nc">&nbsp;                attributeLength = this.readUnsignedShort(runtimeInvisibleAnnotationsOffset);</b>
+&nbsp;
+&nbsp;                int currentAnnotationOffset;
+<b class="nc">&nbsp;                String annotationDescriptor;</b>
+&nbsp;                for(currentAnnotationOffset = runtimeInvisibleAnnotationsOffset + 2; attributeLength-- &gt; 0; currentAnnotationOffset = this.readElementValues(methodVisitor.visitAnnotation(annotationDescriptor, false), currentAnnotationOffset, true, charBuffer)) {
+&nbsp;                    annotationDescriptor = this.readUTF8(currentAnnotationOffset, charBuffer);
+&nbsp;                    currentAnnotationOffset += 2;
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            if (runtimeVisibleTypeAnnotationsOffset != 0) {
+<b class="nc">&nbsp;                attributeLength = this.readUnsignedShort(runtimeVisibleTypeAnnotationsOffset);</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                int currentAnnotationOffset;</b>
+<b class="nc">&nbsp;                String annotationDescriptor;</b>
+<b class="nc">&nbsp;                for(currentAnnotationOffset = runtimeVisibleTypeAnnotationsOffset + 2; attributeLength-- &gt; 0; currentAnnotationOffset = this.readElementValues(methodVisitor.visitTypeAnnotation(context.currentTypeAnnotationTarget, context.currentTypeAnnotationTargetPath, annotationDescriptor, true), currentAnnotationOffset, true, charBuffer)) {</b>
+<b class="nc">&nbsp;                    currentAnnotationOffset = this.readTypeAnnotationTarget(context, currentAnnotationOffset);</b>
+<b class="nc">&nbsp;                    annotationDescriptor = this.readUTF8(currentAnnotationOffset, charBuffer);</b>
+<b class="nc">&nbsp;                    currentAnnotationOffset += 2;</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            if (runtimeInvisibleTypeAnnotationsOffset != 0) {
+<b class="nc">&nbsp;                attributeLength = this.readUnsignedShort(runtimeInvisibleTypeAnnotationsOffset);</b>
+&nbsp;
+&nbsp;                int currentAnnotationOffset;
+&nbsp;                String annotationDescriptor;
+<b class="nc">&nbsp;                for(currentAnnotationOffset = runtimeInvisibleTypeAnnotationsOffset + 2; attributeLength-- &gt; 0; currentAnnotationOffset = this.readElementValues(methodVisitor.visitTypeAnnotation(context.currentTypeAnnotationTarget, context.currentTypeAnnotationTargetPath, annotationDescriptor, false), currentAnnotationOffset, true, charBuffer)) {</b>
+<b class="nc">&nbsp;                    currentAnnotationOffset = this.readTypeAnnotationTarget(context, currentAnnotationOffset);</b>
+<b class="nc">&nbsp;                    annotationDescriptor = this.readUTF8(currentAnnotationOffset, charBuffer);</b>
+<b class="nc">&nbsp;                    currentAnnotationOffset += 2;</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            if (runtimeVisibleParameterAnnotationsOffset != 0) {
+<b class="nc">&nbsp;                this.readParameterAnnotations(methodVisitor, context, runtimeVisibleParameterAnnotationsOffset, true);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            if (runtimeInvisibleParameterAnnotationsOffset != 0) {
+<b class="nc">&nbsp;                this.readParameterAnnotations(methodVisitor, context, runtimeInvisibleParameterAnnotationsOffset, false);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            while(attributes != null) {</b>
+<b class="nc">&nbsp;                Attribute nextAttribute = attributes.nextAttribute;</b>
+<b class="nc">&nbsp;                attributes.nextAttribute = null;</b>
+<b class="nc">&nbsp;                methodVisitor.visitAttribute(attributes);</b>
+&nbsp;                attributes = nextAttribute;
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            if (codeOffset != 0) {
+&nbsp;                methodVisitor.visitCode();
+<b class="nc">&nbsp;                this.readCode(methodVisitor, context, codeOffset);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            methodVisitor.visitEnd();
+&nbsp;            return currentOffset;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void readCode(MethodVisitor methodVisitor, Context context, int codeOffset) {
+&nbsp;        byte[] classBuffer = this.classFileBuffer;
+&nbsp;        char[] charBuffer = context.charBuffer;
+&nbsp;        int maxStack = this.readUnsignedShort(codeOffset);
+&nbsp;        int maxLocals = this.readUnsignedShort(codeOffset + 2);
+<b class="nc">&nbsp;        int codeLength = this.readInt(codeOffset + 4);</b>
+&nbsp;        int currentOffset = codeOffset + 8;
+<b class="nc">&nbsp;        if (codeLength &gt; this.classFileBuffer.length - currentOffset) {</b>
+<b class="nc">&nbsp;            throw new IllegalArgumentException();</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            int bytecodeStartOffset = currentOffset;</b>
+&nbsp;            int bytecodeEndOffset = currentOffset + codeLength;
+&nbsp;            Label[] labels = context.currentMethodLabels = new Label[codeLength + 1];
+&nbsp;
+&nbsp;            while(currentOffset &lt; bytecodeEndOffset) {
+&nbsp;                int bytecodeOffset = currentOffset - bytecodeStartOffset;
+&nbsp;                int opcode = classBuffer[currentOffset] &amp; 255;
+<b class="nc">&nbsp;                switch (opcode) {</b>
+&nbsp;                    case 0:
+<b class="nc">&nbsp;                    case 1:</b>
+&nbsp;                    case 2:
+<b class="nc">&nbsp;                    case 3:</b>
+&nbsp;                    case 4:
+<b class="nc">&nbsp;                    case 5:</b>
+&nbsp;                    case 6:
+<b class="nc">&nbsp;                    case 7:</b>
+&nbsp;                    case 8:
+&nbsp;                    case 9:
+<b class="nc">&nbsp;                    case 10:</b>
+&nbsp;                    case 11:
+<b class="nc">&nbsp;                    case 12:</b>
+<b class="nc">&nbsp;                    case 13:</b>
+<b class="nc">&nbsp;                    case 14:</b>
+&nbsp;                    case 15:
+<b class="nc">&nbsp;                    case 26:</b>
+<b class="nc">&nbsp;                    case 27:</b>
+<b class="nc">&nbsp;                    case 28:</b>
+&nbsp;                    case 29:
+&nbsp;                    case 30:
+<b class="nc">&nbsp;                    case 31:</b>
+<b class="nc">&nbsp;                    case 32:</b>
+<b class="nc">&nbsp;                    case 33:</b>
+<b class="nc">&nbsp;                    case 34:</b>
+<b class="nc">&nbsp;                    case 35:</b>
+<b class="nc">&nbsp;                    case 36:</b>
+<b class="nc">&nbsp;                    case 37:</b>
+<b class="nc">&nbsp;                    case 38:</b>
+<b class="nc">&nbsp;                    case 39:</b>
+<b class="nc">&nbsp;                    case 40:</b>
+&nbsp;                    case 41:
+<b class="nc">&nbsp;                    case 42:</b>
+<b class="nc">&nbsp;                    case 43:</b>
+&nbsp;                    case 44:
+&nbsp;                    case 45:
+&nbsp;                    case 46:
+&nbsp;                    case 47:
+&nbsp;                    case 48:
+&nbsp;                    case 49:
+&nbsp;                    case 50:
+<b class="nc">&nbsp;                    case 51:</b>
+<b class="nc">&nbsp;                    case 52:</b>
+&nbsp;                    case 53:
+<b class="nc">&nbsp;                    case 59:</b>
+&nbsp;                    case 60:
+&nbsp;                    case 61:
+<b class="nc">&nbsp;                    case 62:</b>
+<b class="nc">&nbsp;                    case 63:</b>
+<b class="nc">&nbsp;                    case 64:</b>
+<b class="nc">&nbsp;                    case 65:</b>
+&nbsp;                    case 66:
+&nbsp;                    case 67:
+&nbsp;                    case 68:
+<b class="nc">&nbsp;                    case 69:</b>
+<b class="nc">&nbsp;                    case 70:</b>
+<b class="nc">&nbsp;                    case 71:</b>
+<b class="nc">&nbsp;                    case 72:</b>
+&nbsp;                    case 73:
+<b class="nc">&nbsp;                    case 74:</b>
+<b class="nc">&nbsp;                    case 75:</b>
+&nbsp;                    case 76:
+<b class="nc">&nbsp;                    case 77:</b>
+<b class="nc">&nbsp;                    case 78:</b>
+<b class="nc">&nbsp;                    case 79:</b>
+&nbsp;                    case 80:
+&nbsp;                    case 81:
+&nbsp;                    case 82:
+&nbsp;                    case 83:
+&nbsp;                    case 84:
+&nbsp;                    case 85:
+&nbsp;                    case 86:
+<b class="nc">&nbsp;                    case 87:</b>
+<b class="nc">&nbsp;                    case 88:</b>
+<b class="nc">&nbsp;                    case 89:</b>
+<b class="nc">&nbsp;                    case 90:</b>
+&nbsp;                    case 91:
+<b class="nc">&nbsp;                    case 92:</b>
+<b class="nc">&nbsp;                    case 93:</b>
+&nbsp;                    case 94:
+<b class="nc">&nbsp;                    case 95:</b>
+<b class="nc">&nbsp;                    case 96:</b>
+<b class="nc">&nbsp;                    case 97:</b>
+&nbsp;                    case 98:
+&nbsp;                    case 99:
+&nbsp;                    case 100:
+&nbsp;                    case 101:
+&nbsp;                    case 102:
+&nbsp;                    case 103:
+&nbsp;                    case 104:
+<b class="nc">&nbsp;                    case 105:</b>
+<b class="nc">&nbsp;                    case 106:</b>
+<b class="nc">&nbsp;                    case 107:</b>
+<b class="nc">&nbsp;                    case 108:</b>
+&nbsp;                    case 109:
+<b class="nc">&nbsp;                    case 110:</b>
+&nbsp;                    case 111:
+<b class="nc">&nbsp;                    case 112:</b>
+<b class="nc">&nbsp;                    case 113:</b>
+&nbsp;                    case 114:
+<b class="nc">&nbsp;                    case 115:</b>
+<b class="nc">&nbsp;                    case 116:</b>
+<b class="nc">&nbsp;                    case 117:</b>
+&nbsp;                    case 118:
+&nbsp;                    case 119:
+&nbsp;                    case 120:
+&nbsp;                    case 121:
+&nbsp;                    case 122:
+&nbsp;                    case 123:
+&nbsp;                    case 124:
+&nbsp;                    case 125:
+&nbsp;                    case 126:
+&nbsp;                    case 127:
+&nbsp;                    case 128:
+<b class="nc">&nbsp;                    case 129:</b>
+<b class="nc">&nbsp;                    case 130:</b>
+<b class="nc">&nbsp;                    case 131:</b>
+<b class="nc">&nbsp;                    case 133:</b>
+&nbsp;                    case 134:
+<b class="nc">&nbsp;                    case 135:</b>
+&nbsp;                    case 136:
+<b class="nc">&nbsp;                    case 137:</b>
+<b class="nc">&nbsp;                    case 138:</b>
+&nbsp;                    case 139:
+<b class="nc">&nbsp;                    case 140:</b>
+<b class="nc">&nbsp;                    case 141:</b>
+<b class="nc">&nbsp;                    case 142:</b>
+&nbsp;                    case 143:
+&nbsp;                    case 144:
+&nbsp;                    case 145:
+&nbsp;                    case 146:
+&nbsp;                    case 147:
+&nbsp;                    case 148:
+&nbsp;                    case 149:
+&nbsp;                    case 150:
+&nbsp;                    case 151:
+&nbsp;                    case 152:
+&nbsp;                    case 172:
+<b class="nc">&nbsp;                    case 173:</b>
+&nbsp;                    case 174:
+<b class="nc">&nbsp;                    case 175:</b>
+<b class="nc">&nbsp;                    case 176:</b>
+<b class="nc">&nbsp;                    case 177:</b>
+<b class="nc">&nbsp;                    case 190:</b>
+&nbsp;                    case 191:
+&nbsp;                    case 194:
+&nbsp;                    case 195:
+<b class="nc">&nbsp;                        ++currentOffset;</b>
+<b class="nc">&nbsp;                        break;</b>
+&nbsp;                    case 16:
+&nbsp;                    case 18:
+&nbsp;                    case 21:
+&nbsp;                    case 22:
+&nbsp;                    case 23:
+&nbsp;                    case 24:
+&nbsp;                    case 25:
+&nbsp;                    case 54:
+&nbsp;                    case 55:
+&nbsp;                    case 56:
+&nbsp;                    case 57:
+&nbsp;                    case 58:
+<b class="fc">&nbsp;                    case 169:</b>
+&nbsp;                    case 188:
+&nbsp;                        currentOffset += 2;
+<b class="fc">&nbsp;                        break;</b>
+<b class="fc">&nbsp;                    case 17:</b>
+<b class="fc">&nbsp;                    case 19:</b>
+<b class="fc">&nbsp;                    case 20:</b>
+<b class="fc">&nbsp;                    case 132:</b>
+&nbsp;                    case 178:
+&nbsp;                    case 179:
+&nbsp;                    case 180:
+&nbsp;                    case 181:
+<b class="fc">&nbsp;                    case 182:</b>
+&nbsp;                    case 183:
+<b class="fc">&nbsp;                    case 184:</b>
+&nbsp;                    case 187:
+<b class="fc">&nbsp;                    case 189:</b>
+&nbsp;                    case 192:
+<b class="fc">&nbsp;                    case 193:</b>
+&nbsp;                        currentOffset += 3;
+<b class="fc">&nbsp;                        break;</b>
+&nbsp;                    case 153:
+<b class="fc">&nbsp;                    case 154:</b>
+&nbsp;                    case 155:
+&nbsp;                    case 156:
+<b class="fc">&nbsp;                    case 157:</b>
+&nbsp;                    case 158:
+<b class="fc">&nbsp;                    case 159:</b>
+<b class="fc">&nbsp;                    case 160:</b>
+<b class="pc">&nbsp;                    case 161:</b>
+&nbsp;                    case 162:
+<b class="nc">&nbsp;                    case 163:</b>
+<b class="nc">&nbsp;                    case 164:</b>
+<b class="nc">&nbsp;                    case 165:</b>
+&nbsp;                    case 166:
+&nbsp;                    case 167:
+<b class="nc">&nbsp;                    case 168:</b>
+<b class="nc">&nbsp;                    case 198:</b>
+<b class="nc">&nbsp;                    case 199:</b>
+<b class="nc">&nbsp;                        this.createLabel(bytecodeOffset + this.readShort(currentOffset + 1), labels);</b>
+<b class="nc">&nbsp;                        currentOffset += 3;</b>
+<b class="nc">&nbsp;                        break;</b>
+<b class="nc">&nbsp;                    case 170:</b>
+<b class="nc">&nbsp;                        currentOffset += 4 - (bytecodeOffset &amp; 3);</b>
+<b class="nc">&nbsp;                        this.createLabel(bytecodeOffset + this.readInt(currentOffset), labels);</b>
+<b class="nc">&nbsp;                        int numTableEntries = this.readInt(currentOffset + 8) - this.readInt(currentOffset + 4) + 1;</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                        for(currentOffset += 12; numTableEntries-- &gt; 0; currentOffset += 4) {</b>
+<b class="nc">&nbsp;                            this.createLabel(bytecodeOffset + this.readInt(currentOffset), labels);</b>
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;                        break label3;</b>
+<b class="nc">&nbsp;                    case 171:</b>
+<b class="nc">&nbsp;                        currentOffset += 4 - (bytecodeOffset &amp; 3);</b>
+&nbsp;                        this.createLabel(bytecodeOffset + this.readInt(currentOffset), labels);
+<b class="nc">&nbsp;                        int numSwitchCases = this.readInt(currentOffset + 4);</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                        for(currentOffset += 8; numSwitchCases-- &gt; 0; currentOffset += 8) {
+&nbsp;                            this.createLabel(bytecodeOffset + this.readInt(currentOffset + 4), labels);
+&nbsp;                        }
+&nbsp;                        break label3;
+&nbsp;                    case 185:
+&nbsp;                    case 186:
+&nbsp;                        currentOffset += 5;
+<b class="nc">&nbsp;                        break;</b>
+<b class="nc">&nbsp;                    case 196:</b>
+&nbsp;                        switch (classBuffer[currentOffset + 1] &amp; 255) {
+<b class="nc">&nbsp;                            case 21:</b>
+&nbsp;                            case 22:
+&nbsp;                            case 23:
+&nbsp;                            case 24:
+<b class="fc">&nbsp;                            case 25:</b>
+<b class="fc">&nbsp;                            case 54:</b>
+<b class="pc">&nbsp;                            case 55:</b>
+<b class="nc">&nbsp;                            case 56:</b>
+&nbsp;                            case 57:
+&nbsp;                            case 58:
+&nbsp;                            case 169:
+<b class="pc">&nbsp;                                currentOffset += 4;</b>
+<b class="nc">&nbsp;                                continue;</b>
+<b class="nc">&nbsp;                            case 132:</b>
+<b class="nc">&nbsp;                                currentOffset += 6;</b>
+&nbsp;                                continue;
+<b class="nc">&nbsp;                            default:</b>
+<b class="nc">&nbsp;                                throw new IllegalArgumentException();</b>
+&nbsp;                        }
+<b class="nc">&nbsp;                    case 197:</b>
+<b class="nc">&nbsp;                        currentOffset += 4;</b>
+<b class="nc">&nbsp;                        break;</b>
+&nbsp;                    case 200:
+&nbsp;                    case 201:
+&nbsp;                    case 220:
+&nbsp;                        this.createLabel(bytecodeOffset + this.readInt(currentOffset + 1), labels);
+&nbsp;                        currentOffset += 5;
+&nbsp;                        break;
+&nbsp;                    case 202:
+<b class="pc">&nbsp;                    case 203:</b>
+<b class="nc">&nbsp;                    case 204:</b>
+<b class="nc">&nbsp;                    case 205:</b>
+<b class="nc">&nbsp;                    case 206:</b>
+&nbsp;                    case 207:
+<b class="nc">&nbsp;                    case 208:</b>
+<b class="nc">&nbsp;                    case 209:</b>
+&nbsp;                    case 210:
+<b class="nc">&nbsp;                    case 211:</b>
+<b class="nc">&nbsp;                    case 212:</b>
+<b class="nc">&nbsp;                    case 213:</b>
+&nbsp;                    case 214:
+&nbsp;                    case 215:
+&nbsp;                    case 216:
+&nbsp;                    case 217:
+&nbsp;                    case 218:
+&nbsp;                    case 219:
+&nbsp;                        this.createLabel(bytecodeOffset + this.readUnsignedShort(currentOffset + 1), labels);
+<b class="pc">&nbsp;                        currentOffset += 3;</b>
+<b class="nc">&nbsp;                        break;</b>
+<b class="nc">&nbsp;                    default:</b>
+<b class="nc">&nbsp;                        throw new IllegalArgumentException();</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            int exceptionTableLength = this.readUnsignedShort(currentOffset);</b>
+<b class="nc">&nbsp;            currentOffset += 2;</b>
+&nbsp;
+<b class="nc">&nbsp;            while(exceptionTableLength-- &gt; 0) {</b>
+<b class="nc">&nbsp;                Label start = this.createLabel(this.readUnsignedShort(currentOffset), labels);</b>
+<b class="nc">&nbsp;                Label end = this.createLabel(this.readUnsignedShort(currentOffset + 2), labels);</b>
+&nbsp;                Label handler = this.createLabel(this.readUnsignedShort(currentOffset + 4), labels);
+&nbsp;                String catchType = this.readUTF8(this.cpInfoOffsets[this.readUnsignedShort(currentOffset + 6)], charBuffer);
+&nbsp;                currentOffset += 8;
+&nbsp;                methodVisitor.visitTryCatchBlock(start, end, handler, catchType);
+&nbsp;            }
+&nbsp;
+&nbsp;            int stackMapFrameOffset = 0;
+&nbsp;            int stackMapTableEndOffset = 0;
+&nbsp;            boolean compressedFrames = true;
+&nbsp;            int localVariableTableOffset = 0;
+&nbsp;            int localVariableTypeTableOffset = 0;
+<b class="pc">&nbsp;            int[] visibleTypeAnnotationOffsets = null;</b>
+<b class="nc">&nbsp;            int[] invisibleTypeAnnotationOffsets = null;</b>
+<b class="nc">&nbsp;            Attribute attributes = null;</b>
+<b class="nc">&nbsp;            int attributesCount = this.readUnsignedShort(currentOffset);</b>
+&nbsp;
+<b class="nc">&nbsp;            int attributeLength;</b>
+&nbsp;            for(currentOffset += 2; attributesCount-- &gt; 0; currentOffset += attributeLength) {
+<b class="nc">&nbsp;                String attributeName = this.readUTF8(currentOffset, charBuffer);</b>
+<b class="nc">&nbsp;                attributeLength = this.readInt(currentOffset + 2);</b>
+&nbsp;                currentOffset += 6;
+<b class="nc">&nbsp;                if (&quot;LocalVariableTable&quot;.equals(attributeName)) {</b>
+<b class="nc">&nbsp;                    if ((context.parsingOptions &amp; 2) == 0) {</b>
+<b class="nc">&nbsp;                        localVariableTableOffset = currentOffset;</b>
+&nbsp;                        int localVariableTableLength = this.readUnsignedShort(currentOffset);
+&nbsp;
+&nbsp;                        for(int var67 = currentOffset + 2; localVariableTableLength-- &gt; 0; var67 += 10) {
+&nbsp;                            int startPc = this.readUnsignedShort(var67);
+&nbsp;                            this.createDebugLabel(startPc, labels);
+&nbsp;                            int length = this.readUnsignedShort(var67 + 2);
+&nbsp;                            this.createDebugLabel(startPc + length, labels);
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                } else if (&quot;LocalVariableTypeTable&quot;.equals(attributeName)) {
+&nbsp;                    localVariableTypeTableOffset = currentOffset;
+<b class="pc">&nbsp;                } else if (&quot;LineNumberTable&quot;.equals(attributeName)) {</b>
+&nbsp;                    if ((context.parsingOptions &amp; 2) == 0) {
+<b class="nc">&nbsp;                        int lineNumberTableLength = this.readUnsignedShort(currentOffset);</b>
+<b class="nc">&nbsp;                        int var66 = currentOffset + 2;</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                        while(lineNumberTableLength-- &gt; 0) {</b>
+&nbsp;                            int startPc = this.readUnsignedShort(var66);
+&nbsp;                            int lineNumber = this.readUnsignedShort(var66 + 2);
+&nbsp;                            var66 += 4;
+<b class="fc">&nbsp;                            this.createDebugLabel(startPc, labels);</b>
+<b class="fc">&nbsp;                            labels[startPc].addLineNumber(lineNumber);</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                } else if (&quot;RuntimeVisibleTypeAnnotations&quot;.equals(attributeName)) {
+&nbsp;                    visibleTypeAnnotationOffsets = this.readTypeAnnotations(methodVisitor, context, currentOffset, true);
+&nbsp;                } else if (&quot;RuntimeInvisibleTypeAnnotations&quot;.equals(attributeName)) {
+&nbsp;                    invisibleTypeAnnotationOffsets = this.readTypeAnnotations(methodVisitor, context, currentOffset, false);
+&nbsp;                } else if (&quot;StackMapTable&quot;.equals(attributeName)) {
+&nbsp;                    if ((context.parsingOptions &amp; 4) == 0) {
+&nbsp;                        stackMapFrameOffset = currentOffset + 2;
+&nbsp;                        stackMapTableEndOffset = currentOffset + attributeLength;
+&nbsp;                    }
+&nbsp;                } else if (&quot;StackMap&quot;.equals(attributeName)) {
+<b class="fc">&nbsp;                    if ((context.parsingOptions &amp; 4) == 0) {</b>
+&nbsp;                        stackMapFrameOffset = currentOffset + 2;
+&nbsp;                        stackMapTableEndOffset = currentOffset + attributeLength;
+<b class="fc">&nbsp;                        compressedFrames = false;</b>
+<b class="fc">&nbsp;                    }</b>
+<b class="fc">&nbsp;                } else {</b>
+<b class="fc">&nbsp;                    Attribute attribute = this.readAttribute(context.attributePrototypes, attributeName, currentOffset, attributeLength, charBuffer, codeOffset, labels);</b>
+<b class="fc">&nbsp;                    attribute.nextAttribute = attributes;</b>
+&nbsp;                    attributes = attribute;
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            boolean expandFrames = (context.parsingOptions &amp; 8) != 0;</b>
+&nbsp;            if (stackMapFrameOffset != 0) {
+<b class="fc">&nbsp;                context.currentFrameOffset = -1;</b>
+&nbsp;                context.currentFrameType = 0;
+<b class="fc">&nbsp;                context.currentFrameLocalCount = 0;</b>
+&nbsp;                context.currentFrameLocalCountDelta = 0;
+<b class="fc">&nbsp;                context.currentFrameLocalTypes = new Object[maxLocals];</b>
+&nbsp;                context.currentFrameStackCount = 0;
+<b class="fc">&nbsp;                context.currentFrameStackTypes = new Object[maxStack];</b>
+&nbsp;                if (expandFrames) {
+<b class="fc">&nbsp;                    this.computeImplicitFrame(context);</b>
+&nbsp;                }
+<b class="fc">&nbsp;</b>
+&nbsp;                for(int offset = stackMapFrameOffset; offset &lt; stackMapTableEndOffset - 2; ++offset) {
+<b class="fc">&nbsp;                    if (classBuffer[offset] == 8) {</b>
+&nbsp;                        int potentialBytecodeOffset = this.readUnsignedShort(offset + 1);
+<b class="fc">&nbsp;                        if (potentialBytecodeOffset &gt;= 0 &amp;&amp; potentialBytecodeOffset &lt; codeLength &amp;&amp; (classBuffer[bytecodeStartOffset + potentialBytecodeOffset] &amp; 255) == 187) {</b>
+&nbsp;                            this.createLabel(potentialBytecodeOffset, labels);
+<b class="fc">&nbsp;                        }</b>
+&nbsp;                    }
+<b class="fc">&nbsp;                }</b>
+&nbsp;            }
+<b class="fc">&nbsp;</b>
+&nbsp;            if (expandFrames &amp;&amp; (context.parsingOptions &amp; 256) != 0) {
+<b class="fc">&nbsp;                methodVisitor.visitFrame(-1, maxLocals, (Object[])null, 0, (Object[])null);</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            attributeLength = 0;</b>
+&nbsp;            int currentVisibleTypeAnnotationBytecodeOffset = this.getTypeAnnotationBytecodeOffset(visibleTypeAnnotationOffsets, 0);
+<b class="fc">&nbsp;            int currentInvisibleTypeAnnotationIndex = 0;</b>
+<b class="fc">&nbsp;            int currentInvisibleTypeAnnotationBytecodeOffset = this.getTypeAnnotationBytecodeOffset(invisibleTypeAnnotationOffsets, 0);</b>
+<b class="fc">&nbsp;            boolean insertFrame = false;</b>
+&nbsp;            int wideJumpOpcodeDelta = (context.parsingOptions &amp; 256) == 0 ? 33 : 0;
+<b class="fc">&nbsp;            currentOffset = bytecodeStartOffset;</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;            while(currentOffset &lt; bytecodeEndOffset) {</b>
+&nbsp;                int currentBytecodeOffset = currentOffset - bytecodeStartOffset;
+&nbsp;                this.readBytecodeInstructionOffset(currentBytecodeOffset);
+<b class="fc">&nbsp;                Label currentLabel = labels[currentBytecodeOffset];</b>
+<b class="pc">&nbsp;                if (currentLabel != null) {</b>
+<b class="fc">&nbsp;                    currentLabel.accept(methodVisitor, (context.parsingOptions &amp; 2) == 0);</b>
+&nbsp;                }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;                while(stackMapFrameOffset != 0 &amp;&amp; (context.currentFrameOffset == currentBytecodeOffset || context.currentFrameOffset == -1)) {</b>
+<b class="fc">&nbsp;                    if (context.currentFrameOffset != -1) {</b>
+<b class="fc">&nbsp;                        if (compressedFrames &amp;&amp; !expandFrames) {</b>
+<b class="fc">&nbsp;                            methodVisitor.visitFrame(context.currentFrameType, context.currentFrameLocalCountDelta, context.currentFrameLocalTypes, context.currentFrameStackCount, context.currentFrameStackTypes);</b>
+<b class="fc">&nbsp;                        } else {</b>
+<b class="fc">&nbsp;                            methodVisitor.visitFrame(-1, context.currentFrameLocalCount, context.currentFrameLocalTypes, context.currentFrameStackCount, context.currentFrameStackTypes);</b>
+&nbsp;                        }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;                        insertFrame = false;</b>
+<b class="fc">&nbsp;                    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;                    if (stackMapFrameOffset &lt; stackMapTableEndOffset) {</b>
+<b class="fc">&nbsp;                        stackMapFrameOffset = this.readStackMapFrame(stackMapFrameOffset, compressedFrames, expandFrames, context);</b>
+<b class="pc">&nbsp;                    } else {</b>
+<b class="nc">&nbsp;                        stackMapFrameOffset = 0;</b>
+<b class="pc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;                if (insertFrame) {</b>
+<b class="nc">&nbsp;                    if ((context.parsingOptions &amp; 8) != 0) {</b>
+<b class="pc">&nbsp;                        methodVisitor.visitFrame(256, 0, (Object[])null, 0, (Object[])null);</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;                    insertFrame = false;</b>
+<b class="pc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="pc">&nbsp;                int opcode = classBuffer[currentOffset] &amp; 255;</b>
+<b class="nc">&nbsp;                switch (opcode) {</b>
+<b class="pc">&nbsp;                    case 0:</b>
+<b class="fc">&nbsp;                    case 1:</b>
+&nbsp;                    case 2:
+<b class="nc">&nbsp;                    case 3:</b>
+<b class="nc">&nbsp;                    case 4:</b>
+&nbsp;                    case 5:
+&nbsp;                    case 6:
+&nbsp;                    case 7:
+&nbsp;                    case 8:
+&nbsp;                    case 9:
+&nbsp;                    case 10:
+&nbsp;                    case 11:
+<b class="nc">&nbsp;                    case 12:</b>
+<b class="nc">&nbsp;                    case 13:</b>
+&nbsp;                    case 14:
+<b class="fc">&nbsp;                    case 15:</b>
+&nbsp;                    case 46:
+&nbsp;                    case 47:
+&nbsp;                    case 48:
+<b class="fc">&nbsp;                    case 49:</b>
+<b class="fc">&nbsp;                    case 50:</b>
+&nbsp;                    case 51:
+&nbsp;                    case 52:
+&nbsp;                    case 53:
+<b class="fc">&nbsp;                    case 79:</b>
+&nbsp;                    case 80:
+<b class="fc">&nbsp;                    case 81:</b>
+<b class="fc">&nbsp;                    case 82:</b>
+&nbsp;                    case 83:
+&nbsp;                    case 84:
+&nbsp;                    case 85:
+&nbsp;                    case 86:
+&nbsp;                    case 87:
+&nbsp;                    case 88:
+<b class="pc">&nbsp;                    case 89:</b>
+<b class="nc">&nbsp;                    case 90:</b>
+<b class="nc">&nbsp;                    case 91:</b>
+&nbsp;                    case 92:
+&nbsp;                    case 93:
+&nbsp;                    case 94:
+<b class="nc">&nbsp;                    case 95:</b>
+&nbsp;                    case 96:
+&nbsp;                    case 97:
+<b class="nc">&nbsp;                    case 98:</b>
+<b class="nc">&nbsp;                    case 99:</b>
+&nbsp;                    case 100:
+&nbsp;                    case 101:
+&nbsp;                    case 102:
+&nbsp;                    case 103:
+<b class="pc">&nbsp;                    case 104:</b>
+<b class="fc">&nbsp;                    case 105:</b>
+<b class="fc">&nbsp;                    case 106:</b>
+<b class="fc">&nbsp;                    case 107:</b>
+&nbsp;                    case 108:
+<b class="fc">&nbsp;                    case 109:</b>
+<b class="fc">&nbsp;                    case 110:</b>
+<b class="fc">&nbsp;                    case 111:</b>
+<b class="fc">&nbsp;                    case 112:</b>
+&nbsp;                    case 113:
+&nbsp;                    case 114:
+&nbsp;                    case 115:
+&nbsp;                    case 116:
+<b class="pc">&nbsp;                    case 117:</b>
+<b class="nc">&nbsp;                    case 118:</b>
+<b class="nc">&nbsp;                    case 119:</b>
+<b class="nc">&nbsp;                    case 120:</b>
+<b class="nc">&nbsp;                    case 121:</b>
+&nbsp;                    case 122:
+&nbsp;                    case 123:
+&nbsp;                    case 124:
+&nbsp;                    case 125:
+<b class="pc">&nbsp;                    case 126:</b>
+<b class="nc">&nbsp;                    case 127:</b>
+<b class="nc">&nbsp;                    case 128:</b>
+<b class="nc">&nbsp;                    case 129:</b>
+&nbsp;                    case 130:
+<b class="nc">&nbsp;                    case 131:</b>
+<b class="nc">&nbsp;                    case 133:</b>
+&nbsp;                    case 134:
+<b class="nc">&nbsp;                    case 135:</b>
+<b class="nc">&nbsp;                    case 136:</b>
+<b class="nc">&nbsp;                    case 137:</b>
+&nbsp;                    case 138:
+&nbsp;                    case 139:
+&nbsp;                    case 140:
+&nbsp;                    case 141:
+&nbsp;                    case 142:
+&nbsp;                    case 143:
+&nbsp;                    case 144:
+<b class="pc">&nbsp;                    case 145:</b>
+<b class="nc">&nbsp;                    case 146:</b>
+<b class="nc">&nbsp;                    case 147:</b>
+<b class="nc">&nbsp;                    case 148:</b>
+&nbsp;                    case 149:
+<b class="nc">&nbsp;                    case 150:</b>
+<b class="nc">&nbsp;                    case 151:</b>
+&nbsp;                    case 152:
+<b class="nc">&nbsp;                    case 172:</b>
+<b class="nc">&nbsp;                    case 173:</b>
+<b class="nc">&nbsp;                    case 174:</b>
+&nbsp;                    case 175:
+&nbsp;                    case 176:
+&nbsp;                    case 177:
+&nbsp;                    case 190:
+&nbsp;                    case 191:
+&nbsp;                    case 194:
+&nbsp;                    case 195:
+<b class="pc">&nbsp;                        methodVisitor.visitInsn(opcode);</b>
+<b class="nc">&nbsp;                        ++currentOffset;</b>
+<b class="nc">&nbsp;                        break;</b>
+<b class="nc">&nbsp;                    case 16:</b>
+&nbsp;                    case 188:
+<b class="nc">&nbsp;                        methodVisitor.visitIntInsn(opcode, classBuffer[currentOffset + 1]);</b>
+&nbsp;                        currentOffset += 2;
+<b class="nc">&nbsp;                        break;</b>
+<b class="nc">&nbsp;                    case 17:</b>
+&nbsp;                        methodVisitor.visitIntInsn(opcode, this.readShort(currentOffset + 1));
+<b class="nc">&nbsp;                        currentOffset += 3;</b>
+<b class="nc">&nbsp;                        break;</b>
+<b class="nc">&nbsp;                    case 18:</b>
+&nbsp;                        methodVisitor.visitLdcInsn(this.readConst(classBuffer[currentOffset + 1] &amp; 255, charBuffer));
+&nbsp;                        currentOffset += 2;
+&nbsp;                        break;
+&nbsp;                    case 19:
+&nbsp;                    case 20:
+&nbsp;                        methodVisitor.visitLdcInsn(this.readConst(this.readUnsignedShort(currentOffset + 1), charBuffer));
+&nbsp;                        currentOffset += 3;
+&nbsp;                        break;
+&nbsp;                    case 21:
+&nbsp;                    case 22:
+&nbsp;                    case 23:
+<b class="pc">&nbsp;                    case 24:</b>
+<b class="nc">&nbsp;                    case 25:</b>
+<b class="nc">&nbsp;                    case 54:</b>
+<b class="nc">&nbsp;                    case 55:</b>
+&nbsp;                    case 56:
+<b class="nc">&nbsp;                    case 57:</b>
+&nbsp;                    case 58:
+<b class="nc">&nbsp;                    case 169:</b>
+<b class="nc">&nbsp;                        methodVisitor.visitVarInsn(opcode, classBuffer[currentOffset + 1] &amp; 255);</b>
+&nbsp;                        currentOffset += 2;
+<b class="nc">&nbsp;                        break;</b>
+<b class="nc">&nbsp;                    case 26:</b>
+<b class="nc">&nbsp;                    case 27:</b>
+&nbsp;                    case 28:
+&nbsp;                    case 29:
+&nbsp;                    case 30:
+&nbsp;                    case 31:
+&nbsp;                    case 32:
+&nbsp;                    case 33:
+&nbsp;                    case 34:
+&nbsp;                    case 35:
+&nbsp;                    case 36:
+&nbsp;                    case 37:
+&nbsp;                    case 38:
+<b class="pc">&nbsp;                    case 39:</b>
+<b class="nc">&nbsp;                    case 40:</b>
+&nbsp;                    case 41:
+&nbsp;                    case 42:
+&nbsp;                    case 43:
+&nbsp;                    case 44:
+<b class="pc">&nbsp;                    case 45:</b>
+<b class="nc">&nbsp;                        opcode -= 26;</b>
+&nbsp;                        methodVisitor.visitVarInsn(21 + (opcode &gt;&gt; 2), opcode &amp; 3);
+&nbsp;                        ++currentOffset;
+&nbsp;                        break;
+&nbsp;                    case 59:
+<b class="pc">&nbsp;                    case 60:</b>
+&nbsp;                    case 61:
+<b class="nc">&nbsp;                    case 62:</b>
+<b class="nc">&nbsp;                    case 63:</b>
+<b class="nc">&nbsp;                    case 64:</b>
+<b class="nc">&nbsp;                    case 65:</b>
+&nbsp;                    case 66:
+&nbsp;                    case 67:
+&nbsp;                    case 68:
+<b class="pc">&nbsp;                    case 69:</b>
+<b class="nc">&nbsp;                    case 70:</b>
+<b class="nc">&nbsp;                    case 71:</b>
+&nbsp;                    case 72:
+&nbsp;                    case 73:
+&nbsp;                    case 74:
+<b class="fc">&nbsp;                    case 75:</b>
+<b class="fc">&nbsp;                    case 76:</b>
+&nbsp;                    case 77:
+&nbsp;                    case 78:
+&nbsp;                        opcode -= 59;
+&nbsp;                        methodVisitor.visitVarInsn(54 + (opcode &gt;&gt; 2), opcode &amp; 3);
+&nbsp;                        ++currentOffset;
+&nbsp;                        break;
+&nbsp;                    case 132:
+&nbsp;                        methodVisitor.visitIincInsn(classBuffer[currentOffset + 1] &amp; 255, classBuffer[currentOffset + 2]);
+&nbsp;                        currentOffset += 3;
+&nbsp;                        break;
+&nbsp;                    case 153:
+&nbsp;                    case 154:
+&nbsp;                    case 155:
+&nbsp;                    case 156:
+&nbsp;                    case 157:
+&nbsp;                    case 158:
+<b class="nc">&nbsp;                    case 159:</b>
+&nbsp;                    case 160:
+&nbsp;                    case 161:
+<b class="nc">&nbsp;                    case 162:</b>
+<b class="nc">&nbsp;                    case 163:</b>
+<b class="nc">&nbsp;                    case 164:</b>
+<b class="nc">&nbsp;                    case 165:</b>
+<b class="nc">&nbsp;                    case 166:</b>
+<b class="nc">&nbsp;                    case 167:</b>
+<b class="nc">&nbsp;                    case 168:</b>
+<b class="nc">&nbsp;                    case 198:</b>
+&nbsp;                    case 199:
+&nbsp;                        methodVisitor.visitJumpInsn(opcode, labels[currentBytecodeOffset + this.readShort(currentOffset + 1)]);
+&nbsp;                        currentOffset += 3;
+<b class="nc">&nbsp;                        break;</b>
+<b class="nc">&nbsp;                    case 170:</b>
+<b class="nc">&nbsp;                        currentOffset += 4 - (currentBytecodeOffset &amp; 3);</b>
+<b class="nc">&nbsp;                        Label defaultLabel = labels[currentBytecodeOffset + this.readInt(currentOffset)];</b>
+<b class="nc">&nbsp;                        int low = this.readInt(currentOffset + 4);</b>
+<b class="nc">&nbsp;                        int high = this.readInt(currentOffset + 8);</b>
+<b class="nc">&nbsp;                        currentOffset += 12;</b>
+&nbsp;                        Label[] table = new Label[high - low + 1];
+&nbsp;
+&nbsp;                        for(int i = 0; i &lt; table.length; ++i) {
+&nbsp;                            table[i] = labels[currentBytecodeOffset + this.readInt(currentOffset)];
+&nbsp;                            currentOffset += 4;
+&nbsp;                        }
+&nbsp;
+&nbsp;                        methodVisitor.visitTableSwitchInsn(low, high, defaultLabel, table);
+&nbsp;                        break;
+&nbsp;                    case 171:
+&nbsp;                        currentOffset += 4 - (currentBytecodeOffset &amp; 3);
+&nbsp;                        Label defaultLabel = labels[currentBytecodeOffset + this.readInt(currentOffset)];
+&nbsp;                        int numPairs = this.readInt(currentOffset + 4);
+&nbsp;                        currentOffset += 8;
+&nbsp;                        int[] keys = new int[numPairs];
+&nbsp;                        Label[] values = new Label[numPairs];
+&nbsp;
+&nbsp;                        for(int i = 0; i &lt; numPairs; ++i) {
+&nbsp;                            keys[i] = this.readInt(currentOffset);
+&nbsp;                            values[i] = labels[currentBytecodeOffset + this.readInt(currentOffset + 4)];
+&nbsp;                            currentOffset += 8;
+&nbsp;                        }
+&nbsp;
+&nbsp;                        methodVisitor.visitLookupSwitchInsn(defaultLabel, keys, values);
+&nbsp;                        break;
+&nbsp;                    case 178:
+&nbsp;                    case 179:
+&nbsp;                    case 180:
+&nbsp;                    case 181:
+&nbsp;                    case 182:
+&nbsp;                    case 183:
+&nbsp;                    case 184:
+&nbsp;                    case 185:
+&nbsp;                        int cpInfoOffset = this.cpInfoOffsets[this.readUnsignedShort(currentOffset + 1)];
+&nbsp;                        int nameAndTypeCpInfoOffset = this.cpInfoOffsets[this.readUnsignedShort(cpInfoOffset + 2)];
+&nbsp;                        String owner = this.readClass(cpInfoOffset, charBuffer);
+&nbsp;                        String name = this.readUTF8(nameAndTypeCpInfoOffset, charBuffer);
+&nbsp;                        String descriptor = this.readUTF8(nameAndTypeCpInfoOffset + 2, charBuffer);
+&nbsp;                        if (opcode &lt; 182) {
+&nbsp;                            methodVisitor.visitFieldInsn(opcode, owner, name, descriptor);
+&nbsp;                        } else {
+&nbsp;                            boolean isInterface = classBuffer[cpInfoOffset - 1] == 11;
+&nbsp;                            methodVisitor.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
+&nbsp;                        }
+&nbsp;
+&nbsp;                        if (opcode == 185) {
+&nbsp;                            currentOffset += 5;
+&nbsp;                        } else {
+&nbsp;                            currentOffset += 3;
+&nbsp;                        }
+&nbsp;                        break;
+&nbsp;                    case 186:
+&nbsp;                        int cpInfoOffset = this.cpInfoOffsets[this.readUnsignedShort(currentOffset + 1)];
+&nbsp;                        int nameAndTypeCpInfoOffset = this.cpInfoOffsets[this.readUnsignedShort(cpInfoOffset + 2)];
+&nbsp;                        String name = this.readUTF8(nameAndTypeCpInfoOffset, charBuffer);
+&nbsp;                        String descriptor = this.readUTF8(nameAndTypeCpInfoOffset + 2, charBuffer);
+&nbsp;                        int bootstrapMethodOffset = this.bootstrapMethodOffsets[this.readUnsignedShort(cpInfoOffset)];
+&nbsp;                        Handle handle = (Handle)this.readConst(this.readUnsignedShort(bootstrapMethodOffset), charBuffer);
+&nbsp;                        Object[] bootstrapMethodArguments = new Object[this.readUnsignedShort(bootstrapMethodOffset + 2)];
+&nbsp;                        bootstrapMethodOffset += 4;
+&nbsp;
+&nbsp;                        for(int i = 0; i &lt; bootstrapMethodArguments.length; ++i) {
+&nbsp;                            bootstrapMethodArguments[i] = this.readConst(this.readUnsignedShort(bootstrapMethodOffset), charBuffer);
+&nbsp;                            bootstrapMethodOffset += 2;
+&nbsp;                        }
+&nbsp;
+&nbsp;                        methodVisitor.visitInvokeDynamicInsn(name, descriptor, handle, bootstrapMethodArguments);
+&nbsp;                        currentOffset += 5;
+&nbsp;                        break;
+&nbsp;                    case 187:
+&nbsp;                    case 189:
+&nbsp;                    case 192:
+&nbsp;                    case 193:
+&nbsp;                        methodVisitor.visitTypeInsn(opcode, this.readClass(currentOffset + 1, charBuffer));
+&nbsp;                        currentOffset += 3;
+&nbsp;                        break;
+&nbsp;                    case 196:
+&nbsp;                        opcode = classBuffer[currentOffset + 1] &amp; 255;
+&nbsp;                        if (opcode == 132) {
+&nbsp;                            methodVisitor.visitIincInsn(this.readUnsignedShort(currentOffset + 2), this.readShort(currentOffset + 4));
+&nbsp;                            currentOffset += 6;
+&nbsp;                        } else {
+&nbsp;                            methodVisitor.visitVarInsn(opcode, this.readUnsignedShort(currentOffset + 2));
+&nbsp;                            currentOffset += 4;
+&nbsp;                        }
+&nbsp;                        break;
+&nbsp;                    case 197:
+&nbsp;                        methodVisitor.visitMultiANewArrayInsn(this.readClass(currentOffset + 1, charBuffer), classBuffer[currentOffset + 3] &amp; 255);
+&nbsp;                        currentOffset += 4;
+&nbsp;                        break;
+&nbsp;                    case 200:
+&nbsp;                    case 201:
+&nbsp;                        methodVisitor.visitJumpInsn(opcode - wideJumpOpcodeDelta, labels[currentBytecodeOffset + this.readInt(currentOffset + 1)]);
+&nbsp;                        currentOffset += 5;
+&nbsp;                        break;
+&nbsp;                    case 202:
+&nbsp;                    case 203:
+&nbsp;                    case 204:
+&nbsp;                    case 205:
+&nbsp;                    case 206:
+&nbsp;                    case 207:
+&nbsp;                    case 208:
+&nbsp;                    case 209:
+&nbsp;                    case 210:
+&nbsp;                    case 211:
+&nbsp;                    case 212:
+&nbsp;                    case 213:
+&nbsp;                    case 214:
+&nbsp;                    case 215:
+&nbsp;                    case 216:
+&nbsp;                    case 217:
+&nbsp;                    case 218:
+&nbsp;                    case 219:
+&nbsp;                        opcode = opcode &lt; 218 ? opcode - 49 : opcode - 20;
+&nbsp;                        Label target = labels[currentBytecodeOffset + this.readUnsignedShort(currentOffset + 1)];
+&nbsp;                        if (opcode != 167 &amp;&amp; opcode != 168) {
+&nbsp;                            opcode = opcode &lt; 167 ? (opcode + 1 ^ 1) - 1 : opcode ^ 1;
+&nbsp;                            Label endif = this.createLabel(currentBytecodeOffset + 3, labels);
+&nbsp;                            methodVisitor.visitJumpInsn(opcode, endif);
+&nbsp;                            methodVisitor.visitJumpInsn(200, target);
+&nbsp;                            insertFrame = true;
+&nbsp;                        } else {
+&nbsp;                            methodVisitor.visitJumpInsn(opcode + 33, target);
+&nbsp;                        }
+&nbsp;
+&nbsp;                        currentOffset += 3;
+&nbsp;                        break;
+&nbsp;                    case 220:
+&nbsp;                        methodVisitor.visitJumpInsn(200, labels[currentBytecodeOffset + this.readInt(currentOffset + 1)]);
+&nbsp;                        insertFrame = true;
+&nbsp;                        currentOffset += 5;
+&nbsp;                        break;
+&nbsp;                    default:
+&nbsp;                        throw new AssertionError();
+&nbsp;                }
+&nbsp;
+&nbsp;                while(visibleTypeAnnotationOffsets != null &amp;&amp; attributeLength &lt; visibleTypeAnnotationOffsets.length &amp;&amp; currentVisibleTypeAnnotationBytecodeOffset &lt;= currentBytecodeOffset) {
+&nbsp;                    if (currentVisibleTypeAnnotationBytecodeOffset == currentBytecodeOffset) {
+&nbsp;                        int currentAnnotationOffset = this.readTypeAnnotationTarget(context, visibleTypeAnnotationOffsets[attributeLength]);
+&nbsp;                        String annotationDescriptor = this.readUTF8(currentAnnotationOffset, charBuffer);
+&nbsp;                        currentAnnotationOffset += 2;
+&nbsp;                        this.readElementValues(methodVisitor.visitInsnAnnotation(context.currentTypeAnnotationTarget, context.currentTypeAnnotationTargetPath, annotationDescriptor, true), currentAnnotationOffset, true, charBuffer);
+&nbsp;                    }
+&nbsp;
+&nbsp;                    ++attributeLength;
+&nbsp;                    currentVisibleTypeAnnotationBytecodeOffset = this.getTypeAnnotationBytecodeOffset(visibleTypeAnnotationOffsets, attributeLength);
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+&nbsp;                while(invisibleTypeAnnotationOffsets != null &amp;&amp; currentInvisibleTypeAnnotationIndex &lt; invisibleTypeAnnotationOffsets.length &amp;&amp; currentInvisibleTypeAnnotationBytecodeOffset &lt;= currentBytecodeOffset) {
+&nbsp;                    if (currentInvisibleTypeAnnotationBytecodeOffset == currentBytecodeOffset) {
+&nbsp;                        int currentAnnotationOffset = this.readTypeAnnotationTarget(context, invisibleTypeAnnotationOffsets[currentInvisibleTypeAnnotationIndex]);
+&nbsp;                        String annotationDescriptor = this.readUTF8(currentAnnotationOffset, charBuffer);
+&nbsp;                        currentAnnotationOffset += 2;
+&nbsp;                        this.readElementValues(methodVisitor.visitInsnAnnotation(context.currentTypeAnnotationTarget, context.currentTypeAnnotationTargetPath, annotationDescriptor, false), currentAnnotationOffset, true, charBuffer);
+&nbsp;                    }
+&nbsp;
+&nbsp;                    ++currentInvisibleTypeAnnotationIndex;
+&nbsp;                    currentInvisibleTypeAnnotationBytecodeOffset = this.getTypeAnnotationBytecodeOffset(invisibleTypeAnnotationOffsets, currentInvisibleTypeAnnotationIndex);
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            if (labels[codeLength] != null) {
+&nbsp;                methodVisitor.visitLabel(labels[codeLength]);
+&nbsp;            }
+&nbsp;
+&nbsp;            if (localVariableTableOffset != 0 &amp;&amp; (context.parsingOptions &amp; 2) == 0) {
+&nbsp;                int[] typeTable = null;
+<b class="nc">&nbsp;                if (localVariableTypeTableOffset != 0) {</b>
+<b class="nc">&nbsp;                    typeTable = new int[this.readUnsignedShort(localVariableTypeTableOffset) * 3];</b>
+&nbsp;                    currentOffset = localVariableTypeTableOffset + 2;
+&nbsp;
+&nbsp;                    for(int typeTableIndex = typeTable.length; typeTableIndex &gt; 0; currentOffset += 10) {
+&nbsp;                        --typeTableIndex;
+&nbsp;                        typeTable[typeTableIndex] = currentOffset + 6;
+&nbsp;                        --typeTableIndex;
+&nbsp;                        typeTable[typeTableIndex] = this.readUnsignedShort(currentOffset + 8);
+&nbsp;                        --typeTableIndex;
+&nbsp;                        typeTable[typeTableIndex] = this.readUnsignedShort(currentOffset);
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                int localVariableTableLength = this.readUnsignedShort(localVariableTableOffset);
+&nbsp;
+&nbsp;                int startPc;
+&nbsp;                int length;
+&nbsp;                String name;
+&nbsp;                String descriptor;
+&nbsp;                int index;
+<b class="nc">&nbsp;                String signature;</b>
+<b class="nc">&nbsp;                for(int currentLocalVariableTableOffset = localVariableTableOffset + 2; localVariableTableLength-- &gt; 0; methodVisitor.visitLocalVariable(name, descriptor, signature, labels[startPc], labels[startPc + length], index)) {</b>
+&nbsp;                    startPc = this.readUnsignedShort(currentLocalVariableTableOffset);
+&nbsp;                    length = this.readUnsignedShort(currentLocalVariableTableOffset + 2);
+&nbsp;                    name = this.readUTF8(currentLocalVariableTableOffset + 4, charBuffer);
+&nbsp;                    descriptor = this.readUTF8(currentLocalVariableTableOffset + 6, charBuffer);
+<b class="nc">&nbsp;                    index = this.readUnsignedShort(currentLocalVariableTableOffset + 8);</b>
+<b class="nc">&nbsp;                    currentLocalVariableTableOffset += 10;</b>
+&nbsp;                    signature = null;
+&nbsp;                    if (typeTable != null) {
+<b class="nc">&nbsp;                        for(int i = 0; i &lt; typeTable.length; i += 3) {</b>
+&nbsp;                            if (typeTable[i] == startPc &amp;&amp; typeTable[i + 1] == index) {
+&nbsp;                                signature = this.readUTF8(typeTable[i + 2], charBuffer);
+&nbsp;                                break;
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            if (visibleTypeAnnotationOffsets != null) {
+&nbsp;                for(int typeAnnotationOffset : visibleTypeAnnotationOffsets) {
+<b class="nc">&nbsp;                    int targetType = this.readByte(typeAnnotationOffset);</b>
+&nbsp;                    if (targetType == 64 || targetType == 65) {
+&nbsp;                        currentOffset = this.readTypeAnnotationTarget(context, typeAnnotationOffset);
+<b class="nc">&nbsp;                        String annotationDescriptor = this.readUTF8(currentOffset, charBuffer);</b>
+&nbsp;                        currentOffset += 2;
+&nbsp;                        this.readElementValues(methodVisitor.visitLocalVariableAnnotation(context.currentTypeAnnotationTarget, context.currentTypeAnnotationTargetPath, context.currentLocalVariableAnnotationRangeStarts, context.currentLocalVariableAnnotationRangeEnds, context.currentLocalVariableAnnotationRangeIndices, annotationDescriptor, true), currentOffset, true, charBuffer);
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            if (invisibleTypeAnnotationOffsets != null) {
+<b class="nc">&nbsp;                for(int typeAnnotationOffset : invisibleTypeAnnotationOffsets) {</b>
+&nbsp;                    int targetType = this.readByte(typeAnnotationOffset);
+<b class="nc">&nbsp;                    if (targetType == 64 || targetType == 65) {</b>
+<b class="nc">&nbsp;                        currentOffset = this.readTypeAnnotationTarget(context, typeAnnotationOffset);</b>
+<b class="nc">&nbsp;                        String annotationDescriptor = this.readUTF8(currentOffset, charBuffer);</b>
+&nbsp;                        currentOffset += 2;
+<b class="nc">&nbsp;                        this.readElementValues(methodVisitor.visitLocalVariableAnnotation(context.currentTypeAnnotationTarget, context.currentTypeAnnotationTargetPath, context.currentLocalVariableAnnotationRangeStarts, context.currentLocalVariableAnnotationRangeEnds, context.currentLocalVariableAnnotationRangeIndices, annotationDescriptor, false), currentOffset, true, charBuffer);</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            while(attributes != null) {
+&nbsp;                Attribute nextAttribute = attributes.nextAttribute;
+<b class="nc">&nbsp;                attributes.nextAttribute = null;</b>
+&nbsp;                methodVisitor.visitAttribute(attributes);
+<b class="nc">&nbsp;                attributes = nextAttribute;</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            methodVisitor.visitMaxs(maxStack, maxLocals);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    protected void readBytecodeInstructionOffset(int bytecodeOffset) {
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Label readLabel(int bytecodeOffset, Label[] labels) {
+&nbsp;        if (labels[bytecodeOffset] == null) {
+&nbsp;            labels[bytecodeOffset] = new Label();
+&nbsp;        }
+&nbsp;
+&nbsp;        return labels[bytecodeOffset];
+&nbsp;    }
+&nbsp;
+&nbsp;    private Label createLabel(int bytecodeOffset, Label[] labels) {
+&nbsp;        Label label = this.readLabel(bytecodeOffset, labels);
+&nbsp;        label.flags = (short)(label.flags &amp; -2);
+&nbsp;        return label;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private void createDebugLabel(int bytecodeOffset, Label[] labels) {
+&nbsp;        if (labels[bytecodeOffset] == null) {
+&nbsp;            Label var10000 = this.readLabel(bytecodeOffset, labels);
+&nbsp;            var10000.flags = (short)(var10000.flags | 1);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private int[] readTypeAnnotations(MethodVisitor methodVisitor, Context context, int runtimeTypeAnnotationsOffset, boolean visible) {
+&nbsp;        char[] charBuffer = context.charBuffer;
+&nbsp;        int[] typeAnnotationsOffsets = new int[this.readUnsignedShort(runtimeTypeAnnotationsOffset)];
+&nbsp;        int currentOffset = runtimeTypeAnnotationsOffset + 2;
+&nbsp;
+&nbsp;        for(int i = 0; i &lt; typeAnnotationsOffsets.length; ++i) {
+&nbsp;            typeAnnotationsOffsets[i] = currentOffset;
+&nbsp;            int targetType = this.readInt(currentOffset);
+<b class="nc">&nbsp;            switch (targetType &gt;&gt;&gt; 24) {</b>
+&nbsp;                case 0:
+&nbsp;                case 1:
+&nbsp;                case 2:
+<b class="nc">&nbsp;                case 3:</b>
+&nbsp;                case 4:
+&nbsp;                case 5:
+<b class="nc">&nbsp;                case 6:</b>
+&nbsp;                case 7:
+&nbsp;                case 8:
+<b class="nc">&nbsp;                case 9:</b>
+&nbsp;                case 10:
+&nbsp;                case 11:
+&nbsp;                case 12:
+&nbsp;                case 13:
+&nbsp;                case 14:
+<b class="nc">&nbsp;                case 15:</b>
+<b class="nc">&nbsp;                case 19:</b>
+<b class="nc">&nbsp;                case 20:</b>
+<b class="nc">&nbsp;                case 21:</b>
+<b class="nc">&nbsp;                case 22:</b>
+<b class="nc">&nbsp;                case 24:</b>
+<b class="nc">&nbsp;                case 25:</b>
+<b class="nc">&nbsp;                case 26:</b>
+<b class="nc">&nbsp;                case 27:</b>
+&nbsp;                case 28:
+&nbsp;                case 29:
+&nbsp;                case 30:
+&nbsp;                case 31:
+&nbsp;                case 32:
+&nbsp;                case 33:
+&nbsp;                case 34:
+&nbsp;                case 35:
+<b class="nc">&nbsp;                case 36:</b>
+&nbsp;                case 37:
+<b class="nc">&nbsp;                case 38:</b>
+&nbsp;                case 39:
+<b class="nc">&nbsp;                case 40:</b>
+&nbsp;                case 41:
+<b class="nc">&nbsp;                case 42:</b>
+&nbsp;                case 43:
+<b class="nc">&nbsp;                case 44:</b>
+&nbsp;                case 45:
+&nbsp;                case 46:
+<b class="nc">&nbsp;                case 47:</b>
+&nbsp;                case 48:
+&nbsp;                case 49:
+<b class="nc">&nbsp;                case 50:</b>
+&nbsp;                case 51:
+&nbsp;                case 52:
+<b class="nc">&nbsp;                case 53:</b>
+&nbsp;                case 54:
+<b class="nc">&nbsp;                case 55:</b>
+<b class="nc">&nbsp;                case 56:</b>
+<b class="nc">&nbsp;                case 57:</b>
+&nbsp;                case 58:
+<b class="nc">&nbsp;                case 59:</b>
+<b class="nc">&nbsp;                case 60:</b>
+<b class="nc">&nbsp;                case 61:</b>
+<b class="nc">&nbsp;                case 62:</b>
+<b class="nc">&nbsp;                case 63:</b>
+<b class="nc">&nbsp;                default:</b>
+&nbsp;                    throw new IllegalArgumentException();
+<b class="nc">&nbsp;                case 16:</b>
+<b class="nc">&nbsp;                case 17:</b>
+<b class="nc">&nbsp;                case 18:</b>
+<b class="nc">&nbsp;                case 23:</b>
+<b class="nc">&nbsp;                case 66:</b>
+<b class="nc">&nbsp;                case 67:</b>
+<b class="nc">&nbsp;                case 68:</b>
+<b class="nc">&nbsp;                case 69:</b>
+&nbsp;                case 70:
+<b class="nc">&nbsp;                    currentOffset += 3;</b>
+&nbsp;                    break;
+&nbsp;                case 64:
+<b class="nc">&nbsp;                case 65:</b>
+<b class="nc">&nbsp;                    int tableLength = this.readUnsignedShort(currentOffset + 1);</b>
+&nbsp;                    currentOffset += 3;
+&nbsp;
+<b class="nc">&nbsp;                    while(tableLength-- &gt; 0) {</b>
+<b class="nc">&nbsp;                        int startPc = this.readUnsignedShort(currentOffset);</b>
+&nbsp;                        int length = this.readUnsignedShort(currentOffset + 2);
+<b class="nc">&nbsp;                        currentOffset += 6;</b>
+<b class="nc">&nbsp;                        this.createLabel(startPc, context.currentMethodLabels);</b>
+<b class="nc">&nbsp;                        this.createLabel(startPc + length, context.currentMethodLabels);</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                    break;</b>
+<b class="nc">&nbsp;                case 71:</b>
+<b class="nc">&nbsp;                case 72:</b>
+<b class="nc">&nbsp;                case 73:</b>
+<b class="nc">&nbsp;                case 74:</b>
+&nbsp;                case 75:
+&nbsp;                    currentOffset += 4;
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            int pathLength = this.readByte(currentOffset);</b>
+&nbsp;            if (targetType &gt;&gt;&gt; 24 == 66) {
+&nbsp;                TypePath path = pathLength == 0 ? null : new TypePath(this.classFileBuffer, currentOffset);
+&nbsp;                currentOffset += 1 + 2 * pathLength;
+&nbsp;                String annotationDescriptor = this.readUTF8(currentOffset, charBuffer);
+&nbsp;                currentOffset += 2;
+&nbsp;                currentOffset = this.readElementValues(methodVisitor.visitTryCatchAnnotation(targetType &amp; -256, path, annotationDescriptor, visible), currentOffset, true, charBuffer);
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                currentOffset += 3 + 2 * pathLength;</b>
+<b class="nc">&nbsp;                currentOffset = this.readElementValues((AnnotationVisitor)null, currentOffset, true, charBuffer);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return typeAnnotationsOffsets;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private int getTypeAnnotationBytecodeOffset(int[] typeAnnotationOffsets, int typeAnnotationIndex) {
+&nbsp;        return typeAnnotationOffsets != null &amp;&amp; typeAnnotationIndex &lt; typeAnnotationOffsets.length &amp;&amp; this.readByte(typeAnnotationOffsets[typeAnnotationIndex]) &gt;= 67 ? this.readUnsignedShort(typeAnnotationOffsets[typeAnnotationIndex] + 1) : -1;
+&nbsp;    }
+&nbsp;
+&nbsp;    private int readTypeAnnotationTarget(Context context, int typeAnnotationOffset) {
+&nbsp;        int targetType = this.readInt(typeAnnotationOffset);
+&nbsp;        int currentOffset;
+&nbsp;        switch (targetType &gt;&gt;&gt; 24) {
+&nbsp;            case 0:
+<b class="nc">&nbsp;            case 1:</b>
+<b class="nc">&nbsp;            case 22:</b>
+<b class="nc">&nbsp;                targetType &amp;= -65536;</b>
+<b class="nc">&nbsp;                currentOffset = typeAnnotationOffset + 2;</b>
+<b class="nc">&nbsp;                break;</b>
+&nbsp;            case 2:
+&nbsp;            case 3:
+&nbsp;            case 4:
+&nbsp;            case 5:
+&nbsp;            case 6:
+&nbsp;            case 7:
+<b class="nc">&nbsp;            case 8:</b>
+<b class="nc">&nbsp;            case 9:</b>
+&nbsp;            case 10:
+&nbsp;            case 11:
+&nbsp;            case 12:
+&nbsp;            case 13:
+&nbsp;            case 14:
+&nbsp;            case 15:
+&nbsp;            case 24:
+<b class="nc">&nbsp;            case 25:</b>
+<b class="nc">&nbsp;            case 26:</b>
+&nbsp;            case 27:
+<b class="nc">&nbsp;            case 28:</b>
+&nbsp;            case 29:
+&nbsp;            case 30:
+&nbsp;            case 31:
+&nbsp;            case 32:
+<b class="nc">&nbsp;            case 33:</b>
+<b class="nc">&nbsp;            case 34:</b>
+&nbsp;            case 35:
+&nbsp;            case 36:
+&nbsp;            case 37:
+<b class="nc">&nbsp;            case 38:</b>
+<b class="nc">&nbsp;            case 39:</b>
+<b class="nc">&nbsp;            case 40:</b>
+<b class="nc">&nbsp;            case 41:</b>
+<b class="nc">&nbsp;            case 42:</b>
+<b class="nc">&nbsp;            case 43:</b>
+<b class="nc">&nbsp;            case 44:</b>
+<b class="nc">&nbsp;            case 45:</b>
+<b class="nc">&nbsp;            case 46:</b>
+&nbsp;            case 47:
+&nbsp;            case 48:
+&nbsp;            case 49:
+&nbsp;            case 50:
+&nbsp;            case 51:
+&nbsp;            case 52:
+&nbsp;            case 53:
+&nbsp;            case 54:
+<b class="nc">&nbsp;            case 55:</b>
+<b class="nc">&nbsp;            case 56:</b>
+<b class="nc">&nbsp;            case 57:</b>
+<b class="nc">&nbsp;            case 58:</b>
+&nbsp;            case 59:
+&nbsp;            case 60:
+&nbsp;            case 61:
+<b class="nc">&nbsp;            case 62:</b>
+&nbsp;            case 63:
+&nbsp;            default:
+&nbsp;                throw new IllegalArgumentException();
+&nbsp;            case 16:
+<b class="nc">&nbsp;            case 17:</b>
+&nbsp;            case 18:
+&nbsp;            case 23:
+&nbsp;            case 66:
+&nbsp;                targetType &amp;= -256;
+&nbsp;                currentOffset = typeAnnotationOffset + 3;
+&nbsp;                break;
+<b class="nc">&nbsp;            case 19:</b>
+&nbsp;            case 20:
+&nbsp;            case 21:
+&nbsp;                targetType &amp;= -16777216;
+&nbsp;                currentOffset = typeAnnotationOffset + 1;
+&nbsp;                break;
+&nbsp;            case 64:
+&nbsp;            case 65:
+<b class="nc">&nbsp;                targetType &amp;= -16777216;</b>
+&nbsp;                int tableLength = this.readUnsignedShort(typeAnnotationOffset + 1);
+<b class="nc">&nbsp;                currentOffset = typeAnnotationOffset + 3;</b>
+<b class="nc">&nbsp;                context.currentLocalVariableAnnotationRangeStarts = new Label[tableLength];</b>
+&nbsp;                context.currentLocalVariableAnnotationRangeEnds = new Label[tableLength];
+&nbsp;                context.currentLocalVariableAnnotationRangeIndices = new int[tableLength];
+<b class="nc">&nbsp;</b>
+&nbsp;                for(int i = 0; i &lt; tableLength; ++i) {
+<b class="nc">&nbsp;                    int startPc = this.readUnsignedShort(currentOffset);</b>
+<b class="nc">&nbsp;                    int length = this.readUnsignedShort(currentOffset + 2);</b>
+&nbsp;                    int index = this.readUnsignedShort(currentOffset + 4);
+&nbsp;                    currentOffset += 6;
+<b class="nc">&nbsp;                    context.currentLocalVariableAnnotationRangeStarts[i] = this.createLabel(startPc, context.currentMethodLabels);</b>
+&nbsp;                    context.currentLocalVariableAnnotationRangeEnds[i] = this.createLabel(startPc + length, context.currentMethodLabels);
+&nbsp;                    context.currentLocalVariableAnnotationRangeIndices[i] = index;
+&nbsp;                }
+&nbsp;                break;
+&nbsp;            case 67:
+<b class="nc">&nbsp;            case 68:</b>
+&nbsp;            case 69:
+<b class="nc">&nbsp;            case 70:</b>
+<b class="nc">&nbsp;                targetType &amp;= -16777216;</b>
+<b class="nc">&nbsp;                currentOffset = typeAnnotationOffset + 3;</b>
+<b class="nc">&nbsp;                break;</b>
+&nbsp;            case 71:
+&nbsp;            case 72:
+<b class="nc">&nbsp;            case 73:</b>
+<b class="nc">&nbsp;            case 74:</b>
+<b class="nc">&nbsp;            case 75:</b>
+&nbsp;                targetType &amp;= -16776961;
+&nbsp;                currentOffset = typeAnnotationOffset + 4;
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        context.currentTypeAnnotationTarget = targetType;
+&nbsp;        int pathLength = this.readByte(currentOffset);
+&nbsp;        context.currentTypeAnnotationTargetPath = pathLength == 0 ? null : new TypePath(this.classFileBuffer, currentOffset);
+&nbsp;        return currentOffset + 1 + 2 * pathLength;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private void readParameterAnnotations(MethodVisitor methodVisitor, Context context, int runtimeParameterAnnotationsOffset, boolean visible) {</b>
+&nbsp;        int currentOffset = runtimeParameterAnnotationsOffset + 1;
+&nbsp;        int numParameters = this.classFileBuffer[runtimeParameterAnnotationsOffset] &amp; 255;
+&nbsp;        methodVisitor.visitAnnotableParameterCount(numParameters, visible);
+&nbsp;        char[] charBuffer = context.charBuffer;
+&nbsp;
+&nbsp;        for(int i = 0; i &lt; numParameters; ++i) {
+<b class="nc">&nbsp;            int numAnnotations = this.readUnsignedShort(currentOffset);</b>
+&nbsp;
+&nbsp;            String annotationDescriptor;
+&nbsp;            for(currentOffset += 2; numAnnotations-- &gt; 0; currentOffset = this.readElementValues(methodVisitor.visitParameterAnnotation(i, annotationDescriptor, visible), currentOffset, true, charBuffer)) {
+&nbsp;                annotationDescriptor = this.readUTF8(currentOffset, charBuffer);
+&nbsp;                currentOffset += 2;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private int readElementValues(AnnotationVisitor annotationVisitor, int annotationOffset, boolean named, char[] charBuffer) {</b>
+<b class="nc">&nbsp;        int numElementValuePairs = this.readUnsignedShort(annotationOffset);</b>
+<b class="nc">&nbsp;        int currentOffset = annotationOffset + 2;</b>
+&nbsp;        if (named) {
+<b class="nc">&nbsp;            while(numElementValuePairs-- &gt; 0) {</b>
+&nbsp;                String elementName = this.readUTF8(currentOffset, charBuffer);
+&nbsp;                currentOffset = this.readElementValue(annotationVisitor, currentOffset + 2, elementName, charBuffer);
+&nbsp;            }
+&nbsp;        } else {
+&nbsp;            while(numElementValuePairs-- &gt; 0) {
+<b class="nc">&nbsp;                currentOffset = this.readElementValue(annotationVisitor, currentOffset, (String)null, charBuffer);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        if (annotationVisitor != null) {</b>
+&nbsp;            annotationVisitor.visitEnd();
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return currentOffset;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private int readElementValue(AnnotationVisitor annotationVisitor, int elementValueOffset, String elementName, char[] charBuffer) {
+&nbsp;        if (annotationVisitor == null) {
+&nbsp;            switch (this.classFileBuffer[elementValueOffset] &amp; 255) {
+&nbsp;                case 64:
+&nbsp;                    return this.readElementValues((AnnotationVisitor)null, elementValueOffset + 3, true, charBuffer);
+&nbsp;                case 91:
+&nbsp;                    return this.readElementValues((AnnotationVisitor)null, elementValueOffset + 1, false, charBuffer);
+&nbsp;                case 101:
+&nbsp;                    return elementValueOffset + 5;
+&nbsp;                default:
+&nbsp;                    return elementValueOffset + 3;
+&nbsp;            }
+&nbsp;        } else {
+&nbsp;            int currentOffset = elementValueOffset + 1;
+&nbsp;            switch (this.classFileBuffer[elementValueOffset] &amp; 255) {
+&nbsp;                case 64:
+&nbsp;                    currentOffset = this.readElementValues(annotationVisitor.visitAnnotation(elementName, this.readUTF8(currentOffset, charBuffer)), currentOffset + 2, true, charBuffer);
+&nbsp;                    break;
+&nbsp;                case 65:
+&nbsp;                case 69:
+&nbsp;                case 71:
+&nbsp;                case 72:
+&nbsp;                case 75:
+&nbsp;                case 76:
+&nbsp;                case 77:
+&nbsp;                case 78:
+&nbsp;                case 79:
+&nbsp;                case 80:
+&nbsp;                case 81:
+&nbsp;                case 82:
+&nbsp;                case 84:
+&nbsp;                case 85:
+&nbsp;                case 86:
+&nbsp;                case 87:
+&nbsp;                case 88:
+&nbsp;                case 89:
+&nbsp;                case 92:
+&nbsp;                case 93:
+&nbsp;                case 94:
+&nbsp;                case 95:
+&nbsp;                case 96:
+&nbsp;                case 97:
+&nbsp;                case 98:
+&nbsp;                case 100:
+&nbsp;                case 102:
+&nbsp;                case 103:
+&nbsp;                case 104:
+&nbsp;                case 105:
+&nbsp;                case 106:
+&nbsp;                case 107:
+&nbsp;                case 108:
+&nbsp;                case 109:
+&nbsp;                case 110:
+&nbsp;                case 111:
+&nbsp;                case 112:
+&nbsp;                case 113:
+&nbsp;                case 114:
+&nbsp;                default:
+&nbsp;                    throw new IllegalArgumentException();
+&nbsp;                case 66:
+&nbsp;                    annotationVisitor.visit(elementName, (byte)this.readInt(this.cpInfoOffsets[this.readUnsignedShort(currentOffset)]));
+&nbsp;                    currentOffset += 2;
+&nbsp;                    break;
+&nbsp;                case 67:
+&nbsp;                    annotationVisitor.visit(elementName, (char)this.readInt(this.cpInfoOffsets[this.readUnsignedShort(currentOffset)]));
+&nbsp;                    currentOffset += 2;
+&nbsp;                    break;
+&nbsp;                case 68:
+&nbsp;                case 70:
+&nbsp;                case 73:
+&nbsp;                case 74:
+&nbsp;                    annotationVisitor.visit(elementName, this.readConst(this.readUnsignedShort(currentOffset), charBuffer));
+&nbsp;                    currentOffset += 2;
+&nbsp;                    break;
+&nbsp;                case 83:
+&nbsp;                    annotationVisitor.visit(elementName, (short)this.readInt(this.cpInfoOffsets[this.readUnsignedShort(currentOffset)]));
+&nbsp;                    currentOffset += 2;
+&nbsp;                    break;
+&nbsp;                case 90:
+&nbsp;                    annotationVisitor.visit(elementName, this.readInt(this.cpInfoOffsets[this.readUnsignedShort(currentOffset)]) == 0 ? Boolean.FALSE : Boolean.TRUE);
+&nbsp;                    currentOffset += 2;
+&nbsp;                    break;
+&nbsp;                case 91:
+&nbsp;                    int numValues = this.readUnsignedShort(currentOffset);
+&nbsp;                    currentOffset += 2;
+&nbsp;                    if (numValues == 0) {
+&nbsp;                        return this.readElementValues(annotationVisitor.visitArray(elementName), currentOffset - 2, false, charBuffer);
+&nbsp;                    }
+&nbsp;
+&nbsp;                    switch (this.classFileBuffer[currentOffset] &amp; 255) {
+&nbsp;                        case 66:
+&nbsp;                            byte[] byteValues = new byte[numValues];
+&nbsp;
+&nbsp;                            for(int i = 0; i &lt; numValues; ++i) {
+&nbsp;                                byteValues[i] = (byte)this.readInt(this.cpInfoOffsets[this.readUnsignedShort(currentOffset + 1)]);
+&nbsp;                                currentOffset += 3;
+&nbsp;                            }
+&nbsp;
+&nbsp;                            annotationVisitor.visit(elementName, byteValues);
+&nbsp;                            return currentOffset;
+&nbsp;                        case 67:
+&nbsp;                            char[] charValues = new char[numValues];
+&nbsp;
+&nbsp;                            for(int i = 0; i &lt; numValues; ++i) {
+&nbsp;                                charValues[i] = (char)this.readInt(this.cpInfoOffsets[this.readUnsignedShort(currentOffset + 1)]);
+&nbsp;                                currentOffset += 3;
+<b class="nc">&nbsp;                            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                            annotationVisitor.visit(elementName, charValues);
+&nbsp;                            return currentOffset;
+&nbsp;                        case 68:
+&nbsp;                            double[] doubleValues = new double[numValues];
+&nbsp;
+&nbsp;                            for(int i = 0; i &lt; numValues; ++i) {
+&nbsp;                                doubleValues[i] = Double.longBitsToDouble(this.readLong(this.cpInfoOffsets[this.readUnsignedShort(currentOffset + 1)]));
+&nbsp;                                currentOffset += 3;
+&nbsp;                            }
+&nbsp;
+&nbsp;                            annotationVisitor.visit(elementName, doubleValues);
+&nbsp;                            return currentOffset;
+&nbsp;                        case 69:
+&nbsp;                        case 71:
+&nbsp;                        case 72:
+&nbsp;                        case 75:
+&nbsp;                        case 76:
+&nbsp;                        case 77:
+&nbsp;                        case 78:
+&nbsp;                        case 79:
+&nbsp;                        case 80:
+<b class="nc">&nbsp;                        case 81:</b>
+<b class="nc">&nbsp;                        case 82:</b>
+<b class="nc">&nbsp;                        case 84:</b>
+&nbsp;                        case 85:
+&nbsp;                        case 86:
+&nbsp;                        case 87:
+&nbsp;                        case 88:
+&nbsp;                        case 89:
+&nbsp;                        default:
+&nbsp;                            currentOffset = this.readElementValues(annotationVisitor.visitArray(elementName), currentOffset - 2, false, charBuffer);
+&nbsp;                            return currentOffset;
+&nbsp;                        case 70:
+&nbsp;                            float[] floatValues = new float[numValues];
+&nbsp;
+&nbsp;                            for(int i = 0; i &lt; numValues; ++i) {
+&nbsp;                                floatValues[i] = Float.intBitsToFloat(this.readInt(this.cpInfoOffsets[this.readUnsignedShort(currentOffset + 1)]));
+&nbsp;                                currentOffset += 3;
+&nbsp;                            }
+&nbsp;
+&nbsp;                            annotationVisitor.visit(elementName, floatValues);
+&nbsp;                            return currentOffset;
+&nbsp;                        case 73:
+&nbsp;                            int[] intValues = new int[numValues];
+&nbsp;
+<b class="nc">&nbsp;                            for(int i = 0; i &lt; numValues; ++i) {</b>
+<b class="nc">&nbsp;                                intValues[i] = this.readInt(this.cpInfoOffsets[this.readUnsignedShort(currentOffset + 1)]);</b>
+<b class="nc">&nbsp;                                currentOffset += 3;</b>
+&nbsp;                            }
+&nbsp;
+&nbsp;                            annotationVisitor.visit(elementName, intValues);
+&nbsp;                            return currentOffset;
+&nbsp;                        case 74:
+&nbsp;                            long[] longValues = new long[numValues];
+&nbsp;
+&nbsp;                            for(int i = 0; i &lt; numValues; ++i) {
+&nbsp;                                longValues[i] = this.readLong(this.cpInfoOffsets[this.readUnsignedShort(currentOffset + 1)]);
+&nbsp;                                currentOffset += 3;
+&nbsp;                            }
+&nbsp;
+&nbsp;                            annotationVisitor.visit(elementName, longValues);
+&nbsp;                            return currentOffset;
+&nbsp;                        case 83:
+&nbsp;                            short[] shortValues = new short[numValues];
+&nbsp;
+&nbsp;                            for(int i = 0; i &lt; numValues; ++i) {
+&nbsp;                                shortValues[i] = (short)this.readInt(this.cpInfoOffsets[this.readUnsignedShort(currentOffset + 1)]);
+<b class="nc">&nbsp;                                currentOffset += 3;</b>
+<b class="nc">&nbsp;                            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                            annotationVisitor.visit(elementName, shortValues);
+&nbsp;                            return currentOffset;
+&nbsp;                        case 90:
+<b class="nc">&nbsp;                            boolean[] booleanValues = new boolean[numValues];</b>
+&nbsp;
+<b class="nc">&nbsp;                            for(int i = 0; i &lt; numValues; ++i) {</b>
+<b class="nc">&nbsp;                                booleanValues[i] = this.readInt(this.cpInfoOffsets[this.readUnsignedShort(currentOffset + 1)]) != 0;</b>
+&nbsp;                                currentOffset += 3;
+&nbsp;                            }
+&nbsp;
+&nbsp;                            annotationVisitor.visit(elementName, booleanValues);
+&nbsp;                            return currentOffset;
+&nbsp;                    }
+&nbsp;                case 99:
+&nbsp;                    annotationVisitor.visit(elementName, Type.getType(this.readUTF8(currentOffset, charBuffer)));
+&nbsp;                    currentOffset += 2;
+&nbsp;                    break;
+&nbsp;                case 101:
+&nbsp;                    annotationVisitor.visitEnum(elementName, this.readUTF8(currentOffset, charBuffer), this.readUTF8(currentOffset + 2, charBuffer));
+&nbsp;                    currentOffset += 4;
+&nbsp;                    break;
+&nbsp;                case 115:
+&nbsp;                    annotationVisitor.visit(elementName, this.readUTF8(currentOffset, charBuffer));
+&nbsp;                    currentOffset += 2;
+&nbsp;            }
+&nbsp;
+&nbsp;            return currentOffset;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void computeImplicitFrame(Context context) {
+&nbsp;        String methodDescriptor = context.currentMethodDescriptor;
+&nbsp;        Object[] locals = context.currentFrameLocalTypes;
+&nbsp;        int numLocal = 0;
+<b class="nc">&nbsp;        if ((context.currentMethodAccessFlags &amp; 8) == 0) {</b>
+<b class="nc">&nbsp;            if (&quot;&lt;init&gt;&quot;.equals(context.currentMethodName)) {</b>
+<b class="nc">&nbsp;                locals[numLocal++] = Opcodes.UNINITIALIZED_THIS;</b>
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                locals[numLocal++] = this.readClass(this.header + 2, context.charBuffer);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        int currentMethodDescritorOffset = 1;
+&nbsp;
+&nbsp;        while(true) {
+<b class="nc">&nbsp;            int currentArgumentDescriptorStartOffset = currentMethodDescritorOffset;</b>
+<b class="nc">&nbsp;            switch (methodDescriptor.charAt(currentMethodDescritorOffset++)) {</b>
+<b class="nc">&nbsp;                case &#39;B&#39;:</b>
+<b class="nc">&nbsp;                case &#39;C&#39;:</b>
+&nbsp;                case &#39;I&#39;:
+&nbsp;                case &#39;S&#39;:
+<b class="nc">&nbsp;                case &#39;Z&#39;:</b>
+&nbsp;                    locals[numLocal++] = Opcodes.INTEGER;
+<b class="nc">&nbsp;                    break;</b>
+&nbsp;                case &#39;D&#39;:
+&nbsp;                    locals[numLocal++] = Opcodes.DOUBLE;
+&nbsp;                    break;
+&nbsp;                case &#39;E&#39;:
+<b class="nc">&nbsp;                case &#39;G&#39;:</b>
+<b class="nc">&nbsp;                case &#39;H&#39;:</b>
+&nbsp;                case &#39;K&#39;:
+&nbsp;                case &#39;M&#39;:
+&nbsp;                case &#39;N&#39;:
+<b class="nc">&nbsp;                case &#39;O&#39;:</b>
+<b class="nc">&nbsp;                case &#39;P&#39;:</b>
+&nbsp;                case &#39;Q&#39;:
+&nbsp;                case &#39;R&#39;:
+<b class="nc">&nbsp;                case &#39;T&#39;:</b>
+<b class="nc">&nbsp;                case &#39;U&#39;:</b>
+<b class="nc">&nbsp;                case &#39;V&#39;:</b>
+<b class="nc">&nbsp;                case &#39;W&#39;:</b>
+<b class="nc">&nbsp;                case &#39;X&#39;:</b>
+&nbsp;                case &#39;Y&#39;:
+<b class="nc">&nbsp;                default:</b>
+<b class="nc">&nbsp;                    context.currentFrameLocalCount = numLocal;</b>
+&nbsp;                    return;
+&nbsp;                case &#39;F&#39;:
+&nbsp;                    locals[numLocal++] = Opcodes.FLOAT;
+&nbsp;                    break;
+&nbsp;                case &#39;J&#39;:
+<b class="nc">&nbsp;                    locals[numLocal++] = Opcodes.LONG;</b>
+&nbsp;                    break;
+<b class="nc">&nbsp;                case &#39;L&#39;:</b>
+<b class="nc">&nbsp;                    while(methodDescriptor.charAt(currentMethodDescritorOffset) != &#39;;&#39;) {</b>
+<b class="nc">&nbsp;                        ++currentMethodDescritorOffset;</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                    locals[numLocal++] = methodDescriptor.substring(currentArgumentDescriptorStartOffset + 1, currentMethodDescritorOffset++);</b>
+<b class="nc">&nbsp;                    break;</b>
+<b class="nc">&nbsp;                case &#39;[&#39;:</b>
+&nbsp;                    while(methodDescriptor.charAt(currentMethodDescritorOffset) == &#39;[&#39;) {
+<b class="nc">&nbsp;                        ++currentMethodDescritorOffset;</b>
+&nbsp;                    }
+&nbsp;
+&nbsp;                    if (methodDescriptor.charAt(currentMethodDescritorOffset) == &#39;L&#39;) {
+&nbsp;                        ++currentMethodDescritorOffset;
+&nbsp;
+<b class="nc">&nbsp;                        while(methodDescriptor.charAt(currentMethodDescritorOffset) != &#39;;&#39;) {</b>
+&nbsp;                            ++currentMethodDescritorOffset;
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                    int var9 = numLocal++;</b>
+<b class="nc">&nbsp;                    ++currentMethodDescritorOffset;</b>
+<b class="nc">&nbsp;                    locals[var9] = methodDescriptor.substring(currentArgumentDescriptorStartOffset, currentMethodDescritorOffset);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private int readStackMapFrame(int stackMapFrameOffset, boolean compressed, boolean expand, Context context) {</b>
+&nbsp;        int currentOffset = stackMapFrameOffset;
+&nbsp;        char[] charBuffer = context.charBuffer;
+&nbsp;        Label[] labels = context.currentMethodLabels;
+&nbsp;        int frameType;
+&nbsp;        if (compressed) {
+&nbsp;            currentOffset = stackMapFrameOffset + 1;
+&nbsp;            frameType = this.classFileBuffer[stackMapFrameOffset] &amp; 255;
+&nbsp;        } else {
+&nbsp;            frameType = 255;
+&nbsp;            context.currentFrameOffset = -1;
+&nbsp;        }
+&nbsp;
+&nbsp;        context.currentFrameLocalCountDelta = 0;
+<b class="nc">&nbsp;        int offsetDelta;</b>
+<b class="nc">&nbsp;        if (frameType &lt; 64) {</b>
+&nbsp;            offsetDelta = frameType;
+&nbsp;            context.currentFrameType = 3;
+&nbsp;            context.currentFrameStackCount = 0;
+<b class="nc">&nbsp;        } else if (frameType &lt; 128) {</b>
+<b class="nc">&nbsp;            offsetDelta = frameType - 64;</b>
+&nbsp;            currentOffset = this.readVerificationTypeInfo(currentOffset, context.currentFrameStackTypes, 0, charBuffer, labels);
+&nbsp;            context.currentFrameType = 4;
+<b class="nc">&nbsp;            context.currentFrameStackCount = 1;</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            if (frameType &lt; 247) {
+&nbsp;                throw new IllegalArgumentException();
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            offsetDelta = this.readUnsignedShort(currentOffset);
+&nbsp;            currentOffset += 2;
+&nbsp;            if (frameType == 247) {
+<b class="nc">&nbsp;                currentOffset = this.readVerificationTypeInfo(currentOffset, context.currentFrameStackTypes, 0, charBuffer, labels);</b>
+<b class="nc">&nbsp;                context.currentFrameType = 4;</b>
+&nbsp;                context.currentFrameStackCount = 1;
+&nbsp;            } else if (frameType &gt;= 248 &amp;&amp; frameType &lt; 251) {
+&nbsp;                context.currentFrameType = 2;
+&nbsp;                context.currentFrameLocalCountDelta = 251 - frameType;
+&nbsp;                context.currentFrameLocalCount -= context.currentFrameLocalCountDelta;
+&nbsp;                context.currentFrameStackCount = 0;
+&nbsp;            } else if (frameType == 251) {
+&nbsp;                context.currentFrameType = 3;
+&nbsp;                context.currentFrameStackCount = 0;
+&nbsp;            } else if (frameType &lt; 255) {
+<b class="nc">&nbsp;                int local = expand ? context.currentFrameLocalCount : 0;</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                for(int k = frameType - 251; k &gt; 0; --k) {</b>
+<b class="nc">&nbsp;                    currentOffset = this.readVerificationTypeInfo(currentOffset, context.currentFrameLocalTypes, local++, charBuffer, labels);</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                context.currentFrameType = 1;</b>
+&nbsp;                context.currentFrameLocalCountDelta = frameType - 251;
+<b class="nc">&nbsp;                context.currentFrameLocalCount += context.currentFrameLocalCountDelta;</b>
+&nbsp;                context.currentFrameStackCount = 0;
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                int numberOfLocals = this.readUnsignedShort(currentOffset);
+<b class="nc">&nbsp;                currentOffset += 2;</b>
+<b class="nc">&nbsp;                context.currentFrameType = 0;</b>
+&nbsp;                context.currentFrameLocalCountDelta = numberOfLocals;
+<b class="nc">&nbsp;                context.currentFrameLocalCount = numberOfLocals;</b>
+&nbsp;
+&nbsp;                for(int local = 0; local &lt; numberOfLocals; ++local) {
+&nbsp;                    currentOffset = this.readVerificationTypeInfo(currentOffset, context.currentFrameLocalTypes, local, charBuffer, labels);
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                int numberOfStackItems = this.readUnsignedShort(currentOffset);</b>
+<b class="nc">&nbsp;                currentOffset += 2;</b>
+<b class="nc">&nbsp;                context.currentFrameStackCount = numberOfStackItems;</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                for(int stack = 0; stack &lt; numberOfStackItems; ++stack) {</b>
+<b class="nc">&nbsp;                    currentOffset = this.readVerificationTypeInfo(currentOffset, context.currentFrameStackTypes, stack, charBuffer, labels);</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        context.currentFrameOffset += offsetDelta + 1;</b>
+<b class="nc">&nbsp;        this.createLabel(context.currentFrameOffset, labels);</b>
+<b class="nc">&nbsp;        return currentOffset;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private int readVerificationTypeInfo(int verificationTypeInfoOffset, Object[] frame, int index, char[] charBuffer, Label[] labels) {</b>
+&nbsp;        int currentOffset = verificationTypeInfoOffset + 1;
+<b class="nc">&nbsp;        int tag = this.classFileBuffer[verificationTypeInfoOffset] &amp; 255;</b>
+&nbsp;        switch (tag) {
+&nbsp;            case 0:
+&nbsp;                frame[index] = Opcodes.TOP;
+&nbsp;                break;
+&nbsp;            case 1:
+&nbsp;                frame[index] = Opcodes.INTEGER;
+<b class="nc">&nbsp;                break;</b>
+<b class="nc">&nbsp;            case 2:</b>
+&nbsp;                frame[index] = Opcodes.FLOAT;
+&nbsp;                break;
+<b class="nc">&nbsp;            case 3:</b>
+&nbsp;                frame[index] = Opcodes.DOUBLE;
+<b class="nc">&nbsp;                break;</b>
+&nbsp;            case 4:
+&nbsp;                frame[index] = Opcodes.LONG;
+<b class="nc">&nbsp;                break;</b>
+<b class="nc">&nbsp;            case 5:</b>
+<b class="nc">&nbsp;                frame[index] = Opcodes.NULL;</b>
+&nbsp;                break;
+&nbsp;            case 6:
+<b class="nc">&nbsp;                frame[index] = Opcodes.UNINITIALIZED_THIS;</b>
+&nbsp;                break;
+&nbsp;            case 7:
+&nbsp;                frame[index] = this.readClass(currentOffset, charBuffer);
+<b class="nc">&nbsp;                currentOffset += 2;</b>
+&nbsp;                break;
+&nbsp;            case 8:
+<b class="nc">&nbsp;                frame[index] = this.createLabel(this.readUnsignedShort(currentOffset), labels);</b>
+&nbsp;                currentOffset += 2;
+<b class="nc">&nbsp;                break;</b>
+<b class="nc">&nbsp;            default:</b>
+&nbsp;                throw new IllegalArgumentException();
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return currentOffset;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    final int getFirstAttributeOffset() {</b>
+&nbsp;        int currentOffset = this.header + 8 + this.readUnsignedShort(this.header + 6) * 2;
+&nbsp;        int fieldsCount = this.readUnsignedShort(currentOffset);
+&nbsp;        currentOffset += 2;
+&nbsp;
+&nbsp;        while(fieldsCount-- &gt; 0) {
+&nbsp;            int attributesCount = this.readUnsignedShort(currentOffset + 6);
+&nbsp;
+&nbsp;            for(currentOffset += 8; attributesCount-- &gt; 0; currentOffset += 6 + this.readInt(currentOffset + 2)) {
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        int methodsCount = this.readUnsignedShort(currentOffset);
+&nbsp;        currentOffset += 2;
+&nbsp;
+<b class="nc">&nbsp;        while(methodsCount-- &gt; 0) {</b>
+&nbsp;            int attributesCount = this.readUnsignedShort(currentOffset + 6);
+&nbsp;
+<b class="nc">&nbsp;            for(currentOffset += 8; attributesCount-- &gt; 0; currentOffset += 6 + this.readInt(currentOffset + 2)) {</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return currentOffset + 2;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private int[] readBootstrapMethodsAttribute(int maxStringLength) {</b>
+&nbsp;        char[] charBuffer = new char[maxStringLength];
+<b class="nc">&nbsp;        int currentAttributeOffset = this.getFirstAttributeOffset();</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        for(int i = this.readUnsignedShort(currentAttributeOffset - 2); i &gt; 0; --i) {
+&nbsp;            String attributeName = this.readUTF8(currentAttributeOffset, charBuffer);
+&nbsp;            int attributeLength = this.readInt(currentAttributeOffset + 2);
+&nbsp;            currentAttributeOffset += 6;
+&nbsp;            if (&quot;BootstrapMethods&quot;.equals(attributeName)) {
+&nbsp;                int[] result = new int[this.readUnsignedShort(currentAttributeOffset)];
+&nbsp;                int currentBootstrapMethodOffset = currentAttributeOffset + 2;
+&nbsp;
+<b class="nc">&nbsp;                for(int j = 0; j &lt; result.length; ++j) {</b>
+<b class="nc">&nbsp;                    result[j] = currentBootstrapMethodOffset;</b>
+&nbsp;                    currentBootstrapMethodOffset += 4 + this.readUnsignedShort(currentBootstrapMethodOffset + 2) * 2;
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                return result;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            currentAttributeOffset += attributeLength;
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        throw new IllegalArgumentException();
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private Attribute readAttribute(Attribute[] attributePrototypes, String type, int offset, int length, char[] charBuffer, int codeAttributeOffset, Label[] labels) {</b>
+<b class="nc">&nbsp;        for(Attribute attributePrototype : attributePrototypes) {</b>
+<b class="nc">&nbsp;            if (attributePrototype.type.equals(type)) {</b>
+<b class="nc">&nbsp;                return attributePrototype.read(this, offset, length, charBuffer, codeAttributeOffset, labels);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return (new Attribute(type)).read(this, offset, length, (char[])null, -1, (Label[])null);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public int getItemCount() {
+<b class="nc">&nbsp;        return this.cpInfoOffsets.length;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public int getItem(int constantPoolEntryIndex) {</b>
+<b class="nc">&nbsp;        return this.cpInfoOffsets[constantPoolEntryIndex];</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public int getMaxStringLength() {</b>
+<b class="nc">&nbsp;        return this.maxStringLength;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public int readByte(int offset) {</b>
+<b class="nc">&nbsp;        return this.classFileBuffer[offset] &amp; 255;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public byte[] readBytes(int offset, int length) {
+&nbsp;        byte[] result = new byte[length];
+&nbsp;        System.arraycopy(this.classFileBuffer, offset, result, 0, length);
+<b class="nc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int readUnsignedShort(int offset) {
+&nbsp;        byte[] classBuffer = this.classFileBuffer;
+&nbsp;        return (classBuffer[offset] &amp; 255) &lt;&lt; 8 | classBuffer[offset + 1] &amp; 255;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public short readShort(int offset) {</b>
+<b class="nc">&nbsp;        byte[] classBuffer = this.classFileBuffer;</b>
+&nbsp;        return (short)((classBuffer[offset] &amp; 255) &lt;&lt; 8 | classBuffer[offset + 1] &amp; 255);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public int readInt(int offset) {
+<b class="nc">&nbsp;        byte[] classBuffer = this.classFileBuffer;</b>
+<b class="nc">&nbsp;        return (classBuffer[offset] &amp; 255) &lt;&lt; 24 | (classBuffer[offset + 1] &amp; 255) &lt;&lt; 16 | (classBuffer[offset + 2] &amp; 255) &lt;&lt; 8 | classBuffer[offset + 3] &amp; 255;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public long readLong(int offset) {</b>
+&nbsp;        long l1 = (long)this.readInt(offset);
+&nbsp;        long l0 = (long)this.readInt(offset + 4) &amp; 4294967295L;
+&nbsp;        return l1 &lt;&lt; 32 | l0;
+&nbsp;    }
+&nbsp;
+&nbsp;    public String readUTF8(int offset, char[] charBuffer) {
+&nbsp;        int constantPoolEntryIndex = this.readUnsignedShort(offset);
+&nbsp;        return offset != 0 &amp;&amp; constantPoolEntryIndex != 0 ? this.readUtf(constantPoolEntryIndex, charBuffer) : null;
+&nbsp;    }
+&nbsp;
+&nbsp;    final String readUtf(int constantPoolEntryIndex, char[] charBuffer) {
+&nbsp;        String value = this.constantUtf8Values[constantPoolEntryIndex];
+&nbsp;        if (value != null) {
+&nbsp;            return value;
+&nbsp;        } else {
+<b class="nc">&nbsp;            int cpInfoOffset = this.cpInfoOffsets[constantPoolEntryIndex];</b>
+<b class="nc">&nbsp;            return this.constantUtf8Values[constantPoolEntryIndex] = this.readUtf(cpInfoOffset + 2, this.readUnsignedShort(cpInfoOffset), charBuffer);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private String readUtf(int utfOffset, int utfLength, char[] charBuffer) {
+<b class="nc">&nbsp;        int currentOffset = utfOffset;</b>
+&nbsp;        int endOffset = utfOffset + utfLength;
+<b class="nc">&nbsp;        int strLength = 0;</b>
+<b class="nc">&nbsp;        byte[] classBuffer = this.classFileBuffer;</b>
+&nbsp;
+<b class="nc">&nbsp;        while(currentOffset &lt; endOffset) {</b>
+<b class="nc">&nbsp;            int currentByte = classBuffer[currentOffset++];</b>
+&nbsp;            if ((currentByte &amp; 128) == 0) {
+&nbsp;                charBuffer[strLength++] = (char)(currentByte &amp; 127);
+&nbsp;            } else if ((currentByte &amp; 224) == 192) {
+&nbsp;                charBuffer[strLength++] = (char)(((currentByte &amp; 31) &lt;&lt; 6) + (classBuffer[currentOffset++] &amp; 63));
+&nbsp;            } else {
+&nbsp;                charBuffer[strLength++] = (char)(((currentByte &amp; 15) &lt;&lt; 12) + ((classBuffer[currentOffset++] &amp; 63) &lt;&lt; 6) + (classBuffer[currentOffset++] &amp; 63));
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return new String(charBuffer, 0, strLength);
+&nbsp;    }
+&nbsp;
+&nbsp;    private String readStringish(int offset, char[] charBuffer) {
+&nbsp;        return this.readUTF8(this.cpInfoOffsets[this.readUnsignedShort(offset)], charBuffer);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public String readClass(int offset, char[] charBuffer) {
+<b class="nc">&nbsp;        return this.readStringish(offset, charBuffer);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public String readModule(int offset, char[] charBuffer) {</b>
+&nbsp;        return this.readStringish(offset, charBuffer);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public String readPackage(int offset, char[] charBuffer) {</b>
+&nbsp;        return this.readStringish(offset, charBuffer);
+&nbsp;    }
+&nbsp;
+&nbsp;    private ConstantDynamic readConstantDynamic(int constantPoolEntryIndex, char[] charBuffer) {
+&nbsp;        ConstantDynamic constantDynamic = this.constantDynamicValues[constantPoolEntryIndex];
+&nbsp;        if (constantDynamic != null) {
+&nbsp;            return constantDynamic;
+&nbsp;        } else {
+&nbsp;            int cpInfoOffset = this.cpInfoOffsets[constantPoolEntryIndex];
+&nbsp;            int nameAndTypeCpInfoOffset = this.cpInfoOffsets[this.readUnsignedShort(cpInfoOffset + 2)];
+&nbsp;            String name = this.readUTF8(nameAndTypeCpInfoOffset, charBuffer);
+&nbsp;            String descriptor = this.readUTF8(nameAndTypeCpInfoOffset + 2, charBuffer);
+&nbsp;            int bootstrapMethodOffset = this.bootstrapMethodOffsets[this.readUnsignedShort(cpInfoOffset)];
+&nbsp;            Handle handle = (Handle)this.readConst(this.readUnsignedShort(bootstrapMethodOffset), charBuffer);
+<b class="nc">&nbsp;            Object[] bootstrapMethodArguments = new Object[this.readUnsignedShort(bootstrapMethodOffset + 2)];</b>
+&nbsp;            bootstrapMethodOffset += 4;
+&nbsp;
+&nbsp;            for(int i = 0; i &lt; bootstrapMethodArguments.length; ++i) {
+&nbsp;                bootstrapMethodArguments[i] = this.readConst(this.readUnsignedShort(bootstrapMethodOffset), charBuffer);
+&nbsp;                bootstrapMethodOffset += 2;
+&nbsp;            }
+&nbsp;
+&nbsp;            return this.constantDynamicValues[constantPoolEntryIndex] = new ConstantDynamic(name, descriptor, handle, bootstrapMethodArguments);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public Object readConst(int constantPoolEntryIndex, char[] charBuffer) {
+<b class="nc">&nbsp;        int cpInfoOffset = this.cpInfoOffsets[constantPoolEntryIndex];</b>
+<b class="nc">&nbsp;        switch (this.classFileBuffer[cpInfoOffset - 1]) {</b>
+&nbsp;            case 3:
+<b class="nc">&nbsp;                return this.readInt(cpInfoOffset);</b>
+&nbsp;            case 4:
+&nbsp;                return Float.intBitsToFloat(this.readInt(cpInfoOffset));
+&nbsp;            case 5:
+&nbsp;                return this.readLong(cpInfoOffset);
+&nbsp;            case 6:
+&nbsp;                return Double.longBitsToDouble(this.readLong(cpInfoOffset));
+&nbsp;            case 7:
+&nbsp;                return Type.getObjectType(this.readUTF8(cpInfoOffset, charBuffer));
+&nbsp;            case 8:
+&nbsp;                return this.readUTF8(cpInfoOffset, charBuffer);
+&nbsp;            case 9:
+&nbsp;            case 10:
+<b class="nc">&nbsp;            case 11:</b>
+<b class="nc">&nbsp;            case 12:</b>
+<b class="nc">&nbsp;            case 13:</b>
+&nbsp;            case 14:
+&nbsp;            default:
+&nbsp;                throw new IllegalArgumentException();
+&nbsp;            case 15:
+&nbsp;                int referenceKind = this.readByte(cpInfoOffset);
+&nbsp;                int referenceCpInfoOffset = this.cpInfoOffsets[this.readUnsignedShort(cpInfoOffset + 1)];
+&nbsp;                int nameAndTypeCpInfoOffset = this.cpInfoOffsets[this.readUnsignedShort(referenceCpInfoOffset + 2)];
+&nbsp;                String owner = this.readClass(referenceCpInfoOffset, charBuffer);
+&nbsp;                String name = this.readUTF8(nameAndTypeCpInfoOffset, charBuffer);
+&nbsp;                String descriptor = this.readUTF8(nameAndTypeCpInfoOffset + 2, charBuffer);
+&nbsp;                boolean isInterface = this.classFileBuffer[referenceCpInfoOffset - 1] == 11;
+<b class="nc">&nbsp;                return new Handle(referenceKind, owner, name, descriptor, isInterface);</b>
+<b class="nc">&nbsp;            case 16:</b>
+&nbsp;                return Type.getMethodType(this.readUTF8(cpInfoOffset, charBuffer));
+&nbsp;            case 17:
+&nbsp;                return this.readConstantDynamic(constantPoolEntryIndex, charBuffer);
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-20 13:43</div>
+</div>
+</body>
+</html>

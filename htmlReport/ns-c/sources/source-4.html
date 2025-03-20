@@ -1,0 +1,196 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > CityUseCaseTest</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.pragma.hogar360.serviceshome.domain.usecases</a>
+</div>
+
+<h1>Coverage Summary for Class: CityUseCaseTest (com.pragma.hogar360.serviceshome.domain.usecases)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">CityUseCaseTest</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (6/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (26/26)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.pragma.hogar360.serviceshome.domain.usecases;
+&nbsp;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.exceptions.DuplicateDepartmentNameException;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.model.CityModel;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.ports.out.CityPersistencePort;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.ports.out.DepartmentPersistencePort;
+&nbsp;import com.pragma.hogar360.serviceshome.factory.CityModelFactory;
+&nbsp;import org.junit.jupiter.api.BeforeEach;
+&nbsp;import org.junit.jupiter.api.Test;
+&nbsp;import org.mockito.InjectMocks;
+&nbsp;import org.mockito.Mock;
+&nbsp;import org.mockito.MockitoAnnotations;
+&nbsp;
+&nbsp;import java.util.Optional;
+&nbsp;
+&nbsp;import static org.junit.jupiter.api.Assertions.*;
+&nbsp;import static org.mockito.Mockito.*;
+&nbsp;
+<b class="fc">&nbsp;public class CityUseCaseTest {</b>
+&nbsp;
+&nbsp;    @Mock
+&nbsp;    private CityPersistencePort cityPersistencePort;
+&nbsp;
+&nbsp;    @Mock
+&nbsp;    private DepartmentPersistencePort departmentPersistencePort;
+&nbsp;
+&nbsp;    @InjectMocks
+&nbsp;    private CityUseCase cityUseCase;
+&nbsp;
+&nbsp;    @BeforeEach
+&nbsp;    public void setUp() {
+<b class="fc">&nbsp;        MockitoAnnotations.openMocks(this);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Test
+&nbsp;    public void testCreateCity_Success() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        CityModel cityModel = CityModelFactory.createDefaultCityModel();</b>
+<b class="fc">&nbsp;        when(cityPersistencePort.existsByName(cityModel.getName())).thenReturn(false);</b>
+<b class="fc">&nbsp;        when(cityPersistencePort.saveCity(cityModel)).thenReturn(cityModel);</b>
+&nbsp;
+&nbsp;        // Act
+<b class="fc">&nbsp;        CityModel result = cityUseCase.createCity(cityModel);</b>
+&nbsp;
+&nbsp;        // Assert
+<b class="fc">&nbsp;        assertNotNull(result);</b>
+<b class="fc">&nbsp;        assertEquals(cityModel, result);</b>
+<b class="fc">&nbsp;        verify(cityPersistencePort, times(1)).existsByName(cityModel.getName());</b>
+<b class="fc">&nbsp;        verify(cityPersistencePort, times(1)).saveCity(cityModel);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Test
+&nbsp;    public void testCreateCity_DuplicateName() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        CityModel cityModel = CityModelFactory.createDefaultCityModel();</b>
+<b class="fc">&nbsp;        when(cityPersistencePort.existsByName(cityModel.getName())).thenReturn(true);</b>
+&nbsp;
+&nbsp;        // Act &amp; Assert
+<b class="fc">&nbsp;        assertThrows(DuplicateDepartmentNameException.class, () -&gt; cityUseCase.createCity(cityModel));</b>
+<b class="fc">&nbsp;        verify(cityPersistencePort, times(1)).existsByName(cityModel.getName());</b>
+<b class="fc">&nbsp;        verify(cityPersistencePort, never()).saveCity(cityModel);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Test
+&nbsp;    public void testGetCityByName_Success() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        CityModel cityModel = CityModelFactory.createDefaultCityModel();</b>
+<b class="fc">&nbsp;        when(cityPersistencePort.findByName(cityModel.getName())).thenReturn(Optional.of(cityModel));</b>
+&nbsp;
+&nbsp;        // Act
+<b class="fc">&nbsp;        Optional&lt;CityModel&gt; result = cityUseCase.getCityByName(cityModel.getName());</b>
+&nbsp;
+&nbsp;        // Assert
+<b class="fc">&nbsp;        assertTrue(result.isPresent());</b>
+<b class="fc">&nbsp;        assertEquals(cityModel, result.get());</b>
+<b class="fc">&nbsp;        verify(cityPersistencePort, times(1)).findByName(cityModel.getName());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Test
+&nbsp;    public void testGetCityByName_NotFound() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        String cityName = &quot;Nonexistent City&quot;;</b>
+<b class="fc">&nbsp;        when(cityPersistencePort.findByName(cityName)).thenReturn(Optional.empty());</b>
+&nbsp;
+&nbsp;        // Act
+<b class="fc">&nbsp;        Optional&lt;CityModel&gt; result = cityUseCase.getCityByName(cityName);</b>
+&nbsp;
+&nbsp;        // Assert
+<b class="fc">&nbsp;        assertFalse(result.isPresent());</b>
+<b class="fc">&nbsp;        verify(cityPersistencePort, times(1)).findByName(cityName);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-20 13:44</div>
+</div>
+</body>
+</html>

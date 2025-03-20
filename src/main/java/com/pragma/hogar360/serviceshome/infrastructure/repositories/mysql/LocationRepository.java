@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import java.util.Optional;
 
@@ -16,7 +17,7 @@ import java.util.Optional;
  * @version 1.0
  * @since [16/3/2025]
  */
-public interface LocationRepository extends JpaRepository<LocationEntity, Long> {
+public interface LocationRepository extends JpaRepository<LocationEntity, Long>, JpaSpecificationExecutor<LocationEntity> {
 
     /**
      * Checks if a LocationEntity with the given city and department names exists.
@@ -47,7 +48,7 @@ public interface LocationRepository extends JpaRepository<LocationEntity, Long> 
      */
     Page<LocationEntity> findByCityNameContainingIgnoreCaseOrDepartmentNameContainingIgnoreCase(String cityName, String departmentName, Pageable pageable);
     Page<LocationEntity> findByCityNameContainingIgnoreCase(String cityName, Pageable pageable);
-    Page<LocationEntity> findByDepartmentNameContainingIgnoreCase(String departmentName, Pageable pageable);
+    Page<LocationEntity> findByDepartment_NameContainingIgnoreCase(String departmentName, Pageable pageable);
 
 
 }

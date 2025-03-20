@@ -27,12 +27,10 @@ public class CityServiceImplementation implements CityService {
      * Port for domain-level city service operations.
      */
     private final CityServicePort cityServicePort;
-
     /**
      * Mapper for converting between city DTOs and domain models.
      */
     private final CityDtoMapper cityDtoMapper;
-
     /**
      * Constructor for CityServiceImplementation.
      *
@@ -43,7 +41,6 @@ public class CityServiceImplementation implements CityService {
         this.cityServicePort = cityServicePort;
         this.cityDtoMapper = cityDtoMapper;
     }
-
     /**
      * Creates a new city based on the provided request.
      *
@@ -56,7 +53,6 @@ public class CityServiceImplementation implements CityService {
         CityModel savedCity = cityServicePort.createCity(cityModel);
         return new SaveCityResponse(Constants.SAVE_CITY_RESPONSE_MESSAGE, LocalDateTime.now());
     }
-
     /**
      * Retrieves a city by its name.
      *

@@ -16,7 +16,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-public class CityUseCaseTest {
+class CityUseCaseTest {
 
     @Mock
     private CityPersistencePort cityPersistencePort;
@@ -28,12 +28,12 @@ public class CityUseCaseTest {
     private CityUseCase cityUseCase;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    public void testCreateCity_Success() {
+    void testCreateCity_Success() {
         // Arrange
         CityModel cityModel = CityModelFactory.createDefaultCityModel();
         when(cityPersistencePort.existsByName(cityModel.getName())).thenReturn(false);
@@ -50,7 +50,7 @@ public class CityUseCaseTest {
     }
 
     @Test
-    public void testCreateCity_DuplicateName() {
+    void testCreateCity_DuplicateName() {
         // Arrange
         CityModel cityModel = CityModelFactory.createDefaultCityModel();
         when(cityPersistencePort.existsByName(cityModel.getName())).thenReturn(true);
@@ -62,7 +62,7 @@ public class CityUseCaseTest {
     }
 
     @Test
-    public void testGetCityByName_Success() {
+    void testGetCityByName_Success() {
         // Arrange
         CityModel cityModel = CityModelFactory.createDefaultCityModel();
         when(cityPersistencePort.findByName(cityModel.getName())).thenReturn(Optional.of(cityModel));
@@ -77,7 +77,7 @@ public class CityUseCaseTest {
     }
 
     @Test
-    public void testGetCityByName_NotFound() {
+    void testGetCityByName_NotFound() {
         // Arrange
         String cityName = "Nonexistent City";
         when(cityPersistencePort.findByName(cityName)).thenReturn(Optional.empty());

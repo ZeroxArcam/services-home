@@ -114,6 +114,11 @@ public class ControllerAdvisor {
         return ResponseEntity.badRequest().body(new ExceptionResponse(ExceptionConstants.DESCRIPTION_LOCATION_MAX_SIZE_MESSAGE,
                 LocalDateTime.now()));
     }
+    @ExceptionHandler(InvalidParameters.class)
+    public ResponseEntity<ExceptionResponse> handleInvalidParameters(InvalidParameters invalidParameters) {
+        return ResponseEntity.badRequest().body(new ExceptionResponse(ExceptionConstants.INVALID_PARAMETERS,
+                LocalDateTime.now()));
+    }
 
 
 }

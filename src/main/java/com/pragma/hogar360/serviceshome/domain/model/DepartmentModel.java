@@ -15,7 +15,7 @@ public class DepartmentModel {
     /**
      * The unique identifier of the department.
      */
-    private final Long id;
+    private Long id;
 
     /**
      * The name of the department.
@@ -36,9 +36,12 @@ public class DepartmentModel {
      */
     public DepartmentModel(Long id, String name, String description) {
         this.id = id;
-        setName(name);
-        setDescription(description);
+        this.name = name;
+        this.description = description;
+//        setName(name);
+//        setDescription(description);
     }
+    public DepartmentModel(){}
 
     /**
      * Gets the unique identifier of the department.
@@ -73,7 +76,7 @@ public class DepartmentModel {
      * @param description The new description of the department.
      */
     public void setDescription(String description) {
-        Validation.validationCityDepartmentDescription(description);
+        //Validation.validationCityDepartmentDescription(description);
         this.description = description;
     }
 
@@ -83,7 +86,7 @@ public class DepartmentModel {
      * @param name The new name of the department.
      */
     public void setName(String name) {
-        Validation.validateName(name);
+        //Validation.validateName(name);
         this.name = name;
     }
 }

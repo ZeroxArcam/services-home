@@ -1,0 +1,280 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > EngineExecutionOrchestrator</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.platform.launcher.core</a>
+</div>
+
+<h1>Coverage Summary for Class: EngineExecutionOrchestrator (org.junit.platform.launcher.core)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">EngineExecutionOrchestrator</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    78.6%
+  </span>
+  <span class="absValue">
+    (11/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    60%
+  </span>
+  <span class="absValue">
+    (6/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    72.4%
+  </span>
+  <span class="absValue">
+    (42/58)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.junit.platform.launcher.core;
+&nbsp;
+&nbsp;import java.util.Objects;
+&nbsp;import java.util.Optional;
+&nbsp;import java.util.function.Consumer;
+&nbsp;import org.apiguardian.api.API;
+&nbsp;import org.apiguardian.api.API.Status;
+&nbsp;import org.junit.platform.commons.JUnitException;
+&nbsp;import org.junit.platform.commons.util.Preconditions;
+&nbsp;import org.junit.platform.commons.util.UnrecoverableExceptions;
+&nbsp;import org.junit.platform.engine.ConfigurationParameters;
+&nbsp;import org.junit.platform.engine.EngineExecutionListener;
+&nbsp;import org.junit.platform.engine.ExecutionRequest;
+&nbsp;import org.junit.platform.engine.TestDescriptor;
+&nbsp;import org.junit.platform.engine.TestEngine;
+&nbsp;import org.junit.platform.engine.TestExecutionResult;
+&nbsp;import org.junit.platform.launcher.TestExecutionListener;
+&nbsp;import org.junit.platform.launcher.TestIdentifier;
+&nbsp;import org.junit.platform.launcher.TestPlan;
+&nbsp;
+&nbsp;@API(
+&nbsp;    status = Status.INTERNAL,
+&nbsp;    since = &quot;1.7&quot;,
+&nbsp;    consumers = {&quot;org.junit.platform.testkit&quot;, &quot;org.junit.platform.suite.engine&quot;}
+&nbsp;)
+&nbsp;public class EngineExecutionOrchestrator {
+&nbsp;    private final ListenerRegistry&lt;TestExecutionListener&gt; listenerRegistry;
+&nbsp;
+&nbsp;    public EngineExecutionOrchestrator() {
+&nbsp;        this(ListenerRegistry.forTestExecutionListeners());
+&nbsp;    }
+&nbsp;
+&nbsp;    EngineExecutionOrchestrator(ListenerRegistry&lt;TestExecutionListener&gt; listenerRegistry) {
+&nbsp;        this.listenerRegistry = listenerRegistry;
+&nbsp;    }
+&nbsp;
+&nbsp;    void execute(InternalTestPlan internalTestPlan, TestExecutionListener... listeners) {
+&nbsp;        ConfigurationParameters configurationParameters = internalTestPlan.getConfigurationParameters();
+&nbsp;        ListenerRegistry&lt;TestExecutionListener&gt; testExecutionListenerListeners = this.buildListenerRegistryForExecution(listeners);
+&nbsp;        this.withInterceptedStreams(configurationParameters, testExecutionListenerListeners, (testExecutionListener) -&gt; this.execute(internalTestPlan, EngineExecutionListener.NOOP, testExecutionListener));
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    @API(
+<b class="fc">&nbsp;        status = Status.INTERNAL,</b>
+<b class="fc">&nbsp;        since = &quot;1.9&quot;,</b>
+&nbsp;        consumers = {&quot;org.junit.platform.suite.engine&quot;}
+&nbsp;    )
+&nbsp;    public void execute(LauncherDiscoveryResult discoveryResult, EngineExecutionListener engineExecutionListener, TestExecutionListener testExecutionListener) {
+<b class="fc">&nbsp;        Preconditions.notNull(discoveryResult, &quot;discoveryResult must not be null&quot;);</b>
+<b class="fc">&nbsp;        Preconditions.notNull(engineExecutionListener, &quot;engineExecutionListener must not be null&quot;);</b>
+&nbsp;        Preconditions.notNull(testExecutionListener, &quot;testExecutionListener must not be null&quot;);
+<b class="fc">&nbsp;        InternalTestPlan internalTestPlan = InternalTestPlan.from(discoveryResult);</b>
+<b class="fc">&nbsp;        this.execute(internalTestPlan, engineExecutionListener, testExecutionListener);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void execute(InternalTestPlan internalTestPlan, EngineExecutionListener parentEngineExecutionListener, TestExecutionListener testExecutionListener) {
+&nbsp;        internalTestPlan.markStarted();
+&nbsp;        TestPlan testPlan = internalTestPlan.getDelegate();
+&nbsp;        LauncherDiscoveryResult discoveryResult = internalTestPlan.getDiscoveryResult();
+&nbsp;        testExecutionListener.testPlanExecutionStarted(testPlan);
+&nbsp;        if (this.isDryRun(internalTestPlan)) {
+&nbsp;            this.dryRun(testPlan, testExecutionListener);
+&nbsp;        } else {
+&nbsp;            this.execute(discoveryResult, buildEngineExecutionListener(parentEngineExecutionListener, testExecutionListener, testPlan));
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        testExecutionListener.testPlanExecutionFinished(testPlan);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private Boolean isDryRun(InternalTestPlan internalTestPlan) {</b>
+<b class="nc">&nbsp;        return (Boolean)internalTestPlan.getConfigurationParameters().getBoolean(&quot;junit.platform.execution.dryRun.enabled&quot;).orElse(false);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void dryRun(TestPlan testPlan, final TestExecutionListener listener) {
+&nbsp;        testPlan.accept(new TestPlan.Visitor() {
+<b class="fc">&nbsp;            public void preVisitContainer(TestIdentifier testIdentifier) {</b>
+&nbsp;                listener.executionStarted(testIdentifier);
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            public void visit(TestIdentifier testIdentifier) {</b>
+<b class="fc">&nbsp;                if (!testIdentifier.isContainer()) {</b>
+&nbsp;                    listener.executionSkipped(testIdentifier, &quot;JUnit Platform dry-run mode is enabled&quot;);
+<b class="fc">&nbsp;                }</b>
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            public void postVisitContainer(TestIdentifier testIdentifier) {
+<b class="fc">&nbsp;                listener.executionFinished(testIdentifier, TestExecutionResult.successful());</b>
+<b class="fc">&nbsp;            }</b>
+&nbsp;        });
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private static EngineExecutionListener buildEngineExecutionListener(EngineExecutionListener parentEngineExecutionListener, TestExecutionListener testExecutionListener, TestPlan testPlan) {
+&nbsp;        ListenerRegistry&lt;EngineExecutionListener&gt; engineExecutionListenerRegistry = ListenerRegistry.forEngineExecutionListeners();
+<b class="fc">&nbsp;        engineExecutionListenerRegistry.add(new ExecutionListenerAdapter(testPlan, testExecutionListener));</b>
+&nbsp;        engineExecutionListenerRegistry.add(parentEngineExecutionListener);
+&nbsp;        return (EngineExecutionListener)engineExecutionListenerRegistry.getCompositeListener();
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private void withInterceptedStreams(ConfigurationParameters configurationParameters, ListenerRegistry&lt;TestExecutionListener&gt; listenerRegistry, Consumer&lt;TestExecutionListener&gt; action) {
+&nbsp;        TestExecutionListener testExecutionListener = (TestExecutionListener)listenerRegistry.getCompositeListener();
+&nbsp;        Objects.requireNonNull(testExecutionListener);
+&nbsp;        Optional&lt;StreamInterceptingTestExecutionListener&gt; streamInterceptingTestExecutionListener = StreamInterceptingTestExecutionListener.create(configurationParameters, testExecutionListener::reportingEntryPublished);
+&nbsp;        Objects.requireNonNull(listenerRegistry);
+&nbsp;        streamInterceptingTestExecutionListener.ifPresent(listenerRegistry::add);
+&nbsp;
+&nbsp;        try {
+&nbsp;            action.accept((TestExecutionListener)listenerRegistry.getCompositeListener());
+&nbsp;        } finally {
+&nbsp;            streamInterceptingTestExecutionListener.ifPresent(StreamInterceptingTestExecutionListener::unregister);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    @API(
+&nbsp;        status = Status.INTERNAL,
+&nbsp;        since = &quot;1.7&quot;,
+&nbsp;        consumers = {&quot;org.junit.platform.testkit&quot;}
+&nbsp;    )
+&nbsp;    public void execute(LauncherDiscoveryResult discoveryResult, EngineExecutionListener engineExecutionListener) {
+&nbsp;        Preconditions.notNull(discoveryResult, &quot;discoveryResult must not be null&quot;);
+<b class="fc">&nbsp;        Preconditions.notNull(engineExecutionListener, &quot;engineExecutionListener must not be null&quot;);</b>
+<b class="fc">&nbsp;        ConfigurationParameters configurationParameters = discoveryResult.getConfigurationParameters();</b>
+<b class="fc">&nbsp;        EngineExecutionListener listener = selectExecutionListener(engineExecutionListener, configurationParameters);</b>
+<b class="fc">&nbsp;</b>
+&nbsp;        for(TestEngine testEngine : discoveryResult.getTestEngines()) {
+&nbsp;            TestDescriptor engineDescriptor = discoveryResult.getEngineTestDescriptor(testEngine);
+&nbsp;            if (engineDescriptor instanceof EngineDiscoveryErrorDescriptor) {
+&nbsp;                listener.executionStarted(engineDescriptor);
+&nbsp;                listener.executionFinished(engineDescriptor, TestExecutionResult.failed(((EngineDiscoveryErrorDescriptor)engineDescriptor).getCause()));
+<b class="fc">&nbsp;            } else {</b>
+<b class="fc">&nbsp;                this.execute(engineDescriptor, listener, configurationParameters, testEngine);</b>
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private static EngineExecutionListener selectExecutionListener(EngineExecutionListener engineExecutionListener, ConfigurationParameters configurationParameters) {
+<b class="fc">&nbsp;        boolean stackTracePruningEnabled = (Boolean)configurationParameters.getBoolean(&quot;junit.platform.stacktrace.pruning.enabled&quot;).orElse(true);</b>
+&nbsp;        return (EngineExecutionListener)(stackTracePruningEnabled ? new StackTracePruningEngineExecutionListener(engineExecutionListener) : engineExecutionListener);
+&nbsp;    }
+&nbsp;
+&nbsp;    private ListenerRegistry&lt;TestExecutionListener&gt; buildListenerRegistryForExecution(TestExecutionListener... listeners) {
+&nbsp;        return listeners.length == 0 ? this.listenerRegistry : ListenerRegistry.copyOf(this.listenerRegistry).addAll(listeners);
+&nbsp;    }
+&nbsp;
+&nbsp;    private void execute(TestDescriptor engineDescriptor, EngineExecutionListener listener, ConfigurationParameters configurationParameters, TestEngine testEngine) {
+&nbsp;        OutcomeDelayingEngineExecutionListener delayingListener = new OutcomeDelayingEngineExecutionListener(listener, engineDescriptor);
+&nbsp;
+<b class="fc">&nbsp;        try {</b>
+<b class="fc">&nbsp;            testEngine.execute(new ExecutionRequest(engineDescriptor, delayingListener, configurationParameters));</b>
+&nbsp;            delayingListener.reportEngineOutcome();
+<b class="fc">&nbsp;        } catch (Throwable throwable) {</b>
+<b class="fc">&nbsp;            UnrecoverableExceptions.rethrowIfUnrecoverable(throwable);</b>
+&nbsp;            delayingListener.reportEngineFailure(new JUnitException(String.format(&quot;TestEngine with ID &#39;%s&#39; failed to execute tests&quot;, testEngine.getId()), throwable));
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+<b class="pc">&nbsp;    }</b>
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-20 13:42</div>
+</div>
+</body>
+</html>

@@ -4,20 +4,21 @@ import com.pragma.hogar360.serviceshome.domain.exceptions.CategoryAlreadyExistsE
 import com.pragma.hogar360.serviceshome.domain.model.CategoryModel;
 import com.pragma.hogar360.serviceshome.domain.ports.out.CategoryPersistencePort;
 import com.pragma.hogar360.serviceshome.domain.utils.constants.Pagination;
+import com.pragma.hogar360.serviceshome.domain.utils.constants.Validation;
 import com.pragma.hogar360.serviceshome.factory.CategoryModelFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
+import org.mockito.MockedStatic;
+import static org.mockito.Mockito.mockStatic;
 import java.util.ArrayList;
 import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-public class CategoryUseCaseTest {
+class CategoryUseCaseTest {
 
     @Mock
     private CategoryPersistencePort categoryPersistencePort;
@@ -26,12 +27,12 @@ public class CategoryUseCaseTest {
     private CategoryUseCase categoryUseCase;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    public void testSave_Success() {
+    void testSave_Success() {
         // Arrange
         CategoryModel categoryModel = CategoryModelFactory.createDefaultCategoryModel();
         when(categoryPersistencePort.getCategoryByName(categoryModel.getName())).thenReturn(null);
@@ -44,7 +45,7 @@ public class CategoryUseCaseTest {
     }
 
     @Test
-    public void testSave_CategoryAlreadyExists() {
+    void testSave_CategoryAlreadyExists() {
         // Arrange
         CategoryModel categoryModel = CategoryModelFactory.createDefaultCategoryModel();
         when(categoryPersistencePort.getCategoryByName(categoryModel.getName())).thenReturn(categoryModel);
@@ -55,22 +56,19 @@ public class CategoryUseCaseTest {
     }
 
     @Test
-    public void testGetCategories_Success() {
+    void testGetCategories_Success() {
         // Arrange
         int page = 0;
         int size = 10;
         boolean orderAsc = true;
         List<CategoryModel> categoryList = new ArrayList<>();
         categoryList.add(CategoryModelFactory.createDefaultCategoryModel());
-
-        // Agrega los argumentos faltantes
-        long totalElements = 1; // Ajusta según tus necesidades
-        int totalPages = 1;    // Ajusta según tus necesidades
-        int pageNumber = 0;    // Ajusta según tus necesidades
-        int pageSize = 10;   // Ajusta según tus necesidades
+        long totalElements = 1;
+        int totalPages = 1;
+        int pageNumber = 0;
+        int pageSize = 10;
 
         Pagination<CategoryModel> pagination = new Pagination<>(categoryList, totalElements, totalPages, pageNumber, pageSize);
-
         when(categoryPersistencePort.getCategories(page, size, orderAsc)).thenReturn(pagination);
 
         // Act
@@ -83,7 +81,7 @@ public class CategoryUseCaseTest {
     }
 
     @Test
-    public void testGetCategoryByName_Success() {
+    void testGetCategoryByName_Success() {
         // Arrange
         CategoryModel categoryModel = CategoryModelFactory.createDefaultCategoryModel();
         when(categoryPersistencePort.getCategoryByName(categoryModel.getName())).thenReturn(categoryModel);
@@ -98,7 +96,7 @@ public class CategoryUseCaseTest {
     }
 
     @Test
-    public void testGetCategoryByName_NotFound() {
+    void testGetCategoryByName_NotFound() {
         // Arrange
         String categoryName = "Nonexistent Category";
         when(categoryPersistencePort.getCategoryByName(categoryName)).thenReturn(null);
@@ -110,4 +108,26 @@ public class CategoryUseCaseTest {
         assertNull(result);
         verify(categoryPersistencePort, times(1)).getCategoryByName(categoryName);
     }
+
+    @Test
+    void testSave_ValidCategory_SavesCategory() {
+        // Arrange
+        CategoryModel categoryModel = CategoryModelFactory.createDefaultCategoryModel();
+        when(categoryPersistencePort.getCategoryByName(categoryModel.getName())).thenReturn(null);
+
+        try (MockedStatic<Validation> mockedValidation = mockStatic(Validation.class)) {
+            mockedValidation.when(() -> Validation.validateName(categoryModel.getName())).thenAnswer(invocation -> null);
+            mockedValidation.when(() -> Validation.validateDescription(categoryModel.getDescription())).thenAnswer(invocation -> null);
+
+            // Act
+            categoryUseCase.save(categoryModel);
+
+            // Assert
+            verify(categoryPersistencePort, times(1)).save(categoryModel);
+            mockedValidation.verify(() -> Validation.validateName(categoryModel.getName()));
+            mockedValidation.verify(() -> Validation.validateDescription(categoryModel.getDescription()));
+        }
+    }
+
+
 }

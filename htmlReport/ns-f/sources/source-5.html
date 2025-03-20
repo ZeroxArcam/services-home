@@ -1,0 +1,259 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > LocationPersistenceAdapter</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.pragma.hogar360.serviceshome.infrastructure.adapters.persistence</a>
+</div>
+
+<h1>Coverage Summary for Class: LocationPersistenceAdapter (com.pragma.hogar360.serviceshome.infrastructure.adapters.persistence)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LocationPersistenceAdapter</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/29)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.pragma.hogar360.serviceshome.infrastructure.adapters.persistence;
+&nbsp;
+&nbsp;import com.pragma.hogar360.serviceshome.commons.configurations.utils.Auxiliary;
+&nbsp;import com.pragma.hogar360.serviceshome.commons.configurations.utils.Constants;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.exceptions.DuplicateLocationException;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.model.LocationModel;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.ports.out.LocationPersistencePort;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.utils.constants.Pagination;
+&nbsp;import com.pragma.hogar360.serviceshome.infrastructure.entities.CityEntity;
+&nbsp;import com.pragma.hogar360.serviceshome.infrastructure.entities.DepartmentEntity;
+&nbsp;import com.pragma.hogar360.serviceshome.infrastructure.entities.LocationEntity;
+&nbsp;import com.pragma.hogar360.serviceshome.infrastructure.mappers.LocationEntityMapper;
+&nbsp;import com.pragma.hogar360.serviceshome.infrastructure.repositories.mysql.CityRepository;
+&nbsp;import com.pragma.hogar360.serviceshome.infrastructure.repositories.mysql.DepartmentRepository;
+&nbsp;import com.pragma.hogar360.serviceshome.infrastructure.repositories.mysql.LocationRepository;
+&nbsp;import lombok.RequiredArgsConstructor;
+&nbsp;import lombok.extern.slf4j.Slf4j;
+&nbsp;import org.springframework.dao.DataIntegrityViolationException;
+&nbsp;import org.springframework.data.domain.Pageable;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;import org.springframework.transaction.annotation.Transactional;
+&nbsp;import org.springframework.data.domain.Page;
+&nbsp;import org.springframework.data.domain.PageRequest;
+&nbsp;import org.springframework.data.domain.Sort;
+&nbsp;import java.util.Optional;
+&nbsp;
+&nbsp;/**
+&nbsp; * Adapter class for location persistence operations using JPA.
+&nbsp; * Implements the {@link LocationPersistencePort} interface.
+&nbsp; *
+&nbsp; * @author [Ciro Alfonso Pallares Fragozo]
+&nbsp; * @version 1.1
+&nbsp; * @since [16/3/2025]
+&nbsp; */
+&nbsp;@Service
+&nbsp;@Transactional
+&nbsp;@RequiredArgsConstructor
+<b class="nc">&nbsp;@Slf4j</b>
+&nbsp;public class LocationPersistenceAdapter implements LocationPersistencePort {
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Repository for location entity operations.
+&nbsp;     */
+&nbsp;    private final LocationRepository locationRepository;
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Repository for city entity operations.
+&nbsp;     */
+&nbsp;    private final CityRepository cityRepository;
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Repository for department entity operations.
+&nbsp;     */
+&nbsp;    private final DepartmentRepository departmentRepository;
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Mapper for converting between location domain models and entities.
+&nbsp;     */
+&nbsp;    private final LocationEntityMapper locationEntityMapper;
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Saves a location domain model to the database.
+&nbsp;     *
+&nbsp;     * @param locationModel The location domain model to save.
+&nbsp;     * @return The saved location domain model.
+&nbsp;     * @throws DuplicateLocationException If a location with the same city and department already exists.
+&nbsp;     */
+&nbsp;    @Override
+&nbsp;    public LocationModel saveLocation(LocationModel locationModel) {
+<b class="nc">&nbsp;        log.info(&quot;Saving location with City: {} and Department: {}&quot;,</b>
+<b class="nc">&nbsp;                locationModel.getCity().getName(),</b>
+<b class="nc">&nbsp;                locationModel.getDepartment().getName());</b>
+&nbsp;
+<b class="nc">&nbsp;        Optional&lt;CityEntity&gt; cityEntityOpt = cityRepository.findByName(locationModel.getCity().getName());</b>
+<b class="nc">&nbsp;        Optional&lt;DepartmentEntity&gt; departmentEntityOpt = departmentRepository.findByName(locationModel.getDepartment().getName());</b>
+&nbsp;
+&nbsp;        try {
+<b class="nc">&nbsp;            LocationEntity locationEntity = locationEntityMapper.toEntity(locationModel, cityEntityOpt.get(), departmentEntityOpt.get());</b>
+<b class="nc">&nbsp;            LocationEntity savedEntity = locationRepository.save(locationEntity);</b>
+<b class="nc">&nbsp;            log.info(&quot;Location saved successfully with ID: {}&quot;, savedEntity.getId());</b>
+<b class="nc">&nbsp;            return locationEntityMapper.toModel(savedEntity);</b>
+&nbsp;        } catch (DataIntegrityViolationException ex) {
+<b class="nc">&nbsp;            throw new DuplicateLocationException(Constants.DUPLICATE_DATA);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Checks if a location with the given city and department names exists in the database.
+&nbsp;     *
+&nbsp;     * @param cityName       The name of the city to check.
+&nbsp;     * @param departmentName The name of the department to check.
+&nbsp;     * @return {@code true} if a location with the given city and department exists, {@code false} otherwise.
+&nbsp;     */
+&nbsp;    @Override
+&nbsp;    public boolean existsByCityAndDepartment(String cityName, String departmentName) {
+<b class="nc">&nbsp;        return locationRepository.existsByCityNameAndDepartmentName(cityName, departmentName);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Finds a location domain model by city and department names in the database.
+&nbsp;     *
+&nbsp;     * @param cityName       The name of the city to find.
+&nbsp;     * @param departmentName The name of the department to find.
+&nbsp;     * @return An {@link Optional} containing the location domain model, or an empty {@link Optional} if not found.
+&nbsp;     */
+&nbsp;    @Override
+&nbsp;    public Optional&lt;LocationModel&gt; findByCityNameAndDepartmentName(String cityName, String departmentName) {
+<b class="nc">&nbsp;        Optional&lt;LocationEntity&gt; locationEntity = locationRepository.findByCityNameAndDepartmentName(cityName, departmentName);</b>
+<b class="nc">&nbsp;        return locationEntity.map(locationEntityMapper::toModel);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public Pagination&lt;LocationModel&gt; getLocations(Integer page, Integer size, String sortBy, String sortDirection, String text) {
+&nbsp;
+<b class="nc">&nbsp;        Sort sort = Auxiliary.createSort(sortBy, sortDirection);</b>
+<b class="nc">&nbsp;        Pageable pageable = PageRequest.of(page, size, sort);</b>
+&nbsp;
+&nbsp;
+<b class="nc">&nbsp;        log.info(&quot;Fetching locations from DB - Page: {}, Size: {}, SortBy: {}, SortDirection: {}, Text: &#39;{}&#39;&quot;,</b>
+&nbsp;                page, size, sortBy, sortDirection, text);
+&nbsp;
+&nbsp;        Page&lt;LocationEntity&gt; locationPage;
+&nbsp;
+<b class="nc">&nbsp;        if (sortBy.equalsIgnoreCase(&quot;cityName&quot;)) {</b>
+<b class="nc">&nbsp;            locationPage = locationRepository.findByCityNameContainingIgnoreCase(text, pageable);</b>
+<b class="nc">&nbsp;        } else if (sortBy.equalsIgnoreCase(&quot;departmentName&quot;)) {</b>
+<b class="nc">&nbsp;            log.info(&quot;sortBy:{}&quot;,sortBy);</b>
+<b class="nc">&nbsp;            locationPage = locationRepository.findByDepartment_NameContainingIgnoreCase(text, pageable);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            locationPage = locationRepository.findByCityNameContainingIgnoreCaseOrDepartmentNameContainingIgnoreCase(text, text, pageable);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        log.info(&quot;Locations fetched. Total Elements: {}, Total Pages: {}&quot;,</b>
+<b class="nc">&nbsp;                locationPage.getTotalElements(), locationPage.getTotalPages());</b>
+&nbsp;
+<b class="nc">&nbsp;        Pagination&lt;LocationModel&gt; result = locationEntityMapper.locationEntityPageToLocationModelPagination(locationPage);</b>
+<b class="nc">&nbsp;        log.info(&quot;Mapped Locations: {}&quot;, result.getItems());</b>
+&nbsp;
+<b class="nc">&nbsp;        log.info(&quot;Pagination mapped successfully. Returning response...&quot;);</b>
+<b class="nc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-20 13:41</div>
+</div>
+</body>
+</html>

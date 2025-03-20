@@ -16,7 +16,7 @@ public class CityModel {
     /**
      * The unique identifier of the city.
      */
-    private final long id;
+    private final Long id;
 
     /**
      * The name of the city.
@@ -36,8 +36,8 @@ public class CityModel {
      * @param description The description of the city.
      */
     public CityModel(long id, String name, String description) {
-        setName(name);
-        setDescription(description);
+        this.name = name;
+        this.description = description;
         this.id = id;
     }
 
@@ -74,7 +74,7 @@ public class CityModel {
      * @param description The new description of the city.
      */
     public void setDescription(String description) {
-        Validation.validationCityDepartmentDescription(description);
+
         this.description = description;
     }
 
@@ -84,7 +84,9 @@ public class CityModel {
      * @param name The new name of the city.
      */
     public void setName(String name) {
-        Validation.validateName(name);
+
+
         this.name = name;
     }
+
 }

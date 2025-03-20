@@ -1,0 +1,231 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ExtensionUtils</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.jupiter.engine.descriptor</a>
+</div>
+
+<h1>Coverage Summary for Class: ExtensionUtils (org.junit.jupiter.engine.descriptor)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ExtensionUtils</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    52.6%
+  </span>
+  <span class="absValue">
+    (10/19)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    8.3%
+  </span>
+  <span class="absValue">
+    (1/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    47.2%
+  </span>
+  <span class="absValue">
+    (25/53)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.junit.jupiter.engine.descriptor;
+&nbsp;
+&nbsp;import java.lang.reflect.AnnotatedElement;
+&nbsp;import java.lang.reflect.Executable;
+&nbsp;import java.lang.reflect.Field;
+&nbsp;import java.util.Arrays;
+&nbsp;import java.util.Comparator;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Objects;
+&nbsp;import java.util.concurrent.atomic.AtomicInteger;
+&nbsp;import java.util.function.Predicate;
+&nbsp;import java.util.stream.Collectors;
+&nbsp;import java.util.stream.Stream;
+&nbsp;import org.junit.jupiter.api.Order;
+&nbsp;import org.junit.jupiter.api.extension.ExtendWith;
+&nbsp;import org.junit.jupiter.api.extension.Extension;
+&nbsp;import org.junit.jupiter.api.extension.RegisterExtension;
+&nbsp;import org.junit.jupiter.engine.extension.ExtensionRegistrar;
+&nbsp;import org.junit.jupiter.engine.extension.MutableExtensionRegistry;
+&nbsp;import org.junit.platform.commons.PreconditionViolationException;
+&nbsp;import org.junit.platform.commons.util.AnnotationUtils;
+&nbsp;import org.junit.platform.commons.util.Preconditions;
+&nbsp;import org.junit.platform.commons.util.ReflectionUtils;
+&nbsp;import org.junit.platform.commons.util.ReflectionUtils.HierarchyTraversalMode;
+&nbsp;
+&nbsp;final class ExtensionUtils {
+&nbsp;    private static final Comparator&lt;Field&gt; orderComparator = Comparator.comparingInt(ExtensionUtils::getOrder);
+&nbsp;    private static final Predicate&lt;Field&gt; registersExtension = (field) -&gt; AnnotationUtils.isAnnotated(field, RegisterExtension.class) || !AnnotationUtils.findRepeatableAnnotations(field, ExtendWith.class).isEmpty();
+&nbsp;
+&nbsp;    private ExtensionUtils() {
+&nbsp;    }
+&nbsp;
+&nbsp;    static MutableExtensionRegistry populateNewExtensionRegistryFromExtendWithAnnotation(MutableExtensionRegistry parentRegistry, AnnotatedElement annotatedElement) {
+&nbsp;        Preconditions.notNull(parentRegistry, &quot;Parent ExtensionRegistry must not be null&quot;);
+&nbsp;        Preconditions.notNull(annotatedElement, &quot;AnnotatedElement must not be null&quot;);
+&nbsp;        return MutableExtensionRegistry.createRegistryFrom(parentRegistry, streamDeclarativeExtensionTypes(annotatedElement));
+&nbsp;    }
+&nbsp;
+&nbsp;    static void registerExtensionsFromStaticFields(ExtensionRegistrar registrar, Class&lt;?&gt; clazz) {
+&nbsp;        streamExtensionRegisteringFields(clazz, ReflectionUtils::isStatic).forEach((field) -&gt; {
+&nbsp;            List&lt;Class&lt;? extends Extension&gt;&gt; extensionTypes = (List)streamDeclarativeExtensionTypes(field).collect(Collectors.toList());
+&nbsp;            boolean isExtendWithPresent = !extensionTypes.isEmpty();
+&nbsp;            if (isExtendWithPresent) {
+&nbsp;                Objects.requireNonNull(registrar);
+&nbsp;                extensionTypes.forEach(registrar::registerExtension);
+&nbsp;            }
+&nbsp;
+&nbsp;            if (AnnotationUtils.isAnnotated(field, RegisterExtension.class)) {
+&nbsp;                Extension extension = readAndValidateExtensionFromField(field, (Object)null, extensionTypes);
+&nbsp;                registrar.registerExtension(extension, field);
+&nbsp;            }
+&nbsp;
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    static void registerExtensionsFromInstanceFields(ExtensionRegistrar registrar, Class&lt;?&gt; clazz) {
+&nbsp;        streamExtensionRegisteringFields(clazz, ReflectionUtils::isNotStatic).forEach((field) -&gt; {
+&nbsp;            List&lt;Class&lt;? extends Extension&gt;&gt; extensionTypes = (List)streamDeclarativeExtensionTypes(field).collect(Collectors.toList());
+&nbsp;            boolean isExtendWithPresent = !extensionTypes.isEmpty();
+&nbsp;            if (isExtendWithPresent) {
+&nbsp;                Objects.requireNonNull(registrar);
+&nbsp;                extensionTypes.forEach(registrar::registerExtension);
+&nbsp;            }
+&nbsp;
+&nbsp;            if (AnnotationUtils.isAnnotated(field, RegisterExtension.class)) {
+&nbsp;                registrar.registerUninitializedExtension(clazz, field, (instance) -&gt; readAndValidateExtensionFromField(field, instance, extensionTypes));
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;        });
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    private static Extension readAndValidateExtensionFromField(Field field, Object instance, List&lt;Class&lt;? extends Extension&gt;&gt; declarativeExtensionTypes) {
+&nbsp;        Object value = ReflectionUtils.tryToReadFieldValue(field, instance).getOrThrow((e) -&gt; new PreconditionViolationException(String.format(&quot;Failed to read @RegisterExtension field [%s]&quot;, field), e));
+&nbsp;        Preconditions.condition(value instanceof Extension, () -&gt; String.format(&quot;Failed to register extension via @RegisterExtension field [%s]: field value&#39;s type [%s] must implement an [%s] API.&quot;, field, value != null ? value.getClass().getName() : null, Extension.class.getName()));
+&nbsp;        declarativeExtensionTypes.forEach((extensionType) -&gt; {
+&nbsp;            Class&lt;?&gt; valueType = value.getClass();
+&nbsp;            Preconditions.condition(!extensionType.equals(valueType), () -&gt; String.format(&quot;Failed to register extension via field [%s]. The field registers an extension of type [%s] via @RegisterExtension and @ExtendWith, but only one registration of a given extension type is permitted.&quot;, field, valueType.getName()));
+&nbsp;        });
+&nbsp;        return (Extension)value;
+&nbsp;    }
+&nbsp;
+&nbsp;    static void registerExtensionsFromConstructorParameters(ExtensionRegistrar registrar, Class&lt;?&gt; clazz) {
+&nbsp;        registerExtensionsFromExecutableParameters(registrar, ReflectionUtils.getDeclaredConstructor(clazz));
+&nbsp;    }
+&nbsp;
+&nbsp;    static void registerExtensionsFromExecutableParameters(ExtensionRegistrar registrar, Executable executable) {
+<b class="fc">&nbsp;        Preconditions.notNull(registrar, &quot;ExtensionRegistrar must not be null&quot;);</b>
+<b class="fc">&nbsp;        Preconditions.notNull(executable, &quot;Executable must not be null&quot;);</b>
+<b class="nc">&nbsp;        AtomicInteger index = new AtomicInteger();</b>
+<b class="nc">&nbsp;        Stream var10000 = Arrays.stream(executable.getParameters()).map((parameter) -&gt; AnnotationUtils.findRepeatableAnnotations(parameter, index.getAndIncrement(), ExtendWith.class)).flatMap(ExtensionUtils::streamDeclarativeExtensionTypes);</b>
+<b class="nc">&nbsp;        Objects.requireNonNull(registrar);</b>
+&nbsp;        var10000.forEach(registrar::registerExtension);
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private static Stream&lt;Field&gt; streamExtensionRegisteringFields(Class&lt;?&gt; clazz, Predicate&lt;Field&gt; predicate) {
+<b class="nc">&nbsp;        return ReflectionUtils.streamFields(clazz, predicate.and(registersExtension), HierarchyTraversalMode.TOP_DOWN).sorted(orderComparator);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private static Stream&lt;Class&lt;? extends Extension&gt;&gt; streamDeclarativeExtensionTypes(AnnotatedElement annotatedElement) {
+&nbsp;        return streamDeclarativeExtensionTypes(AnnotationUtils.findRepeatableAnnotations(annotatedElement, ExtendWith.class));
+&nbsp;    }
+&nbsp;
+&nbsp;    private static Stream&lt;Class&lt;? extends Extension&gt;&gt; streamDeclarativeExtensionTypes(List&lt;ExtendWith&gt; extendWithAnnotations) {
+&nbsp;        return extendWithAnnotations.stream().map(ExtendWith::value).flatMap(Arrays::stream);
+&nbsp;    }
+&nbsp;
+&nbsp;    private static int getOrder(Field field) {
+&nbsp;        return (Integer)AnnotationUtils.findAnnotation(field, Order.class).map(Order::value).orElse(1073741823);
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-20 13:41</div>
+</div>
+</body>
+</html>

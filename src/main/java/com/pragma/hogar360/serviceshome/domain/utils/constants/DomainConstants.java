@@ -20,5 +20,6 @@ public final class DomainConstants {
     public static final String SIZE_PAGE = "The size of pagas can not be less than 1";
     public static final String NOT_FOUND = "No such data exists.";
     public static final String ALREADY_EXISTS = "Data already exists.";
+    public static final String INVALID_PARAMETERS = "Invalid parameters.";
 
 }

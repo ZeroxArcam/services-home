@@ -2,6 +2,7 @@ package com.pragma.hogar360.serviceshome.infrastructure.endpoints.rest;
 
 import com.pragma.hogar360.serviceshome.application.dto.request.SaveDepartmentRequest;
 import com.pragma.hogar360.serviceshome.application.dto.response.DepartmentResponse;
+import com.pragma.hogar360.serviceshome.application.dto.response.SaveDepartmentResponse;
 import com.pragma.hogar360.serviceshome.application.services.DepartmentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -29,7 +30,6 @@ import org.springframework.web.bind.annotation.*;
 public class DepartmentController {
 
     private final DepartmentService departmentService;
-
     /**
      * Endpoint to save a new department.
      *
@@ -41,7 +41,7 @@ public class DepartmentController {
     @ApiResponse(responseCode = "201", description = "Department created", content = @Content(schema = @Schema(implementation = DepartmentResponse.class), examples = @ExampleObject(value = "{\"id\": 1, \"name\": \"Cesar\", \"description\": \"Department in the north of Colombia\"}")))
     @ApiResponse(responseCode = "400", description = "Bad request", content = @Content(schema = @Schema(implementation = String.class), examples = @ExampleObject(value = "\"Name cannot exceed 50 characters.\"\n \"Description cannot exceed 90 characters.\" ")))
     @ApiResponse(responseCode = "409", description = "Department already exists", content = @Content(schema = @Schema(implementation = String.class), examples = @ExampleObject(value = "Department with name 'Cesar' already exists.")))
-    public ResponseEntity<DepartmentResponse> save(
+    public ResponseEntity<SaveDepartmentResponse> save(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Department data to save",
                     required = true,
@@ -54,23 +54,4 @@ public class DepartmentController {
             @RequestBody SaveDepartmentRequest saveDepartmentRequest) {
         return ResponseEntity.status(HttpStatus.CREATED).body(departmentService.createDepartment(saveDepartmentRequest));
     }
-
-//    /**
-//     * Endpoint to retrieve all departments with pagination and metadata.
-//     *
-//     * @param page      The page number.
-//     * @param size      The number of departments per page.
-//     * @param orderAsc  True for ascending order, false for descending order.
-//     * @return A ResponseEntity with the PagedDepartmentResponse DTO.
-//     */
-//    @GetMapping("")
-//    @Operation(summary = "Get all departments paginated", description = "Retrieves a list of all departments with pagination and metadata.")
-//    @ApiResponse(responseCode = "200", description = "Paged list of departments with metadata", content = @Content(schema = @Schema(implementation = PagedDepartmentResponse.class)))
-//    public ResponseEntity<PagedDepartmentResponse> getAllDepartments(
-//            @Parameter(description = "Page number", required = true) @RequestParam Integer page,
-//            @Parameter(description = "Page size", required = true) @RequestParam Integer size,
-//            @Parameter(description = "Ascending order (true) or descending (false)", required = true) @RequestParam boolean orderAsc) {
-//        PagedDepartmentResponse pagedDepartmentResponse = departmentService.getDepartments(page, size, orderAsc);
-//        return ResponseEntity.ok(pagedDepartmentResponse);
-//    }
 }

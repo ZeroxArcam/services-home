@@ -1,0 +1,247 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > TypeBasedCandidateFilter</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.mockito.internal.configuration.injection.filter</a>
+</div>
+
+<h1>Coverage Summary for Class: TypeBasedCandidateFilter (org.mockito.internal.configuration.injection.filter)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TypeBasedCandidateFilter</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    14.3%
+  </span>
+  <span class="absValue">
+    (1/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/44)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    2.6%
+  </span>
+  <span class="absValue">
+    (2/78)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.mockito.internal.configuration.injection.filter;
+&nbsp;
+&nbsp;import java.lang.reflect.Field;
+&nbsp;import java.lang.reflect.ParameterizedType;
+&nbsp;import java.lang.reflect.Type;
+&nbsp;import java.lang.reflect.TypeVariable;
+&nbsp;import java.lang.reflect.WildcardType;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Arrays;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.List;
+&nbsp;import java.util.stream.Stream;
+&nbsp;import org.mockito.internal.exceptions.Reporter;
+&nbsp;import org.mockito.internal.util.MockUtil;
+&nbsp;
+&nbsp;public class TypeBasedCandidateFilter implements MockCandidateFilter {
+&nbsp;    private final MockCandidateFilter next;
+&nbsp;
+&nbsp;    public TypeBasedCandidateFilter(MockCandidateFilter next) {
+&nbsp;        this.next = next;
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    protected boolean isCompatibleTypes(Type typeToMock, Type mockType, Field injectMocksField) {
+&nbsp;        boolean result = false;
+&nbsp;        if (typeToMock instanceof ParameterizedType) {
+<b class="nc">&nbsp;            if (mockType instanceof ParameterizedType) {</b>
+<b class="nc">&nbsp;                if (typeToMock.equals(mockType)) {</b>
+<b class="nc">&nbsp;                    result = true;</b>
+&nbsp;                } else {
+&nbsp;                    ParameterizedType genericTypeToMock = (ParameterizedType)typeToMock;
+&nbsp;                    ParameterizedType genericMockType = (ParameterizedType)mockType;
+&nbsp;                    Type[] actualTypeArguments = genericTypeToMock.getActualTypeArguments();
+&nbsp;                    Type[] actualTypeArguments2 = genericMockType.getActualTypeArguments();
+&nbsp;                    if (actualTypeArguments.length == actualTypeArguments2.length) {
+&nbsp;                        result = this.recurseOnTypeArguments(injectMocksField, actualTypeArguments, actualTypeArguments2);
+<b class="nc">&nbsp;                    } else {</b>
+<b class="nc">&nbsp;                        result = false;</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                Class&lt;?&gt; concreteMockClass = (Class)mockType;</b>
+<b class="nc">&nbsp;                Stream&lt;Type&gt; mockSuperTypes = this.getSuperTypes(concreteMockClass);</b>
+<b class="nc">&nbsp;                result = mockSuperTypes.anyMatch((mockSuperType) -&gt; this.isCompatibleTypes(typeToMock, mockSuperType, injectMocksField));</b>
+&nbsp;            }
+&nbsp;        } else if (typeToMock instanceof WildcardType) {
+<b class="nc">&nbsp;            WildcardType wildcardTypeToMock = (WildcardType)typeToMock;</b>
+<b class="nc">&nbsp;            Type[] upperBounds = wildcardTypeToMock.getUpperBounds();</b>
+&nbsp;            result = Arrays.stream(upperBounds).anyMatch((t) -&gt; this.isCompatibleTypes(t, mockType, injectMocksField));
+&nbsp;        } else if (typeToMock instanceof Class &amp;&amp; mockType instanceof Class) {
+&nbsp;            result = ((Class)typeToMock).isAssignableFrom((Class)mockType);
+&nbsp;        }
+&nbsp;
+&nbsp;        return result;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private Stream&lt;Type&gt; getSuperTypes(Class&lt;?&gt; concreteMockClass) {
+&nbsp;        Stream&lt;Type&gt; mockInterfaces = Arrays.stream(concreteMockClass.getGenericInterfaces());
+&nbsp;        Type genericSuperclass = concreteMockClass.getGenericSuperclass();
+&nbsp;        if (genericSuperclass != null) {
+<b class="nc">&nbsp;            Stream&lt;Type&gt; mockSuperTypes = Stream.concat(mockInterfaces, Stream.of(genericSuperclass));</b>
+<b class="nc">&nbsp;            return mockSuperTypes;</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            return mockInterfaces;</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private boolean recurseOnTypeArguments(Field injectMocksField, Type[] actualTypeArguments, Type[] actualTypeArguments2) {
+<b class="nc">&nbsp;        boolean isCompatible = true;</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; actualTypeArguments.length; ++i) {</b>
+<b class="nc">&nbsp;            Type actualTypeArgument = actualTypeArguments[i];</b>
+<b class="nc">&nbsp;            Type actualTypeArgument2 = actualTypeArguments2[i];</b>
+<b class="nc">&nbsp;            if (!(actualTypeArgument instanceof TypeVariable)) {</b>
+<b class="nc">&nbsp;                isCompatible &amp;= this.isCompatibleTypes(actualTypeArgument, actualTypeArgument2, injectMocksField);</b>
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                TypeVariable&lt;?&gt; typeVariable = (TypeVariable)actualTypeArgument;
+&nbsp;                Type genericType = injectMocksField.getGenericType();
+<b class="nc">&nbsp;                if (!(genericType instanceof ParameterizedType)) {</b>
+&nbsp;                    isCompatible &amp;= this.getSuperTypes((Class)genericType).anyMatch((superType) -&gt; this.isCompatibleTypes(superType, actualTypeArgument2, injectMocksField));
+&nbsp;                } else {
+&nbsp;                    Type[] injectMocksFieldTypeParameters = ((ParameterizedType)genericType).getActualTypeArguments();
+<b class="nc">&nbsp;                    TypeVariable&lt;?&gt;[] genericTypeParameters = injectMocksField.getType().getTypeParameters();</b>
+<b class="nc">&nbsp;                    int variableIndex = -1;</b>
+&nbsp;
+<b class="nc">&nbsp;                    for(int i2 = 0; i2 &lt; genericTypeParameters.length; ++i2) {</b>
+<b class="nc">&nbsp;                        if (genericTypeParameters[i2].equals(typeVariable)) {</b>
+<b class="nc">&nbsp;                            variableIndex = i2;</b>
+<b class="nc">&nbsp;                            break;</b>
+&nbsp;                        }
+<b class="nc">&nbsp;                    }</b>
+&nbsp;
+&nbsp;                    isCompatible &amp;= this.isCompatibleTypes(injectMocksFieldTypeParameters[variableIndex], actualTypeArgument2, injectMocksField);
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return isCompatible;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public OngoingInjector filterCandidate(Collection&lt;Object&gt; mocks, Field candidateFieldToBeInjected, List&lt;Field&gt; allRemainingCandidateFields, Object injectee, Field injectMocksField) {</b>
+<b class="nc">&nbsp;        List&lt;Object&gt; mockTypeMatches = new ArrayList();</b>
+&nbsp;
+&nbsp;        for(Object mock : mocks) {
+&nbsp;            if (candidateFieldToBeInjected.getType().isAssignableFrom(mock.getClass())) {
+&nbsp;                Type mockType = MockUtil.getMockSettings(mock).getGenericTypeToMock();
+&nbsp;                Type typeToMock = candidateFieldToBeInjected.getGenericType();
+&nbsp;                boolean bothHaveTypeInfo = typeToMock != null &amp;&amp; mockType != null;
+&nbsp;                if (bothHaveTypeInfo) {
+<b class="nc">&nbsp;                    if (this.isCompatibleTypes(typeToMock, mockType, injectMocksField)) {</b>
+<b class="nc">&nbsp;                        mockTypeMatches.add(mock);</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                } else {</b>
+&nbsp;                    mockTypeMatches.add(mock);
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        boolean wasMultipleMatches = mockTypeMatches.size() &gt; 1;</b>
+<b class="nc">&nbsp;        OngoingInjector result = this.next.filterCandidate(mockTypeMatches, candidateFieldToBeInjected, allRemainingCandidateFields, injectee, injectMocksField);</b>
+<b class="nc">&nbsp;        if (wasMultipleMatches &amp;&amp; result == OngoingInjector.nop) {</b>
+<b class="nc">&nbsp;            throw Reporter.moreThanOneMockCandidate(candidateFieldToBeInjected, mocks);</b>
+&nbsp;        } else {
+&nbsp;            return result;
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-20 13:42</div>
+</div>
+</body>
+</html>

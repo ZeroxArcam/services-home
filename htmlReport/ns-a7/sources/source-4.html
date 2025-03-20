@@ -1,0 +1,277 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > InvocationContainerImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.mockito.internal.stubbing</a>
+</div>
+
+<h1>Coverage Summary for Class: InvocationContainerImpl (org.mockito.internal.stubbing)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">InvocationContainerImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    65%
+  </span>
+  <span class="absValue">
+    (13/20)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    40%
+  </span>
+  <span class="absValue">
+    (8/20)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    65%
+  </span>
+  <span class="absValue">
+    (39/60)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.mockito.internal.stubbing;
+&nbsp;
+&nbsp;import java.io.Serializable;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.LinkedList;
+&nbsp;import java.util.List;
+&nbsp;import org.mockito.internal.invocation.StubInfoImpl;
+&nbsp;import org.mockito.internal.progress.ThreadSafeMockingProgress;
+&nbsp;import org.mockito.internal.verification.DefaultRegisteredInvocations;
+&nbsp;import org.mockito.internal.verification.RegisteredInvocations;
+&nbsp;import org.mockito.internal.verification.SingleRegisteredInvocation;
+&nbsp;import org.mockito.invocation.Invocation;
+&nbsp;import org.mockito.invocation.InvocationContainer;
+&nbsp;import org.mockito.invocation.MatchableInvocation;
+&nbsp;import org.mockito.mock.MockCreationSettings;
+&nbsp;import org.mockito.quality.Strictness;
+&nbsp;import org.mockito.stubbing.Answer;
+&nbsp;import org.mockito.stubbing.Stubbing;
+&nbsp;import org.mockito.stubbing.ValidableAnswer;
+&nbsp;
+&nbsp;public class InvocationContainerImpl implements InvocationContainer, Serializable {
+<b class="fc">&nbsp;    private static final long serialVersionUID = -5334301962749537177L;</b>
+&nbsp;    private final LinkedList&lt;StubbedInvocationMatcher&gt; stubbed = new LinkedList();
+&nbsp;    private final DoAnswerStyleStubbing doAnswerStyleStubbing;
+<b class="fc">&nbsp;    private final RegisteredInvocations registeredInvocations;</b>
+&nbsp;    private final Strictness mockStrictness;
+&nbsp;    private MatchableInvocation invocationForStubbing;
+&nbsp;
+&nbsp;    public InvocationContainerImpl(MockCreationSettings&lt;?&gt; mockSettings) {
+&nbsp;        this.registeredInvocations = this.createRegisteredInvocations(mockSettings);
+&nbsp;        this.mockStrictness = mockSettings.getStrictness();
+<b class="fc">&nbsp;        this.doAnswerStyleStubbing = new DoAnswerStyleStubbing();</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public void setInvocationForPotentialStubbing(MatchableInvocation invocation) {</b>
+&nbsp;        this.registeredInvocations.add(invocation.getInvocation());
+&nbsp;        this.invocationForStubbing = invocation;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public void resetInvocationForPotentialStubbing(MatchableInvocation invocationMatcher) {</b>
+&nbsp;        this.invocationForStubbing = invocationMatcher;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public void addAnswer(Answer&lt;?&gt; answer, Strictness stubbingStrictness) {</b>
+&nbsp;        this.registeredInvocations.removeLast();
+&nbsp;        this.addAnswer(answer, false, stubbingStrictness);
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public StubbedInvocationMatcher addAnswer(Answer&lt;?&gt; answer, boolean isConsecutive, Strictness stubbingStrictness) {</b>
+&nbsp;        Invocation invocation = this.invocationForStubbing.getInvocation();
+&nbsp;        ThreadSafeMockingProgress.mockingProgress().stubbingCompleted();
+&nbsp;        if (answer instanceof ValidableAnswer) {
+&nbsp;            ((ValidableAnswer)answer).validateFor(invocation);
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;        synchronized(this.stubbed) {</b>
+<b class="pc">&nbsp;            if (isConsecutive) {</b>
+<b class="fc">&nbsp;                ((StubbedInvocationMatcher)this.stubbed.getFirst()).addAnswer(answer);</b>
+&nbsp;            } else {
+&nbsp;                Strictness effectiveStrictness = stubbingStrictness != null ? stubbingStrictness : this.mockStrictness;
+<b class="fc">&nbsp;                this.stubbed.addFirst(new StubbedInvocationMatcher(answer, this.invocationForStubbing, effectiveStrictness));</b>
+<b class="pc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            return (StubbedInvocationMatcher)this.stubbed.getFirst();
+&nbsp;        }
+<b class="pc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    public void addConsecutiveAnswer(Answer&lt;?&gt; answer) {
+&nbsp;        this.addAnswer(answer, true, (Strictness)null);
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="nc">&nbsp;    Object answerTo(Invocation invocation) throws Throwable {</b>
+&nbsp;        return this.findAnswerFor(invocation).answer(invocation);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public StubbedInvocationMatcher findAnswerFor(Invocation invocation) {</b>
+&nbsp;        synchronized(this.stubbed) {
+&nbsp;            for(StubbedInvocationMatcher s : this.stubbed) {
+&nbsp;                if (s.matches(invocation)) {
+<b class="nc">&nbsp;                    s.markStubUsed(invocation);</b>
+&nbsp;                    invocation.markStubbed(new StubInfoImpl(s));
+&nbsp;                    return s;
+&nbsp;                }
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;            return null;</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public void setAnswersForStubbing(List&lt;Answer&lt;?&gt;&gt; answers, Strictness strictness) {</b>
+<b class="fc">&nbsp;        this.doAnswerStyleStubbing.setAnswers(answers, strictness);</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public boolean hasAnswersForStubbing() {</b>
+&nbsp;        return this.doAnswerStyleStubbing.isSet();
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public boolean hasInvocationForPotentialStubbing() {
+&nbsp;        return !this.registeredInvocations.isEmpty();
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setMethodForStubbing(MatchableInvocation invocation) {
+<b class="nc">&nbsp;        this.invocationForStubbing = invocation;</b>
+&nbsp;
+&nbsp;        assert this.hasAnswersForStubbing();
+&nbsp;
+<b class="fc">&nbsp;        for(int i = 0; i &lt; this.doAnswerStyleStubbing.getAnswers().size(); ++i) {</b>
+&nbsp;            this.addAnswer((Answer)this.doAnswerStyleStubbing.getAnswers().get(i), i != 0, this.doAnswerStyleStubbing.getStubbingStrictness());
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        this.doAnswerStyleStubbing.clear();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String toString() {
+<b class="nc">&nbsp;        return &quot;invocationForStubbing: &quot; + String.valueOf(this.invocationForStubbing);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public List&lt;Invocation&gt; getInvocations() {</b>
+<b class="nc">&nbsp;        return this.registeredInvocations.getAll();</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void clearInvocations() {
+<b class="nc">&nbsp;        this.registeredInvocations.clear();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Collection&lt;Stubbing&gt; getStubbingsAscending() {
+&nbsp;        List&lt;Stubbing&gt; result;
+<b class="nc">&nbsp;        synchronized(this.stubbed) {</b>
+&nbsp;            result = new LinkedList(this.stubbed);
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        Collections.reverse(result);</b>
+&nbsp;        return result;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public Object invokedMock() {</b>
+&nbsp;        return this.invocationForStubbing.getInvocation().getMock();
+&nbsp;    }
+&nbsp;
+&nbsp;    private RegisteredInvocations createRegisteredInvocations(MockCreationSettings&lt;?&gt; mockSettings) {
+&nbsp;        return (RegisteredInvocations)(mockSettings.isStubOnly() ? new SingleRegisteredInvocation() : new DefaultRegisteredInvocations());
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public Answer&lt;?&gt; findStubbedAnswer() {</b>
+<b class="fc">&nbsp;        synchronized(this.stubbed) {</b>
+<b class="fc">&nbsp;            for(StubbedInvocationMatcher s : this.stubbed) {</b>
+<b class="fc">&nbsp;                if (this.invocationForStubbing.matches(s.getInvocation())) {</b>
+<b class="fc">&nbsp;                    return s;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-20 13:41</div>
+</div>
+</body>
+</html>

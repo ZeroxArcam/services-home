@@ -12,14 +12,12 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-public class LocationUseCaseTest {
+class LocationUseCaseTest {
 
     @Mock
     private LocationPersistencePort locationPersistencePort;
@@ -34,12 +32,12 @@ public class LocationUseCaseTest {
     private LocationUseCase locationUseCase;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    public void testCreateLocation_Success() {
+    void testCreateLocation_Success() {
         // Arrange
         LocationModel locationModel = LocationModelFactory.createDefaultLocationModel();
         when(cityPersistencePort.existsByName(locationModel.getCityName())).thenReturn(true);
@@ -57,7 +55,7 @@ public class LocationUseCaseTest {
     }
 
     @Test
-    public void testCreateLocation_CityNotFound() {
+    void testCreateLocation_CityNotFound() {
         // Arrange
         LocationModel locationModel = LocationModelFactory.createDefaultLocationModel();
         when(cityPersistencePort.existsByName(locationModel.getCityName())).thenReturn(false);
@@ -68,7 +66,7 @@ public class LocationUseCaseTest {
     }
 
     @Test
-    public void testCreateLocation_DepartmentNotFound() {
+    void testCreateLocation_DepartmentNotFound() {
         // Arrange
         LocationModel locationModel = LocationModelFactory.createDefaultLocationModel();
         when(cityPersistencePort.existsByName(locationModel.getCityName())).thenReturn(true);
@@ -80,7 +78,7 @@ public class LocationUseCaseTest {
     }
 
     @Test
-    public void testCreateLocation_DuplicateLocation() {
+    void testCreateLocation_DuplicateLocation() {
         // Arrange
         LocationModel locationModel = LocationModelFactory.createDefaultLocationModel();
         when(cityPersistencePort.existsByName(locationModel.getCityName())).thenReturn(true);
@@ -93,7 +91,7 @@ public class LocationUseCaseTest {
     }
 
     @Test
-    public void testGetLocations_Success() {
+    void testGetLocations_Success() {
         // Arrange
         int page = 0;
         int size = 10;
@@ -122,7 +120,7 @@ public class LocationUseCaseTest {
     }
 
     @Test
-    public void testGetLocations_InvalidSortBy() {
+    void testGetLocations_InvalidSortBy() {
         // Arrange
         int page = 0;
         int size = 10;
@@ -131,12 +129,12 @@ public class LocationUseCaseTest {
         String text = "";
 
         // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> locationUseCase.getLocations(page, size, sortBy, sortDirection, text));
+        assertThrows(InvalidParameters.class, () -> locationUseCase.getLocations(page, size, sortBy, sortDirection, text)); // <-- Cambia aquí
         verify(locationPersistencePort, never()).getLocations(anyInt(), anyInt(), anyString(), anyString(), anyString());
     }
 
     @Test
-    public void testGetLocations_InvalidSortDirection() {
+    void testGetLocations_InvalidSortDirection() {
         // Arrange
         int page = 0;
         int size = 10;
@@ -145,7 +143,7 @@ public class LocationUseCaseTest {
         String text = "";
 
         // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> locationUseCase.getLocations(page, size, sortBy, sortDirection, text));
+        assertThrows(InvalidParameters.class, () -> locationUseCase.getLocations(page, size, sortBy, sortDirection, text)); // <-- Cambia aquí
         verify(locationPersistencePort, never()).getLocations(anyInt(), anyInt(), anyString(), anyString(), anyString());
     }
 }

@@ -2,12 +2,14 @@ package com.pragma.hogar360.serviceshome.application.services.implementation;
 
 import com.pragma.hogar360.serviceshome.application.dto.request.SaveDepartmentRequest;
 import com.pragma.hogar360.serviceshome.application.dto.response.DepartmentResponse;
+import com.pragma.hogar360.serviceshome.application.dto.response.SaveDepartmentResponse;
 import com.pragma.hogar360.serviceshome.application.mappers.DepartmentDtoMapper;
 import com.pragma.hogar360.serviceshome.application.services.DepartmentService;
+import com.pragma.hogar360.serviceshome.commons.configurations.utils.Constants;
 import com.pragma.hogar360.serviceshome.domain.model.DepartmentModel;
 import com.pragma.hogar360.serviceshome.domain.ports.in.DepartmentServicePort;
 import org.springframework.stereotype.Service;
-
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 /**
@@ -49,12 +51,12 @@ public class DepartmentServiceImplementation implements DepartmentService {
      * @return A {@link DepartmentResponse} representing the created department.
      */
     @Override
-    public DepartmentResponse createDepartment(SaveDepartmentRequest request) {
+    public SaveDepartmentResponse createDepartment(SaveDepartmentRequest request) {
         DepartmentModel departmentModel = departmentDtoMapper.requestToModel(request);
         DepartmentModel savedDepartment = departmentServicePort.createDepartment(departmentModel);
-        return departmentDtoMapper.modelToResponse(savedDepartment);
-    }
+        return new SaveDepartmentResponse(Constants.SAVE_DEPARTMENT_RESPONSE_MESSAGE, LocalDateTime.now());
 
+    }
     /**
      * Retrieves a department by its name.
      *

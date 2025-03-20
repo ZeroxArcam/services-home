@@ -1,0 +1,193 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > LockManager</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.platform.engine.support.hierarchical</a>
+</div>
+
+<h1>Coverage Summary for Class: LockManager (org.junit.platform.engine.support.hierarchical)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LockManager</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    62.5%
+  </span>
+  <span class="absValue">
+    (5/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (6/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    44.8%
+  </span>
+  <span class="absValue">
+    (13/29)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.junit.platform.engine.support.hierarchical;
+&nbsp;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.LinkedHashMap;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import java.util.concurrent.locks.Lock;
+&nbsp;import java.util.concurrent.locks.ReadWriteLock;
+&nbsp;import java.util.concurrent.locks.ReentrantReadWriteLock;
+&nbsp;import java.util.stream.Collectors;
+&nbsp;import org.junit.platform.commons.util.CollectionUtils;
+&nbsp;import org.junit.platform.engine.support.hierarchical.ExclusiveResource.LockMode;
+&nbsp;
+&nbsp;class LockManager {
+&nbsp;    private final Map&lt;String, ReadWriteLock&gt; locksByKey = new ConcurrentHashMap();
+&nbsp;    private final SingleLock globalReadLock;
+&nbsp;    private final SingleLock globalReadWriteLock;
+&nbsp;
+&nbsp;    public LockManager() {
+&nbsp;        this.globalReadLock = new SingleLock(ExclusiveResource.GLOBAL_READ, this.toLock(ExclusiveResource.GLOBAL_READ));
+&nbsp;        this.globalReadWriteLock = new SingleLock(ExclusiveResource.GLOBAL_READ_WRITE, this.toLock(ExclusiveResource.GLOBAL_READ_WRITE));
+&nbsp;    }
+&nbsp;
+&nbsp;    ResourceLock getLockForResources(Collection&lt;ExclusiveResource&gt; resources) {
+&nbsp;        return this.toResourceLock(this.toDistinctSortedResources(resources));
+&nbsp;    }
+&nbsp;
+&nbsp;    ResourceLock getLockForResource(ExclusiveResource resource) {
+&nbsp;        return this.toResourceLock(Collections.singletonList(resource));
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private List&lt;ExclusiveResource&gt; toDistinctSortedResources(Collection&lt;ExclusiveResource&gt; resources) {
+&nbsp;        if (resources.isEmpty()) {
+<b class="fc">&nbsp;            return Collections.emptyList();</b>
+<b class="fc">&nbsp;        } else if (resources.size() == 1) {</b>
+<b class="fc">&nbsp;            return Collections.singletonList((ExclusiveResource)CollectionUtils.getOnlyElement(resources));</b>
+&nbsp;        } else {
+&nbsp;            Map&lt;String, List&lt;ExclusiveResource&gt;&gt; resourcesByKey = (Map)resources.stream().sorted(ExclusiveResource.COMPARATOR).distinct().collect(Collectors.groupingBy(ExclusiveResource::getKey, LinkedHashMap::new, Collectors.toList()));
+&nbsp;            return (List)resourcesByKey.values().stream().map((resourcesWithSameKey) -&gt; (ExclusiveResource)resourcesWithSameKey.get(0)).collect(CollectionUtils.toUnmodifiableList());
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private ResourceLock toResourceLock(List&lt;ExclusiveResource&gt; resources) {
+<b class="fc">&nbsp;        switch (resources.size()) {</b>
+&nbsp;            case 0:
+&nbsp;                return NopLock.INSTANCE;
+&nbsp;            case 1:
+<b class="nc">&nbsp;                return this.toSingleLock((ExclusiveResource)CollectionUtils.getOnlyElement(resources));</b>
+<b class="nc">&nbsp;            default:</b>
+&nbsp;                return new CompositeLock(resources, this.toLocks(resources));
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private SingleLock toSingleLock(ExclusiveResource resource) {
+<b class="nc">&nbsp;        if (ExclusiveResource.GLOBAL_READ.equals(resource)) {</b>
+<b class="nc">&nbsp;            return this.globalReadLock;</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            return ExclusiveResource.GLOBAL_READ_WRITE.equals(resource) ? this.globalReadWriteLock : new SingleLock(resource, this.toLock(resource));</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private List&lt;Lock&gt; toLocks(List&lt;ExclusiveResource&gt; resources) {</b>
+&nbsp;        return (List)resources.stream().map(this::toLock).collect(CollectionUtils.toUnmodifiableList());
+&nbsp;    }
+&nbsp;
+&nbsp;    private Lock toLock(ExclusiveResource resource) {
+<b class="pc">&nbsp;        ReadWriteLock lock = (ReadWriteLock)this.locksByKey.computeIfAbsent(resource.getKey(), (key) -&gt; new ReentrantReadWriteLock());</b>
+&nbsp;        return resource.getLockMode() == LockMode.READ ? lock.readLock() : lock.writeLock();
+<b class="nc">&nbsp;    }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-20 13:42</div>
+</div>
+</body>
+</html>

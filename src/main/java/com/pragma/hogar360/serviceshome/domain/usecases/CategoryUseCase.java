@@ -31,6 +31,8 @@ public class CategoryUseCase implements CategoryServicePort {
      */
     @Override
     public void save(CategoryModel categoryModel) {
+        Validation.validateName(categoryModel.getName());
+        Validation.validateDescription(categoryModel.getDescription());
         CategoryModel category = categoryPersistencePort.getCategoryByName(categoryModel.getName());
         if (category != null) {
             throw new CategoryAlreadyExistsException();
@@ -48,7 +50,7 @@ public class CategoryUseCase implements CategoryServicePort {
      */
     @Override
     public Pagination<CategoryModel> getCategories(Integer page, Integer size, boolean orderAsc) {
-        Validation.ValidatePageAndSize(page,size);
+        Validation.validatePageAndSize(page,size);
         return categoryPersistencePort.getCategories(page, size, orderAsc);
     }
 

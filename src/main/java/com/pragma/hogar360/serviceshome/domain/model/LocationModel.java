@@ -2,7 +2,6 @@ package com.pragma.hogar360.serviceshome.domain.model;
 
 import com.pragma.hogar360.serviceshome.domain.exceptions.CityNotFoundException;
 import com.pragma.hogar360.serviceshome.domain.exceptions.DepartmentNotFoundException;
-import com.pragma.hogar360.serviceshome.domain.utils.constants.DomainConstants;
 
 /**
  * Domain model representing a location.
@@ -40,12 +39,7 @@ public class LocationModel {
      * @throws DepartmentNotFoundException If the department is null.
      */
     public LocationModel(Long id, CityModel city, DepartmentModel department) {
-        if (city == null) {
-            throw new CityNotFoundException(DomainConstants.NOT_FOUND);
-        }
-        if (department == null) {
-            throw new DepartmentNotFoundException(DomainConstants.NOT_FOUND);
-        }
+
         this.id = id;
         this.city = city;
         this.department = department;
@@ -84,7 +78,8 @@ public class LocationModel {
      * @return The city name, or null if the city is null.
      */
     public String getCityName() {
-        return city != null ? city.getName() : null;
+        return city.getName();
+
     }
 
     /**
@@ -93,7 +88,7 @@ public class LocationModel {
      * @return The department name, or null if the department is null.
      */
     public String getDepartmentName() {
-        return department != null ? department.getName() : null;
+        return department.getName();
     }
 
 }

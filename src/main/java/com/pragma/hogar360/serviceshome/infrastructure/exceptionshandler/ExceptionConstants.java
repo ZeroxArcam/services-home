@@ -48,5 +48,6 @@ public final class ExceptionConstants {
 
     public static final String DESCRIPTION_LOCATION_MAX_SIZE_MESSAGE = "The description can not exceed 120 characters";
 
+    public static final String INVALID_PARAMETERS = "Invalid parameters.";
 
 }

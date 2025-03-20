@@ -5,7 +5,7 @@ import com.pragma.hogar360.serviceshome.domain.model.DepartmentModel;
 import com.pragma.hogar360.serviceshome.domain.ports.in.DepartmentServicePort;
 import com.pragma.hogar360.serviceshome.domain.ports.out.DepartmentPersistencePort;
 import com.pragma.hogar360.serviceshome.domain.utils.constants.DomainConstants;
-
+import com.pragma.hogar360.serviceshome.domain.utils.constants.Validation;
 import java.util.Optional;
 
 /**
@@ -41,6 +41,9 @@ public class DepartmentUseCase implements DepartmentServicePort {
      */
     @Override
     public DepartmentModel createDepartment(DepartmentModel department) {
+        Validation.validateName(department.getName());
+        Validation.validationCityDepartmentDescription(department.getDescription());
+
         if (departmentPersistencePort.existsByName(department.getName())) {
             throw new DuplicateDepartmentNameException(DomainConstants.ALREADY_EXISTS);
         }

@@ -6,6 +6,7 @@ import com.pragma.hogar360.serviceshome.application.dto.response.PagedLocationRe
 import com.pragma.hogar360.serviceshome.domain.model.LocationModel;
 import com.pragma.hogar360.serviceshome.domain.utils.constants.Pagination;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
 /**
@@ -25,6 +26,8 @@ public interface LocationsDtoMapper {
      * @param locationModel The request DTO to convert.
      * @return The resulting domain model.
      */
+    @Mapping(source = "departmentName", target = "department.name")
+    @Mapping(source = "cityName", target = "city.name")
     LocationModel requestToModel(SaveLocationRequest locationModel);
 
     /**

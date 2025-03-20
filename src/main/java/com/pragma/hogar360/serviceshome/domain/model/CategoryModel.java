@@ -20,7 +20,6 @@ public class CategoryModel {
      */
     public CategoryModel() {
     }
-
     /**
      * Constructs a new CategoryModel with the specified details.
      *
@@ -34,10 +33,9 @@ public class CategoryModel {
      */
     public CategoryModel(Long id, String name, String description) {
         this.id = id;
-        setName(name);
-        setDescription(description);
+        this.name = name;
+        this.description = description;
     }
-
     /**
      *
      * Gets the unique identifier of the category.
@@ -47,7 +45,6 @@ public class CategoryModel {
     public Long getId() {
         return id;
     }
-
     /**
      * Gets the name of the category.
      *
@@ -56,7 +53,6 @@ public class CategoryModel {
     public String getName() {
         return name;
     }
-
     /**
      * Gets the description of the category.
      *
@@ -65,7 +61,6 @@ public class CategoryModel {
     public String getDescription() {
         return description;
     }
-
     /**
      * Sets the unique identifier of the category.
      *
@@ -74,7 +69,6 @@ public class CategoryModel {
     public void setId(Long id) {
         this.id = id;
     }
-
     /**
      * Sets the name of the category, validating it using {@link Validation#validateName(String)}.
      *
@@ -84,10 +78,8 @@ public class CategoryModel {
      * @throws NullPointerException If the name is null.
      */
     public void setName(String name) {
-        Validation.validateName(name);
         this.name = name;
     }
-
     /**
      * Sets the description of the category, validating it using {@link Validation#validateDescription(String)}.
      *
@@ -97,10 +89,8 @@ public class CategoryModel {
      * @throws NullPointerException If the description is null.
      */
     public void setDescription(String description) {
-        Validation.validateDescription(description);
         this.description = description;
     }
-
     /**
      * Returns a string representation of the CategoryModel.
      *

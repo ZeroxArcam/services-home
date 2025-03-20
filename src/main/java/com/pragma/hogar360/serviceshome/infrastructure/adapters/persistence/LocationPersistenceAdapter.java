@@ -1,5 +1,6 @@
 package com.pragma.hogar360.serviceshome.infrastructure.adapters.persistence;
 
+import com.pragma.hogar360.serviceshome.commons.configurations.utils.Auxiliary;
 import com.pragma.hogar360.serviceshome.commons.configurations.utils.Constants;
 import com.pragma.hogar360.serviceshome.domain.exceptions.DuplicateLocationException;
 import com.pragma.hogar360.serviceshome.domain.model.LocationModel;
@@ -21,17 +22,14 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-
-
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Adapter class for location persistence operations using JPA.
  * Implements the {@link LocationPersistencePort} interface.
  *
  * @author [Ciro Alfonso Pallares Fragozo]
- * @version 1.0
+ * @version 1.1
  * @since [16/3/2025]
  */
 @Service
@@ -111,46 +109,35 @@ public class LocationPersistenceAdapter implements LocationPersistencePort {
         return locationEntity.map(locationEntityMapper::toModel);
     }
 
-
     @Override
     public Pagination<LocationModel> getLocations(Integer page, Integer size, String sortBy, String sortDirection, String text) {
-        Pageable pageable;
 
-        // Crear el objeto Sort basado en sortBy y sortDirection
-        Sort sort;
-        if (sortDirection.equalsIgnoreCase("ASC")) {
-            sort = Sort.by(sortBy).ascending();
+        Sort sort = Auxiliary.createSort(sortBy, sortDirection);
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+
+        log.info("Fetching locations from DB - Page: {}, Size: {}, SortBy: {}, SortDirection: {}, Text: '{}'",
+                page, size, sortBy, sortDirection, text);
+
+        Page<LocationEntity> locationPage;
+
+        if (sortBy.equalsIgnoreCase("cityName")) {
+            locationPage = locationRepository.findByCityNameContainingIgnoreCase(text, pageable);
+        } else if (sortBy.equalsIgnoreCase("departmentName")) {
+            log.info("sortBy:{}",sortBy);
+            locationPage = locationRepository.findByDepartment_NameContainingIgnoreCase(text, pageable);
         } else {
-            sort = Sort.by(sortBy).descending();
+            locationPage = locationRepository.findByCityNameContainingIgnoreCaseOrDepartmentNameContainingIgnoreCase(text, text, pageable);
         }
 
-        // Crear el objeto Pageable con paginación y ordenamiento
-        pageable = PageRequest.of(page, size, sort);
+        log.info("Locations fetched. Total Elements: {}, Total Pages: {}",
+                locationPage.getTotalElements(), locationPage.getTotalPages());
 
-        // Realizar la búsqueda insensible en ciudad y departamento
-        log.info("Fetching locations from DB - Page: {}, Size: {}, SortBy: {}, SortDirection: {}, Text: {}", page, size, sortBy, sortDirection, text);
-        Page<LocationEntity> locationPage = locationRepository
-                .findByCityNameContainingIgnoreCaseOrDepartmentNameContainingIgnoreCase(text, text, pageable);
-        log.info("Locations fetched. Total Elements: {}, Total Pages: {}", locationPage.getTotalElements(), locationPage.getTotalPages());
-
-        // Mapear LocationEntity a LocationModel
         Pagination<LocationModel> result = locationEntityMapper.locationEntityPageToLocationModelPagination(locationPage);
         log.info("Mapped Locations: {}", result.getItems());
 
         log.info("Pagination mapped successfully. Returning response...");
         return result;
     }
-
-
-//    @Override
-//    public Optional<LocationModel> findByName(String name) {
-//        // Suponiendo que en tu repositorio tienes un método similar a:
-//        // Optional<LocationEntity> findByCityNameContainingIgnoreCaseOrDepartmentNameContainingIgnoreCase(String cityName, String departmentName);
-//        Optional<LocationEntity> locationEntity = locationRepository
-//                .findByCityNameContainingIgnoreCaseOrDepartmentNameContainingIgnoreCase(name, name);
-//
-//        return locationEntity.map(locationEntityMapper::toModel);
-//    }
-
 
 }

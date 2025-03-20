@@ -1,0 +1,259 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > LocationUseCase</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.pragma.hogar360.serviceshome.domain.usecases</a>
+</div>
+
+<h1>Coverage Summary for Class: LocationUseCase (com.pragma.hogar360.serviceshome.domain.usecases)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LocationUseCase</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/22)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/24)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.pragma.hogar360.serviceshome.domain.usecases;
+&nbsp;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.exceptions.*;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.model.LocationModel;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.ports.in.LocationServicePort;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.ports.out.CityPersistencePort;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.ports.out.DepartmentPersistencePort;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.ports.out.LocationPersistencePort;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.utils.constants.DomainConstants;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.utils.constants.Pagination;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.utils.constants.Validation;
+&nbsp;
+&nbsp;/**
+&nbsp; * Use case implementation for location-related domain operations.
+&nbsp; * This class handles the creation of location domain models, including validation for city, department, and duplicate locations.
+&nbsp; *
+&nbsp; * @author [Ciro Alfonso Pallares Fragozo]
+&nbsp; * @version 1.1
+&nbsp; * @since [16/3/2025]
+&nbsp; */
+&nbsp;public class LocationUseCase implements LocationServicePort {
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Persistence port for location operations.
+&nbsp;     */
+&nbsp;    private final LocationPersistencePort locationPersistencePort;
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Persistence port for city operations.
+&nbsp;     */
+&nbsp;    private final CityPersistencePort cityPersistencePort;
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Persistence port for department operations.
+&nbsp;     */
+&nbsp;    private final DepartmentPersistencePort departmentPersistencePort;
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Constructs a new LocationUseCase instance.
+&nbsp;     *
+&nbsp;     * @param locationPersistencePort Persistence port for location operations.
+&nbsp;     * @param cityPersistencePort     Persistence port for city operations.
+&nbsp;     * @param departmentPersistencePort Persistence port for department operations.
+&nbsp;     */
+&nbsp;    public LocationUseCase(LocationPersistencePort locationPersistencePort,
+&nbsp;                           CityPersistencePort cityPersistencePort,
+<b class="nc">&nbsp;                           DepartmentPersistencePort departmentPersistencePort) {</b>
+<b class="nc">&nbsp;        this.locationPersistencePort = locationPersistencePort;</b>
+<b class="nc">&nbsp;        this.cityPersistencePort = cityPersistencePort;</b>
+<b class="nc">&nbsp;        this.departmentPersistencePort = departmentPersistencePort;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Creates a new location domain model, validating for city, department, and duplicate locations.
+&nbsp;     *
+&nbsp;     * @param location The location domain model to create.
+&nbsp;     * @return The created location domain model.
+&nbsp;     * @throws CityNotFoundException    If the city does not exist.
+&nbsp;     * @throws DepartmentNotFoundException If the department does not exist.
+&nbsp;     * @throws DuplicateLocationException If a location with the same city and department already exists.
+&nbsp;     */
+&nbsp;    @Override
+&nbsp;    public LocationModel createLocation(LocationModel location) {
+&nbsp;
+<b class="nc">&nbsp;        if (location.getCity() == null || location.getCityName() == null) {</b>
+<b class="nc">&nbsp;            throw new CityNotFoundException(DomainConstants.NOT_FOUND);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if (location.getDepartment() == null || location.getDepartmentName() == null) {</b>
+<b class="nc">&nbsp;            throw new DepartmentNotFoundException(DomainConstants.NOT_FOUND);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        validateCityExists(location.getCityName());</b>
+<b class="nc">&nbsp;        validateDepartmentExists(location.getDepartmentName());</b>
+<b class="nc">&nbsp;        validateLocationNotExists(location.getCityName(), location.getDepartmentName());</b>
+&nbsp;
+&nbsp;
+<b class="nc">&nbsp;        return locationPersistencePort.saveLocation(location);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Validates if the city exists.
+&nbsp;     *
+&nbsp;     * @param cityName The name of the city to validate.
+&nbsp;     * @throws CityNotFoundException If the city does not exist.
+&nbsp;     */
+&nbsp;    private void validateCityExists(String cityName) {
+<b class="nc">&nbsp;        if (!cityPersistencePort.existsByName(cityName)) {</b>
+<b class="nc">&nbsp;            throw new CityNotFoundException(DomainConstants.NOT_FOUND);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Validates if the department exists.
+&nbsp;     *
+&nbsp;     * @param departmentName The name of the department to validate.
+&nbsp;     * @throws DepartmentNotFoundException If the department does not exist.
+&nbsp;     */
+&nbsp;    private void validateDepartmentExists(String departmentName) {
+<b class="nc">&nbsp;        if (!departmentPersistencePort.existsByName(departmentName)) {</b>
+<b class="nc">&nbsp;            throw new DepartmentNotFoundException(DomainConstants.NOT_FOUND);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Validates if the location does not already exist.
+&nbsp;     *
+&nbsp;     * @param cityName       The name of the city to validate.
+&nbsp;     * @param departmentName The name of the department to validate.
+&nbsp;     * @throws DuplicateLocationException If the location already exists.
+&nbsp;     */
+&nbsp;    private void validateLocationNotExists(String cityName, String departmentName) {
+<b class="nc">&nbsp;        if (locationPersistencePort.existsByCityAndDepartment(cityName, departmentName)) {</b>
+<b class="nc">&nbsp;            throw new DuplicateLocationException(DomainConstants.ALREADY_EXISTS);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Retrieves a paginated list of CategoryModels.
+&nbsp;     *
+&nbsp;     * @param page    The page number (0-based).
+&nbsp;     * @param size    The number of categories per page.
+&nbsp;     * @param sortBy  True for ascending order, false for descending order.
+&nbsp;     * @return A list of CategoryModels representing the requested page.
+&nbsp;     */
+&nbsp;    @Override
+&nbsp;    public Pagination&lt;LocationModel&gt; getLocations(Integer page, Integer size, String sortBy, String sortDirection, String text){
+&nbsp;
+&nbsp;
+<b class="nc">&nbsp;        Validation.ValidatePageAndSize(page,size);</b>
+<b class="nc">&nbsp;        if (!sortBy.equalsIgnoreCase(&quot;cityName&quot;) &amp;&amp; !sortBy.equalsIgnoreCase(&quot;departmentName&quot;)) {</b>
+<b class="nc">&nbsp;            throw new InvalidParameters(&quot;Invalid sortBy parameter: &quot; + sortBy);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if (!sortDirection.equalsIgnoreCase(&quot;ASC&quot;) &amp;&amp; !sortDirection.equalsIgnoreCase(&quot;DESC&quot;)) {</b>
+<b class="nc">&nbsp;            throw new InvalidParameters(&quot;Invalid sortDirection parameter: &quot; + sortDirection);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        //String normalizedText = Validation.normalizeText(text);
+<b class="nc">&nbsp;        return locationPersistencePort.getLocations(page, size, sortBy,sortDirection,text);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-20 13:44</div>
+</div>
+</body>
+</html>

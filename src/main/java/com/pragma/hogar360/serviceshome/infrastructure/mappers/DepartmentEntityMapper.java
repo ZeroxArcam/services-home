@@ -3,6 +3,7 @@ package com.pragma.hogar360.serviceshome.infrastructure.mappers;
 import com.pragma.hogar360.serviceshome.domain.model.DepartmentModel;
 import com.pragma.hogar360.serviceshome.infrastructure.entities.DepartmentEntity;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
 /**
@@ -23,6 +24,7 @@ public interface DepartmentEntityMapper {
      * @param departmentModel The DepartmentModel to convert.
      * @return The corresponding DepartmentEntity.
      */
+    @Mapping(target = "id", ignore = true)
     DepartmentEntity toEntity(DepartmentModel departmentModel);
 
     /**
@@ -31,5 +33,6 @@ public interface DepartmentEntityMapper {
      * @param departmentEntity The DepartmentEntity to convert.
      * @return The corresponding DepartmentModel.
      */
+    @Mapping(target = "id", ignore = true)
     DepartmentModel toModel(DepartmentEntity departmentEntity);
 }

@@ -9,13 +9,11 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
 import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-public class DepartmentUseCaseTest {
+class DepartmentUseCaseTest {
 
     @Mock
     private DepartmentPersistencePort departmentPersistencePort;
@@ -24,12 +22,12 @@ public class DepartmentUseCaseTest {
     private DepartmentUseCase departmentUseCase;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    public void testCreateDepartment_Success() {
+    void testCreateDepartment_Success() {
         // Arrange
         DepartmentModel departmentModel = DepartmentModelFactory.createDefaultDepartmentModel();
         when(departmentPersistencePort.existsByName(departmentModel.getName())).thenReturn(false);
@@ -46,7 +44,7 @@ public class DepartmentUseCaseTest {
     }
 
     @Test
-    public void testCreateDepartment_DuplicateName() {
+    void testCreateDepartment_DuplicateName() {
         // Arrange
         DepartmentModel departmentModel = DepartmentModelFactory.createDefaultDepartmentModel();
         when(departmentPersistencePort.existsByName(departmentModel.getName())).thenReturn(true);
@@ -58,7 +56,7 @@ public class DepartmentUseCaseTest {
     }
 
     @Test
-    public void testGetDepartmentByName_Success() {
+    void testGetDepartmentByName_Success() {
         // Arrange
         DepartmentModel departmentModel = DepartmentModelFactory.createDefaultDepartmentModel();
         when(departmentPersistencePort.findByName(departmentModel.getName())).thenReturn(Optional.of(departmentModel));
@@ -73,7 +71,7 @@ public class DepartmentUseCaseTest {
     }
 
     @Test
-    public void testGetDepartmentByName_NotFound() {
+    void testGetDepartmentByName_NotFound() {
         // Arrange
         String departmentName = "Nonexistent Department";
         when(departmentPersistencePort.findByName(departmentName)).thenReturn(Optional.empty());

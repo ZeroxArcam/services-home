@@ -2,7 +2,7 @@ package com.pragma.hogar360.serviceshome.application.services;
 
 import com.pragma.hogar360.serviceshome.application.dto.request.SaveDepartmentRequest;
 import com.pragma.hogar360.serviceshome.application.dto.response.DepartmentResponse;
-
+import com.pragma.hogar360.serviceshome.application.dto.response.SaveDepartmentResponse;
 import java.util.Optional;
 
 /**
@@ -21,8 +21,7 @@ public interface DepartmentService {
      * @param request The request containing the department details.
      * @return A {@link DepartmentResponse} representing the created department.
      */
-    DepartmentResponse createDepartment(SaveDepartmentRequest request);
-
+    SaveDepartmentResponse createDepartment(SaveDepartmentRequest request);
     /**
      * Retrieves a department by its name.
      *

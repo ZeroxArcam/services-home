@@ -61,9 +61,18 @@ public class LocationUseCase implements LocationServicePort {
      */
     @Override
     public LocationModel createLocation(LocationModel location) {
+
+        if (location.getCity() == null || location.getCityName() == null) {
+            throw new CityNotFoundException(DomainConstants.NOT_FOUND);
+        }
+        if (location.getDepartment() == null || location.getDepartmentName() == null) {
+            throw new DepartmentNotFoundException(DomainConstants.NOT_FOUND);
+        }
+
         validateCityExists(location.getCityName());
         validateDepartmentExists(location.getDepartmentName());
         validateLocationNotExists(location.getCityName(), location.getDepartmentName());
+
 
         return locationPersistencePort.saveLocation(location);
     }
@@ -116,16 +125,15 @@ public class LocationUseCase implements LocationServicePort {
     @Override
     public Pagination<LocationModel> getLocations(Integer page, Integer size, String sortBy, String sortDirection, String text){
 
-        Validation.ValidatePageAndSize(page,size);
+
+        Validation.validatePageAndSize(page,size);
         if (!sortBy.equalsIgnoreCase("cityName") && !sortBy.equalsIgnoreCase("departmentName")) {
-            throw new IllegalArgumentException("Invalid sortBy parameter: " + sortBy);
+            throw new InvalidParameters("Invalid sortBy parameter: " + sortBy);
         }
         if (!sortDirection.equalsIgnoreCase("ASC") && !sortDirection.equalsIgnoreCase("DESC")) {
-            throw new IllegalArgumentException("Invalid sortDirection parameter: " + sortDirection);
+            throw new InvalidParameters("Invalid sortDirection parameter: " + sortDirection);
         }
-
-        String normalizedText = Validation.normalizeText(text);
-        return locationPersistencePort.getLocations(page, size, sortBy,sortDirection,normalizedText);
+        return locationPersistencePort.getLocations(page, size, sortBy,sortDirection,text);
     }
 
 

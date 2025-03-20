@@ -76,4 +76,8 @@ class ValidationTest {
     void validationCityDepartmentDescription_shouldThrowEmptyDescriptionException_whenDescriptionIsBlank() {
         assertThrows(EmptyDescriptionException.class, () -> Validation.validationCityDepartmentDescription("  "));
     }
+
+
+
+
 }
