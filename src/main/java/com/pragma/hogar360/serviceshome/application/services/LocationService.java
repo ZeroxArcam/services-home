@@ -1,11 +1,8 @@
 package com.pragma.hogar360.serviceshome.application.services;
 
 import com.pragma.hogar360.serviceshome.application.dto.request.SaveLocationRequest;
-import com.pragma.hogar360.serviceshome.application.dto.response.LocationResponse;
 import com.pragma.hogar360.serviceshome.application.dto.response.PagedLocationResponse;
 import com.pragma.hogar360.serviceshome.application.dto.response.SaveLocationResponse;
-
-import java.util.Optional;
 
 /**
  * Interface defining the contract for location-related services.

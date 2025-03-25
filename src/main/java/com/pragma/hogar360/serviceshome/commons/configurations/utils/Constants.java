@@ -14,7 +14,7 @@ public final class Constants {
     public static final String NOT_FOUMD_CITY_RESPONSE_MESSAGE = "City not found.";
     public static final String NOT_FOUMD_DEPARTMENT_RESPONSE_MESSAGE = "Department not found.";
     public static final String DUPLICATE_DATA = "Data already exists.";
-
+    public static final String SAVE_HOME_RESPONSE_MESSAGE = "Publication created successfully.";
     public static final String PAGEABLE_FIELD_NAME = "name";
 
 

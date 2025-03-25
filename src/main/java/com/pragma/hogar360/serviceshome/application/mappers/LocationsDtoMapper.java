@@ -41,6 +41,7 @@ public interface LocationsDtoMapper {
         return new LocationResponse(
                 locationModel.getId(),
                 locationModel.getCity().getName(),
+                locationModel.getCity().getDescription(),
                 locationModel.getDepartment().getName()
         );
     }

@@ -81,6 +81,9 @@ public class LocationModel {
         return city.getName();
 
     }
+    public String getCityDescription() {
+        return city.getDescription();
+    }
 
     /**
      * Gets the name of the department associated with the location.
@@ -89,6 +92,9 @@ public class LocationModel {
      */
     public String getDepartmentName() {
         return department.getName();
+    }
+    public String getDepartmentDescription() {
+        return department.getDescription();
     }
 
 }

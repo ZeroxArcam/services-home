@@ -1,17 +1,9 @@
 package com.pragma.hogar360.serviceshome.commons.configurations.beans;
 
-import com.pragma.hogar360.serviceshome.domain.ports.in.CategoryServicePort;
-import com.pragma.hogar360.serviceshome.domain.ports.in.CityServicePort;
-import com.pragma.hogar360.serviceshome.domain.ports.in.DepartmentServicePort;
-import com.pragma.hogar360.serviceshome.domain.ports.out.CategoryPersistencePort;
-import com.pragma.hogar360.serviceshome.domain.ports.out.CityPersistencePort;
-import com.pragma.hogar360.serviceshome.domain.ports.out.DepartmentPersistencePort;
-import com.pragma.hogar360.serviceshome.domain.usecases.CategoryUseCase;
-import com.pragma.hogar360.serviceshome.domain.usecases.CityUseCase;
-import com.pragma.hogar360.serviceshome.domain.usecases.DepartmentUseCase;
-import com.pragma.hogar360.serviceshome.infrastructure.adapters.persistence.CategoryPersistenceAdapter;
-import com.pragma.hogar360.serviceshome.infrastructure.adapters.persistence.CityPersistenceAdapter;
-import com.pragma.hogar360.serviceshome.infrastructure.adapters.persistence.DepartmentPersistenceAdapter;
+import com.pragma.hogar360.serviceshome.domain.ports.in.*;
+import com.pragma.hogar360.serviceshome.domain.ports.out.*;
+import com.pragma.hogar360.serviceshome.domain.usecases.*;
+import com.pragma.hogar360.serviceshome.infrastructure.adapters.persistence.*;
 import com.pragma.hogar360.serviceshome.infrastructure.mappers.CategoryEntityMapper;
 import com.pragma.hogar360.serviceshome.infrastructure.mappers.CityEntityMapper;
 import com.pragma.hogar360.serviceshome.infrastructure.mappers.DepartmentEntityMapper;
@@ -23,12 +15,6 @@ import com.pragma.hogar360.serviceshome.infrastructure.repositories.mysql.Locati
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import com.pragma.hogar360.serviceshome.domain.ports.in.LocationServicePort; // Importa LocationServicePort
-import com.pragma.hogar360.serviceshome.domain.usecases.LocationUseCase; // Importa LocationUseCase
-import com.pragma.hogar360.serviceshome.domain.ports.out.LocationPersistencePort; // Importa LocationPersistencePort
-import com.pragma.hogar360.serviceshome.infrastructure.adapters.persistence.LocationPersistenceAdapter; // Importa LocationPersistenceAdapter
-
-
 
 
 /**
@@ -107,6 +93,16 @@ public class BeanConfiguration {
         return new DepartmentUseCase(departmentPersistencePort());
     }
 
+//    @Bean
+//    public HomeServicePort homeServicePort(){
+//        return new HomeUseCase(HomePersistencePort());
+//    }
+//    @Bean
+//    public HomePersistencePort homePersistencePort(){
+//        return new HomePersistenceAdapter() {
+//        }
+//    }
+
     @Bean
     public LocationServicePort locationServicePort(LocationPersistencePort locationPersistencePort,
                                                    CityPersistencePort cityPersistencePort,
@@ -121,4 +117,6 @@ public class BeanConfiguration {
                                                            LocationEntityMapper locationEntityMapper) {
         return new LocationPersistenceAdapter(locationRepository, cityRepository, departmentRepository, locationEntityMapper);
     }
+
+
 }
