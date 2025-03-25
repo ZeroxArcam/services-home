@@ -79,5 +79,4 @@ public class CategoryPersistenceAdapter implements CategoryPersistencePort {
         log.info("Pagination mapped successfully. Returning response...");
         return result;
     }
-
 }

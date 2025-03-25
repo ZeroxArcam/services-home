@@ -25,6 +25,7 @@ public interface CategoryPersistencePort {
      */
     CategoryModel getCategoryByName(String categoryName);
 
+
     /**
      * Retrieves a paginated list of CategoryModels.
      *

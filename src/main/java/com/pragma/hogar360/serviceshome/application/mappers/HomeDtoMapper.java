@@ -54,5 +54,6 @@ public interface HomeDtoMapper {
 
     @Mapping(target = "activePublicationDate", source = "activePublicationDate")
     @Mapping(target = "publicationStatus", source = "publicationStatus")
+    @Mapping(target = "publicationDate" , source = "publicationDate")
     HomePublicationInfoModel mapPublicationInfo(SaveHomeRequest homeModel);
 }

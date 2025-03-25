@@ -5,10 +5,12 @@ import java.time.LocalDate;
 public class HomePublicationInfoModel {
     private LocalDate activePublicationDate;
     private String publicationStatus;
+    private LocalDate publicationDate;
 
-    public HomePublicationInfoModel(LocalDate activePublicationDate, String publicationStatus) {
+    public HomePublicationInfoModel(LocalDate activePublicationDate, String publicationStatus, LocalDate publicationDate) {
         this.activePublicationDate = activePublicationDate;
         this.publicationStatus = publicationStatus;
+        this.publicationDate = publicationDate;
     }
     public HomePublicationInfoModel() {}
 
@@ -27,4 +29,12 @@ public class HomePublicationInfoModel {
     public void setPublicationStatus(String publicationStatus) {
         this.publicationStatus = publicationStatus;
     }
+    public LocalDate getPublicationDate() {
+        return publicationDate;
+    }
+
+    public void setPublicationDate(LocalDate publicationDate) {
+        this.publicationDate = publicationDate;
+    }
+
 }

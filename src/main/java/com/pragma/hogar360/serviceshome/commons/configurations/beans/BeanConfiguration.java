@@ -1,21 +1,20 @@
 package com.pragma.hogar360.serviceshome.commons.configurations.beans;
 
+import com.pragma.hogar360.serviceshome.domain.model.HomeModel;
 import com.pragma.hogar360.serviceshome.domain.ports.in.*;
 import com.pragma.hogar360.serviceshome.domain.ports.out.*;
 import com.pragma.hogar360.serviceshome.domain.usecases.*;
 import com.pragma.hogar360.serviceshome.infrastructure.adapters.persistence.*;
-import com.pragma.hogar360.serviceshome.infrastructure.mappers.CategoryEntityMapper;
-import com.pragma.hogar360.serviceshome.infrastructure.mappers.CityEntityMapper;
-import com.pragma.hogar360.serviceshome.infrastructure.mappers.DepartmentEntityMapper;
-import com.pragma.hogar360.serviceshome.infrastructure.mappers.LocationEntityMapper;
+import com.pragma.hogar360.serviceshome.infrastructure.entities.HomeEntity;
+import com.pragma.hogar360.serviceshome.infrastructure.mappers.*;
 import com.pragma.hogar360.serviceshome.infrastructure.repositories.mysql.CategoryRepository;
 import com.pragma.hogar360.serviceshome.infrastructure.repositories.mysql.CityRepository;
 import com.pragma.hogar360.serviceshome.infrastructure.repositories.mysql.DepartmentRepository;
+import com.pragma.hogar360.serviceshome.infrastructure.repositories.mysql.HomeRepository;
 import com.pragma.hogar360.serviceshome.infrastructure.repositories.mysql.LocationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
 
 /**
  * Configuration class for defining Spring beans.
@@ -26,12 +25,13 @@ import org.springframework.context.annotation.Configuration;
 public class BeanConfiguration {
     private final CategoryRepository categoryRepository;
     private final CategoryEntityMapper categoryEntityMapper;
-    private final CityRepository cityRepository; //Inyecta CityRepository
-    private final CityEntityMapper cityEntityMapper; //Inyecta CityEntityMapper
-    private final DepartmentRepository departmentRepository; //Inyecta DepartmentRepository
-    private final DepartmentEntityMapper departmentEntityMapper; //Inyecta DepartmentEntityMapper
+    private final CityRepository cityRepository; // Inyecta CityRepository
+    private final CityEntityMapper cityEntityMapper; // Inyecta CityEntityMapper
+    private final DepartmentRepository departmentRepository; // Inyecta DepartmentRepository
+    private final DepartmentEntityMapper departmentEntityMapper; // Inyecta DepartmentEntityMapper
     private final LocationRepository locationRepository; // Añade LocationRepository
     private final LocationEntityMapper locationEntityMapper; // Añade LocationEntityMapper
+    private final HomeRepository homeRepository;
 
     /**
      * Defines the CategoryServicePort bean.
@@ -93,15 +93,17 @@ public class BeanConfiguration {
         return new DepartmentUseCase(departmentPersistencePort());
     }
 
-//    @Bean
-//    public HomeServicePort homeServicePort(){
-//        return new HomeUseCase(HomePersistencePort());
-//    }
-//    @Bean
-//    public HomePersistencePort homePersistencePort(){
-//        return new HomePersistenceAdapter() {
-//        }
-//    }
+//    private final CategoryPersistencePort categoryPersistencePort;
+//    private final LocationPersistencePort locationPersistencePort;
+    @Bean
+    public HomeServicePort homeServicePort(HomePersistencePort homePersistencePort, CategoryPersistencePort categoryPersistencePort, LocationPersistencePort locationPersistencePort) {
+        return new HomeUseCase(homePersistencePort, categoryPersistencePort, locationPersistencePort);
+    }
+
+    @Bean
+    public HomePersistencePort homePersistencePort(HomeRepository homeRepository, HomeEntityMapper homeEntityMapper) {
+        return new HomePersistenceAdapter(homeRepository, homeEntityMapper);
+    }
 
     @Bean
     public LocationServicePort locationServicePort(LocationPersistencePort locationPersistencePort,
@@ -117,6 +119,4 @@ public class BeanConfiguration {
                                                            LocationEntityMapper locationEntityMapper) {
         return new LocationPersistenceAdapter(locationRepository, cityRepository, departmentRepository, locationEntityMapper);
     }
-
-
 }

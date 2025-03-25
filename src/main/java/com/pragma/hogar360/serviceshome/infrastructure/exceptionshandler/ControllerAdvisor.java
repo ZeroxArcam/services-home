@@ -108,6 +108,12 @@ public class ControllerAdvisor {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new ExceptionResponse(ExceptionConstants.DUPLICATE_ENTITY_EXCEPTION,
                 LocalDateTime.now()));
     }
+    //HomeAlreadyExistsException
+    @ExceptionHandler(HomeAlreadyExistsException.class)
+    public ResponseEntity<ExceptionResponse> handleHomeAlreadyExistsException(HomeAlreadyExistsException exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ExceptionResponse(ExceptionConstants.DUPLICATE_HOME_EXCEPTION,
+                LocalDateTime.now()));
+    }
 
     @ExceptionHandler(CityDepartmentDescriptionMaxSizeExceededException.class)
     public ResponseEntity<ExceptionResponse> handleCityMaxSizeExceededException(CityDepartmentDescriptionMaxSizeExceededException exception) {

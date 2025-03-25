@@ -21,5 +21,6 @@ public final class DomainConstants {
     public static final String NOT_FOUND = "No such data exists.";
     public static final String ALREADY_EXISTS = "Data already exists.";
     public static final String INVALID_PARAMETERS = "Invalid parameters.";
+    public static final String HOME_ALREADY_EXISTS = "Home already exists.";
 
 }

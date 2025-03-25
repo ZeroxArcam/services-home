@@ -1,7 +1,6 @@
 package com.pragma.hogar360.serviceshome.infrastructure.endpoints.rest;
 
 import com.pragma.hogar360.serviceshome.application.dto.request.SaveHomeRequest;
-import com.pragma.hogar360.serviceshome.application.dto.response.SaveCityResponse;
 import com.pragma.hogar360.serviceshome.application.dto.response.SaveHomeResponse;
 import com.pragma.hogar360.serviceshome.application.services.HomeService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,19 +25,17 @@ public class HomeController {
 
     private final HomeService homeService;
 
-
     @PostMapping("/")
-    @Operation(summary = "Save a new city", description = "Saves a new city in the system. The city name must be unique and have a maximum length of 50 characters. Notes = Ensure that the city name is properly formatted.")
-    @ApiResponse(responseCode = "201", description = "City created", content = @Content(schema = @Schema(implementation = SaveCityResponse.class), examples = @ExampleObject(value = "{\"id\": 1, \"name\": \"Valledupar\", \"description\": \"Capital of Cesar\"}")))
-    @ApiResponse(responseCode = "400", description = "Bad request", content = @Content(schema = @Schema(implementation = String.class), examples = @ExampleObject(value = "\"Name cannot exceed 50 characters.\"\n \"Description cannot exceed 90 characters.\" ")))
-    @ApiResponse(responseCode = "409", description = "City already exists", content = @Content(schema = @Schema(implementation = String.class), examples = @ExampleObject(value = "City with name 'Valledupar' already exists.")))
+    @Operation(summary = "Save a new home", description = "Saves a new home in the system.")
+    @ApiResponse(responseCode = "201", description = "Home created", content = @Content(schema = @Schema(implementation = SaveHomeResponse.class), examples = @ExampleObject(value = "{\"id\": 1, \"message\": \"Home created successfully\"}")))
+    @ApiResponse(responseCode = "400", description = "Bad request", content = @Content(schema = @Schema(implementation = String.class), examples = @ExampleObject(value = "\"Invalid input data\"")))
     public ResponseEntity<SaveHomeResponse> save(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "City data to save",
+                    description = "Home data to save",
                     required = true,
                     content = @Content(
                             examples = @ExampleObject(
-                                    value = "{\"name\": \"Valledupar\", \"description\": \"Capital of Cesar\"}"
+                                    value = "{\"name\": \"Mi Casa\", \"description\": \"Una hermosa casa\", \"category\": \"Apartamento\", \"numberOfRooms\": 3, \"numberOfBathrooms\": 2, \"price\": 150000.0, \"city\": \"Medellín\", \"department\": \"Antioquia\", \"activePublicationDate\": \"2025-03-25\", \"publicationStatus\": \"PUBLISHED\", \"publicationDate\": \"2025-03-25\"}"
                             )
                     )
             )

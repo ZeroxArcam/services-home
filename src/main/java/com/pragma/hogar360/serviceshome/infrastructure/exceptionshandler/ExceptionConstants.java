@@ -44,6 +44,8 @@ public final class ExceptionConstants {
 
     public static final String DUPLICATE_ENTITY_EXCEPTION = "Duplicated data.";
 
+    public static final String DUPLICATE_HOME_EXCEPTION = "Duplicate id";
+
     public static final String FIELD_DESCRIPTION_CITY_DEPARTMENT_MAX_LENGTH_MESSAGE = "Description cannot exceed 120 characters.";
 
     public static final String DESCRIPTION_LOCATION_MAX_SIZE_MESSAGE = "The description can not exceed 120 characters";

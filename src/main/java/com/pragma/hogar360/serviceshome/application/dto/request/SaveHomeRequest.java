@@ -11,4 +11,5 @@ public record SaveHomeRequest(String name,
                               String city,
                               String department,
                               LocalDate activePublicationDate,
-                              String publicationStatus) {}
+                              String publicationStatus,
+                              LocalDate publicationDate) {}

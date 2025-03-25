@@ -15,7 +15,7 @@ import java.time.LocalDate;
  *
  * @author [Ciro Alfonso Pallares Fragozo]
  * @version 1.0
- * @since [16/3/2025]
+ * @since [23/3/2025]
  */
 @Entity
 @Table(name = "homes")
