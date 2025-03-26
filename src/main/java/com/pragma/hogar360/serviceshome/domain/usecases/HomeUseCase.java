@@ -26,14 +26,16 @@ public class HomeUseCase implements HomeServicePort {
     }
 
     @Override
-    public HomeModel createHome(HomeModel homeModel) {
+    public void save(HomeModel homeModel) {
+//    public HomeModel createHome(HomeModel homeModel) {
 
         CategoryModel category=categoryExists(homeModel.getPropertyDetails().getCategory().getName());
         LocationModel location=locationExists(homeModel.getBasicInfo().getLocation().getCityName(),homeModel.getBasicInfo().getLocation().getDepartmentName());
         homeModel.getPropertyDetails().setCategory(category);
         homeModel.getBasicInfo().setLocation(location);
         validatePublicationActive(homeModel.getPublicationInfo().getPublicationDate(), homeModel.getPublicationInfo().getActivePublicationDate());
-        return homePersistencePort.saveHome(homeModel);
+        //return homePersistencePort.saveHome(homeModel);
+        homePersistencePort.save(homeModel);
     }
 
     private CategoryModel categoryExists(String categoryName) {

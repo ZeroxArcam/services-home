@@ -40,6 +40,6 @@ public class HomeController {
                     )
             )
             @RequestBody SaveHomeRequest saveHomeRequest) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(homeService.createHome(saveHomeRequest));
+        return ResponseEntity.status(HttpStatus.CREATED).body(homeService.save(saveHomeRequest));
     }
 }

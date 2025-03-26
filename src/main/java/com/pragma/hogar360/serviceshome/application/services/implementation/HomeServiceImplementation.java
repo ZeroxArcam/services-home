@@ -22,9 +22,15 @@ public class HomeServiceImplementation implements HomeService {
 //    }
 
     @Override
-    public SaveHomeResponse createHome(SaveHomeRequest request){
-        homeServicePort.createHome(homeDtoMapper.requestToModel(request));
+    public SaveHomeResponse save(SaveHomeRequest request){
+        homeServicePort.save(homeDtoMapper.requestToModel(request));
         return new SaveHomeResponse(Constants.SAVE_HOME_RESPONSE_MESSAGE, LocalDateTime.now());
     }
+
+//    @Override
+//    public void save(SaveHomeRequest request){
+//        homeServicePort.save(homeDtoMapper.requestToModel(request));
+//        //SaveHomeResponse(Constants.SAVE_HOME_RESPONSE_MESSAGE, LocalDateTime.now());
+//    }
 
 }
