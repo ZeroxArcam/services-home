@@ -1,21 +1,22 @@
 package com.pragma.hogar360.serviceshome.domain.usecases;
 
+import com.pragma.hogar360.serviceshome.domain.exceptions.DepartmentNotFoundException;
 import com.pragma.hogar360.serviceshome.domain.exceptions.DuplicateDepartmentNameException;
 import com.pragma.hogar360.serviceshome.domain.model.CityModel;
+import com.pragma.hogar360.serviceshome.domain.model.DepartmentModel;
 import com.pragma.hogar360.serviceshome.domain.ports.out.CityPersistencePort;
 import com.pragma.hogar360.serviceshome.domain.ports.out.DepartmentPersistencePort;
 import com.pragma.hogar360.serviceshome.factory.CityModelFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class CityUseCaseTest {
 
     @Mock
@@ -24,69 +25,48 @@ class CityUseCaseTest {
     @Mock
     private DepartmentPersistencePort departmentPersistencePort;
 
-    @InjectMocks
     private CityUseCase cityUseCase;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        cityUseCase = new CityUseCase(cityPersistencePort, departmentPersistencePort);
     }
 
     @Test
-    void testCreateCity_Success() {
+    void save_shouldSaveCity_whenCityIsValid() {
         // Arrange
-        CityModel cityModel = CityModelFactory.createDefaultCityModel();
-        when(cityPersistencePort.existsByName(cityModel.getName())).thenReturn(false);
-        when(cityPersistencePort.saveCity(cityModel)).thenReturn(cityModel);
+        DepartmentModel department = CityModelFactory.createDepartmentModel(1L, "Test Department", "Test Department Description");
+        CityModel city = CityModelFactory.createCityModel(1L, "Test City", "Test Description", department);
+
+        when(cityPersistencePort.existsByNameAndDepartmentName(city.getName(), department.getName())).thenReturn(false);
 
         // Act
-        CityModel result = cityUseCase.createCity(cityModel);
+        cityUseCase.save(city);
 
         // Assert
-        assertNotNull(result);
-        assertEquals(cityModel, result);
-        verify(cityPersistencePort, times(1)).existsByName(cityModel.getName());
-        verify(cityPersistencePort, times(1)).saveCity(cityModel);
+        verify(cityPersistencePort, times(1)).save(city);
     }
 
     @Test
-    void testCreateCity_DuplicateName() {
+    void save_shouldThrowDepartmentNotFoundException_whenDepartmentDoesNotExist() {
         // Arrange
-        CityModel cityModel = CityModelFactory.createDefaultCityModel();
-        when(cityPersistencePort.existsByName(cityModel.getName())).thenReturn(true);
+        CityModel city = CityModelFactory.createCityModelWithNullDepartment("Test City", "Test Description");
 
         // Act & Assert
-        assertThrows(DuplicateDepartmentNameException.class, () -> cityUseCase.createCity(cityModel));
-        verify(cityPersistencePort, times(1)).existsByName(cityModel.getName());
-        verify(cityPersistencePort, never()).saveCity(cityModel);
+        assertThrows(DepartmentNotFoundException.class, () -> cityUseCase.save(city));
+        verify(cityPersistencePort, never()).save(any());
     }
 
     @Test
-    void testGetCityByName_Success() {
+    void save_shouldThrowDuplicateDepartmentNameException_whenCityAlreadyExists() {
         // Arrange
-        CityModel cityModel = CityModelFactory.createDefaultCityModel();
-        when(cityPersistencePort.findByName(cityModel.getName())).thenReturn(Optional.of(cityModel));
+        DepartmentModel department = CityModelFactory.createDepartmentModel(1L, "Test Department", "Test Department Description");
+        CityModel city = CityModelFactory.createCityModel(1L, "Test City", "Test Description", department);
 
-        // Act
-        Optional<CityModel> result = cityUseCase.getCityByName(cityModel.getName());
+        when(cityPersistencePort.existsByNameAndDepartmentName(city.getName(), department.getName())).thenReturn(true);
 
-        // Assert
-        assertTrue(result.isPresent());
-        assertEquals(cityModel, result.get());
-        verify(cityPersistencePort, times(1)).findByName(cityModel.getName());
-    }
-
-    @Test
-    void testGetCityByName_NotFound() {
-        // Arrange
-        String cityName = "Nonexistent City";
-        when(cityPersistencePort.findByName(cityName)).thenReturn(Optional.empty());
-
-        // Act
-        Optional<CityModel> result = cityUseCase.getCityByName(cityName);
-
-        // Assert
-        assertFalse(result.isPresent());
-        verify(cityPersistencePort, times(1)).findByName(cityName);
+        // Act & Assert
+        assertThrows(DuplicateDepartmentNameException.class, () -> cityUseCase.save(city));
+        verify(cityPersistencePort, never()).save(any());
     }
 }

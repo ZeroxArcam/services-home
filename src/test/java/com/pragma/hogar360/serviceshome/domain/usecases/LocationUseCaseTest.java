@@ -1,19 +1,19 @@
 package com.pragma.hogar360.serviceshome.domain.usecases;
 
 import com.pragma.hogar360.serviceshome.domain.exceptions.*;
+import com.pragma.hogar360.serviceshome.domain.model.CityModel;
 import com.pragma.hogar360.serviceshome.domain.model.LocationModel;
 import com.pragma.hogar360.serviceshome.domain.ports.out.CityPersistencePort;
-import com.pragma.hogar360.serviceshome.domain.ports.out.DepartmentPersistencePort;
 import com.pragma.hogar360.serviceshome.domain.ports.out.LocationPersistencePort;
 import com.pragma.hogar360.serviceshome.domain.utils.constants.Pagination;
+import com.pragma.hogar360.serviceshome.factory.CityModelFactory;
 import com.pragma.hogar360.serviceshome.factory.LocationModelFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import java.util.ArrayList;
-import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -25,9 +25,6 @@ class LocationUseCaseTest {
     @Mock
     private CityPersistencePort cityPersistencePort;
 
-    @Mock
-    private DepartmentPersistencePort departmentPersistencePort;
-
     @InjectMocks
     private LocationUseCase locationUseCase;
 
@@ -37,57 +34,59 @@ class LocationUseCaseTest {
     }
 
     @Test
-    void testCreateLocation_Success() {
+    void testSave_Success() {
         // Arrange
-        LocationModel locationModel = LocationModelFactory.createDefaultLocationModel();
-        when(cityPersistencePort.existsByName(locationModel.getCityName())).thenReturn(true);
-        when(departmentPersistencePort.existsByName(locationModel.getDepartmentName())).thenReturn(true);
-        when(locationPersistencePort.existsByCityAndDepartment(locationModel.getCityName(), locationModel.getDepartmentName())).thenReturn(false);
-        when(locationPersistencePort.saveLocation(locationModel)).thenReturn(locationModel);
+        CityModel city = CityModelFactory.createDefaultCityModel();
+        LocationModel location = LocationModelFactory.createLocationModel(1L, city, "Test Neighborhood");
+
+        when(cityPersistencePort.existsById(city.getId())).thenReturn(true);
+        when(locationPersistencePort.existsByNeighborhood(location.getNeighborhood())).thenReturn(false);
+        when(locationPersistencePort.existsByCityId(city.getId())).thenReturn(false);
 
         // Act
-        LocationModel result = locationUseCase.createLocation(locationModel);
+        locationUseCase.save(location);
 
         // Assert
-        assertNotNull(result);
-        assertEquals(locationModel, result);
-        verify(locationPersistencePort, times(1)).saveLocation(locationModel);
+        verify(locationPersistencePort, times(1)).save(location);
     }
 
     @Test
-    void testCreateLocation_CityNotFound() {
+    void testSave_CityNotFound() {
         // Arrange
-        LocationModel locationModel = LocationModelFactory.createDefaultLocationModel();
-        when(cityPersistencePort.existsByName(locationModel.getCityName())).thenReturn(false);
+        CityModel city = CityModelFactory.createDefaultCityModel();
+        LocationModel location = LocationModelFactory.createLocationModel(1L, city, "Test Neighborhood");
+
+        when(cityPersistencePort.existsById(city.getId())).thenReturn(false);
 
         // Act & Assert
-        assertThrows(CityNotFoundException.class, () -> locationUseCase.createLocation(locationModel));
-        verify(locationPersistencePort, never()).saveLocation(locationModel);
+        assertThrows(CityNotFoundException.class, () -> locationUseCase.save(location));
+        verify(locationPersistencePort, never()).save(location);
     }
 
     @Test
-    void testCreateLocation_DepartmentNotFound() {
+    void testSave_DuplicateLocation() {
         // Arrange
-        LocationModel locationModel = LocationModelFactory.createDefaultLocationModel();
-        when(cityPersistencePort.existsByName(locationModel.getCityName())).thenReturn(true);
-        when(departmentPersistencePort.existsByName(locationModel.getDepartmentName())).thenReturn(false);
+        CityModel city = CityModelFactory.createDefaultCityModel();
+        LocationModel location = LocationModelFactory.createLocationModel(1L, city, "Test Neighborhood");
+
+        when(cityPersistencePort.existsById(city.getId())).thenReturn(true);
+        when(locationPersistencePort.existsByNeighborhood(location.getNeighborhood())).thenReturn(true);
+        when(locationPersistencePort.existsByCityId(city.getId())).thenReturn(true);
 
         // Act & Assert
-        assertThrows(DepartmentNotFoundException.class, () -> locationUseCase.createLocation(locationModel));
-        verify(locationPersistencePort, never()).saveLocation(locationModel);
+        assertThrows(DuplicateLocationException.class, () -> locationUseCase.save(location));
+        verify(locationPersistencePort, never()).save(location);
     }
 
     @Test
-    void testCreateLocation_DuplicateLocation() {
+    void testSave_IllegalArgumentException() {
         // Arrange
-        LocationModel locationModel = LocationModelFactory.createDefaultLocationModel();
-        when(cityPersistencePort.existsByName(locationModel.getCityName())).thenReturn(true);
-        when(departmentPersistencePort.existsByName(locationModel.getDepartmentName())).thenReturn(true);
-        when(locationPersistencePort.existsByCityAndDepartment(locationModel.getCityName(), locationModel.getDepartmentName())).thenReturn(true);
+        CityModel city = CityModelFactory.createDefaultCityModel();
+        LocationModel location = LocationModelFactory.createLocationModel(1L, city, null);
 
         // Act & Assert
-        assertThrows(DuplicateLocationException.class, () -> locationUseCase.createLocation(locationModel));
-        verify(locationPersistencePort, never()).saveLocation(locationModel);
+        assertThrows(IllegalArgumentException.class, () -> locationUseCase.save(location));
+        verify(locationPersistencePort, never()).save(location);
     }
 
     @Test
@@ -98,17 +97,9 @@ class LocationUseCaseTest {
         String sortBy = "cityName";
         String sortDirection = "ASC";
         String text = "";
-        List<LocationModel> locationList = new ArrayList<>();
-        locationList.add(LocationModelFactory.createDefaultLocationModel());
+        Pagination<LocationModel> pagination = new Pagination<>();
 
-        long totalElements = 1;
-        int totalPages = 1;
-        int pageNumber = 0;
-        int pageSize = 10;
-
-        Pagination<LocationModel> pagination = new Pagination<>(locationList, totalElements, totalPages, pageNumber, pageSize);
-
-        when(locationPersistencePort.getLocations(page, size, sortBy, sortDirection, "")).thenReturn(pagination);
+        when(locationPersistencePort.getLocations(page, size, sortBy, sortDirection, text)).thenReturn(pagination);
 
         // Act
         Pagination<LocationModel> result = locationUseCase.getLocations(page, size, sortBy, sortDirection, text);
@@ -116,7 +107,7 @@ class LocationUseCaseTest {
         // Assert
         assertNotNull(result);
         assertEquals(pagination, result);
-        verify(locationPersistencePort, times(1)).getLocations(page, size, sortBy, sortDirection, "");
+        verify(locationPersistencePort, times(1)).getLocations(page, size, sortBy, sortDirection, text);
     }
 
     @Test
@@ -129,7 +120,7 @@ class LocationUseCaseTest {
         String text = "";
 
         // Act & Assert
-        assertThrows(InvalidParameters.class, () -> locationUseCase.getLocations(page, size, sortBy, sortDirection, text)); // <-- Cambia aquí
+        assertThrows(InvalidParameters.class, () -> locationUseCase.getLocations(page, size, sortBy, sortDirection, text));
         verify(locationPersistencePort, never()).getLocations(anyInt(), anyInt(), anyString(), anyString(), anyString());
     }
 
@@ -143,7 +134,7 @@ class LocationUseCaseTest {
         String text = "";
 
         // Act & Assert
-        assertThrows(InvalidParameters.class, () -> locationUseCase.getLocations(page, size, sortBy, sortDirection, text)); // <-- Cambia aquí
+        assertThrows(InvalidParameters.class, () -> locationUseCase.getLocations(page, size, sortBy, sortDirection, text));
         verify(locationPersistencePort, never()).getLocations(anyInt(), anyInt(), anyString(), anyString(), anyString());
     }
 }

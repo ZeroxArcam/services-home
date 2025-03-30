@@ -25,11 +25,11 @@ public class Auxiliary {
                     orders.add(new Sort.Order(direction, "city.name"));
                     break;
                 case "departmentName":
-                    orders.add(new Sort.Order(direction, "department.name"));
+                    orders.add(new Sort.Order(direction, "city.department.name"));
                     break;
                 default:
                     throw new InvalidParameters("Invalid sortBy value: " + field +
-                            ". Use 'department', 'city', or both separated by a comma.");
+                            ". Use 'departmentName', 'cityName', or both separated by a comma.");
             }
         }
 

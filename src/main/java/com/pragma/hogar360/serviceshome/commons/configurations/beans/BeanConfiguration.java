@@ -108,17 +108,13 @@ public class BeanConfiguration {
     }
 
     @Bean
-    public LocationServicePort locationServicePort(LocationPersistencePort locationPersistencePort,
-                                                   CityPersistencePort cityPersistencePort,
-                                                   DepartmentPersistencePort departmentPersistencePort) {
-        return new LocationUseCase(locationPersistencePort, cityPersistencePort, departmentPersistencePort);
+    public LocationServicePort locationServicePort(LocationPersistencePort locationPersistencePort, CityPersistencePort cityPersistencePort) {
+        return new LocationUseCase(locationPersistencePort, cityPersistencePort);
     }
 
     @Bean
     public LocationPersistencePort locationPersistencePort(LocationRepository locationRepository,
-                                                           CityRepository cityRepository,
-                                                           DepartmentRepository departmentRepository,
                                                            LocationEntityMapper locationEntityMapper) {
-        return new LocationPersistenceAdapter(locationRepository, cityRepository, departmentRepository, locationEntityMapper);
+        return new LocationPersistenceAdapter(locationRepository, locationEntityMapper);
     }
 }

@@ -5,14 +5,7 @@ import java.util.Objects;
 public class Validation {
 
     private Validation(){}
-    /**
-     * Validates a name string.
-     *
-     * @param name The name string to validate.
-     * @throws NullPointerException If the name is null.
-     * @throws NameMaxSizeExceededException If the name exceeds the maximum allowed length.
-     * @throws EmptyNameException If the name is blank.
-     */
+
     public static void validateName(String name) {
         Objects.requireNonNull(name, DomainConstants.FIELD_NAME_NULL_MESSAGE);
         if (name.length() > DomainConstants.FIELD_NAME_MAX_LENGTH) {

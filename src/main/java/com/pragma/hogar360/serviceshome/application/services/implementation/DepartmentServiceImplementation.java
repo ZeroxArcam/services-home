@@ -8,6 +8,7 @@ import com.pragma.hogar360.serviceshome.application.services.DepartmentService;
 import com.pragma.hogar360.serviceshome.commons.configurations.utils.Constants;
 import com.pragma.hogar360.serviceshome.domain.model.DepartmentModel;
 import com.pragma.hogar360.serviceshome.domain.ports.in.DepartmentServicePort;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -21,6 +22,7 @@ import java.util.Optional;
  * @since [16/3/2025]
  */
 @Service
+@RequiredArgsConstructor
 public class DepartmentServiceImplementation implements DepartmentService {
 
     /**
@@ -33,39 +35,46 @@ public class DepartmentServiceImplementation implements DepartmentService {
      */
     private final DepartmentDtoMapper departmentDtoMapper;
 
-    /**
-     * Constructor for DepartmentServiceImplementation.
-     *
-     * @param departmentServicePort Port for domain-level department service operations.
-     * @param departmentDtoMapper Mapper for converting between department DTOs and domain models.
-     */
-    public DepartmentServiceImplementation(DepartmentServicePort departmentServicePort, DepartmentDtoMapper departmentDtoMapper) {
-        this.departmentServicePort = departmentServicePort;
-        this.departmentDtoMapper = departmentDtoMapper;
+    @Override
+    public SaveDepartmentResponse createDepartment(SaveDepartmentRequest request){
+        departmentServicePort.save(departmentDtoMapper.requestToModel(request));
+        return new SaveDepartmentResponse("ok",LocalDateTime.now());
     }
 
-    /**
-     * Creates a new department based on the provided request.
-     *
-     * @param request The request containing the department details.
-     * @return A {@link DepartmentResponse} representing the created department.
-     */
-    @Override
-    public SaveDepartmentResponse createDepartment(SaveDepartmentRequest request) {
-        DepartmentModel departmentModel = departmentDtoMapper.requestToModel(request);
-        DepartmentModel savedDepartment = departmentServicePort.createDepartment(departmentModel);
-        return new SaveDepartmentResponse(Constants.SAVE_DEPARTMENT_RESPONSE_MESSAGE, LocalDateTime.now());
+//    /**
+//     * Constructor for DepartmentServiceImplementation.
+//     *
+//     * @param departmentServicePort Port for domain-level department service operations.
+//     * @param departmentDtoMapper Mapper for converting between department DTOs and domain models.
+//     */
+//    public DepartmentServiceImplementation(DepartmentServicePort departmentServicePort, DepartmentDtoMapper departmentDtoMapper) {
+//        this.departmentServicePort = departmentServicePort;
+//        this.departmentDtoMapper = departmentDtoMapper;
+//    }
+//
+//    /**
+//     * Creates a new department based on the provided request.
+//     *
+//     * @param request The request containing the department details.
+//     * @return A {@link DepartmentResponse} representing the created department.
+//     */
+//    @Override
+//    public SaveDepartmentResponse createDepartment(SaveDepartmentRequest request) {
+//        DepartmentModel departmentModel = departmentDtoMapper.requestToModel(request);
+//        DepartmentModel savedDepartment = departmentServicePort.createDepartment(departmentModel);
+//        return new SaveDepartmentResponse(Constants.SAVE_DEPARTMENT_RESPONSE_MESSAGE, LocalDateTime.now());
+//
+//    }
 
-    }
-    /**
-     * Retrieves a department by its name.
-     *
-     * @param name The name of the department to retrieve.
-     * @return An {@link Optional} containing the {@link DepartmentResponse} if found, or an empty {@link Optional} if not.
-     */
-    @Override
-    public Optional<DepartmentResponse> getDepartmentByName(String name) {
-        return departmentServicePort.getDepartmentByName(name)
-                .map(departmentDtoMapper::modelToResponse);
-    }
+//    /**
+//     * Retrieves a department by its name.
+//     *
+//     * @param name The name of the department to retrieve.
+//     * @return An {@link Optional} containing the {@link DepartmentResponse} if found, or an empty {@link Optional} if not.
+//     */
+//    @Override
+//    public Optional<DepartmentResponse> getDepartmentByName(String name) {
+//        return departmentServicePort.getDepartmentByName(name)
+//                .map(departmentDtoMapper::modelToResponse);
+//    }
 }
