@@ -15,6 +15,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
+import java.util.Optional;
+
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -37,6 +39,10 @@ public class LocationPersistenceAdapter implements LocationPersistencePort {
     @Override
     public boolean existsByNeighborhood(String neighborhood){
         return locationRepository.existsByNeighborhood(neighborhood);
+    }
+    @Override
+    public Optional<LocationModel> findById(Long id) {
+        return locationRepository.findById(id).map(locationEntityMapper::toModel);
     }
 
     @Override

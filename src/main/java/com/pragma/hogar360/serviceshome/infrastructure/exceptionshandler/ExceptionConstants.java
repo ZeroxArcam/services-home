@@ -18,5 +18,9 @@ public final class ExceptionConstants {
     public static final String FIELD_DESCRIPTION_CITY_DEPARTMENT_MAX_LENGTH_MESSAGE = "Description cannot exceed 120 characters.";
     public static final String DESCRIPTION_LOCATION_MAX_SIZE_MESSAGE = "The description can not exceed 120 characters";
     public static final String INVALID_PARAMETERS = "Invalid parameters.";
+    public static final String INVALID_DATE = "Invalid date";
+    public static final String INVALID_NUMBER_OF_ROOMS = "Invalid number of rooms";
+    public static final String ADDRESS_NULL_OR_EMPTY = "Address cannot be null or empty.";
+    public static final String ADDRESS_ALREADY_EXISTS = "Address already exists.";
 
 }
