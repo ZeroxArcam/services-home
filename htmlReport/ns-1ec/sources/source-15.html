@@ -1,0 +1,215 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > DurationJavaType</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.type.descriptor.java</a>
+</div>
+
+<h1>Coverage Summary for Class: DurationJavaType (org.hibernate.type.descriptor.java)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DurationJavaType</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    30%
+  </span>
+  <span class="absValue">
+    (3/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/30)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    7.3%
+  </span>
+  <span class="absValue">
+    (4/55)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.type.descriptor.java;
+&nbsp;
+&nbsp;import java.math.BigDecimal;
+&nbsp;import java.time.Duration;
+&nbsp;import org.hibernate.dialect.Dialect;
+&nbsp;import org.hibernate.internal.util.StringHelper;
+&nbsp;import org.hibernate.type.descriptor.WrapperOptions;
+&nbsp;import org.hibernate.type.descriptor.jdbc.JdbcType;
+&nbsp;import org.hibernate.type.descriptor.jdbc.JdbcTypeIndicators;
+&nbsp;
+&nbsp;public class DurationJavaType extends AbstractClassJavaType&lt;Duration&gt; {
+&nbsp;    public static final DurationJavaType INSTANCE = new DurationJavaType();
+&nbsp;    private static final BigDecimal BILLION;
+&nbsp;
+&nbsp;    public DurationJavaType() {
+&nbsp;        super(Duration.class, ImmutableMutabilityPlan.instance());
+&nbsp;    }
+&nbsp;
+&nbsp;    public JdbcType getRecommendedJdbcType(JdbcTypeIndicators context) {
+&nbsp;        return context.getTypeConfiguration().getJdbcTypeRegistry().getDescriptor(context.getPreferredSqlTypeCodeForDuration());
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean useObjectEqualsHashCode() {
+&nbsp;        return true;
+&nbsp;    }
+&nbsp;
+&nbsp;    public String toString(Duration value) {
+&nbsp;        if (value == null) {
+&nbsp;            return null;
+&nbsp;        } else {
+&nbsp;            String seconds = String.valueOf(value.getSeconds());
+&nbsp;            String nanos = String.valueOf(value.getNano());
+&nbsp;            String zeros = StringHelper.repeat(&#39;0&#39;, 9 - nanos.length());
+&nbsp;            return seconds + zeros + nanos;
+&nbsp;        }
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    public Duration fromString(CharSequence string) {
+&nbsp;        if (string == null) {
+<b class="fc">&nbsp;            return null;</b>
+&nbsp;        } else {
+&nbsp;            int cutoff = string.length() - 9;
+&nbsp;            return Duration.ofSeconds(Long.parseLong(string.subSequence(0, cutoff).toString()), Long.parseLong(string.subSequence(cutoff, string.length()).toString()));
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public &lt;X&gt; X unwrap(Duration duration, Class&lt;X&gt; type, WrapperOptions options) {</b>
+&nbsp;        if (duration == null) {
+&nbsp;            return null;
+&nbsp;        } else if (Duration.class.isAssignableFrom(type)) {
+&nbsp;            return (X)duration;
+<b class="fc">&nbsp;        } else if (BigDecimal.class.isAssignableFrom(type)) {</b>
+&nbsp;            return (X)(new BigDecimal(duration.getSeconds())).movePointRight(9).add(new BigDecimal(duration.getNano()));
+&nbsp;        } else if (String.class.isAssignableFrom(type)) {
+&nbsp;            return (X)duration.toString();
+&nbsp;        } else if (Long.class.isAssignableFrom(type)) {
+<b class="nc">&nbsp;            return (X)duration.toNanos();</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            throw this.unknownUnwrap(type);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public &lt;X&gt; Duration wrap(X value, WrapperOptions options) {</b>
+&nbsp;        if (value == null) {
+&nbsp;            return null;
+&nbsp;        } else if (value instanceof Duration) {
+&nbsp;            return (Duration)value;
+<b class="nc">&nbsp;        } else if (value instanceof BigDecimal) {</b>
+<b class="nc">&nbsp;            BigDecimal decimal = (BigDecimal)value;</b>
+&nbsp;            BigDecimal[] secondsAndNanos = decimal.divideAndRemainder(BILLION);
+<b class="nc">&nbsp;            return Duration.ofSeconds(secondsAndNanos[0].longValueExact(), (long)secondsAndNanos[1].intValue());</b>
+<b class="nc">&nbsp;        } else if (value instanceof Double) {</b>
+<b class="nc">&nbsp;            return Duration.ofNanos(((Double)value).longValue());</b>
+<b class="nc">&nbsp;        } else if (value instanceof Long) {</b>
+&nbsp;            return Duration.ofNanos((Long)value);
+&nbsp;        } else if (value instanceof String) {
+&nbsp;            return Duration.parse((String)value);
+&nbsp;        } else {
+&nbsp;            throw this.unknownWrap(value.getClass());
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public int getDefaultSqlPrecision(Dialect dialect, JdbcType jdbcType) {
+&nbsp;        return jdbcType.getDdlTypeCode() == 3100 ? 18 : Math.min(21, dialect.getDefaultDecimalPrecision());
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public int getDefaultSqlScale(Dialect dialect, JdbcType jdbcType) {
+&nbsp;        return jdbcType.getDdlTypeCode() == 3100 ? dialect.getDefaultIntervalSecondScale() : 0;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    static {</b>
+<b class="nc">&nbsp;        BILLION = BigDecimal.ONE.movePointRight(9);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 21:00</div>
+</div>
+</body>
+</html>

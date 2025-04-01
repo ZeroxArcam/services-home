@@ -1,0 +1,729 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > MeterRegistry</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">io.micrometer.core.instrument</a>
+</div>
+
+<h1>Coverage Summary for Class: MeterRegistry (io.micrometer.core.instrument)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MeterRegistry</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/57)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/62)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/157)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package io.micrometer.core.instrument;
+&nbsp;
+&nbsp;import io.micrometer.common.lang.Nullable;
+&nbsp;import io.micrometer.common.util.internal.logging.InternalLogger;
+&nbsp;import io.micrometer.common.util.internal.logging.InternalLoggerFactory;
+&nbsp;import io.micrometer.common.util.internal.logging.WarnThenDebugLogger;
+&nbsp;import io.micrometer.core.annotation.Incubating;
+&nbsp;import io.micrometer.core.instrument.config.MeterFilter;
+&nbsp;import io.micrometer.core.instrument.config.MeterFilterReply;
+&nbsp;import io.micrometer.core.instrument.config.NamingConvention;
+&nbsp;import io.micrometer.core.instrument.distribution.DistributionStatisticConfig;
+&nbsp;import io.micrometer.core.instrument.distribution.pause.NoPauseDetector;
+&nbsp;import io.micrometer.core.instrument.distribution.pause.PauseDetector;
+&nbsp;import io.micrometer.core.instrument.noop.NoopCounter;
+&nbsp;import io.micrometer.core.instrument.noop.NoopDistributionSummary;
+&nbsp;import io.micrometer.core.instrument.noop.NoopFunctionCounter;
+&nbsp;import io.micrometer.core.instrument.noop.NoopFunctionTimer;
+&nbsp;import io.micrometer.core.instrument.noop.NoopGauge;
+&nbsp;import io.micrometer.core.instrument.noop.NoopLongTaskTimer;
+&nbsp;import io.micrometer.core.instrument.noop.NoopMeter;
+&nbsp;import io.micrometer.core.instrument.noop.NoopTimeGauge;
+&nbsp;import io.micrometer.core.instrument.noop.NoopTimer;
+&nbsp;import io.micrometer.core.instrument.search.RequiredSearch;
+&nbsp;import io.micrometer.core.instrument.search.Search;
+&nbsp;import io.micrometer.core.instrument.util.TimeUtils;
+&nbsp;import java.time.Duration;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Arrays;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.EnumMap;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.HashSet;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Objects;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import java.util.concurrent.CopyOnWriteArrayList;
+&nbsp;import java.util.concurrent.TimeUnit;
+&nbsp;import java.util.concurrent.atomic.AtomicBoolean;
+&nbsp;import java.util.function.BiConsumer;
+&nbsp;import java.util.function.BiFunction;
+&nbsp;import java.util.function.Consumer;
+&nbsp;import java.util.function.Function;
+&nbsp;import java.util.function.ToDoubleFunction;
+&nbsp;import java.util.function.ToLongFunction;
+&nbsp;import java.util.stream.Collectors;
+&nbsp;
+&nbsp;public abstract class MeterRegistry {
+&nbsp;    private static final WarnThenDebugLogger gaugeDoubleRegistrationLogger = new WarnThenDebugLogger(MeterRegistry.class);
+&nbsp;    private static final EnumMap&lt;TimeUnit, String&gt; BASE_TIME_UNIT_STRING_CACHE = (EnumMap)Arrays.stream(TimeUnit.values()).collect(Collectors.toMap(Function.identity(), (timeUnit) -&gt; timeUnit.toString().toLowerCase(), (k, v) -&gt; {
+&nbsp;        throw new IllegalStateException(&quot;Duplicate keys should not exist.&quot;);
+&nbsp;    }, () -&gt; new EnumMap(TimeUnit.class)));
+&nbsp;    protected final Clock clock;
+&nbsp;    private final Object meterMapLock = new Object();
+&nbsp;    private volatile MeterFilter[] filters = new MeterFilter[0];
+&nbsp;    private final List&lt;Consumer&lt;Meter&gt;&gt; meterAddedListeners = new CopyOnWriteArrayList();
+&nbsp;    private final List&lt;Consumer&lt;Meter&gt;&gt; meterRemovedListeners = new CopyOnWriteArrayList();
+&nbsp;    private final List&lt;BiConsumer&lt;Meter.Id, String&gt;&gt; meterRegistrationFailedListeners = new CopyOnWriteArrayList();
+&nbsp;    private final Config config = new Config();
+&nbsp;    private final More more = new More();
+<b class="nc">&nbsp;    private final Map&lt;Meter.Id, Meter&gt; meterMap = new ConcurrentHashMap();</b>
+&nbsp;    private final Map&lt;Meter.Id, Meter&gt; preFilterIdToMeterMap = new HashMap();
+<b class="nc">&nbsp;    private final Map&lt;Meter, Meter.Id&gt; meterToPreFilterIdMap = new HashMap();</b>
+&nbsp;    private final Set&lt;Meter.Id&gt; stalePreFilterIds = new HashSet();
+&nbsp;    private final Map&lt;Meter.Id, Set&lt;Meter.Id&gt;&gt; syntheticAssociations = new HashMap();
+&nbsp;    private final AtomicBoolean closed = new AtomicBoolean();
+<b class="nc">&nbsp;    private PauseDetector pauseDetector = new NoPauseDetector();</b>
+<b class="nc">&nbsp;    @Nullable</b>
+<b class="nc">&nbsp;    private HighCardinalityTagsDetector highCardinalityTagsDetector;</b>
+<b class="nc">&nbsp;    private NamingConvention namingConvention;</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected MeterRegistry(Clock clock) {</b>
+<b class="nc">&nbsp;        this.namingConvention = NamingConvention.snakeCase;</b>
+&nbsp;        Objects.requireNonNull(clock);
+&nbsp;        this.clock = clock;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected abstract &lt;T&gt; Gauge newGauge(Meter.Id var1, @Nullable T var2, ToDoubleFunction&lt;T&gt; var3);
+&nbsp;
+<b class="nc">&nbsp;    protected abstract Counter newCounter(Meter.Id var1);</b>
+&nbsp;
+<b class="nc">&nbsp;    /** @deprecated */</b>
+&nbsp;    @Deprecated
+<b class="nc">&nbsp;    protected LongTaskTimer newLongTaskTimer(Meter.Id id) {</b>
+&nbsp;        throw new UnsupportedOperationException(&quot;MeterRegistry implementations may still override this, but it is only invoked by the overloaded form of newLongTaskTimer for backwards compatibility.&quot;);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    protected LongTaskTimer newLongTaskTimer(Meter.Id id, DistributionStatisticConfig distributionStatisticConfig) {</b>
+&nbsp;        return this.newLongTaskTimer(id);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    protected abstract Timer newTimer(Meter.Id var1, DistributionStatisticConfig var2, PauseDetector var3);</b>
+&nbsp;
+&nbsp;    protected abstract DistributionSummary newDistributionSummary(Meter.Id var1, DistributionStatisticConfig var2, double var3);
+&nbsp;
+&nbsp;    protected abstract Meter newMeter(Meter.Id var1, Meter.Type var2, Iterable&lt;Measurement&gt; var3);
+&nbsp;
+&nbsp;    protected &lt;T&gt; TimeGauge newTimeGauge(Meter.Id id, @Nullable T obj, TimeUnit valueFunctionUnit, ToDoubleFunction&lt;T&gt; valueFunction) {
+<b class="nc">&nbsp;        final Meter.Id withUnit = id.withBaseUnit(this.getBaseTimeUnitStr());</b>
+&nbsp;        final Gauge gauge = this.newGauge(withUnit, obj, (obj2) -&gt; TimeUtils.convert(valueFunction.applyAsDouble(obj2), valueFunctionUnit, this.getBaseTimeUnit()));
+&nbsp;        return new TimeGauge() {
+&nbsp;            public Meter.Id getId() {
+&nbsp;                return withUnit;
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            public double value() {</b>
+&nbsp;                return gauge.value();
+&nbsp;            }
+&nbsp;
+&nbsp;            public TimeUnit baseTimeUnit() {
+&nbsp;                return MeterRegistry.this.getBaseTimeUnit();
+<b class="nc">&nbsp;            }</b>
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    protected abstract &lt;T&gt; FunctionTimer newFunctionTimer(Meter.Id var1, T var2, ToLongFunction&lt;T&gt; var3, ToDoubleFunction&lt;T&gt; var4, TimeUnit var5);
+&nbsp;
+&nbsp;    protected abstract &lt;T&gt; FunctionCounter newFunctionCounter(Meter.Id var1, T var2, ToDoubleFunction&lt;T&gt; var3);
+<b class="nc">&nbsp;</b>
+&nbsp;    protected List&lt;Tag&gt; getConventionTags(Meter.Id id) {
+&nbsp;        return id.getConventionTags(this.config().namingConvention());
+&nbsp;    }
+&nbsp;
+&nbsp;    protected String getConventionName(Meter.Id id) {
+&nbsp;        return id.getConventionName(this.config().namingConvention());
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected abstract TimeUnit getBaseTimeUnit();
+<b class="nc">&nbsp;</b>
+&nbsp;    protected abstract DistributionStatisticConfig defaultHistogramConfig();
+<b class="nc">&nbsp;</b>
+&nbsp;    private String getBaseTimeUnitStr() {
+&nbsp;        return (String)BASE_TIME_UNIT_STRING_CACHE.get(this.getBaseTimeUnit());
+&nbsp;    }
+&nbsp;
+&nbsp;    Counter counter(Meter.Id id) {
+&nbsp;        return (Counter)this.registerMeterIfNecessary(Counter.class, id, this::newCounter, NoopCounter::new);
+&nbsp;    }
+&nbsp;
+&nbsp;    &lt;T&gt; Gauge gauge(Meter.Id id, @Nullable T obj, ToDoubleFunction&lt;T&gt; valueFunction) {
+&nbsp;        return (Gauge)this.registerMeterIfNecessary(Gauge.class, id, (id2) -&gt; this.newGauge(id2, obj, valueFunction), NoopGauge::new);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    Timer timer(Meter.Id id, DistributionStatisticConfig distributionStatisticConfig, PauseDetector pauseDetectorOverride) {</b>
+&nbsp;        return (Timer)this.registerMeterIfNecessary(Timer.class, id, distributionStatisticConfig, (id2, filteredConfig) -&gt; {
+<b class="nc">&nbsp;            Meter.Id withUnit = id2.withBaseUnit(this.getBaseTimeUnitStr());</b>
+<b class="nc">&nbsp;            return this.newTimer(withUnit, filteredConfig.merge(this.defaultHistogramConfig()), pauseDetectorOverride);</b>
+<b class="nc">&nbsp;        }, NoopTimer::new);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    DistributionSummary summary(Meter.Id id, DistributionStatisticConfig distributionStatisticConfig, double scale) {
+&nbsp;        return (DistributionSummary)this.registerMeterIfNecessary(DistributionSummary.class, id, distributionStatisticConfig, (id2, filteredConfig) -&gt; this.newDistributionSummary(id2, filteredConfig.merge(this.defaultHistogramConfig()), scale), NoopDistributionSummary::new);
+&nbsp;    }
+&nbsp;
+&nbsp;    Meter register(Meter.Id id, Meter.Type type, Iterable&lt;Measurement&gt; measurements) {
+&nbsp;        return this.registerMeterIfNecessary(Meter.class, id, (id2) -&gt; this.newMeter(id2, type, measurements), NoopMeter::new);
+&nbsp;    }
+&nbsp;
+&nbsp;    public List&lt;Meter&gt; getMeters() {
+&nbsp;        return Collections.unmodifiableList(new ArrayList(this.meterMap.values()));
+&nbsp;    }
+&nbsp;
+&nbsp;    public void forEachMeter(Consumer&lt;? super Meter&gt; consumer) {
+&nbsp;        this.meterMap.values().forEach(consumer);
+&nbsp;    }
+&nbsp;
+&nbsp;    public Config config() {
+&nbsp;        return this.config;
+&nbsp;    }
+&nbsp;
+&nbsp;    public Search find(String name) {
+&nbsp;        return Search.in(this).name(name);
+&nbsp;    }
+&nbsp;
+&nbsp;    public RequiredSearch get(String name) {
+&nbsp;        return RequiredSearch.in(this).name(name);
+&nbsp;    }
+&nbsp;
+&nbsp;    public Counter counter(String name, Iterable&lt;Tag&gt; tags) {
+&nbsp;        return Counter.builder(name).tags(tags).register(this);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public Counter counter(String name, String... tags) {
+&nbsp;        return this.counter(name, Tags.of(tags));
+&nbsp;    }
+&nbsp;
+&nbsp;    public DistributionSummary summary(String name, Iterable&lt;Tag&gt; tags) {
+&nbsp;        return DistributionSummary.builder(name).tags(tags).register(this);
+&nbsp;    }
+&nbsp;
+&nbsp;    public DistributionSummary summary(String name, String... tags) {
+&nbsp;        return this.summary(name, Tags.of(tags));
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public Timer timer(String name, Iterable&lt;Tag&gt; tags) {</b>
+&nbsp;        return Timer.builder(name).tags(tags).register(this);
+&nbsp;    }
+&nbsp;
+&nbsp;    public Timer timer(String name, String... tags) {
+&nbsp;        return this.timer(name, Tags.of(tags));
+&nbsp;    }
+&nbsp;
+&nbsp;    public More more() {
+&nbsp;        return this.more;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public &lt;T&gt; T gauge(String name, Iterable&lt;Tag&gt; tags, @Nullable T stateObject, ToDoubleFunction&lt;T&gt; valueFunction) {
+&nbsp;        Gauge.builder(name, stateObject, valueFunction).tags(tags).register(this);
+&nbsp;        return stateObject;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public &lt;T extends Number&gt; T gauge(String name, Iterable&lt;Tag&gt; tags, T number) {
+&nbsp;        return (T)(this.gauge(name, tags, number, Number::doubleValue));
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public &lt;T extends Number&gt; T gauge(String name, T number) {
+&nbsp;        return (T)this.gauge((String)name, Collections.emptyList(), number);
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public &lt;T&gt; T gauge(String name, T stateObject, ToDoubleFunction&lt;T&gt; valueFunction) {
+&nbsp;        return (T)this.gauge(name, Collections.emptyList(), stateObject, valueFunction);
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public &lt;T extends Collection&lt;?&gt;&gt; T gaugeCollectionSize(String name, Iterable&lt;Tag&gt; tags, T collection) {
+&nbsp;        return (T)(this.gauge(name, tags, collection, Collection::size));
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public &lt;T extends Map&lt;?, ?&gt;&gt; T gaugeMapSize(String name, Iterable&lt;Tag&gt; tags, T map) {
+&nbsp;        return (T)(this.gauge(name, tags, map, Map::size));
+&nbsp;    }
+&nbsp;
+&nbsp;    private &lt;M extends Meter&gt; M registerMeterIfNecessary(Class&lt;M&gt; meterClass, Meter.Id id, Function&lt;Meter.Id, M&gt; builder, Function&lt;Meter.Id, M&gt; noopBuilder) {
+&nbsp;        return (M)this.registerMeterIfNecessary(meterClass, id, (DistributionStatisticConfig)null, (id2, conf) -&gt; (Meter)builder.apply(id2), noopBuilder);
+&nbsp;    }
+&nbsp;
+&nbsp;    private &lt;M extends Meter&gt; M registerMeterIfNecessary(Class&lt;M&gt; meterClass, Meter.Id id, @Nullable DistributionStatisticConfig config, BiFunction&lt;Meter.Id, DistributionStatisticConfig, M&gt; builder, Function&lt;Meter.Id, M&gt; noopBuilder) {
+&nbsp;        Meter m = this.getOrCreateMeter(config, builder, id, noopBuilder);
+&nbsp;        if (!meterClass.isInstance(m)) {
+&nbsp;            throw new IllegalArgumentException(String.format(&quot;There is already a registered meter of a different type (%s vs. %s) with the same name: %s&quot;, m.getClass().getSimpleName(), meterClass.getSimpleName(), id.getName()));
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            return (M)(meterClass.cast(m));</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private Meter.Id getMappedId(Meter.Id id) {
+&nbsp;        if (id.syntheticAssociation() != null) {
+&nbsp;            return id;
+&nbsp;        } else {
+&nbsp;            Meter.Id mappedId = id;
+&nbsp;
+&nbsp;            for(MeterFilter filter : this.filters) {
+&nbsp;                mappedId = filter.map(mappedId);
+&nbsp;            }
+&nbsp;
+&nbsp;            return mappedId;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private Meter getOrCreateMeter(@Nullable DistributionStatisticConfig config, BiFunction&lt;Meter.Id, DistributionStatisticConfig, ? extends Meter&gt; builder, Meter.Id originalId, Function&lt;Meter.Id, ? extends Meter&gt; noopBuilder) {
+&nbsp;        Meter m = (Meter)this.preFilterIdToMeterMap.get(originalId);
+&nbsp;        if (m != null &amp;&amp; !this.isStaleId(originalId)) {
+&nbsp;            this.checkAndWarnAboutGaugeDoubleRegistration(m);
+&nbsp;            return m;
+&nbsp;        } else {
+&nbsp;            Meter.Id mappedId = this.getMappedId(originalId);
+&nbsp;            m = (Meter)this.meterMap.get(mappedId);
+&nbsp;            if (m != null) {
+&nbsp;                if (this.isStaleId(originalId)) {
+&nbsp;                    this.unmarkStaleId(originalId);
+&nbsp;                }
+&nbsp;
+&nbsp;                this.checkAndWarnAboutGaugeDoubleRegistration(m);
+&nbsp;            } else {
+&nbsp;                if (this.isClosed()) {
+&nbsp;                    return (Meter)noopBuilder.apply(mappedId);
+&nbsp;                }
+&nbsp;
+&nbsp;                synchronized(this.meterMapLock) {
+&nbsp;                    m = (Meter)this.meterMap.get(mappedId);
+&nbsp;                    if (m == null) {
+&nbsp;                        if (!this.accept(mappedId)) {
+&nbsp;                            return (Meter)noopBuilder.apply(mappedId);
+&nbsp;                        }
+&nbsp;
+&nbsp;                        if (config != null) {
+&nbsp;                            for(MeterFilter filter : this.filters) {
+&nbsp;                                DistributionStatisticConfig filteredConfig = filter.configure(mappedId, config);
+&nbsp;                                if (filteredConfig != null) {
+&nbsp;                                    config = filteredConfig;
+&nbsp;                                }
+&nbsp;                            }
+<b class="nc">&nbsp;                        }</b>
+&nbsp;
+&nbsp;                        m = (Meter)builder.apply(mappedId, config);
+&nbsp;                        Meter.Id synAssoc = mappedId.syntheticAssociation();
+<b class="nc">&nbsp;                        if (synAssoc != null) {</b>
+&nbsp;                            Set&lt;Meter.Id&gt; associations = (Set)this.syntheticAssociations.computeIfAbsent(synAssoc, (k) -&gt; new HashSet());
+&nbsp;                            associations.add(mappedId);
+&nbsp;                        }
+&nbsp;
+&nbsp;                        for(Consumer&lt;Meter&gt; onAdd : this.meterAddedListeners) {
+&nbsp;                            onAdd.accept(m);
+&nbsp;                        }
+&nbsp;
+&nbsp;                        this.meterMap.put(mappedId, m);
+&nbsp;                        this.preFilterIdToMeterMap.put(originalId, m);
+&nbsp;                        this.meterToPreFilterIdMap.put(m, originalId);
+&nbsp;                        this.unmarkStaleId(originalId);
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            return m;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private boolean isStaleId(Meter.Id originalId) {</b>
+&nbsp;        return !this.stalePreFilterIds.isEmpty() &amp;&amp; this.stalePreFilterIds.contains(originalId);
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean unmarkStaleId(Meter.Id originalId) {
+&nbsp;        return !this.stalePreFilterIds.isEmpty() &amp;&amp; this.stalePreFilterIds.remove(originalId);
+&nbsp;    }
+&nbsp;
+&nbsp;    private void checkAndWarnAboutGaugeDoubleRegistration(Meter meter) {
+<b class="nc">&nbsp;        if (meter instanceof Gauge) {</b>
+&nbsp;            gaugeDoubleRegistrationLogger.log(() -&gt; String.format(&quot;This Gauge has been already registered (%s), the Gauge registration will be ignored.&quot;, meter.getId()));
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean accept(Meter.Id id) {
+&nbsp;        for(MeterFilter filter : this.filters) {
+&nbsp;            MeterFilterReply reply = filter.accept(id);
+&nbsp;            if (reply == MeterFilterReply.DENY) {
+&nbsp;                return false;
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            if (reply == MeterFilterReply.ACCEPT) {
+&nbsp;                return true;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return true;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    @Incubating(
+&nbsp;        since = &quot;1.1.0&quot;
+<b class="nc">&nbsp;    )</b>
+<b class="nc">&nbsp;    public Meter remove(Meter meter) {</b>
+<b class="nc">&nbsp;        return this.remove(meter.getId());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    @Incubating(
+&nbsp;        since = &quot;1.3.16&quot;
+&nbsp;    )
+&nbsp;    public Meter removeByPreFilterId(Meter.Id preFilterId) {
+&nbsp;        Meter meterToRemove = (Meter)this.preFilterIdToMeterMap.get(preFilterId);
+&nbsp;        return meterToRemove == null ? this.remove(this.getMappedId(preFilterId)) : this.remove(meterToRemove);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    @Nullable</b>
+<b class="nc">&nbsp;    @Incubating(</b>
+&nbsp;        since = &quot;1.1.0&quot;
+&nbsp;    )
+&nbsp;    public Meter remove(Meter.Id mappedId) {
+&nbsp;        if (this.meterMap.containsKey(mappedId)) {
+&nbsp;            synchronized(this.meterMapLock) {
+&nbsp;                Meter removedMeter = (Meter)this.meterMap.remove(mappedId);
+&nbsp;                if (removedMeter != null) {
+&nbsp;                    Meter.Id preFilterIdToRemove = (Meter.Id)this.meterToPreFilterIdMap.remove(removedMeter);
+&nbsp;                    this.preFilterIdToMeterMap.remove(preFilterIdToRemove);
+&nbsp;                    this.stalePreFilterIds.remove(preFilterIdToRemove);
+&nbsp;                    Set&lt;Meter.Id&gt; synthetics = (Set)this.syntheticAssociations.remove(mappedId);
+&nbsp;                    if (synthetics != null) {
+<b class="nc">&nbsp;                        for(Meter.Id synthetic : synthetics) {</b>
+&nbsp;                            this.remove(synthetic);
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+&nbsp;                    for(Consumer&lt;Meter&gt; onRemove : this.meterRemovedListeners) {
+&nbsp;                        onRemove.accept(removedMeter);
+<b class="nc">&nbsp;                    }</b>
+&nbsp;
+&nbsp;                    return removedMeter;
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return null;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    @Incubating(
+&nbsp;        since = &quot;1.2.0&quot;
+&nbsp;    )
+&nbsp;    public void clear() {
+&nbsp;        this.meterMap.keySet().forEach(this::remove);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void close() {
+&nbsp;        if (this.closed.compareAndSet(false, true)) {
+&nbsp;            synchronized(this.meterMapLock) {
+&nbsp;                for(Meter meter : this.meterMap.values()) {
+&nbsp;                    meter.close();
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        if (this.highCardinalityTagsDetector != null) {
+&nbsp;            this.highCardinalityTagsDetector.close();
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isClosed() {
+&nbsp;        return this.closed.get();
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected void meterRegistrationFailed(Meter.Id id, @Nullable String reason) {
+&nbsp;        for(BiConsumer&lt;Meter.Id, String&gt; listener : this.meterRegistrationFailedListeners) {
+&nbsp;            listener.accept(id, reason);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    Map&lt;Meter.Id, Meter&gt; _getPreFilterIdToMeterMap() {
+&nbsp;        return Collections.unmodifiableMap(this.preFilterIdToMeterMap);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    Map&lt;Meter, Meter.Id&gt; _getMeterToPreFilterIdMap() {
+&nbsp;        return Collections.unmodifiableMap(this.meterToPreFilterIdMap);
+&nbsp;    }
+&nbsp;
+&nbsp;    Set&lt;Meter.Id&gt; _getStalePreFilterIds() {
+&nbsp;        return Collections.unmodifiableSet(this.stalePreFilterIds);
+&nbsp;    }
+&nbsp;
+&nbsp;    public class Config {
+<b class="nc">&nbsp;        public Config() {</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public Config commonTags(Iterable&lt;Tag&gt; tags) {
+&nbsp;            return this.meterFilter(MeterFilter.commonTags(tags));
+&nbsp;        }
+&nbsp;
+&nbsp;        public Config commonTags(String... tags) {
+&nbsp;            return this.commonTags(Tags.of(tags));
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        public synchronized Config meterFilter(MeterFilter filter) {
+&nbsp;            if (!MeterRegistry.this.meterMap.isEmpty()) {
+&nbsp;                this.logWarningAboutLateFilter();
+&nbsp;                synchronized(MeterRegistry.this.meterMapLock) {
+&nbsp;                    MeterRegistry.this.stalePreFilterIds.addAll(MeterRegistry.this.preFilterIdToMeterMap.keySet());
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            MeterFilter[] newFilters = new MeterFilter[MeterRegistry.this.filters.length + 1];
+&nbsp;            System.arraycopy(MeterRegistry.this.filters, 0, newFilters, 0, MeterRegistry.this.filters.length);
+<b class="nc">&nbsp;            newFilters[MeterRegistry.this.filters.length] = filter;</b>
+&nbsp;            MeterRegistry.this.filters = newFilters;
+&nbsp;            return this;
+&nbsp;        }
+&nbsp;
+&nbsp;        private void logWarningAboutLateFilter() {
+&nbsp;            InternalLogger logger = InternalLoggerFactory.getInstance(MeterRegistry.this.getClass());
+&nbsp;            String baseMessage = &quot;A MeterFilter is being configured after a Meter has been registered to this registry. All MeterFilters should be configured before any Meters are registered. If that is not possible or you have a use case where it should be allowed, let the Micrometer maintainers know at https://github.com/micrometer-metrics/micrometer/issues/4920.&quot;;
+&nbsp;            if (logger.isDebugEnabled()) {
+&nbsp;                String stackTrace = (String)Arrays.stream(Thread.currentThread().getStackTrace()).map(StackTraceElement::toString).collect(Collectors.joining(&quot;\n\tat &quot;));
+<b class="nc">&nbsp;                logger.warn(baseMessage + &quot;\n&quot; + stackTrace);</b>
+&nbsp;            } else {
+&nbsp;                logger.warn(baseMessage + &quot; Enable DEBUG level logging on this logger to see a stack trace of the call configuring this MeterFilter.&quot;);
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;
+&nbsp;        public Config onMeterAdded(Consumer&lt;Meter&gt; meterAddedListener) {
+&nbsp;            MeterRegistry.this.meterAddedListeners.add(meterAddedListener);
+&nbsp;            return this;
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        @Incubating(
+&nbsp;            since = &quot;1.1.0&quot;
+&nbsp;        )
+&nbsp;        public Config onMeterRemoved(Consumer&lt;Meter&gt; meterRemovedListener) {
+&nbsp;            MeterRegistry.this.meterRemovedListeners.add(meterRemovedListener);
+&nbsp;            return this;
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        @Incubating(
+&nbsp;            since = &quot;1.6.0&quot;
+&nbsp;        )
+&nbsp;        public Config onMeterRegistrationFailed(BiConsumer&lt;Meter.Id, String&gt; meterRegistrationFailedListener) {
+&nbsp;            MeterRegistry.this.meterRegistrationFailedListeners.add(meterRegistrationFailedListener);
+&nbsp;            return this;
+&nbsp;        }
+&nbsp;
+&nbsp;        public Config namingConvention(NamingConvention convention) {
+&nbsp;            MeterRegistry.this.namingConvention = convention;
+&nbsp;            return this;
+&nbsp;        }
+&nbsp;
+&nbsp;        public NamingConvention namingConvention() {
+&nbsp;            return MeterRegistry.this.namingConvention;
+&nbsp;        }
+&nbsp;
+&nbsp;        public Clock clock() {
+<b class="nc">&nbsp;            return MeterRegistry.this.clock;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        public Config pauseDetector(PauseDetector detector) {
+&nbsp;            MeterRegistry.this.pauseDetector = detector;
+&nbsp;            return this;
+&nbsp;        }
+&nbsp;
+&nbsp;        public PauseDetector pauseDetector() {
+&nbsp;            return MeterRegistry.this.pauseDetector;
+&nbsp;        }
+&nbsp;
+&nbsp;        public Config withHighCardinalityTagsDetector() {
+&nbsp;            return this.withHighCardinalityTagsDetector(new HighCardinalityTagsDetector(MeterRegistry.this));
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        public Config withHighCardinalityTagsDetector(long threshold, Duration delay) {</b>
+&nbsp;            return this.withHighCardinalityTagsDetector(new HighCardinalityTagsDetector(MeterRegistry.this, threshold, delay));
+&nbsp;        }
+&nbsp;
+&nbsp;        public Config withHighCardinalityTagsDetector(Function&lt;MeterRegistry, HighCardinalityTagsDetector&gt; highCardinalityTagsDetectorFactory) {
+&nbsp;            return this.withHighCardinalityTagsDetector((HighCardinalityTagsDetector)highCardinalityTagsDetectorFactory.apply(MeterRegistry.this));
+&nbsp;        }
+&nbsp;
+&nbsp;        private Config withHighCardinalityTagsDetector(HighCardinalityTagsDetector newHighCardinalityTagsDetector) {
+&nbsp;            if (MeterRegistry.this.highCardinalityTagsDetector != null) {
+&nbsp;                MeterRegistry.this.highCardinalityTagsDetector.close();
+&nbsp;            }
+&nbsp;
+&nbsp;            MeterRegistry.this.highCardinalityTagsDetector = newHighCardinalityTagsDetector;
+<b class="nc">&nbsp;            MeterRegistry.this.highCardinalityTagsDetector.start();</b>
+&nbsp;            return this;
+&nbsp;        }
+&nbsp;
+&nbsp;        @Nullable
+&nbsp;        public HighCardinalityTagsDetector highCardinalityTagsDetector() {
+&nbsp;            return MeterRegistry.this.highCardinalityTagsDetector;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public class More {
+&nbsp;        public More() {
+&nbsp;        }
+&nbsp;
+&nbsp;        public LongTaskTimer longTaskTimer(String name, String... tags) {
+<b class="nc">&nbsp;            return this.longTaskTimer((String)name, (Iterable)Tags.of(tags));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public LongTaskTimer longTaskTimer(String name, Iterable&lt;Tag&gt; tags) {
+&nbsp;            return LongTaskTimer.builder(name).tags(tags).register(MeterRegistry.this);
+&nbsp;        }
+&nbsp;
+&nbsp;        LongTaskTimer longTaskTimer(Meter.Id id, DistributionStatisticConfig distributionStatisticConfig) {
+&nbsp;            return (LongTaskTimer)MeterRegistry.this.registerMeterIfNecessary(LongTaskTimer.class, id, distributionStatisticConfig, (id2, filteredConfig) -&gt; {
+&nbsp;                Meter.Id withUnit = id2.withBaseUnit(MeterRegistry.this.getBaseTimeUnitStr());
+&nbsp;                return MeterRegistry.this.newLongTaskTimer(withUnit, filteredConfig.merge(MeterRegistry.this.defaultHistogramConfig()));
+&nbsp;            }, NoopLongTaskTimer::new);
+&nbsp;        }
+&nbsp;
+&nbsp;        public &lt;T&gt; FunctionCounter counter(String name, Iterable&lt;Tag&gt; tags, T obj, ToDoubleFunction&lt;T&gt; countFunction) {
+&nbsp;            return FunctionCounter.builder(name, obj, countFunction).tags(tags).register(MeterRegistry.this);
+&nbsp;        }
+&nbsp;
+&nbsp;        public &lt;T extends Number&gt; FunctionCounter counter(String name, Iterable&lt;Tag&gt; tags, T number) {
+<b class="nc">&nbsp;            return FunctionCounter.builder(name, number, Number::doubleValue).tags(tags).register(MeterRegistry.this);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        &lt;T&gt; FunctionCounter counter(Meter.Id id, T obj, ToDoubleFunction&lt;T&gt; countFunction) {
+&nbsp;            return (FunctionCounter)MeterRegistry.this.registerMeterIfNecessary(FunctionCounter.class, id, (id2) -&gt; MeterRegistry.this.newFunctionCounter(id2, obj, countFunction), NoopFunctionCounter::new);
+&nbsp;        }
+&nbsp;
+&nbsp;        public &lt;T&gt; FunctionTimer timer(String name, Iterable&lt;Tag&gt; tags, T obj, ToLongFunction&lt;T&gt; countFunction, ToDoubleFunction&lt;T&gt; totalTimeFunction, TimeUnit totalTimeFunctionUnit) {
+&nbsp;            return FunctionTimer.builder(name, obj, countFunction, totalTimeFunction, totalTimeFunctionUnit).tags(tags).register(MeterRegistry.this);
+&nbsp;        }
+&nbsp;
+&nbsp;        &lt;T&gt; FunctionTimer timer(Meter.Id id, T obj, ToLongFunction&lt;T&gt; countFunction, ToDoubleFunction&lt;T&gt; totalTimeFunction, TimeUnit totalTimeFunctionUnit) {
+&nbsp;            return (FunctionTimer)MeterRegistry.this.registerMeterIfNecessary(FunctionTimer.class, id, (id2) -&gt; {
+&nbsp;                Meter.Id withUnit = id2.withBaseUnit(MeterRegistry.this.getBaseTimeUnitStr());
+&nbsp;                return MeterRegistry.this.newFunctionTimer(withUnit, obj, countFunction, totalTimeFunction, totalTimeFunctionUnit);
+&nbsp;            }, NoopFunctionTimer::new);
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        public &lt;T&gt; TimeGauge timeGauge(String name, Iterable&lt;Tag&gt; tags, T obj, TimeUnit timeFunctionUnit, ToDoubleFunction&lt;T&gt; timeFunction) {</b>
+&nbsp;            return TimeGauge.builder(name, obj, timeFunctionUnit, timeFunction).tags(tags).register(MeterRegistry.this);
+&nbsp;        }
+&nbsp;
+&nbsp;        &lt;T&gt; TimeGauge timeGauge(Meter.Id id, @Nullable T obj, TimeUnit timeFunctionUnit, ToDoubleFunction&lt;T&gt; timeFunction) {
+<b class="nc">&nbsp;            return (TimeGauge)MeterRegistry.this.registerMeterIfNecessary(TimeGauge.class, id, (id2) -&gt; MeterRegistry.this.newTimeGauge(id2, obj, timeFunctionUnit, timeFunction), NoopTimeGauge::new);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
+</div>
+</body>
+</html>

@@ -5,7 +5,7 @@
 <html id="htmlId">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
-  <title>Coverage Report > DepartmentController</title>
+  <title>Coverage Report > DepartmentPersistenceAdapter</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -19,10 +19,10 @@
 <div class="breadCrumbs">
 Current scope:     <a href="../../index.html">all classes</a>
     <span class="separator">|</span>
-    <a href="../index.html">com.pragma.hogar360.serviceshome.infrastructure.endpoints.rest</a>
+    <a href="../index.html">com.pragma.hogar360.serviceshome.infrastructure.adapters.persistence</a>
 </div>
 
-<h1>Coverage Summary for Class: DepartmentController (com.pragma.hogar360.serviceshome.infrastructure.endpoints.rest)</h1>
+<h1>Coverage Summary for Class: DepartmentPersistenceAdapter (com.pragma.hogar360.serviceshome.infrastructure.adapters.persistence)</h1>
 
 <table class="coverageStats">
 <tr>
@@ -41,7 +41,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 </th>
 </tr>
 <tr>
-  <td class="name">DepartmentController</td>
+  <td class="name">DepartmentPersistenceAdapter</td>
 <td class="coverageStat">
   <span class="percent">
     0%
@@ -55,7 +55,7 @@ Current scope:     <a href="../../index.html">all classes</a>
     0%
   </span>
   <span class="absValue">
-    (0/1)
+    (0/4)
   </span>
 </td>
 <td class="coverageStat">
@@ -63,7 +63,7 @@ Current scope:     <a href="../../index.html">all classes</a>
     0%
   </span>
   <span class="absValue">
-    (0/1)
+    (0/10)
   </span>
 </td>
 </tr>
@@ -75,61 +75,47 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 
 <pre>
-<code class="sourceCode" id="sourceCode">&nbsp;package com.pragma.hogar360.serviceshome.infrastructure.endpoints.rest;
-&nbsp;
-&nbsp;import com.pragma.hogar360.serviceshome.application.dto.request.SaveDepartmentRequest;
-&nbsp;import com.pragma.hogar360.serviceshome.application.dto.response.DepartmentResponse;
-&nbsp;import com.pragma.hogar360.serviceshome.application.dto.response.SaveDepartmentResponse;
-&nbsp;import com.pragma.hogar360.serviceshome.application.services.DepartmentService;
-&nbsp;import io.swagger.v3.oas.annotations.Operation;
-&nbsp;import io.swagger.v3.oas.annotations.media.Content;
-&nbsp;import io.swagger.v3.oas.annotations.media.ExampleObject;
-&nbsp;import io.swagger.v3.oas.annotations.media.Schema;
-&nbsp;import io.swagger.v3.oas.annotations.responses.ApiResponse;
-&nbsp;import io.swagger.v3.oas.annotations.tags.Tag;
+<code class="sourceCode" id="sourceCode">&nbsp;package com.pragma.hogar360.serviceshome.infrastructure.adapters.persistence;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.model.DepartmentModel;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.ports.out.DepartmentPersistencePort;
+&nbsp;import com.pragma.hogar360.serviceshome.infrastructure.entities.DepartmentEntity;
+&nbsp;import com.pragma.hogar360.serviceshome.infrastructure.mappers.DepartmentEntityMapper;
+&nbsp;import com.pragma.hogar360.serviceshome.infrastructure.repositories.mysql.DepartmentRepository;
 &nbsp;import lombok.RequiredArgsConstructor;
-&nbsp;import org.springframework.http.HttpStatus;
-&nbsp;import org.springframework.http.ResponseEntity;
-&nbsp;import org.springframework.web.bind.annotation.*;
+&nbsp;import lombok.extern.slf4j.Slf4j;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;import org.springframework.transaction.annotation.Transactional;
 &nbsp;
-&nbsp;/**
-&nbsp; * REST controller for managing department operations.
-&nbsp; *
-&nbsp; * @author [Ciro Alfonso Pallares Fragozo]
-&nbsp; * @version 1.0
-&nbsp; * @since [16/3/2025]
-&nbsp; *
-&nbsp; */
-&nbsp;@RestController
-&nbsp;@RequestMapping(&quot;/api/v1/departments&quot;)
+&nbsp;import java.util.Optional;
+&nbsp;
+&nbsp;@Service
+&nbsp;@Transactional
 &nbsp;@RequiredArgsConstructor
-&nbsp;@Tag(name = &quot;Departments&quot;, description = &quot;Operations related to departments&quot;)
-&nbsp;public class DepartmentController {
+<b class="nc">&nbsp;@Slf4j</b>
+&nbsp;public class DepartmentPersistenceAdapter implements DepartmentPersistencePort {
 &nbsp;
-&nbsp;    private final DepartmentService departmentService;
-&nbsp;    /**
-&nbsp;     * Endpoint to save a new department.
-&nbsp;     *
-&nbsp;     * @param saveDepartmentRequest The request containing department data.
-&nbsp;     * @return A ResponseEntity with the save response.
-&nbsp;     */
-&nbsp;    @PostMapping(&quot;/&quot;)
-&nbsp;    @Operation(summary = &quot;Save a new department&quot;, description = &quot;Saves a new department in the system. The department name must be unique. Notes = Ensure that the department name is properly formatted.&quot;)
-&nbsp;    @ApiResponse(responseCode = &quot;201&quot;, description = &quot;Department created&quot;, content = @Content(schema = @Schema(implementation = DepartmentResponse.class), examples = @ExampleObject(value = &quot;{\&quot;id\&quot;: 1, \&quot;name\&quot;: \&quot;Cesar\&quot;, \&quot;description\&quot;: \&quot;Department in the north of Colombia\&quot;}&quot;)))
-&nbsp;    @ApiResponse(responseCode = &quot;400&quot;, description = &quot;Bad request&quot;, content = @Content(schema = @Schema(implementation = String.class), examples = @ExampleObject(value = &quot;\&quot;Name cannot exceed 50 characters.\&quot;\n \&quot;Description cannot exceed 90 characters.\&quot; &quot;)))
-&nbsp;    @ApiResponse(responseCode = &quot;409&quot;, description = &quot;Department already exists&quot;, content = @Content(schema = @Schema(implementation = String.class), examples = @ExampleObject(value = &quot;Department with name &#39;Cesar&#39; already exists.&quot;)))
-&nbsp;    public ResponseEntity&lt;SaveDepartmentResponse&gt; save(
-&nbsp;            @io.swagger.v3.oas.annotations.parameters.RequestBody(
-&nbsp;                    description = &quot;Department data to save&quot;,
-&nbsp;                    required = true,
-&nbsp;                    content = @Content(
-&nbsp;                            examples = @ExampleObject(
-&nbsp;                                    value = &quot;{\&quot;name\&quot;: \&quot;Cesar\&quot;, \&quot;description\&quot;: \&quot;Department in the north of Colombia\&quot;}&quot;
-&nbsp;                            )
-&nbsp;                    )
-&nbsp;            )
-&nbsp;            @RequestBody SaveDepartmentRequest saveDepartmentRequest) {
-<b class="nc">&nbsp;        return ResponseEntity.status(HttpStatus.CREATED).body(departmentService.createDepartment(saveDepartmentRequest));</b>
+&nbsp;    private final DepartmentRepository departmentRepository;
+&nbsp;    private final DepartmentEntityMapper departmentEntityMapper;
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void save(DepartmentModel departmentModel){
+<b class="nc">&nbsp;        departmentRepository.save(departmentEntityMapper.toEntity(departmentModel));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public boolean existsByName(String name) {
+<b class="nc">&nbsp;        log.info(&quot;Checking if department exists by name: {}&quot;, name);</b>
+<b class="nc">&nbsp;        boolean exists = departmentRepository.existsByName(name);</b>
+<b class="nc">&nbsp;        log.info(&quot;Department exists: {}&quot;, exists);</b>
+<b class="nc">&nbsp;        return exists;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public Optional&lt;DepartmentModel&gt; findByName(String name) {
+<b class="nc">&nbsp;        log.info(&quot;Fetching department by name: {}&quot;, name);</b>
+<b class="nc">&nbsp;        Optional&lt;DepartmentEntity&gt; departmentEntity = departmentRepository.findByName(name);</b>
+<b class="nc">&nbsp;        log.info(&quot;Department found: {}&quot;, departmentEntity.isPresent());</b>
+<b class="nc">&nbsp;        return departmentEntity.map(departmentEntityMapper::toModel);</b>
 &nbsp;    }
 &nbsp;}
 </code>
@@ -155,7 +141,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2025-03-20 13:43</div>
+    <div style="float:right;">generated on 2025-03-31 20:44</div>
 </div>
 </body>
 </html>

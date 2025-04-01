@@ -1,0 +1,211 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > CastFunction</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.dialect.function</a>
+</div>
+
+<h1>Coverage Summary for Class: CastFunction (org.hibernate.dialect.function)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">CastFunction</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (2/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    6.7%
+  </span>
+  <span class="absValue">
+    (1/15)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    17.9%
+  </span>
+  <span class="absValue">
+    (7/39)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.dialect.function;
+&nbsp;
+&nbsp;import java.util.List;
+&nbsp;import org.hibernate.dialect.Dialect;
+&nbsp;import org.hibernate.engine.spi.SessionFactoryImplementor;
+&nbsp;import org.hibernate.metamodel.mapping.JdbcMapping;
+&nbsp;import org.hibernate.query.ReturnableType;
+&nbsp;import org.hibernate.query.sqm.CastType;
+&nbsp;import org.hibernate.query.sqm.function.AbstractSqmSelfRenderingFunctionDescriptor;
+&nbsp;import org.hibernate.query.sqm.function.SelfRenderingFunctionSqlAstExpression;
+&nbsp;import org.hibernate.query.sqm.function.SqmFunctionDescriptor;
+&nbsp;import org.hibernate.query.sqm.function.SqmFunctionRegistry;
+&nbsp;import org.hibernate.query.sqm.produce.function.StandardArgumentsValidators;
+&nbsp;import org.hibernate.query.sqm.produce.function.StandardFunctionArgumentTypeResolvers;
+&nbsp;import org.hibernate.query.sqm.produce.function.StandardFunctionReturnTypeResolvers;
+&nbsp;import org.hibernate.query.sqm.produce.function.internal.PatternRenderer;
+&nbsp;import org.hibernate.sql.ast.SqlAstTranslator;
+&nbsp;import org.hibernate.sql.ast.spi.SqlAppender;
+&nbsp;import org.hibernate.sql.ast.tree.SqlAstNode;
+&nbsp;import org.hibernate.sql.ast.tree.expression.CastTarget;
+&nbsp;import org.hibernate.sql.ast.tree.expression.Expression;
+&nbsp;import org.hibernate.sql.ast.tree.expression.QueryLiteral;
+&nbsp;import org.hibernate.type.BasicType;
+&nbsp;
+&nbsp;public class CastFunction extends AbstractSqmSelfRenderingFunctionDescriptor {
+&nbsp;    private final Dialect dialect;
+&nbsp;    private final CastType booleanCastType;
+&nbsp;
+&nbsp;    public CastFunction(Dialect dialect, int preferredSqlTypeCodeForBoolean) {
+&nbsp;        super(&quot;cast&quot;, StandardArgumentsValidators.exactly(2), StandardFunctionReturnTypeResolvers.useArgType(2), StandardFunctionArgumentTypeResolvers.IMPLIED_RESULT_TYPE);
+&nbsp;        this.dialect = dialect;
+&nbsp;        this.booleanCastType = this.getBooleanCastType(preferredSqlTypeCodeForBoolean);
+&nbsp;    }
+&nbsp;
+&nbsp;    private CastType getBooleanCastType(int preferredSqlTypeCodeForBoolean) {
+&nbsp;        switch (preferredSqlTypeCodeForBoolean) {
+&nbsp;            case -7:
+&nbsp;            case -6:
+&nbsp;            case 5:
+&nbsp;                return CastType.INTEGER_BOOLEAN;
+<b class="fc">&nbsp;            default:</b>
+&nbsp;                return CastType.BOOLEAN;
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void render(SqlAppender sqlAppender, List&lt;? extends SqlAstNode&gt; arguments, ReturnableType&lt;?&gt; returnType, SqlAstTranslator&lt;?&gt; walker) {
+<b class="fc">&nbsp;        Expression source = (Expression)arguments.get(0);</b>
+<b class="fc">&nbsp;        JdbcMapping sourceMapping = source.getExpressionType().getSingleJdbcMapping();</b>
+&nbsp;        CastType sourceType = this.getCastType(sourceMapping);
+&nbsp;        CastTarget castTarget = (CastTarget)arguments.get(1);
+&nbsp;        JdbcMapping targetJdbcMapping = castTarget.getExpressionType().getSingleJdbcMapping();
+<b class="pc">&nbsp;        CastType targetType = this.getCastType(targetJdbcMapping);</b>
+&nbsp;        if (sourceType == CastType.OTHER &amp;&amp; targetType == CastType.STRING &amp;&amp; sourceMapping.getJdbcType().isArray()) {
+&nbsp;            renderCastArrayToString(sqlAppender, (SqlAstNode)arguments.get(0), this.dialect, walker);
+&nbsp;        } else {
+<b class="fc">&nbsp;            String cast = this.dialect.castPattern(sourceType, targetType);</b>
+&nbsp;            (new PatternRenderer(cast)).render(sqlAppender, arguments, walker);
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void renderCastArrayToString(SqlAppender sqlAppender, SqlAstNode arrayArgument, Dialect dialect, SqlAstTranslator&lt;?&gt; walker) {
+&nbsp;        SessionFactoryImplementor sessionFactory = walker.getSessionFactory();
+&nbsp;        BasicType&lt;?&gt; stringType = sessionFactory.getTypeConfiguration().getBasicTypeForJavaType(String.class);
+&nbsp;        SqmFunctionRegistry functionRegistry = sessionFactory.getQueryEngine().getSqmFunctionRegistry();
+&nbsp;        SqmFunctionDescriptor concatDescriptor = functionRegistry.findFunctionDescriptor(&quot;concat&quot;);
+<b class="nc">&nbsp;        SqmFunctionDescriptor arrayToStringDescriptor = functionRegistry.findFunctionDescriptor(&quot;array_to_string&quot;);</b>
+<b class="nc">&nbsp;        boolean caseWhen = dialect.isEmptyStringTreatedAsNull();</b>
+<b class="nc">&nbsp;        if (caseWhen) {</b>
+&nbsp;            sqlAppender.append(&quot;case when &quot;);
+<b class="nc">&nbsp;            arrayArgument.accept(walker);</b>
+<b class="nc">&nbsp;            sqlAppender.append(&quot; is null then null else &quot;);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        ((AbstractSqmSelfRenderingFunctionDescriptor)concatDescriptor).render(sqlAppender, List.of(new QueryLiteral(&quot;[&quot;, stringType), new SelfRenderingFunctionSqlAstExpression(&quot;array_to_string&quot;, (AbstractSqmSelfRenderingFunctionDescriptor)arrayToStringDescriptor, List.of(arrayArgument, new QueryLiteral(&quot;,&quot;, stringType), new QueryLiteral(&quot;null&quot;, stringType)), stringType, stringType), new QueryLiteral(&quot;]&quot;, stringType)), stringType, walker);</b>
+<b class="nc">&nbsp;        if (caseWhen) {</b>
+<b class="nc">&nbsp;            sqlAppender.append(&quot; end&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private CastType getCastType(JdbcMapping sourceMapping) {</b>
+&nbsp;        CastType castType = sourceMapping.getCastType();
+&nbsp;        return castType == CastType.BOOLEAN ? this.booleanCastType : castType;
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getArgumentListSignature() {
+&nbsp;        return &quot;(arg as Type)&quot;;
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
+</div>
+</body>
+</html>

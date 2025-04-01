@@ -1,0 +1,392 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > PropertyDescriptorUtils</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.beans</a>
+</div>
+
+<h1>Coverage Summary for Class: PropertyDescriptorUtils (org.springframework.beans)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PropertyDescriptorUtils</td>
+<td class="coverageStat">
+  <span class="percent">
+    28.6%
+  </span>
+  <span class="absValue">
+    (2/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    26.6%
+  </span>
+  <span class="absValue">
+    (25/94)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    29%
+  </span>
+  <span class="absValue">
+    (27/93)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">PropertyDescriptorUtils$BasicPropertyDescriptor</td>
+<td class="coverageStat">
+  <span class="percent">
+    83.3%
+  </span>
+  <span class="absValue">
+    (5/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    25%
+  </span>
+  <span class="absValue">
+    (3/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    43.8%
+  </span>
+  <span class="absValue">
+    (7/16)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    53.8%
+  </span>
+  <span class="absValue">
+    (7/13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    26.4%
+  </span>
+  <span class="absValue">
+    (28/106)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    31.2%
+  </span>
+  <span class="absValue">
+    (34/109)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.beans;
+&nbsp;
+&nbsp;import java.beans.IntrospectionException;
+&nbsp;import java.beans.PropertyDescriptor;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.Enumeration;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.TreeMap;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.ObjectUtils;
+&nbsp;import org.springframework.util.StringUtils;
+&nbsp;
+&nbsp;abstract class PropertyDescriptorUtils {
+&nbsp;    public static final PropertyDescriptor[] EMPTY_PROPERTY_DESCRIPTOR_ARRAY = new PropertyDescriptor[0];
+&nbsp;
+&nbsp;    PropertyDescriptorUtils() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Collection&lt;? extends PropertyDescriptor&gt; determineBasicProperties(Class&lt;?&gt; beanClass) throws IntrospectionException {
+&nbsp;        Map&lt;String, BasicPropertyDescriptor&gt; pdMap = new TreeMap();
+&nbsp;
+&nbsp;        for(Method method : beanClass.getMethods()) {
+&nbsp;            String methodName = method.getName();
+&nbsp;            boolean setter;
+&nbsp;            int nameIndex;
+&nbsp;            if (methodName.startsWith(&quot;set&quot;) &amp;&amp; method.getParameterCount() == 1) {
+&nbsp;                setter = true;
+&nbsp;                nameIndex = 3;
+&nbsp;            } else if (methodName.startsWith(&quot;get&quot;) &amp;&amp; method.getParameterCount() == 0 &amp;&amp; method.getReturnType() != Void.TYPE) {
+&nbsp;                setter = false;
+<b class="nc">&nbsp;                nameIndex = 3;</b>
+&nbsp;            } else {
+<b class="fc">&nbsp;                if (!methodName.startsWith(&quot;is&quot;) || method.getParameterCount() != 0 || method.getReturnType() != Boolean.TYPE) {</b>
+&nbsp;                    continue;
+&nbsp;                }
+&nbsp;
+&nbsp;                setter = false;
+&nbsp;                nameIndex = 2;
+&nbsp;            }
+&nbsp;
+&nbsp;            String propertyName = StringUtils.uncapitalizeAsProperty(methodName.substring(nameIndex));
+&nbsp;            if (!propertyName.isEmpty()) {
+&nbsp;                BasicPropertyDescriptor pd = (BasicPropertyDescriptor)pdMap.get(propertyName);
+&nbsp;                if (pd != null) {
+&nbsp;                    if (setter) {
+&nbsp;                        Method writeMethod = pd.getWriteMethod();
+&nbsp;                        if (writeMethod != null &amp;&amp; !writeMethod.getParameterTypes()[0].isAssignableFrom(method.getParameterTypes()[0])) {
+&nbsp;                            pd.addWriteMethod(method);
+&nbsp;                        } else {
+&nbsp;                            pd.setWriteMethod(method);
+&nbsp;                        }
+<b class="fc">&nbsp;                    } else {</b>
+&nbsp;                        Method readMethod = pd.getReadMethod();
+<b class="fc">&nbsp;                        if (readMethod == null || readMethod.getReturnType() == method.getReturnType() &amp;&amp; method.getName().startsWith(&quot;is&quot;)) {</b>
+<b class="fc">&nbsp;                            pd.setReadMethod(method);</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                } else {
+<b class="pc">&nbsp;                    pd = new BasicPropertyDescriptor(propertyName, !setter ? method : null, setter ? method : null);</b>
+<b class="fc">&nbsp;                    pdMap.put(propertyName, pd);</b>
+<b class="fc">&nbsp;                }</b>
+&nbsp;            }
+<b class="pc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;        return pdMap.values();</b>
+&nbsp;    }
+<b class="pc">&nbsp;</b>
+<b class="fc">&nbsp;    public static void copyNonMethodProperties(PropertyDescriptor source, PropertyDescriptor target) {</b>
+<b class="fc">&nbsp;        target.setExpert(source.isExpert());</b>
+&nbsp;        target.setHidden(source.isHidden());
+&nbsp;        target.setPreferred(source.isPreferred());
+&nbsp;        target.setName(source.getName());
+&nbsp;        target.setShortDescription(source.getShortDescription());
+&nbsp;        target.setDisplayName(source.getDisplayName());
+<b class="fc">&nbsp;        Enumeration&lt;String&gt; keys = source.attributeNames();</b>
+<b class="pc">&nbsp;</b>
+&nbsp;        while(keys.hasMoreElements()) {
+&nbsp;            String key = (String)keys.nextElement();
+&nbsp;            target.setValue(key, source.getValue(key));
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;        target.setPropertyEditorClass(source.getPropertyEditorClass());</b>
+<b class="fc">&nbsp;        target.setBound(source.isBound());</b>
+<b class="pc">&nbsp;        target.setConstrained(source.isConstrained());</b>
+<b class="nc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    @Nullable
+&nbsp;    public static Class&lt;?&gt; findPropertyType(@Nullable Method readMethod, @Nullable Method writeMethod) throws IntrospectionException {
+<b class="nc">&nbsp;        Class&lt;?&gt; propertyType = null;</b>
+&nbsp;        if (readMethod != null) {
+&nbsp;            if (readMethod.getParameterCount() != 0) {
+&nbsp;                throw new IntrospectionException(&quot;Bad read method arg count: &quot; + String.valueOf(readMethod));
+<b class="fc">&nbsp;            }</b>
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;            propertyType = readMethod.getReturnType();</b>
+<b class="fc">&nbsp;            if (propertyType == Void.TYPE) {</b>
+&nbsp;                throw new IntrospectionException(&quot;Read method returns void: &quot; + String.valueOf(readMethod));
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if (writeMethod != null) {</b>
+<b class="fc">&nbsp;            Class&lt;?&gt;[] params = writeMethod.getParameterTypes();</b>
+&nbsp;            if (params.length != 1) {
+&nbsp;                throw new IntrospectionException(&quot;Bad write method arg count: &quot; + String.valueOf(writeMethod));
+&nbsp;            }
+<b class="fc">&nbsp;</b>
+&nbsp;            if (propertyType != null) {
+&nbsp;                if (propertyType.isAssignableFrom(params[0])) {
+&nbsp;                    propertyType = params[0];
+&nbsp;                } else if (!params[0].isAssignableFrom(propertyType)) {
+&nbsp;                    String var10002 = String.valueOf(readMethod);
+&nbsp;                    throw new IntrospectionException(&quot;Type mismatch between read and write methods: &quot; + var10002 + &quot; - &quot; + String.valueOf(writeMethod));
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                propertyType = params[0];</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return propertyType;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    @Nullable</b>
+<b class="nc">&nbsp;    public static Class&lt;?&gt; findIndexedPropertyType(String name, @Nullable Class&lt;?&gt; propertyType, @Nullable Method indexedReadMethod, @Nullable Method indexedWriteMethod) throws IntrospectionException {</b>
+<b class="nc">&nbsp;        Class&lt;?&gt; indexedPropertyType = null;</b>
+&nbsp;        if (indexedReadMethod != null) {
+&nbsp;            Class&lt;?&gt;[] params = indexedReadMethod.getParameterTypes();
+&nbsp;            if (params.length != 1) {
+<b class="nc">&nbsp;                throw new IntrospectionException(&quot;Bad indexed read method arg count: &quot; + String.valueOf(indexedReadMethod));</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            if (params[0] != Integer.TYPE) {
+&nbsp;                throw new IntrospectionException(&quot;Non int index to indexed read method: &quot; + String.valueOf(indexedReadMethod));
+&nbsp;            }
+&nbsp;
+&nbsp;            indexedPropertyType = indexedReadMethod.getReturnType();
+&nbsp;            if (indexedPropertyType == Void.TYPE) {
+&nbsp;                throw new IntrospectionException(&quot;Indexed read method returns void: &quot; + String.valueOf(indexedReadMethod));
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        if (indexedWriteMethod != null) {
+<b class="nc">&nbsp;            Class&lt;?&gt;[] params = indexedWriteMethod.getParameterTypes();</b>
+<b class="nc">&nbsp;            if (params.length != 2) {</b>
+<b class="nc">&nbsp;                throw new IntrospectionException(&quot;Bad indexed write method arg count: &quot; + String.valueOf(indexedWriteMethod));</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            if (params[0] != Integer.TYPE) {</b>
+<b class="nc">&nbsp;                throw new IntrospectionException(&quot;Non int index to indexed write method: &quot; + String.valueOf(indexedWriteMethod));</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            if (indexedPropertyType != null) {
+<b class="nc">&nbsp;                if (indexedPropertyType.isAssignableFrom(params[1])) {</b>
+<b class="nc">&nbsp;                    indexedPropertyType = params[1];</b>
+<b class="nc">&nbsp;                } else if (!params[1].isAssignableFrom(indexedPropertyType)) {</b>
+<b class="nc">&nbsp;                    String var10002 = String.valueOf(indexedReadMethod);</b>
+&nbsp;                    throw new IntrospectionException(&quot;Type mismatch between indexed read and write methods: &quot; + var10002 + &quot; - &quot; + String.valueOf(indexedWriteMethod));
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                indexedPropertyType = params[1];
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        if (propertyType == null || propertyType.isArray() &amp;&amp; propertyType.componentType() == indexedPropertyType) {
+&nbsp;            return indexedPropertyType;
+&nbsp;        } else {
+<b class="nc">&nbsp;            String var7 = String.valueOf(indexedReadMethod);</b>
+&nbsp;            throw new IntrospectionException(&quot;Type mismatch between indexed and non-indexed methods: &quot; + var7 + &quot; - &quot; + String.valueOf(indexedWriteMethod));
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public static boolean equals(PropertyDescriptor pd, PropertyDescriptor otherPd) {</b>
+&nbsp;        return ObjectUtils.nullSafeEquals(pd.getReadMethod(), otherPd.getReadMethod()) &amp;&amp; ObjectUtils.nullSafeEquals(pd.getWriteMethod(), otherPd.getWriteMethod()) &amp;&amp; ObjectUtils.nullSafeEquals(pd.getPropertyType(), otherPd.getPropertyType()) &amp;&amp; ObjectUtils.nullSafeEquals(pd.getPropertyEditorClass(), otherPd.getPropertyEditorClass()) &amp;&amp; pd.isBound() == otherPd.isBound() &amp;&amp; pd.isConstrained() == otherPd.isConstrained();
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private static class BasicPropertyDescriptor extends PropertyDescriptor {</b>
+&nbsp;        @Nullable
+&nbsp;        private Method readMethod;
+&nbsp;        @Nullable
+&nbsp;        private Method writeMethod;
+&nbsp;        private final List&lt;Method&gt; alternativeWriteMethods = new ArrayList();
+&nbsp;
+&nbsp;        public BasicPropertyDescriptor(String propertyName, @Nullable Method readMethod, @Nullable Method writeMethod) throws IntrospectionException {
+&nbsp;            super(propertyName, readMethod, writeMethod);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        public void setReadMethod(@Nullable Method readMethod) {
+<b class="nc">&nbsp;            this.readMethod = readMethod;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        @Nullable</b>
+&nbsp;        public Method getReadMethod() {
+<b class="nc">&nbsp;            return this.readMethod;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        public void setWriteMethod(@Nullable Method writeMethod) {</b>
+<b class="nc">&nbsp;            this.writeMethod = writeMethod;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        public void addWriteMethod(Method writeMethod) {
+&nbsp;            if (this.writeMethod != null) {
+<b class="nc">&nbsp;                this.alternativeWriteMethods.add(this.writeMethod);</b>
+<b class="nc">&nbsp;                this.writeMethod = null;</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            this.alternativeWriteMethods.add(writeMethod);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        @Nullable
+<b class="nc">&nbsp;        public Method getWriteMethod() {</b>
+<b class="nc">&nbsp;            if (this.writeMethod == null &amp;&amp; !this.alternativeWriteMethods.isEmpty()) {</b>
+&nbsp;                if (this.readMethod == null) {
+<b class="nc">&nbsp;                    return (Method)this.alternativeWriteMethods.get(0);</b>
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+&nbsp;                for(Method method : this.alternativeWriteMethods) {
+&nbsp;                    if (this.readMethod.getReturnType().isAssignableFrom(method.getParameterTypes()[0])) {
+&nbsp;                        this.writeMethod = method;
+<b class="nc">&nbsp;                        break;</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            return this.writeMethod;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,428 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ConfigDataEnvironment</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.boot.context.config</a>
+</div>
+
+<h1>Coverage Summary for Class: ConfigDataEnvironment (org.springframework.boot.context.config)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ConfigDataEnvironment</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    92%
+  </span>
+  <span class="absValue">
+    (23/25)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    64.6%
+  </span>
+  <span class="absValue">
+    (31/48)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    88.8%
+  </span>
+  <span class="absValue">
+    (135/152)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.boot.context.config;
+&nbsp;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.LinkedHashSet;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Set;
+&nbsp;import org.apache.commons.logging.Log;
+&nbsp;import org.springframework.boot.ConfigurableBootstrapContext;
+&nbsp;import org.springframework.boot.DefaultPropertiesPropertySource;
+&nbsp;import org.springframework.boot.BootstrapRegistry.InstanceSupplier;
+&nbsp;import org.springframework.boot.BootstrapRegistry.Scope;
+&nbsp;import org.springframework.boot.context.config.ConfigData.Option;
+&nbsp;import org.springframework.boot.context.config.ConfigDataEnvironmentContributor.Kind;
+&nbsp;import org.springframework.boot.context.config.ConfigDataEnvironmentContributors.BinderOption;
+&nbsp;import org.springframework.boot.context.properties.bind.BindException;
+&nbsp;import org.springframework.boot.context.properties.bind.Bindable;
+&nbsp;import org.springframework.boot.context.properties.bind.Binder;
+&nbsp;import org.springframework.boot.context.properties.bind.PlaceholdersResolver;
+&nbsp;import org.springframework.boot.context.properties.source.ConfigurationPropertySource;
+&nbsp;import org.springframework.boot.logging.DeferredLogFactory;
+&nbsp;import org.springframework.core.env.ConfigurableEnvironment;
+&nbsp;import org.springframework.core.env.MutablePropertySources;
+&nbsp;import org.springframework.core.env.PropertySource;
+&nbsp;import org.springframework.core.io.ResourceLoader;
+&nbsp;import org.springframework.core.io.support.SpringFactoriesLoader;
+&nbsp;import org.springframework.core.log.LogMessage;
+&nbsp;import org.springframework.util.StringUtils;
+&nbsp;
+&nbsp;class ConfigDataEnvironment {
+&nbsp;    static final String LOCATION_PROPERTY = &quot;spring.config.location&quot;;
+&nbsp;    static final String ADDITIONAL_LOCATION_PROPERTY = &quot;spring.config.additional-location&quot;;
+&nbsp;    static final String IMPORT_PROPERTY = &quot;spring.config.import&quot;;
+&nbsp;    static final String ON_NOT_FOUND_PROPERTY = &quot;spring.config.on-not-found&quot;;
+&nbsp;    static final ConfigDataLocation[] DEFAULT_SEARCH_LOCATIONS;
+&nbsp;    private static final ConfigDataLocation[] EMPTY_LOCATIONS;
+&nbsp;    private static final Bindable&lt;ConfigDataLocation[]&gt; CONFIG_DATA_LOCATION_ARRAY;
+&nbsp;    private static final Bindable&lt;List&lt;String&gt;&gt; STRING_LIST;
+&nbsp;    private static final ConfigDataEnvironmentContributors.BinderOption[] ALLOW_INACTIVE_BINDING;
+&nbsp;    private static final ConfigDataEnvironmentContributors.BinderOption[] DENY_INACTIVE_BINDING;
+&nbsp;    private final DeferredLogFactory logFactory;
+&nbsp;    private final Log logger;
+&nbsp;    private final ConfigDataNotFoundAction notFoundAction;
+&nbsp;    private final ConfigurableBootstrapContext bootstrapContext;
+&nbsp;    private final ConfigurableEnvironment environment;
+&nbsp;    private final ConfigDataLocationResolvers resolvers;
+&nbsp;    private final Collection&lt;String&gt; additionalProfiles;
+&nbsp;    private final ConfigDataEnvironmentUpdateListener environmentUpdateListener;
+&nbsp;    private final ConfigDataLoaders loaders;
+&nbsp;    private final ConfigDataEnvironmentContributors contributors;
+&nbsp;
+&nbsp;    ConfigDataEnvironment(DeferredLogFactory logFactory, ConfigurableBootstrapContext bootstrapContext, ConfigurableEnvironment environment, ResourceLoader resourceLoader, Collection&lt;String&gt; additionalProfiles, ConfigDataEnvironmentUpdateListener environmentUpdateListener) {
+&nbsp;        Binder binder = Binder.get(environment);
+&nbsp;        this.logFactory = logFactory;
+&nbsp;        this.logger = logFactory.getLog(this.getClass());
+&nbsp;        this.notFoundAction = (ConfigDataNotFoundAction)binder.bind(&quot;spring.config.on-not-found&quot;, ConfigDataNotFoundAction.class).orElse(ConfigDataNotFoundAction.FAIL);
+&nbsp;        this.bootstrapContext = bootstrapContext;
+&nbsp;        this.environment = environment;
+&nbsp;        this.resolvers = this.createConfigDataLocationResolvers(logFactory, bootstrapContext, binder, resourceLoader);
+&nbsp;        this.additionalProfiles = additionalProfiles;
+&nbsp;        this.environmentUpdateListener = environmentUpdateListener != null ? environmentUpdateListener : ConfigDataEnvironmentUpdateListener.NONE;
+&nbsp;        this.loaders = new ConfigDataLoaders(logFactory, bootstrapContext, SpringFactoriesLoader.forDefaultResourceLocation(resourceLoader.getClassLoader()));
+&nbsp;        this.contributors = this.createContributors(binder);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected ConfigDataLocationResolvers createConfigDataLocationResolvers(DeferredLogFactory logFactory, ConfigurableBootstrapContext bootstrapContext, Binder binder, ResourceLoader resourceLoader) {
+&nbsp;        return new ConfigDataLocationResolvers(logFactory, bootstrapContext, binder, resourceLoader, SpringFactoriesLoader.forDefaultResourceLocation(resourceLoader.getClassLoader()));
+&nbsp;    }
+&nbsp;
+&nbsp;    private ConfigDataEnvironmentContributors createContributors(Binder binder) {
+&nbsp;        this.logger.trace(&quot;Building config data environment contributors&quot;);
+&nbsp;        MutablePropertySources propertySources = this.environment.getPropertySources();
+&nbsp;        List&lt;ConfigDataEnvironmentContributor&gt; contributors = new ArrayList(propertySources.size() + 10);
+&nbsp;        PropertySource&lt;?&gt; defaultPropertySource = null;
+&nbsp;
+&nbsp;        for(PropertySource&lt;?&gt; propertySource : propertySources) {
+&nbsp;            if (DefaultPropertiesPropertySource.hasMatchingName(propertySource)) {
+&nbsp;                defaultPropertySource = propertySource;
+&nbsp;            } else {
+&nbsp;                this.logger.trace(LogMessage.format(&quot;Creating wrapped config data contributor for &#39;%s&#39;&quot;, propertySource.getName()));
+&nbsp;                contributors.add(ConfigDataEnvironmentContributor.ofExisting(propertySource, this.environment.getConversionService()));
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;        contributors.addAll(this.getInitialImportContributors(binder));</b>
+<b class="fc">&nbsp;        if (defaultPropertySource != null) {</b>
+<b class="fc">&nbsp;            this.logger.trace(&quot;Creating wrapped config data contributor for default property source&quot;);</b>
+&nbsp;            contributors.add(ConfigDataEnvironmentContributor.ofExisting(defaultPropertySource, this.environment.getConversionService()));
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+&nbsp;        return this.createContributors(contributors);
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    protected ConfigDataEnvironmentContributors createContributors(List&lt;ConfigDataEnvironmentContributor&gt; contributors) {
+<b class="fc">&nbsp;        return new ConfigDataEnvironmentContributors(this.logFactory, this.bootstrapContext, contributors, this.environment.getConversionService());</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    ConfigDataEnvironmentContributors getContributors() {
+<b class="fc">&nbsp;        return this.contributors;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private List&lt;ConfigDataEnvironmentContributor&gt; getInitialImportContributors(Binder binder) {
+&nbsp;        List&lt;ConfigDataEnvironmentContributor&gt; initialContributors = new ArrayList();
+&nbsp;        this.addInitialImportContributors(initialContributors, this.bindLocations(binder, &quot;spring.config.import&quot;, EMPTY_LOCATIONS));
+&nbsp;        this.addInitialImportContributors(initialContributors, this.bindLocations(binder, &quot;spring.config.additional-location&quot;, EMPTY_LOCATIONS));
+&nbsp;        this.addInitialImportContributors(initialContributors, this.bindLocations(binder, &quot;spring.config.location&quot;, DEFAULT_SEARCH_LOCATIONS));
+&nbsp;        return initialContributors;
+&nbsp;    }
+&nbsp;
+&nbsp;    private ConfigDataLocation[] bindLocations(Binder binder, String propertyName, ConfigDataLocation[] other) {
+&nbsp;        return (ConfigDataLocation[])binder.bind(propertyName, CONFIG_DATA_LOCATION_ARRAY).orElse(other);
+&nbsp;    }
+&nbsp;
+&nbsp;    private void addInitialImportContributors(List&lt;ConfigDataEnvironmentContributor&gt; initialContributors, ConfigDataLocation[] locations) {
+&nbsp;        for(int i = locations.length - 1; i &gt;= 0; --i) {
+&nbsp;            initialContributors.add(this.createInitialImportContributor(locations[i]));
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private ConfigDataEnvironmentContributor createInitialImportContributor(ConfigDataLocation location) {
+&nbsp;        this.logger.trace(LogMessage.format(&quot;Adding initial config data import from location &#39;%s&#39;&quot;, location));
+&nbsp;        return ConfigDataEnvironmentContributor.ofInitialImport(location, this.environment.getConversionService());
+&nbsp;    }
+&nbsp;
+&nbsp;    void processAndApply() {
+&nbsp;        ConfigDataImporter importer = new ConfigDataImporter(this.logFactory, this.notFoundAction, this.resolvers, this.loaders);
+&nbsp;        this.registerBootstrapBinder(this.contributors, (ConfigDataActivationContext)null, DENY_INACTIVE_BINDING);
+&nbsp;        ConfigDataEnvironmentContributors contributors = this.processInitial(this.contributors, importer);
+&nbsp;        ConfigDataActivationContext activationContext = this.createActivationContext(contributors.getBinder((ConfigDataActivationContext)null, new ConfigDataEnvironmentContributors.BinderOption[]{BinderOption.FAIL_ON_BIND_TO_INACTIVE_SOURCE}));
+&nbsp;        contributors = this.processWithoutProfiles(contributors, importer, activationContext);
+&nbsp;        activationContext = this.withProfiles(contributors, activationContext);
+&nbsp;        contributors = this.processWithProfiles(contributors, importer, activationContext);
+<b class="fc">&nbsp;        this.applyToEnvironment(contributors, activationContext, importer.getLoadedLocations(), importer.getOptionalLocations());</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private ConfigDataEnvironmentContributors processInitial(ConfigDataEnvironmentContributors contributors, ConfigDataImporter importer) {</b>
+<b class="fc">&nbsp;        this.logger.trace(&quot;Processing initial config data environment contributors without activation context&quot;);</b>
+<b class="fc">&nbsp;        contributors = contributors.withProcessedImports(importer, (ConfigDataActivationContext)null);</b>
+<b class="fc">&nbsp;        this.registerBootstrapBinder(contributors, (ConfigDataActivationContext)null, DENY_INACTIVE_BINDING);</b>
+<b class="fc">&nbsp;        return contributors;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="pc">&nbsp;    private ConfigDataActivationContext createActivationContext(Binder initialBinder) {</b>
+<b class="fc">&nbsp;        this.logger.trace(&quot;Creating config data activation context from initial contributions&quot;);</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;        try {</b>
+<b class="fc">&nbsp;            return new ConfigDataActivationContext(this.environment, initialBinder);</b>
+&nbsp;        } catch (BindException ex) {
+&nbsp;            Throwable var4 = ex.getCause();
+&nbsp;            if (var4 instanceof InactiveConfigDataAccessException inactiveException) {
+&nbsp;                throw inactiveException;
+<b class="fc">&nbsp;            } else {</b>
+<b class="fc">&nbsp;                throw ex;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private ConfigDataEnvironmentContributors processWithoutProfiles(ConfigDataEnvironmentContributors contributors, ConfigDataImporter importer, ConfigDataActivationContext activationContext) {</b>
+<b class="fc">&nbsp;        this.logger.trace(&quot;Processing config data environment contributors with initial activation context&quot;);</b>
+<b class="fc">&nbsp;        contributors = contributors.withProcessedImports(importer, activationContext);</b>
+<b class="fc">&nbsp;        this.registerBootstrapBinder(contributors, activationContext, DENY_INACTIVE_BINDING);</b>
+<b class="pc">&nbsp;        return contributors;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private ConfigDataActivationContext withProfiles(ConfigDataEnvironmentContributors contributors, ConfigDataActivationContext activationContext) {
+<b class="fc">&nbsp;        this.logger.trace(&quot;Deducing profiles from current config data environment contributors&quot;);</b>
+<b class="fc">&nbsp;        Binder binder = contributors.getBinder(activationContext, (contributor) -&gt; !contributor.hasConfigDataOption(Option.IGNORE_PROFILES), new ConfigDataEnvironmentContributors.BinderOption[]{BinderOption.FAIL_ON_BIND_TO_INACTIVE_SOURCE});</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;        try {</b>
+&nbsp;            Set&lt;String&gt; additionalProfiles = new LinkedHashSet(this.additionalProfiles);
+&nbsp;            additionalProfiles.addAll(this.getIncludedProfiles(contributors, activationContext));
+<b class="fc">&nbsp;            Profiles profiles = new Profiles(this.environment, binder, additionalProfiles);</b>
+<b class="pc">&nbsp;            return activationContext.withProfiles(profiles);</b>
+<b class="nc">&nbsp;        } catch (BindException ex) {</b>
+<b class="nc">&nbsp;            Throwable var6 = ex.getCause();</b>
+<b class="nc">&nbsp;            if (var6 instanceof InactiveConfigDataAccessException inactiveException) {</b>
+&nbsp;                throw inactiveException;
+<b class="fc">&nbsp;            } else {</b>
+&nbsp;                throw ex;
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private Collection&lt;? extends String&gt; getIncludedProfiles(ConfigDataEnvironmentContributors contributors, ConfigDataActivationContext activationContext) {</b>
+&nbsp;        PlaceholdersResolver placeholdersResolver = new ConfigDataEnvironmentContributorPlaceholdersResolver(contributors, activationContext, (ConfigDataEnvironmentContributor)null, true, this.environment.getConversionService());
+&nbsp;        Set&lt;String&gt; result = new LinkedHashSet();
+&nbsp;
+<b class="nc">&nbsp;        for(ConfigDataEnvironmentContributor contributor : contributors) {</b>
+&nbsp;            ConfigurationPropertySource source = contributor.getConfigurationPropertySource();
+&nbsp;            if (source != null &amp;&amp; !contributor.hasConfigDataOption(Option.IGNORE_PROFILES)) {
+&nbsp;                Binder binder = new Binder(Collections.singleton(source), placeholdersResolver);
+<b class="fc">&nbsp;                binder.bind(Profiles.INCLUDE_PROFILES, STRING_LIST).ifBound((includes) -&gt; {</b>
+<b class="fc">&nbsp;                    if (!contributor.isActive(activationContext)) {</b>
+<b class="fc">&nbsp;                        InactiveConfigDataAccessException.throwIfPropertyFound(contributor, Profiles.INCLUDE_PROFILES);</b>
+<b class="fc">&nbsp;                        InactiveConfigDataAccessException.throwIfPropertyFound(contributor, Profiles.INCLUDE_PROFILES.append(&quot;[0]&quot;));</b>
+<b class="fc">&nbsp;                    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;                    result.addAll(includes);</b>
+&nbsp;                });
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+&nbsp;        return result;
+&nbsp;    }
+&nbsp;
+&nbsp;    private ConfigDataEnvironmentContributors processWithProfiles(ConfigDataEnvironmentContributors contributors, ConfigDataImporter importer, ConfigDataActivationContext activationContext) {
+<b class="fc">&nbsp;        this.logger.trace(&quot;Processing config data environment contributors with profile activation context&quot;);</b>
+<b class="fc">&nbsp;        contributors = contributors.withProcessedImports(importer, activationContext);</b>
+&nbsp;        this.registerBootstrapBinder(contributors, activationContext, ALLOW_INACTIVE_BINDING);
+&nbsp;        return contributors;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    private void registerBootstrapBinder(ConfigDataEnvironmentContributors contributors, ConfigDataActivationContext activationContext, ConfigDataEnvironmentContributors.BinderOption... binderOptions) {</b>
+<b class="fc">&nbsp;        this.bootstrapContext.register(Binder.class, InstanceSupplier.from(() -&gt; contributors.getBinder(activationContext, binderOptions)).withScope(Scope.PROTOTYPE));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void applyToEnvironment(ConfigDataEnvironmentContributors contributors, ConfigDataActivationContext activationContext, Set&lt;ConfigDataLocation&gt; loadedLocations, Set&lt;ConfigDataLocation&gt; optionalLocations) {
+&nbsp;        this.checkForInvalidProperties(contributors);
+&nbsp;        this.checkMandatoryLocations(contributors, activationContext, loadedLocations, optionalLocations);
+&nbsp;        MutablePropertySources propertySources = this.environment.getPropertySources();
+&nbsp;        this.applyContributor(contributors, activationContext, propertySources);
+<b class="fc">&nbsp;        DefaultPropertiesPropertySource.moveToEnd(propertySources);</b>
+&nbsp;        Profiles profiles = activationContext.getProfiles();
+<b class="fc">&nbsp;        this.logger.trace(LogMessage.format(&quot;Setting default profiles: %s&quot;, profiles.getDefault()));</b>
+<b class="fc">&nbsp;        this.environment.setDefaultProfiles(StringUtils.toStringArray(profiles.getDefault()));</b>
+<b class="fc">&nbsp;        this.logger.trace(LogMessage.format(&quot;Setting active profiles: %s&quot;, profiles.getActive()));</b>
+<b class="fc">&nbsp;        this.environment.setActiveProfiles(StringUtils.toStringArray(profiles.getActive()));</b>
+<b class="fc">&nbsp;        this.environmentUpdateListener.onSetProfiles(profiles);</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private void applyContributor(ConfigDataEnvironmentContributors contributors, ConfigDataActivationContext activationContext, MutablePropertySources propertySources) {</b>
+<b class="fc">&nbsp;        this.logger.trace(&quot;Applying config data environment contributions&quot;);</b>
+&nbsp;
+&nbsp;        for(ConfigDataEnvironmentContributor contributor : contributors) {
+&nbsp;            PropertySource&lt;?&gt; propertySource = contributor.getPropertySource();
+&nbsp;            if (contributor.getKind() == Kind.BOUND_IMPORT &amp;&amp; propertySource != null) {
+<b class="fc">&nbsp;                if (!contributor.isActive(activationContext)) {</b>
+<b class="fc">&nbsp;                    this.logger.trace(LogMessage.format(&quot;Skipping inactive property source &#39;%s&#39;&quot;, propertySource.getName()));</b>
+<b class="fc">&nbsp;                } else {</b>
+<b class="fc">&nbsp;                    this.logger.trace(LogMessage.format(&quot;Adding imported property source &#39;%s&#39;&quot;, propertySource.getName()));</b>
+&nbsp;                    propertySources.addLast(propertySource);
+&nbsp;                    this.environmentUpdateListener.onPropertySourceAdded(propertySource, contributor.getLocation(), contributor.getResource());
+&nbsp;                }
+<b class="fc">&nbsp;            }</b>
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private void checkForInvalidProperties(ConfigDataEnvironmentContributors contributors) {</b>
+&nbsp;        for(ConfigDataEnvironmentContributor contributor : contributors) {
+&nbsp;            InvalidConfigDataPropertyException.throwIfPropertyFound(contributor);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private void checkMandatoryLocations(ConfigDataEnvironmentContributors contributors, ConfigDataActivationContext activationContext, Set&lt;ConfigDataLocation&gt; loadedLocations, Set&lt;ConfigDataLocation&gt; optionalLocations) {
+&nbsp;        Set&lt;ConfigDataLocation&gt; mandatoryLocations = new LinkedHashSet();
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;        for(ConfigDataEnvironmentContributor contributor : contributors) {</b>
+<b class="fc">&nbsp;            if (contributor.isActive(activationContext)) {</b>
+<b class="fc">&nbsp;                mandatoryLocations.addAll(this.getMandatoryImports(contributor));</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        for(ConfigDataEnvironmentContributor contributor : contributors) {
+<b class="fc">&nbsp;            if (contributor.getLocation() != null) {</b>
+<b class="fc">&nbsp;                mandatoryLocations.remove(contributor.getLocation());</b>
+<b class="fc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        mandatoryLocations.removeAll(loadedLocations);</b>
+<b class="fc">&nbsp;        mandatoryLocations.removeAll(optionalLocations);</b>
+<b class="fc">&nbsp;        if (!mandatoryLocations.isEmpty()) {</b>
+<b class="fc">&nbsp;            for(ConfigDataLocation mandatoryLocation : mandatoryLocations) {</b>
+&nbsp;                this.notFoundAction.handle(this.logger, new ConfigDataLocationNotFoundException(mandatoryLocation));
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private Set&lt;ConfigDataLocation&gt; getMandatoryImports(ConfigDataEnvironmentContributor contributor) {
+&nbsp;        List&lt;ConfigDataLocation&gt; imports = contributor.getImports();
+&nbsp;        Set&lt;ConfigDataLocation&gt; mandatoryLocations = new LinkedHashSet(imports.size());
+&nbsp;
+&nbsp;        for(ConfigDataLocation location : imports) {
+<b class="fc">&nbsp;            if (!location.isOptional()) {</b>
+<b class="fc">&nbsp;                mandatoryLocations.add(location);</b>
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+<b class="pc">&nbsp;        return mandatoryLocations;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="nc">&nbsp;    static {</b>
+<b class="nc">&nbsp;        List&lt;ConfigDataLocation&gt; locations = new ArrayList();</b>
+<b class="nc">&nbsp;        locations.add(ConfigDataLocation.of(&quot;optional:classpath:/;optional:classpath:/config/&quot;));</b>
+<b class="nc">&nbsp;        locations.add(ConfigDataLocation.of(&quot;optional:file:./;optional:file:./config/;optional:file:./config/*/&quot;));</b>
+&nbsp;        DEFAULT_SEARCH_LOCATIONS = (ConfigDataLocation[])locations.toArray(new ConfigDataLocation[0]);
+<b class="nc">&nbsp;        EMPTY_LOCATIONS = new ConfigDataLocation[0];</b>
+&nbsp;        CONFIG_DATA_LOCATION_ARRAY = Bindable.of(ConfigDataLocation[].class);
+&nbsp;        STRING_LIST = Bindable.listOf(String.class);
+&nbsp;        ALLOW_INACTIVE_BINDING = new ConfigDataEnvironmentContributors.BinderOption[0];
+<b class="fc">&nbsp;        DENY_INACTIVE_BINDING = new ConfigDataEnvironmentContributors.BinderOption[]{BinderOption.FAIL_ON_BIND_TO_INACTIVE_SOURCE};</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:54</div>
+</div>
+</body>
+</html>

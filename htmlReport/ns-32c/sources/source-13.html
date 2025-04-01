@@ -1,0 +1,203 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > SoftReferenceConfigurationPropertyCache</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.boot.context.properties.source</a>
+</div>
+
+<h1>Coverage Summary for Class: SoftReferenceConfigurationPropertyCache (org.springframework.boot.context.properties.source)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SoftReferenceConfigurationPropertyCache</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    63.6%
+  </span>
+  <span class="absValue">
+    (7/11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (9/18)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    82.8%
+  </span>
+  <span class="absValue">
+    (24/29)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.boot.context.properties.source;
+&nbsp;
+&nbsp;import java.lang.ref.SoftReference;
+&nbsp;import java.time.Duration;
+&nbsp;import java.time.Instant;
+&nbsp;import java.util.function.Supplier;
+&nbsp;import java.util.function.UnaryOperator;
+&nbsp;
+&nbsp;class SoftReferenceConfigurationPropertyCache&lt;T&gt; implements ConfigurationPropertyCaching {
+&nbsp;    private static final Duration UNLIMITED;
+&nbsp;    private final boolean neverExpire;
+&nbsp;    private volatile Duration timeToLive;
+&nbsp;    private volatile SoftReference&lt;T&gt; value = new SoftReference((Object)null);
+&nbsp;    private volatile Instant lastAccessed = this.now();
+&nbsp;
+&nbsp;    SoftReferenceConfigurationPropertyCache(boolean neverExpire) {
+&nbsp;        this.neverExpire = neverExpire;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void enable() {
+&nbsp;        this.timeToLive = UNLIMITED;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void disable() {
+&nbsp;        this.timeToLive = null;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setTimeToLive(Duration timeToLive) {
+<b class="fc">&nbsp;        this.timeToLive = timeToLive != null &amp;&amp; !timeToLive.isZero() ? timeToLive : null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void clear() {
+&nbsp;        this.lastAccessed = null;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    T get(Supplier&lt;T&gt; factory, UnaryOperator&lt;T&gt; refreshAction) {
+<b class="fc">&nbsp;        T value = (T)this.getValue();</b>
+&nbsp;        if (value == null) {
+<b class="fc">&nbsp;            value = (T)refreshAction.apply(factory.get());</b>
+<b class="fc">&nbsp;            this.setValue(value);</b>
+&nbsp;        } else if (this.hasExpired()) {
+&nbsp;            value = (T)refreshAction.apply(value);
+&nbsp;            this.setValue(value);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        if (!this.neverExpire) {
+&nbsp;            this.lastAccessed = this.now();
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return value;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean hasExpired() {
+&nbsp;        if (this.neverExpire) {
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        } else {
+&nbsp;            Duration timeToLive = this.timeToLive;
+&nbsp;            Instant lastAccessed = this.lastAccessed;
+&nbsp;            if (timeToLive != null &amp;&amp; lastAccessed != null) {
+<b class="nc">&nbsp;                return !UNLIMITED.equals(timeToLive) &amp;&amp; this.now().isAfter(lastAccessed.plus(timeToLive));</b>
+&nbsp;            } else {
+&nbsp;                return true;
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Instant now() {
+&nbsp;        return Instant.now();
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    protected T getValue() {</b>
+<b class="fc">&nbsp;        return (T)this.value.get();</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+<b class="fc">&nbsp;    protected void setValue(T value) {</b>
+<b class="fc">&nbsp;        this.value = new SoftReference(value);</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+<b class="fc">&nbsp;    static {</b>
+<b class="fc">&nbsp;        UNLIMITED = Duration.ZERO;</b>
+&nbsp;    }
+<b class="fc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

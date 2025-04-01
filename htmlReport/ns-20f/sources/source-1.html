@@ -1,0 +1,828 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > AbstractConfigurationImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.validator.internal.engine</a>
+</div>
+
+<h1>Coverage Summary for Class: AbstractConfigurationImpl (org.hibernate.validator.internal.engine)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AbstractConfigurationImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    49.4%
+  </span>
+  <span class="absValue">
+    (38/77)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    23.3%
+  </span>
+  <span class="absValue">
+    (34/146)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    38.7%
+  </span>
+  <span class="absValue">
+    (113/292)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.validator.internal.engine;
+&nbsp;
+&nbsp;import jakarta.validation.BootstrapConfiguration;
+&nbsp;import jakarta.validation.ClockProvider;
+&nbsp;import jakarta.validation.ConstraintValidatorFactory;
+&nbsp;import jakarta.validation.MessageInterpolator;
+&nbsp;import jakarta.validation.ParameterNameProvider;
+&nbsp;import jakarta.validation.TraversableResolver;
+&nbsp;import jakarta.validation.ValidationProviderResolver;
+&nbsp;import jakarta.validation.ValidatorFactory;
+&nbsp;import jakarta.validation.spi.BootstrapState;
+&nbsp;import jakarta.validation.spi.ConfigurationState;
+&nbsp;import jakarta.validation.spi.ValidationProvider;
+&nbsp;import jakarta.validation.valueextraction.ValueExtractor;
+&nbsp;import java.io.BufferedInputStream;
+&nbsp;import java.io.IOException;
+&nbsp;import java.io.InputStream;
+&nbsp;import java.lang.invoke.MethodHandles;
+&nbsp;import java.security.AccessController;
+&nbsp;import java.security.PrivilegedAction;
+&nbsp;import java.time.Duration;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Locale;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.stream.Collectors;
+&nbsp;import org.hibernate.validator.BaseHibernateValidatorConfiguration;
+&nbsp;import org.hibernate.validator.cfg.ConstraintMapping;
+&nbsp;import org.hibernate.validator.internal.IgnoreForbiddenApisErrors;
+&nbsp;import org.hibernate.validator.internal.cfg.context.DefaultConstraintMapping;
+&nbsp;import org.hibernate.validator.internal.engine.constraintvalidation.ConstraintValidatorFactoryImpl;
+&nbsp;import org.hibernate.validator.internal.engine.resolver.TraversableResolvers;
+&nbsp;import org.hibernate.validator.internal.engine.valueextraction.ValueExtractorDescriptor;
+&nbsp;import org.hibernate.validator.internal.engine.valueextraction.ValueExtractorManager;
+&nbsp;import org.hibernate.validator.internal.properties.DefaultGetterPropertySelectionStrategy;
+&nbsp;import org.hibernate.validator.internal.properties.javabean.JavaBeanHelper;
+&nbsp;import org.hibernate.validator.internal.util.CollectionHelper;
+&nbsp;import org.hibernate.validator.internal.util.Contracts;
+&nbsp;import org.hibernate.validator.internal.util.Version;
+&nbsp;import org.hibernate.validator.internal.util.logging.Log;
+&nbsp;import org.hibernate.validator.internal.util.logging.LoggerFactory;
+&nbsp;import org.hibernate.validator.internal.util.logging.Messages;
+&nbsp;import org.hibernate.validator.internal.util.privilegedactions.GetClassLoader;
+&nbsp;import org.hibernate.validator.internal.util.privilegedactions.GetInstancesFromServiceLoader;
+&nbsp;import org.hibernate.validator.internal.util.privilegedactions.SetContextClassLoader;
+&nbsp;import org.hibernate.validator.internal.xml.config.ValidationBootstrapParameters;
+&nbsp;import org.hibernate.validator.internal.xml.config.ValidationXmlParser;
+&nbsp;import org.hibernate.validator.messageinterpolation.ExpressionLanguageFeatureLevel;
+&nbsp;import org.hibernate.validator.messageinterpolation.ResourceBundleMessageInterpolator;
+&nbsp;import org.hibernate.validator.metadata.BeanMetaDataClassNormalizer;
+&nbsp;import org.hibernate.validator.resourceloading.PlatformResourceBundleLocator;
+&nbsp;import org.hibernate.validator.spi.messageinterpolation.LocaleResolver;
+&nbsp;import org.hibernate.validator.spi.nodenameprovider.PropertyNodeNameProvider;
+&nbsp;import org.hibernate.validator.spi.properties.GetterPropertySelectionStrategy;
+&nbsp;import org.hibernate.validator.spi.resourceloading.ResourceBundleLocator;
+&nbsp;import org.hibernate.validator.spi.scripting.ScriptEvaluatorFactory;
+&nbsp;
+&nbsp;public abstract class AbstractConfigurationImpl&lt;T extends BaseHibernateValidatorConfiguration&lt;T&gt;&gt; implements BaseHibernateValidatorConfiguration&lt;T&gt;, ConfigurationState {
+&nbsp;    private static final Log LOG;
+&nbsp;    private ResourceBundleLocator defaultResourceBundleLocator;
+&nbsp;    private MessageInterpolator defaultMessageInterpolator;
+&nbsp;    private MessageInterpolator messageInterpolator;
+&nbsp;    private TraversableResolver defaultTraversableResolver;
+&nbsp;    private final ConstraintValidatorFactory defaultConstraintValidatorFactory;
+&nbsp;    private final ParameterNameProvider defaultParameterNameProvider;
+&nbsp;    private final ClockProvider defaultClockProvider;
+&nbsp;    private final PropertyNodeNameProvider defaultPropertyNodeNameProvider;
+&nbsp;    private ValidationProviderResolver providerResolver;
+&nbsp;    private final ValidationBootstrapParameters validationBootstrapParameters;
+&nbsp;    private boolean ignoreXmlConfiguration;
+&nbsp;    private final Set&lt;InputStream&gt; configurationStreams;
+&nbsp;    private BootstrapConfiguration bootstrapConfiguration;
+&nbsp;    private final Map&lt;ValueExtractorDescriptor.Key, ValueExtractorDescriptor&gt; valueExtractorDescriptors;
+<b class="fc">&nbsp;    private final Set&lt;DefaultConstraintMapping&gt; programmaticMappings;</b>
+&nbsp;    private boolean failFast;
+&nbsp;    private ClassLoader externalClassLoader;
+&nbsp;    private final MethodValidationConfiguration.Builder methodValidationConfigurationBuilder;
+<b class="fc">&nbsp;    private boolean traversableResolverResultCacheEnabled;</b>
+&nbsp;    private ScriptEvaluatorFactory scriptEvaluatorFactory;
+&nbsp;    private Duration temporalValidationTolerance;
+<b class="fc">&nbsp;    private Object constraintValidatorPayload;</b>
+&nbsp;    private GetterPropertySelectionStrategy getterPropertySelectionStrategy;
+&nbsp;    private Set&lt;Locale&gt; locales;
+&nbsp;    private Locale defaultLocale;
+&nbsp;    private LocaleResolver localeResolver;
+&nbsp;    private BeanMetaDataClassNormalizer beanMetaDataClassNormalizer;
+&nbsp;    private ExpressionLanguageFeatureLevel constraintExpressionLanguageFeatureLevel;
+&nbsp;    private ExpressionLanguageFeatureLevel customViolationExpressionLanguageFeatureLevel;
+&nbsp;    private boolean showValidatedValuesInTraceLogs;
+&nbsp;
+&nbsp;    protected AbstractConfigurationImpl(BootstrapState state) {
+&nbsp;        this();
+&nbsp;        if (state.getValidationProviderResolver() == null) {
+&nbsp;            this.providerResolver = state.getDefaultValidationProviderResolver();
+&nbsp;        } else {
+&nbsp;            this.providerResolver = state.getValidationProviderResolver();
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected AbstractConfigurationImpl(ValidationProvider&lt;?&gt; provider) {
+&nbsp;        this();
+&nbsp;        if (provider == null) {
+&nbsp;            throw LOG.getInconsistentConfigurationException();
+&nbsp;        } else {
+&nbsp;            this.providerResolver = null;
+<b class="fc">&nbsp;            this.validationBootstrapParameters.setProvider(provider);</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    private AbstractConfigurationImpl() {</b>
+&nbsp;        this.ignoreXmlConfiguration = false;
+&nbsp;        this.configurationStreams = CollectionHelper.newHashSet();
+<b class="fc">&nbsp;        this.valueExtractorDescriptors = new HashMap();</b>
+&nbsp;        this.programmaticMappings = CollectionHelper.newHashSet();
+&nbsp;        this.methodValidationConfigurationBuilder = new MethodValidationConfiguration.Builder();
+<b class="fc">&nbsp;        this.traversableResolverResultCacheEnabled = true;</b>
+<b class="fc">&nbsp;        this.locales = Collections.emptySet();</b>
+&nbsp;        this.defaultLocale = Locale.getDefault();
+&nbsp;        this.validationBootstrapParameters = new ValidationBootstrapParameters();
+&nbsp;        this.defaultConstraintValidatorFactory = new ConstraintValidatorFactoryImpl();
+&nbsp;        this.defaultParameterNameProvider = new DefaultParameterNameProvider();
+<b class="fc">&nbsp;        this.defaultClockProvider = DefaultClockProvider.INSTANCE;</b>
+<b class="fc">&nbsp;        this.defaultPropertyNodeNameProvider = new DefaultPropertyNodeNameProvider();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public final T ignoreXmlConfiguration() {
+&nbsp;        this.ignoreXmlConfiguration = true;
+&nbsp;        return (T)this.thisAsT();
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public final T messageInterpolator(MessageInterpolator interpolator) {</b>
+<b class="pc">&nbsp;        if (LOG.isDebugEnabled() &amp;&amp; interpolator != null) {</b>
+<b class="fc">&nbsp;            LOG.debug(&quot;Setting custom MessageInterpolator of type &quot; + interpolator.getClass().getName());</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        this.validationBootstrapParameters.setMessageInterpolator(interpolator);</b>
+&nbsp;        return (T)this.thisAsT();
+&nbsp;    }
+&nbsp;
+&nbsp;    public final T traversableResolver(TraversableResolver resolver) {
+<b class="nc">&nbsp;        if (LOG.isDebugEnabled() &amp;&amp; resolver != null) {</b>
+<b class="nc">&nbsp;            LOG.debug(&quot;Setting custom TraversableResolver of type &quot; + resolver.getClass().getName());</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        this.validationBootstrapParameters.setTraversableResolver(resolver);</b>
+<b class="nc">&nbsp;        return (T)this.thisAsT();</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public final T enableTraversableResolverResultCache(boolean enabled) {</b>
+<b class="fc">&nbsp;        this.traversableResolverResultCacheEnabled = enabled;</b>
+&nbsp;        return (T)this.thisAsT();
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public final boolean isTraversableResolverResultCacheEnabled() {</b>
+<b class="fc">&nbsp;        return this.traversableResolverResultCacheEnabled;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public final T constraintValidatorFactory(ConstraintValidatorFactory constraintValidatorFactory) {
+&nbsp;        if (LOG.isDebugEnabled() &amp;&amp; constraintValidatorFactory != null) {
+<b class="nc">&nbsp;            LOG.debug(&quot;Setting custom ConstraintValidatorFactory of type &quot; + constraintValidatorFactory.getClass().getName());</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        this.validationBootstrapParameters.setConstraintValidatorFactory(constraintValidatorFactory);
+&nbsp;        return (T)this.thisAsT();
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public T parameterNameProvider(ParameterNameProvider parameterNameProvider) {</b>
+<b class="nc">&nbsp;        if (LOG.isDebugEnabled() &amp;&amp; parameterNameProvider != null) {</b>
+&nbsp;            LOG.debug(&quot;Setting custom ParameterNameProvider of type &quot; + parameterNameProvider.getClass().getName());
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        this.validationBootstrapParameters.setParameterNameProvider(parameterNameProvider);</b>
+&nbsp;        return (T)this.thisAsT();
+&nbsp;    }
+&nbsp;
+&nbsp;    public T clockProvider(ClockProvider clockProvider) {
+<b class="nc">&nbsp;        if (LOG.isDebugEnabled() &amp;&amp; clockProvider != null) {</b>
+<b class="nc">&nbsp;            LOG.debug(&quot;Setting custom ClockProvider of type &quot; + clockProvider.getClass().getName());</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        this.validationBootstrapParameters.setClockProvider(clockProvider);
+<b class="nc">&nbsp;        return (T)this.thisAsT();</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public T propertyNodeNameProvider(PropertyNodeNameProvider propertyNodeNameProvider) {
+&nbsp;        if (LOG.isDebugEnabled() &amp;&amp; propertyNodeNameProvider != null) {
+&nbsp;            LOG.debug(&quot;Setting custom PropertyNodeNameProvider of type &quot; + propertyNodeNameProvider.getClass().getName());
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        this.validationBootstrapParameters.setPropertyNodeNameProvider(propertyNodeNameProvider);
+&nbsp;        return (T)this.thisAsT();
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public T localeResolver(LocaleResolver localeResolver) {
+&nbsp;        if (LOG.isDebugEnabled() &amp;&amp; localeResolver != null) {
+&nbsp;            LOG.debug(&quot;Setting custom LocaleResolver of type &quot; + localeResolver.getClass().getName());
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        this.localeResolver = localeResolver;</b>
+<b class="nc">&nbsp;        return (T)this.thisAsT();</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public T addValueExtractor(ValueExtractor&lt;?&gt; extractor) {
+&nbsp;        Contracts.assertNotNull(extractor, Messages.MESSAGES.parameterMustNotBeNull(&quot;extractor&quot;));
+&nbsp;        ValueExtractorDescriptor descriptor = new ValueExtractorDescriptor(extractor);
+<b class="nc">&nbsp;        ValueExtractorDescriptor previous = (ValueExtractorDescriptor)this.valueExtractorDescriptors.put(descriptor.getKey(), descriptor);</b>
+<b class="nc">&nbsp;        if (previous != null) {</b>
+&nbsp;            throw LOG.getValueExtractorForTypeAndTypeUseAlreadyPresentException(extractor, previous.getValueExtractor());
+&nbsp;        } else {
+&nbsp;            if (LOG.isDebugEnabled()) {
+&nbsp;                LOG.debug(&quot;Adding value extractor &quot; + extractor);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            return (T)this.thisAsT();</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public final T addMapping(InputStream stream) {
+&nbsp;        Contracts.assertNotNull(stream, Messages.MESSAGES.inputStreamCannotBeNull());
+<b class="nc">&nbsp;        this.validationBootstrapParameters.addMapping((InputStream)(stream.markSupported() ? stream : new BufferedInputStream(stream)));</b>
+<b class="nc">&nbsp;        return (T)this.thisAsT();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public final T failFast(boolean failFast) {
+&nbsp;        this.failFast = failFast;
+<b class="nc">&nbsp;        return (T)this.thisAsT();</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public T allowOverridingMethodAlterParameterConstraint(boolean allow) {
+&nbsp;        this.methodValidationConfigurationBuilder.allowOverridingMethodAlterParameterConstraint(allow);
+<b class="nc">&nbsp;        return (T)this.thisAsT();</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public boolean isAllowOverridingMethodAlterParameterConstraint() {
+&nbsp;        return this.methodValidationConfigurationBuilder.isAllowOverridingMethodAlterParameterConstraint();
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public T allowMultipleCascadedValidationOnReturnValues(boolean allow) {</b>
+<b class="nc">&nbsp;        this.methodValidationConfigurationBuilder.allowMultipleCascadedValidationOnReturnValues(allow);</b>
+<b class="nc">&nbsp;        return (T)this.thisAsT();</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public boolean isAllowMultipleCascadedValidationOnReturnValues() {</b>
+&nbsp;        return this.methodValidationConfigurationBuilder.isAllowMultipleCascadedValidationOnReturnValues();
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public T allowParallelMethodsDefineParameterConstraints(boolean allow) {
+&nbsp;        this.methodValidationConfigurationBuilder.allowParallelMethodsDefineParameterConstraints(allow);
+&nbsp;        return (T)this.thisAsT();
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public T scriptEvaluatorFactory(ScriptEvaluatorFactory scriptEvaluatorFactory) {</b>
+<b class="nc">&nbsp;        Contracts.assertNotNull(scriptEvaluatorFactory, Messages.MESSAGES.parameterMustNotBeNull(&quot;scriptEvaluatorFactory&quot;));</b>
+&nbsp;        this.scriptEvaluatorFactory = scriptEvaluatorFactory;
+&nbsp;        return (T)this.thisAsT();
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public T temporalValidationTolerance(Duration temporalValidationTolerance) {</b>
+&nbsp;        Contracts.assertNotNull(temporalValidationTolerance, Messages.MESSAGES.parameterMustNotBeNull(&quot;temporalValidationTolerance&quot;));
+&nbsp;        this.temporalValidationTolerance = temporalValidationTolerance.abs();
+&nbsp;        return (T)this.thisAsT();
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public T constraintValidatorPayload(Object constraintValidatorPayload) {
+<b class="nc">&nbsp;        Contracts.assertNotNull(constraintValidatorPayload, Messages.MESSAGES.parameterMustNotBeNull(&quot;constraintValidatorPayload&quot;));</b>
+<b class="nc">&nbsp;        this.constraintValidatorPayload = constraintValidatorPayload;</b>
+&nbsp;        return (T)this.thisAsT();
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public T getterPropertySelectionStrategy(GetterPropertySelectionStrategy getterPropertySelectionStrategy) {
+&nbsp;        Contracts.assertNotNull(getterPropertySelectionStrategy, Messages.MESSAGES.parameterMustNotBeNull(&quot;getterPropertySelectionStrategy&quot;));
+<b class="nc">&nbsp;        this.getterPropertySelectionStrategy = getterPropertySelectionStrategy;</b>
+<b class="nc">&nbsp;        return (T)this.thisAsT();</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public T locales(Set&lt;Locale&gt; locales) {</b>
+&nbsp;        Contracts.assertNotNull(this.defaultLocale, Messages.MESSAGES.parameterMustNotBeNull(&quot;locales&quot;));
+&nbsp;        this.locales = locales;
+&nbsp;        return (T)this.thisAsT();
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public T defaultLocale(Locale defaultLocale) {
+<b class="nc">&nbsp;        Contracts.assertNotNull(defaultLocale, Messages.MESSAGES.parameterMustNotBeNull(&quot;defaultLocale&quot;));</b>
+<b class="nc">&nbsp;        this.defaultLocale = defaultLocale;</b>
+&nbsp;        return (T)this.thisAsT();
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isAllowParallelMethodsDefineParameterConstraints() {
+<b class="nc">&nbsp;        return this.methodValidationConfigurationBuilder.isAllowParallelMethodsDefineParameterConstraints();</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public MethodValidationConfiguration getMethodValidationConfiguration() {
+&nbsp;        return this.methodValidationConfigurationBuilder.build();
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public final DefaultConstraintMapping createConstraintMapping() {</b>
+&nbsp;        GetterPropertySelectionStrategy getterPropertySelectionStrategyToUse = null;
+&nbsp;        Object var2;
+&nbsp;        if (this.getterPropertySelectionStrategy == null) {
+<b class="nc">&nbsp;            var2 = new DefaultGetterPropertySelectionStrategy();</b>
+&nbsp;        } else {
+&nbsp;            var2 = this.getterPropertySelectionStrategy;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return new DefaultConstraintMapping(new JavaBeanHelper((GetterPropertySelectionStrategy)var2, this.defaultPropertyNodeNameProvider));</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public final T addMapping(ConstraintMapping mapping) {
+&nbsp;        Contracts.assertNotNull(mapping, Messages.MESSAGES.parameterMustNotBeNull(&quot;mapping&quot;));
+<b class="nc">&nbsp;        this.programmaticMappings.add((DefaultConstraintMapping)mapping);</b>
+&nbsp;        return (T)this.thisAsT();
+&nbsp;    }
+&nbsp;
+&nbsp;    public final T addProperty(String name, String value) {
+<b class="nc">&nbsp;        if (value != null) {</b>
+<b class="nc">&nbsp;            this.validationBootstrapParameters.addConfigProperty(name, value);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        return (T)this.thisAsT();
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public T externalClassLoader(ClassLoader externalClassLoader) {
+<b class="nc">&nbsp;        Contracts.assertNotNull(externalClassLoader, Messages.MESSAGES.parameterMustNotBeNull(&quot;externalClassLoader&quot;));</b>
+<b class="nc">&nbsp;        this.externalClassLoader = externalClassLoader;</b>
+&nbsp;        this.messageInterpolator = null;
+&nbsp;        return (T)this.thisAsT();
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public final ValidatorFactory buildValidatorFactory() {</b>
+&nbsp;        this.loadValueExtractorsFromServiceLoader();
+<b class="nc">&nbsp;        this.parseValidationXml();</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        for(ValueExtractorDescriptor valueExtractorDescriptor : this.valueExtractorDescriptors.values()) {
+&nbsp;            this.validationBootstrapParameters.addValueExtractorDescriptor(valueExtractorDescriptor);
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        ValidatorFactory factory = null;</b>
+&nbsp;
+<b class="nc">&nbsp;        try {</b>
+<b class="nc">&nbsp;            if (this.isSpecificProvider()) {</b>
+&nbsp;                factory = this.validationBootstrapParameters.getProvider().buildValidatorFactory(this);
+&nbsp;            } else {
+&nbsp;                Class&lt;? extends ValidationProvider&lt;?&gt;&gt; providerClass = this.validationBootstrapParameters.getProviderClass();
+&nbsp;                if (providerClass != null) {
+<b class="nc">&nbsp;                    for(ValidationProvider&lt;?&gt; provider : this.providerResolver.getValidationProviders()) {</b>
+&nbsp;                        if (providerClass.isAssignableFrom(provider.getClass())) {
+<b class="nc">&nbsp;                            factory = provider.buildValidatorFactory(this);</b>
+<b class="nc">&nbsp;                            break;</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+&nbsp;                    if (factory == null) {
+<b class="nc">&nbsp;                        throw LOG.getUnableToFindProviderException(providerClass);</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                } else {</b>
+<b class="nc">&nbsp;                    List&lt;ValidationProvider&lt;?&gt;&gt; providers = this.providerResolver.getValidationProviders();</b>
+&nbsp;
+&nbsp;                    assert providers.size() != 0;
+&nbsp;
+&nbsp;                    factory = ((ValidationProvider)providers.get(0)).buildValidatorFactory(this);
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+<b class="nc">&nbsp;        } finally {</b>
+<b class="nc">&nbsp;            for(InputStream in : this.configurationStreams) {</b>
+&nbsp;                try {
+&nbsp;                    in.close();
+&nbsp;                } catch (IOException var12) {
+<b class="nc">&nbsp;                    LOG.unableToCloseInputStream();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return factory;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public final boolean isIgnoreXmlConfiguration() {</b>
+<b class="nc">&nbsp;        return this.ignoreXmlConfiguration;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public final MessageInterpolator getMessageInterpolator() {
+<b class="nc">&nbsp;        MessageInterpolator selectedInterpolator = this.validationBootstrapParameters.getMessageInterpolator();</b>
+&nbsp;        if (selectedInterpolator != null) {
+&nbsp;            return selectedInterpolator;
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            if (this.messageInterpolator == null) {
+&nbsp;                this.messageInterpolator = this.getDefaultMessageInterpolatorConfiguredWithClassLoader();
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            return this.messageInterpolator;</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public final Set&lt;InputStream&gt; getMappingStreams() {
+&nbsp;        return this.validationBootstrapParameters.getMappings();
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public final boolean getFailFast() {</b>
+<b class="nc">&nbsp;        return this.failFast;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public final ConstraintValidatorFactory getConstraintValidatorFactory() {
+&nbsp;        return this.validationBootstrapParameters.getConstraintValidatorFactory();
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public final TraversableResolver getTraversableResolver() {</b>
+<b class="nc">&nbsp;        return this.validationBootstrapParameters.getTraversableResolver();</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public BootstrapConfiguration getBootstrapConfiguration() {</b>
+&nbsp;        if (this.bootstrapConfiguration == null) {
+<b class="nc">&nbsp;            this.bootstrapConfiguration = (new ValidationXmlParser(this.externalClassLoader)).parseValidationXml();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        return this.bootstrapConfiguration;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public ParameterNameProvider getParameterNameProvider() {</b>
+&nbsp;        return this.validationBootstrapParameters.getParameterNameProvider();
+<b class="pc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public ClockProvider getClockProvider() {
+&nbsp;        return this.validationBootstrapParameters.getClockProvider();
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+<b class="pc">&nbsp;    public PropertyNodeNameProvider getPropertyNodeNameProvider() {</b>
+<b class="nc">&nbsp;        return this.validationBootstrapParameters.getPropertyNodeNameProvider();</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public LocaleResolver getLocaleResolver() {</b>
+<b class="pc">&nbsp;        return this.localeResolver;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public ScriptEvaluatorFactory getScriptEvaluatorFactory() {</b>
+&nbsp;        return this.scriptEvaluatorFactory;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public Duration getTemporalValidationTolerance() {</b>
+<b class="nc">&nbsp;        return this.temporalValidationTolerance;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Object getConstraintValidatorPayload() {
+<b class="fc">&nbsp;        return this.constraintValidatorPayload;</b>
+<b class="pc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    public GetterPropertySelectionStrategy getGetterPropertySelectionStrategy() {
+&nbsp;        return this.getterPropertySelectionStrategy;
+&nbsp;    }
+&nbsp;
+&nbsp;    public Set&lt;ValueExtractor&lt;?&gt;&gt; getValueExtractors() {
+<b class="pc">&nbsp;        return (Set)this.validationBootstrapParameters.getValueExtractorDescriptors().values().stream().map(ValueExtractorDescriptor::getValueExtractor).collect(Collectors.toSet());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public final Map&lt;String, String&gt; getProperties() {
+&nbsp;        return this.validationBootstrapParameters.getConfigProperties();
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public ClassLoader getExternalClassLoader() {
+&nbsp;        return this.externalClassLoader;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public final MessageInterpolator getDefaultMessageInterpolator() {
+&nbsp;        if (this.defaultMessageInterpolator == null) {
+&nbsp;            this.defaultMessageInterpolator = new ResourceBundleMessageInterpolator(this.getDefaultResourceBundleLocator(), this.getAllSupportedLocales(), this.defaultLocale, ValidatorFactoryConfigurationHelper.determineLocaleResolver(this, this.getProperties(), this.externalClassLoader), this.preloadResourceBundles());
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        return this.defaultMessageInterpolator;
+&nbsp;    }
+&nbsp;
+&nbsp;    public final TraversableResolver getDefaultTraversableResolver() {
+&nbsp;        if (this.defaultTraversableResolver == null) {
+<b class="fc">&nbsp;            this.defaultTraversableResolver = TraversableResolvers.getDefault();</b>
+<b class="pc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return this.defaultTraversableResolver;
+<b class="pc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    public final ConstraintValidatorFactory getDefaultConstraintValidatorFactory() {
+&nbsp;        return this.defaultConstraintValidatorFactory;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public final ResourceBundleLocator getDefaultResourceBundleLocator() {
+&nbsp;        if (this.defaultResourceBundleLocator == null) {
+&nbsp;            this.defaultResourceBundleLocator = new PlatformResourceBundleLocator(&quot;ValidationMessages&quot;, this.preloadResourceBundles() ? this.getAllSupportedLocales() : Collections.emptySet());
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return this.defaultResourceBundleLocator;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public ParameterNameProvider getDefaultParameterNameProvider() {
+&nbsp;        return this.defaultParameterNameProvider;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public ClockProvider getDefaultClockProvider() {</b>
+&nbsp;        return this.defaultClockProvider;
+&nbsp;    }
+&nbsp;
+&nbsp;    public Set&lt;ValueExtractor&lt;?&gt;&gt; getDefaultValueExtractors() {
+<b class="fc">&nbsp;        return ValueExtractorManager.getDefaultValueExtractors();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public T beanMetaDataClassNormalizer(BeanMetaDataClassNormalizer beanMetaDataClassNormalizer) {
+&nbsp;        if (LOG.isDebugEnabled() &amp;&amp; beanMetaDataClassNormalizer != null) {
+<b class="pc">&nbsp;            LOG.debug(&quot;Setting custom BeanMetaDataClassNormalizer of type &quot; + beanMetaDataClassNormalizer.getClass().getName());</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+<b class="fc">&nbsp;        this.beanMetaDataClassNormalizer = beanMetaDataClassNormalizer;</b>
+&nbsp;        return (T)this.thisAsT();
+&nbsp;    }
+&nbsp;
+&nbsp;    public BeanMetaDataClassNormalizer getBeanMetaDataClassNormalizer() {
+<b class="fc">&nbsp;        return this.beanMetaDataClassNormalizer;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public T constraintExpressionLanguageFeatureLevel(ExpressionLanguageFeatureLevel expressionLanguageFeatureLevel) {
+&nbsp;        if (LOG.isDebugEnabled() &amp;&amp; expressionLanguageFeatureLevel != null) {
+<b class="fc">&nbsp;            LOG.debug(&quot;Setting ExpressionLanguageFeatureLevel for constraints to &quot; + expressionLanguageFeatureLevel.name());</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        this.constraintExpressionLanguageFeatureLevel = expressionLanguageFeatureLevel;
+<b class="fc">&nbsp;        return (T)this.thisAsT();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public ExpressionLanguageFeatureLevel getConstraintExpressionLanguageFeatureLevel() {
+<b class="fc">&nbsp;        return this.constraintExpressionLanguageFeatureLevel;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public T customViolationExpressionLanguageFeatureLevel(ExpressionLanguageFeatureLevel expressionLanguageFeatureLevel) {
+<b class="fc">&nbsp;        if (LOG.isDebugEnabled() &amp;&amp; expressionLanguageFeatureLevel != null) {</b>
+&nbsp;            LOG.debug(&quot;Setting ExpressionLanguageFeatureLevel for custom violations to &quot; + expressionLanguageFeatureLevel.name());
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        this.customViolationExpressionLanguageFeatureLevel = expressionLanguageFeatureLevel;</b>
+&nbsp;        return (T)this.thisAsT();
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public ExpressionLanguageFeatureLevel getCustomViolationExpressionLanguageFeatureLevel() {</b>
+&nbsp;        return this.customViolationExpressionLanguageFeatureLevel;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public T showValidatedValuesInTraceLogs(boolean enabled) {</b>
+&nbsp;        this.showValidatedValuesInTraceLogs = enabled;
+&nbsp;        return (T)this.thisAsT();
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public final boolean getShowValidatedValuesInTraceLogs() {</b>
+<b class="fc">&nbsp;        return this.showValidatedValuesInTraceLogs;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public final Set&lt;DefaultConstraintMapping&gt; getProgrammaticMappings() {</b>
+&nbsp;        return this.programmaticMappings;
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean isSpecificProvider() {
+<b class="fc">&nbsp;        return this.validationBootstrapParameters.getProvider() != null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void parseValidationXml() {
+<b class="fc">&nbsp;        if (this.ignoreXmlConfiguration) {</b>
+&nbsp;            LOG.ignoringXmlConfiguration();
+&nbsp;            if (this.validationBootstrapParameters.getTraversableResolver() == null) {
+&nbsp;                this.validationBootstrapParameters.setTraversableResolver(this.getDefaultTraversableResolver());
+&nbsp;            }
+<b class="pc">&nbsp;</b>
+<b class="fc">&nbsp;            if (this.validationBootstrapParameters.getConstraintValidatorFactory() == null) {</b>
+<b class="fc">&nbsp;                this.validationBootstrapParameters.setConstraintValidatorFactory(this.defaultConstraintValidatorFactory);</b>
+<b class="fc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            if (this.validationBootstrapParameters.getParameterNameProvider() == null) {
+<b class="fc">&nbsp;                this.validationBootstrapParameters.setParameterNameProvider(this.defaultParameterNameProvider);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            if (this.validationBootstrapParameters.getClockProvider() == null) {
+&nbsp;                this.validationBootstrapParameters.setClockProvider(this.defaultClockProvider);
+<b class="pc">&nbsp;            }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;            if (this.validationBootstrapParameters.getPropertyNodeNameProvider() == null) {
+<b class="fc">&nbsp;                this.validationBootstrapParameters.setPropertyNodeNameProvider(this.defaultPropertyNodeNameProvider);</b>
+&nbsp;            }
+&nbsp;        } else {
+&nbsp;            ValidationBootstrapParameters xmlParameters = new ValidationBootstrapParameters(this.getBootstrapConfiguration(), this.externalClassLoader);
+&nbsp;            this.applyXmlSettings(xmlParameters);
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private void loadValueExtractorsFromServiceLoader() {
+<b class="pc">&nbsp;        for(ValueExtractor&lt;?&gt; valueExtractor : (List)run(GetInstancesFromServiceLoader.action(this.externalClassLoader != null ? this.externalClassLoader : (ClassLoader)run(GetClassLoader.fromContext()), ValueExtractor.class))) {</b>
+<b class="fc">&nbsp;            this.validationBootstrapParameters.addValueExtractorDescriptor(new ValueExtractorDescriptor(valueExtractor));</b>
+<b class="pc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    private void applyXmlSettings(ValidationBootstrapParameters xmlParameters) {
+&nbsp;        this.validationBootstrapParameters.setProviderClass(xmlParameters.getProviderClass());
+&nbsp;        if (this.validationBootstrapParameters.getMessageInterpolator() == null &amp;&amp; xmlParameters.getMessageInterpolator() != null) {
+&nbsp;            this.validationBootstrapParameters.setMessageInterpolator(xmlParameters.getMessageInterpolator());
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        if (this.validationBootstrapParameters.getTraversableResolver() == null) {
+&nbsp;            if (xmlParameters.getTraversableResolver() != null) {
+&nbsp;                this.validationBootstrapParameters.setTraversableResolver(xmlParameters.getTraversableResolver());
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                this.validationBootstrapParameters.setTraversableResolver(this.getDefaultTraversableResolver());
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if (this.validationBootstrapParameters.getConstraintValidatorFactory() == null) {</b>
+&nbsp;            if (xmlParameters.getConstraintValidatorFactory() != null) {
+&nbsp;                this.validationBootstrapParameters.setConstraintValidatorFactory(xmlParameters.getConstraintValidatorFactory());
+&nbsp;            } else {
+&nbsp;                this.validationBootstrapParameters.setConstraintValidatorFactory(this.defaultConstraintValidatorFactory);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if (this.validationBootstrapParameters.getParameterNameProvider() == null) {</b>
+&nbsp;            if (xmlParameters.getParameterNameProvider() != null) {
+&nbsp;                this.validationBootstrapParameters.setParameterNameProvider(xmlParameters.getParameterNameProvider());
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                this.validationBootstrapParameters.setParameterNameProvider(this.defaultParameterNameProvider);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if (this.validationBootstrapParameters.getClockProvider() == null) {</b>
+&nbsp;            if (xmlParameters.getClockProvider() != null) {
+&nbsp;                this.validationBootstrapParameters.setClockProvider(xmlParameters.getClockProvider());
+&nbsp;            } else {
+&nbsp;                this.validationBootstrapParameters.setClockProvider(this.defaultClockProvider);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        if (this.validationBootstrapParameters.getPropertyNodeNameProvider() == null) {
+&nbsp;            if (xmlParameters.getPropertyNodeNameProvider() != null) {
+<b class="nc">&nbsp;                this.validationBootstrapParameters.setPropertyNodeNameProvider(xmlParameters.getPropertyNodeNameProvider());</b>
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                this.validationBootstrapParameters.setPropertyNodeNameProvider(this.defaultPropertyNodeNameProvider);
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+&nbsp;        for(ValueExtractorDescriptor valueExtractorDescriptor : xmlParameters.getValueExtractorDescriptors().values()) {
+&nbsp;            this.validationBootstrapParameters.addValueExtractorDescriptor(valueExtractorDescriptor);
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        this.validationBootstrapParameters.addAllMappings(xmlParameters.getMappings());</b>
+<b class="nc">&nbsp;        this.configurationStreams.addAll(xmlParameters.getMappings());</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        for(Map.Entry&lt;String, String&gt; entry : xmlParameters.getConfigProperties().entrySet()) {
+&nbsp;            if (this.validationBootstrapParameters.getConfigProperties().get(entry.getKey()) == null) {
+<b class="nc">&nbsp;                this.validationBootstrapParameters.addConfigProperty((String)entry.getKey(), (String)entry.getValue());</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    private MessageInterpolator getDefaultMessageInterpolatorConfiguredWithClassLoader() {
+&nbsp;        if (this.externalClassLoader != null) {
+&nbsp;            PlatformResourceBundleLocator userResourceBundleLocator = new PlatformResourceBundleLocator(&quot;ValidationMessages&quot;, this.preloadResourceBundles() ? this.getAllSupportedLocales() : Collections.emptySet(), this.externalClassLoader);
+&nbsp;            PlatformResourceBundleLocator contributorResourceBundleLocator = new PlatformResourceBundleLocator(&quot;ContributorValidationMessages&quot;, this.preloadResourceBundles() ? this.getAllSupportedLocales() : Collections.emptySet(), this.externalClassLoader, true);
+<b class="nc">&nbsp;            ClassLoader originalContextClassLoader = (ClassLoader)run(GetClassLoader.fromContext());</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            ResourceBundleMessageInterpolator var4;
+&nbsp;            try {
+&nbsp;                run(SetContextClassLoader.action(this.externalClassLoader));
+<b class="fc">&nbsp;                var4 = new ResourceBundleMessageInterpolator(userResourceBundleLocator, contributorResourceBundleLocator, this.getAllSupportedLocales(), this.defaultLocale, ValidatorFactoryConfigurationHelper.determineLocaleResolver(this, this.getProperties(), this.externalClassLoader), this.preloadResourceBundles());</b>
+&nbsp;            } finally {
+&nbsp;                run(SetContextClassLoader.action(originalContextClassLoader));
+&nbsp;            }
+<b class="fc">&nbsp;</b>
+&nbsp;            return var4;
+&nbsp;        } else {
+&nbsp;            return this.getDefaultMessageInterpolator();
+<b class="pc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private Set&lt;Locale&gt; getAllSupportedLocales() {
+&nbsp;        if (this.locales.isEmpty()) {
+&nbsp;            return Collections.singleton(this.defaultLocale);
+&nbsp;        } else if (this.locales.contains(this.defaultLocale)) {
+<b class="pc">&nbsp;            return this.locales;</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            Set&lt;Locale&gt; allLocales = CollectionHelper.newHashSet(this.locales.size() + 1);
+<b class="nc">&nbsp;            allLocales.addAll(this.locales);</b>
+<b class="nc">&nbsp;            allLocales.add(this.defaultLocale);</b>
+&nbsp;            return allLocales;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    protected abstract boolean preloadResourceBundles();</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    protected T thisAsT() {
+<b class="nc">&nbsp;        return (T)this;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private static &lt;T&gt; @IgnoreForbiddenApisErrors(</b>
+<b class="nc">&nbsp;    reason = &quot;SecurityManager is deprecated in JDK17&quot;</b>
+&nbsp;) T run(PrivilegedAction&lt;T&gt; action) {
+&nbsp;        return (T)(System.getSecurityManager() != null ? AccessController.doPrivileged(action) : action.run());
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    static {</b>
+&nbsp;        Version.touch();
+<b class="fc">&nbsp;        LOG = LoggerFactory.make(MethodHandles.lookup());</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

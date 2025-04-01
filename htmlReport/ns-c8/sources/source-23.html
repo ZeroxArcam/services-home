@@ -1,0 +1,386 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > Iterators</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.aspectj.weaver</a>
+</div>
+
+<h1>Coverage Summary for Class: Iterators (org.aspectj.weaver)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+</tr>
+  <tr>
+    <td class="name">Iterators$Getter</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.aspectj.weaver;
+&nbsp;
+&nbsp;import java.util.HashSet;
+&nbsp;import java.util.Iterator;
+&nbsp;import java.util.List;
+&nbsp;import java.util.NoSuchElementException;
+&nbsp;import java.util.Set;
+&nbsp;
+&nbsp;public final class Iterators {
+&nbsp;    private Iterators() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public static &lt;T&gt; Filter&lt;T&gt; dupFilter() {
+&nbsp;        return new Filter&lt;T&gt;() {
+&nbsp;            final Set&lt;T&gt; seen = new HashSet();
+&nbsp;
+&nbsp;            public Iterator&lt;T&gt; filter(final Iterator&lt;T&gt; in) {
+&nbsp;                return new Iterator&lt;T&gt;() {
+&nbsp;                    boolean fresh = false;
+&nbsp;                    T peek;
+&nbsp;
+&nbsp;                    public boolean hasNext() {
+&nbsp;                        if (this.fresh) {
+&nbsp;                            return true;
+&nbsp;                        } else {
+&nbsp;                            while(in.hasNext()) {
+&nbsp;                                this.peek = (T)in.next();
+&nbsp;                                if (!seen.contains(this.peek)) {
+&nbsp;                                    this.fresh = true;
+&nbsp;                                    return true;
+&nbsp;                                }
+&nbsp;
+&nbsp;                                this.peek = (T)null;
+&nbsp;                            }
+&nbsp;
+&nbsp;                            return false;
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+&nbsp;                    public T next() {
+&nbsp;                        if (!this.hasNext()) {
+&nbsp;                            throw new NoSuchElementException();
+&nbsp;                        } else {
+&nbsp;                            T ret = this.peek;
+&nbsp;                            seen.add(this.peek);
+&nbsp;                            this.peek = (T)null;
+&nbsp;                            this.fresh = false;
+&nbsp;                            return ret;
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+&nbsp;                    public void remove() {
+&nbsp;                        throw new UnsupportedOperationException();
+&nbsp;                    }
+&nbsp;                };
+&nbsp;            }
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    public static &lt;T&gt; Iterator&lt;T&gt; array(final T[] o) {
+&nbsp;        return new Iterator&lt;T&gt;() {
+&nbsp;            int i = 0;
+&nbsp;            int len = o == null ? 0 : o.length;
+&nbsp;
+&nbsp;            public boolean hasNext() {
+&nbsp;                return this.i &lt; this.len;
+&nbsp;            }
+&nbsp;
+&nbsp;            public T next() {
+&nbsp;                if (this.i &lt; this.len) {
+&nbsp;                    return (T)o[this.i++];
+&nbsp;                } else {
+&nbsp;                    throw new NoSuchElementException();
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            public void remove() {
+&nbsp;                throw new UnsupportedOperationException();
+&nbsp;            }
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Iterator&lt;ResolvedType&gt; array(final ResolvedType[] o, final boolean genericsAware) {
+&nbsp;        return new Iterator&lt;ResolvedType&gt;() {
+&nbsp;            int i = 0;
+&nbsp;            int len = o == null ? 0 : o.length;
+&nbsp;
+&nbsp;            public boolean hasNext() {
+&nbsp;                return this.i &lt; this.len;
+&nbsp;            }
+&nbsp;
+&nbsp;            public ResolvedType next() {
+&nbsp;                if (this.i &gt;= this.len) {
+&nbsp;                    throw new NoSuchElementException();
+&nbsp;                } else {
+&nbsp;                    ResolvedType oo = o[this.i++];
+&nbsp;                    return genericsAware || !oo.isParameterizedType() &amp;&amp; !oo.isGenericType() ? oo : oo.getRawType();
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            public void remove() {
+&nbsp;                throw new UnsupportedOperationException();
+&nbsp;            }
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    public static &lt;A, B&gt; Iterator&lt;B&gt; mapOver(final Iterator&lt;A&gt; a, final Getter&lt;A, B&gt; g) {
+&nbsp;        return new Iterator&lt;B&gt;() {
+&nbsp;            Iterator&lt;B&gt; delegate = new Iterator&lt;B&gt;() {
+&nbsp;                public boolean hasNext() {
+&nbsp;                    if (!a.hasNext()) {
+&nbsp;                        return false;
+&nbsp;                    } else {
+&nbsp;                        A o = (A)a.next();
+&nbsp;                        delegate = Iterators.&lt;B&gt;append1(g.get(o), this);
+&nbsp;                        return delegate.hasNext();
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                public B next() {
+&nbsp;                    if (!this.hasNext()) {
+&nbsp;                        throw new UnsupportedOperationException();
+&nbsp;                    } else {
+&nbsp;                        return (B)delegate.next();
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                public void remove() {
+&nbsp;                    throw new UnsupportedOperationException();
+&nbsp;                }
+&nbsp;            };
+&nbsp;
+&nbsp;            public boolean hasNext() {
+&nbsp;                return this.delegate.hasNext();
+&nbsp;            }
+&nbsp;
+&nbsp;            public B next() {
+&nbsp;                return (B)this.delegate.next();
+&nbsp;            }
+&nbsp;
+&nbsp;            public void remove() {
+&nbsp;                throw new UnsupportedOperationException();
+&nbsp;            }
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    public static &lt;A&gt; Iterator&lt;A&gt; recur(final A a, final Getter&lt;A, A&gt; g) {
+&nbsp;        return new Iterator&lt;A&gt;() {
+&nbsp;            Iterator&lt;A&gt; delegate = Iterators.&lt;A&gt;one(a);
+&nbsp;
+&nbsp;            public boolean hasNext() {
+&nbsp;                return this.delegate.hasNext();
+&nbsp;            }
+&nbsp;
+&nbsp;            public A next() {
+&nbsp;                A next = (A)this.delegate.next();
+&nbsp;                this.delegate = Iterators.&lt;A&gt;append(g.get(next), this.delegate);
+&nbsp;                return next;
+&nbsp;            }
+&nbsp;
+&nbsp;            public void remove() {
+&nbsp;                throw new UnsupportedOperationException();
+&nbsp;            }
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    public static &lt;T&gt; Iterator&lt;T&gt; append(Iterator&lt;T&gt; a, Iterator&lt;T&gt; b) {
+&nbsp;        return !b.hasNext() ? a : append1(a, b);
+&nbsp;    }
+&nbsp;
+&nbsp;    public static &lt;T&gt; Iterator&lt;T&gt; append1(final Iterator&lt;T&gt; a, final Iterator&lt;T&gt; b) {
+&nbsp;        return !a.hasNext() ? b : new Iterator&lt;T&gt;() {
+&nbsp;            public boolean hasNext() {
+&nbsp;                return a.hasNext() || b.hasNext();
+&nbsp;            }
+&nbsp;
+&nbsp;            public T next() {
+&nbsp;                if (a.hasNext()) {
+&nbsp;                    return (T)a.next();
+&nbsp;                } else if (b.hasNext()) {
+&nbsp;                    return (T)b.next();
+&nbsp;                } else {
+&nbsp;                    throw new NoSuchElementException();
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            public void remove() {
+&nbsp;                throw new UnsupportedOperationException();
+&nbsp;            }
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    public static &lt;T&gt; Iterator&lt;T&gt; snoc(final Iterator&lt;T&gt; first, final T last) {
+&nbsp;        return new Iterator&lt;T&gt;() {
+&nbsp;            T last1 = last;
+&nbsp;
+&nbsp;            public boolean hasNext() {
+&nbsp;                return first.hasNext() || this.last1 != null;
+&nbsp;            }
+&nbsp;
+&nbsp;            public T next() {
+&nbsp;                if (first.hasNext()) {
+&nbsp;                    return (T)first.next();
+&nbsp;                } else if (this.last1 == null) {
+&nbsp;                    throw new NoSuchElementException();
+&nbsp;                } else {
+&nbsp;                    T ret = this.last1;
+&nbsp;                    this.last1 = (T)null;
+&nbsp;                    return ret;
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            public void remove() {
+&nbsp;                throw new UnsupportedOperationException();
+&nbsp;            }
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    public static &lt;T&gt; Iterator&lt;T&gt; one(final T it) {
+&nbsp;        return new Iterator&lt;T&gt;() {
+&nbsp;            boolean avail = true;
+&nbsp;
+&nbsp;            public boolean hasNext() {
+&nbsp;                return this.avail;
+&nbsp;            }
+&nbsp;
+&nbsp;            public T next() {
+&nbsp;                if (!this.avail) {
+&nbsp;                    throw new NoSuchElementException();
+&nbsp;                } else {
+&nbsp;                    this.avail = false;
+&nbsp;                    return it;
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            public void remove() {
+&nbsp;                throw new UnsupportedOperationException();
+&nbsp;            }
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    public static class ResolvedTypeArrayIterator implements Iterator&lt;ResolvedType&gt; {
+&nbsp;        private ResolvedType[] array;
+&nbsp;        private int index;
+&nbsp;        private int len;
+&nbsp;        private boolean wantGenerics;
+&nbsp;        private List&lt;String&gt; alreadySeen;
+&nbsp;
+&nbsp;        public ResolvedTypeArrayIterator(ResolvedType[] array, List&lt;String&gt; alreadySeen, boolean wantGenerics) {
+&nbsp;            assert array != null;
+&nbsp;
+&nbsp;            this.array = array;
+&nbsp;            this.wantGenerics = wantGenerics;
+&nbsp;            this.len = array.length;
+&nbsp;            this.index = 0;
+&nbsp;            this.alreadySeen = alreadySeen;
+&nbsp;            this.moveToNextNewOne();
+&nbsp;        }
+&nbsp;
+&nbsp;        private void moveToNextNewOne() {
+&nbsp;            while(true) {
+&nbsp;                if (this.index &lt; this.len) {
+&nbsp;                    ResolvedType interfaceType = this.array[this.index];
+&nbsp;                    if (!this.wantGenerics &amp;&amp; interfaceType.isParameterizedOrGenericType()) {
+&nbsp;                        interfaceType = interfaceType.getRawType();
+&nbsp;                    }
+&nbsp;
+&nbsp;                    String signature = interfaceType.getSignature();
+&nbsp;                    if (this.alreadySeen.contains(signature)) {
+&nbsp;                        ++this.index;
+&nbsp;                        continue;
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                return;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean hasNext() {
+&nbsp;            return this.index &lt; this.len;
+&nbsp;        }
+&nbsp;
+&nbsp;        public ResolvedType next() {
+&nbsp;            if (this.index &gt;= this.len) {
+&nbsp;                throw new NoSuchElementException();
+&nbsp;            } else {
+&nbsp;                ResolvedType oo = this.array[this.index++];
+&nbsp;                if (!this.wantGenerics &amp;&amp; (oo.isParameterizedType() || oo.isGenericType())) {
+&nbsp;                    oo = oo.getRawType();
+&nbsp;                }
+&nbsp;
+&nbsp;                this.alreadySeen.add(oo.getSignature());
+&nbsp;                this.moveToNextNewOne();
+&nbsp;                return oo;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        public void remove() {
+&nbsp;            throw new UnsupportedOperationException();
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public interface Filter&lt;T&gt; {
+&nbsp;        Iterator&lt;T&gt; filter(Iterator&lt;T&gt; var1);
+&nbsp;    }
+&nbsp;
+&nbsp;    public interface Getter&lt;A, B&gt; {
+&nbsp;        Iterator&lt;B&gt; get(A var1);
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

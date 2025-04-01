@@ -5,7 +5,7 @@
 <html id="htmlId">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
-  <title>Coverage Report > AbstractTestDescriptor</title>
+  <title>Coverage Report > Attacher</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -19,10 +19,10 @@
 <div class="breadCrumbs">
 Current scope:     <a href="../../index.html">all classes</a>
     <span class="separator">|</span>
-    <a href="../index.html">org.junit.platform.engine.support.descriptor</a>
+    <a href="../index.html">net.bytebuddy.agent</a>
 </div>
 
-<h1>Coverage Summary for Class: AbstractTestDescriptor (org.junit.platform.engine.support.descriptor)</h1>
+<h1>Coverage Summary for Class: Attacher (net.bytebuddy.agent)</h1>
 
 <table class="coverageStats">
 <tr>
@@ -45,37 +45,37 @@ Current scope:     <a href="../../index.html">all classes</a>
 </th>
 </tr>
 <tr>
-  <td class="name">AbstractTestDescriptor</td>
+  <td class="name">Attacher</td>
 <td class="coverageStat">
   <span class="percent">
-    100%
+    0%
   </span>
   <span class="absValue">
-    (1/1)
+    (0/1)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    75%
+    0%
   </span>
   <span class="absValue">
-    (12/16)
+    (0/3)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    50%
+    0%
   </span>
   <span class="absValue">
-    (3/6)
+    (0/12)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    56.4%
+    0%
   </span>
   <span class="absValue">
-    (22/39)
+    (0/23)
   </span>
 </td>
 </tr>
@@ -92,111 +92,72 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;// (powered by FernFlower decompiler)
 &nbsp;//
 &nbsp;
-&nbsp;package org.junit.platform.engine.support.descriptor;
+&nbsp;package net.bytebuddy.agent;
 &nbsp;
-&nbsp;import java.util.Collections;
-&nbsp;import java.util.LinkedHashSet;
-&nbsp;import java.util.Optional;
-&nbsp;import java.util.Set;
-&nbsp;import org.apiguardian.api.API;
-&nbsp;import org.apiguardian.api.API.Status;
-&nbsp;import org.junit.platform.commons.util.Preconditions;
-&nbsp;import org.junit.platform.engine.TestDescriptor;
-&nbsp;import org.junit.platform.engine.TestSource;
-&nbsp;import org.junit.platform.engine.TestTag;
-&nbsp;import org.junit.platform.engine.UniqueId;
+&nbsp;import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+&nbsp;import java.io.FileOutputStream;
+&nbsp;import java.io.PrintStream;
+&nbsp;import java.lang.reflect.InvocationTargetException;
+&nbsp;import net.bytebuddy.agent.utility.nullability.MaybeNull;
 &nbsp;
-&nbsp;@API(
-&nbsp;    status = Status.STABLE,
-&nbsp;    since = &quot;1.0&quot;
-&nbsp;)
-&nbsp;public abstract class AbstractTestDescriptor implements TestDescriptor {
-&nbsp;    private final UniqueId uniqueId;
-&nbsp;    private final String displayName;
-&nbsp;    private final TestSource source;
-&nbsp;    private TestDescriptor parent;
-&nbsp;    protected final Set&lt;TestDescriptor&gt; children;
+&nbsp;public class Attacher {
+&nbsp;    public static final String DUMP_PROPERTY = &quot;net.bytebuddy.agent.attacher.dump&quot;;
 &nbsp;
-&nbsp;    protected AbstractTestDescriptor(UniqueId uniqueId, String displayName) {
-&nbsp;        this(uniqueId, displayName, (TestSource)null);
+&nbsp;    private Attacher() {
+&nbsp;        throw new UnsupportedOperationException(&quot;This class is a utility class and not supposed to be instantiated&quot;);
 &nbsp;    }
 &nbsp;
-&nbsp;    protected AbstractTestDescriptor(UniqueId uniqueId, String displayName, TestSource source) {
-&nbsp;        this.children = Collections.synchronizedSet(new LinkedHashSet(16));
-&nbsp;        this.uniqueId = (UniqueId)Preconditions.notNull(uniqueId, &quot;UniqueId must not be null&quot;);
-&nbsp;        this.displayName = Preconditions.notBlank(displayName, &quot;displayName must not be null or blank&quot;);
-&nbsp;        this.source = source;
-&nbsp;    }
+&nbsp;    @SuppressFBWarnings(
+&nbsp;        value = {&quot;REC_CATCH_EXCEPTION&quot;},
+&nbsp;        justification = &quot;Exception should not be rethrown but trigger a fallback.&quot;
+&nbsp;    )
+&nbsp;    public static void main(String[] args) {
+&nbsp;        try {
+&nbsp;            String argument;
+&nbsp;            if (args.length &gt;= 5 &amp;&amp; args[4].length() != 0) {
+&nbsp;                StringBuilder stringBuilder = new StringBuilder(args[4].substring(1));
 &nbsp;
-&nbsp;    public final UniqueId getUniqueId() {
-&nbsp;        return this.uniqueId;
-&nbsp;    }
+&nbsp;                for(int index = 5; index &lt; args.length; ++index) {
+&nbsp;                    stringBuilder.append(&#39; &#39;).append(args[index]);
+&nbsp;                }
 &nbsp;
-&nbsp;    public final String getDisplayName() {
-&nbsp;        return this.displayName;
-&nbsp;    }
+&nbsp;                argument = stringBuilder.toString();
+&nbsp;            } else {
+&nbsp;                argument = null;
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            install(Class.forName(args[0]), args[1], args[2], Boolean.parseBoolean(args[3]), argument);
+&nbsp;        } catch (Throwable var10) {
+&nbsp;            Throwable throwable = var10;
 &nbsp;
-&nbsp;    public Set&lt;TestTag&gt; getTags() {
-&nbsp;        return Collections.emptySet();
-&nbsp;    }
+&nbsp;            try {
+&nbsp;                String property = System.getProperty(&quot;net.bytebuddy.agent.attacher.dump&quot;);
+&nbsp;                if (property != null &amp;&amp; property.length() &gt; 0) {
+&nbsp;                    PrintStream outputStream = new PrintStream(new FileOutputStream(property, true), false, &quot;UTF-8&quot;);
 &nbsp;
-&nbsp;    public Optional&lt;TestSource&gt; getSource() {
-&nbsp;        return Optional.ofNullable(this.source);
-&nbsp;    }
+&nbsp;                    try {
+&nbsp;                        throwable.printStackTrace(outputStream);
+&nbsp;                    } finally {
+&nbsp;                        outputStream.close();
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;            } catch (Throwable var9) {</b>
+<b class="nc">&nbsp;            }</b>
 &nbsp;
-&nbsp;    public final Optional&lt;TestDescriptor&gt; getParent() {
-<b class="fc">&nbsp;        return Optional.ofNullable(this.parent);</b>
+<b class="nc">&nbsp;            System.exit(1);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
 &nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected static void install(Class&lt;?&gt; virtualMachineType, String processId, String agent, boolean isNative, @MaybeNull String argument) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+<b class="nc">&nbsp;        Object virtualMachineInstance = virtualMachineType.getMethod(&quot;attach&quot;, String.class).invoke((Object)null, processId);</b>
 &nbsp;
-&nbsp;    public final void setParent(TestDescriptor parent) {
-&nbsp;        this.parent = parent;
-&nbsp;    }
-&nbsp;
-&nbsp;    public final Set&lt;? extends TestDescriptor&gt; getChildren() {
-&nbsp;        return Collections.unmodifiableSet(this.children);
-&nbsp;    }
-&nbsp;
-&nbsp;    public void addChild(TestDescriptor child) {
-&nbsp;        Preconditions.notNull(child, &quot;child must not be null&quot;);
-<b class="fc">&nbsp;        child.setParent(this);</b>
-&nbsp;        this.children.add(child);
-&nbsp;    }
-&nbsp;
-&nbsp;    public void removeChild(TestDescriptor child) {
-&nbsp;        Preconditions.notNull(child, &quot;child must not be null&quot;);
-&nbsp;        this.children.remove(child);
-&nbsp;        child.setParent((TestDescriptor)null);
-&nbsp;    }
-&nbsp;
-&nbsp;    public void removeFromHierarchy() {
-&nbsp;        Preconditions.condition(!this.isRoot(), &quot;cannot remove the root of a hierarchy&quot;);
-&nbsp;        this.parent.removeChild(this);
-&nbsp;        this.children.forEach((child) -&gt; child.setParent((TestDescriptor)null));
-&nbsp;        this.children.clear();
-<b class="fc">&nbsp;    }</b>
-<b class="fc">&nbsp;</b>
-<b class="fc">&nbsp;    public Optional&lt;? extends TestDescriptor&gt; findByUniqueId(UniqueId uniqueId) {</b>
-<b class="fc">&nbsp;        Preconditions.notNull(uniqueId, &quot;UniqueId must not be null&quot;);</b>
-&nbsp;        return this.getUniqueId().equals(uniqueId) ? Optional.of(this) : (Optional)this.children.stream().map((child) -&gt; child.findByUniqueId(uniqueId)).filter(Optional::isPresent).findAny().orElse(Optional.empty());
-&nbsp;    }
-&nbsp;
-&nbsp;    public final int hashCode() {
-<b class="fc">&nbsp;        return this.uniqueId.hashCode();</b>
-&nbsp;    }
-&nbsp;
-&nbsp;    public final boolean equals(Object other) {
-&nbsp;        if (other == null) {
-<b class="fc">&nbsp;            return false;</b>
-&nbsp;        } else if (this.getClass() != other.getClass()) {
-&nbsp;            return false;
-&nbsp;        } else {
-&nbsp;            TestDescriptor that = (TestDescriptor)other;
-<b class="fc">&nbsp;            return this.getUniqueId().equals(that.getUniqueId());</b>
+&nbsp;        try {
+<b class="nc">&nbsp;            virtualMachineType.getMethod(isNative ? &quot;loadAgentPath&quot; : &quot;loadAgent&quot;, String.class, String.class).invoke(virtualMachineInstance, agent, argument);</b>
+<b class="nc">&nbsp;        } finally {</b>
+<b class="nc">&nbsp;            virtualMachineType.getMethod(&quot;detach&quot;).invoke(virtualMachineInstance);</b>
 &nbsp;        }
-&nbsp;    }
-&nbsp;
-&nbsp;    public String toString() {
-<b class="fc">&nbsp;        return this.getClass().getSimpleName() + &quot;: &quot; + this.getUniqueId();</b>
+<b class="nc">&nbsp;</b>
 &nbsp;    }
 &nbsp;}
 </code>
@@ -222,7 +183,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2025-03-20 13:44</div>
+    <div style="float:right;">generated on 2025-03-31 20:57</div>
 </div>
 </body>
 </html>

@@ -1,0 +1,586 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > AbstractEntityManagerFactoryBean</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.orm.jpa</a>
+</div>
+
+<h1>Coverage Summary for Class: AbstractEntityManagerFactoryBean (org.springframework.orm.jpa)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AbstractEntityManagerFactoryBean</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    31.7%
+  </span>
+  <span class="absValue">
+    (13/41)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    17.8%
+  </span>
+  <span class="absValue">
+    (16/90)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    32.6%
+  </span>
+  <span class="absValue">
+    (45/138)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.orm.jpa;
+&nbsp;
+&nbsp;import jakarta.persistence.EntityManager;
+&nbsp;import jakarta.persistence.EntityManagerFactory;
+&nbsp;import jakarta.persistence.PersistenceException;
+&nbsp;import jakarta.persistence.Query;
+&nbsp;import jakarta.persistence.SynchronizationType;
+&nbsp;import jakarta.persistence.spi.PersistenceProvider;
+&nbsp;import jakarta.persistence.spi.PersistenceUnitInfo;
+&nbsp;import java.io.IOException;
+&nbsp;import java.io.NotSerializableException;
+&nbsp;import java.io.ObjectInputStream;
+&nbsp;import java.io.ObjectStreamException;
+&nbsp;import java.io.Serializable;
+&nbsp;import java.lang.reflect.InvocationHandler;
+&nbsp;import java.lang.reflect.InvocationTargetException;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;import java.lang.reflect.Proxy;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.LinkedHashSet;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Properties;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.concurrent.ExecutionException;
+&nbsp;import java.util.concurrent.Future;
+&nbsp;import java.util.function.Consumer;
+&nbsp;import javax.sql.DataSource;
+&nbsp;import org.apache.commons.logging.Log;
+&nbsp;import org.apache.commons.logging.LogFactory;
+&nbsp;import org.springframework.beans.BeanUtils;
+&nbsp;import org.springframework.beans.factory.BeanClassLoaderAware;
+&nbsp;import org.springframework.beans.factory.BeanFactory;
+&nbsp;import org.springframework.beans.factory.BeanFactoryAware;
+&nbsp;import org.springframework.beans.factory.BeanNameAware;
+&nbsp;import org.springframework.beans.factory.DisposableBean;
+&nbsp;import org.springframework.beans.factory.FactoryBean;
+&nbsp;import org.springframework.beans.factory.InitializingBean;
+&nbsp;import org.springframework.beans.factory.SmartInitializingSingleton;
+&nbsp;import org.springframework.core.task.AsyncTaskExecutor;
+&nbsp;import org.springframework.dao.DataAccessException;
+&nbsp;import org.springframework.dao.support.PersistenceExceptionTranslator;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.ClassUtils;
+&nbsp;import org.springframework.util.CollectionUtils;
+&nbsp;
+&nbsp;public abstract class AbstractEntityManagerFactoryBean implements FactoryBean&lt;EntityManagerFactory&gt;, BeanClassLoaderAware, BeanFactoryAware, BeanNameAware, InitializingBean, SmartInitializingSingleton, DisposableBean, EntityManagerFactoryInfo, PersistenceExceptionTranslator, Serializable {
+&nbsp;    protected final Log logger = LogFactory.getLog(this.getClass());
+&nbsp;    @Nullable
+&nbsp;    private PersistenceProvider persistenceProvider;
+&nbsp;    @Nullable
+&nbsp;    private String persistenceUnitName;
+&nbsp;    private final Map&lt;String, Object&gt; jpaPropertyMap = new HashMap();
+&nbsp;    @Nullable
+&nbsp;    private Class&lt;? extends EntityManagerFactory&gt; entityManagerFactoryInterface;
+&nbsp;    @Nullable
+&nbsp;    private Class&lt;? extends EntityManager&gt; entityManagerInterface;
+&nbsp;    @Nullable
+&nbsp;    private JpaDialect jpaDialect;
+&nbsp;    @Nullable
+&nbsp;    private JpaVendorAdapter jpaVendorAdapter;
+&nbsp;    @Nullable
+&nbsp;    private Consumer&lt;EntityManager&gt; entityManagerInitializer;
+&nbsp;    @Nullable
+&nbsp;    private AsyncTaskExecutor bootstrapExecutor;
+&nbsp;    private ClassLoader beanClassLoader = this.getClass().getClassLoader();
+&nbsp;    @Nullable
+&nbsp;    private BeanFactory beanFactory;
+&nbsp;    @Nullable
+&nbsp;    private String beanName;
+&nbsp;    @Nullable
+&nbsp;    private EntityManagerFactory nativeEntityManagerFactory;
+&nbsp;    @Nullable
+&nbsp;    private Future&lt;EntityManagerFactory&gt; nativeEntityManagerFactoryFuture;
+&nbsp;    @Nullable
+&nbsp;    private EntityManagerFactory entityManagerFactory;
+&nbsp;
+&nbsp;    public AbstractEntityManagerFactoryBean() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setPersistenceProviderClass(Class&lt;? extends PersistenceProvider&gt; persistenceProviderClass) {
+&nbsp;        this.persistenceProvider = (PersistenceProvider)BeanUtils.instantiateClass(persistenceProviderClass);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setPersistenceProvider(@Nullable PersistenceProvider persistenceProvider) {
+&nbsp;        this.persistenceProvider = persistenceProvider;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    @Nullable
+&nbsp;    public PersistenceProvider getPersistenceProvider() {
+&nbsp;        return this.persistenceProvider;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public void setPersistenceUnitName(@Nullable String persistenceUnitName) {</b>
+&nbsp;        this.persistenceUnitName = persistenceUnitName;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public String getPersistenceUnitName() {
+&nbsp;        return this.persistenceUnitName;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public void setJpaProperties(Properties jpaProperties) {
+&nbsp;        CollectionUtils.mergePropertiesIntoMap(jpaProperties, this.jpaPropertyMap);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setJpaPropertyMap(@Nullable Map&lt;String, ?&gt; jpaProperties) {
+&nbsp;        if (jpaProperties != null) {
+&nbsp;            this.jpaPropertyMap.putAll(jpaProperties);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public Map&lt;String, Object&gt; getJpaPropertyMap() {
+&nbsp;        return this.jpaPropertyMap;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setEntityManagerFactoryInterface(Class&lt;? extends EntityManagerFactory&gt; emfInterface) {
+&nbsp;        this.entityManagerFactoryInterface = emfInterface;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public void setEntityManagerInterface(@Nullable Class&lt;? extends EntityManager&gt; emInterface) {</b>
+&nbsp;        this.entityManagerInterface = emInterface;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public Class&lt;? extends EntityManager&gt; getEntityManagerInterface() {
+&nbsp;        return this.entityManagerInterface;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setJpaDialect(@Nullable JpaDialect jpaDialect) {
+&nbsp;        this.jpaDialect = jpaDialect;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public JpaDialect getJpaDialect() {
+&nbsp;        return this.jpaDialect;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setJpaVendorAdapter(@Nullable JpaVendorAdapter jpaVendorAdapter) {
+&nbsp;        this.jpaVendorAdapter = jpaVendorAdapter;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public JpaVendorAdapter getJpaVendorAdapter() {
+&nbsp;        return this.jpaVendorAdapter;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setEntityManagerInitializer(Consumer&lt;EntityManager&gt; entityManagerInitializer) {
+&nbsp;        this.entityManagerInitializer = entityManagerInitializer;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void setBootstrapExecutor(@Nullable AsyncTaskExecutor bootstrapExecutor) {</b>
+&nbsp;        this.bootstrapExecutor = bootstrapExecutor;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public AsyncTaskExecutor getBootstrapExecutor() {
+&nbsp;        return this.bootstrapExecutor;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setBeanClassLoader(ClassLoader classLoader) {
+&nbsp;        this.beanClassLoader = classLoader;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public ClassLoader getBeanClassLoader() {</b>
+&nbsp;        return this.beanClassLoader;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setBeanFactory(BeanFactory beanFactory) {
+&nbsp;        this.beanFactory = beanFactory;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void setBeanName(String name) {
+&nbsp;        this.beanName = name;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void afterPropertiesSet() throws PersistenceException {
+&nbsp;        JpaVendorAdapter jpaVendorAdapter = this.getJpaVendorAdapter();
+&nbsp;        if (jpaVendorAdapter != null) {
+&nbsp;            if (this.persistenceProvider == null) {
+&nbsp;                this.persistenceProvider = jpaVendorAdapter.getPersistenceProvider();
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            PersistenceUnitInfo pui = this.getPersistenceUnitInfo();
+&nbsp;            Map&lt;String, ?&gt; vendorPropertyMap = pui != null ? jpaVendorAdapter.getJpaPropertyMap(pui) : jpaVendorAdapter.getJpaPropertyMap();
+&nbsp;            if (!CollectionUtils.isEmpty(vendorPropertyMap)) {
+&nbsp;                vendorPropertyMap.forEach((key, value) -&gt; {
+<b class="fc">&nbsp;                    if (!this.jpaPropertyMap.containsKey(key)) {</b>
+&nbsp;                        this.jpaPropertyMap.put(key, value);
+&nbsp;                    }
+&nbsp;
+&nbsp;                });
+&nbsp;            }
+&nbsp;
+&nbsp;            if (this.entityManagerFactoryInterface == null) {
+&nbsp;                this.entityManagerFactoryInterface = jpaVendorAdapter.getEntityManagerFactoryInterface();
+&nbsp;                if (!ClassUtils.isVisible(this.entityManagerFactoryInterface, this.beanClassLoader)) {
+&nbsp;                    this.entityManagerFactoryInterface = EntityManagerFactory.class;
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            if (this.entityManagerInterface == null) {
+&nbsp;                this.entityManagerInterface = jpaVendorAdapter.getEntityManagerInterface();
+&nbsp;                if (!ClassUtils.isVisible(this.entityManagerInterface, this.beanClassLoader)) {
+&nbsp;                    this.entityManagerInterface = EntityManager.class;
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            if (this.jpaDialect == null) {
+&nbsp;                this.jpaDialect = jpaVendorAdapter.getJpaDialect();
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        AsyncTaskExecutor bootstrapExecutor = this.getBootstrapExecutor();
+&nbsp;        if (bootstrapExecutor != null) {
+&nbsp;            this.nativeEntityManagerFactoryFuture = bootstrapExecutor.submit(this::buildNativeEntityManagerFactory);
+&nbsp;        } else {
+&nbsp;            this.nativeEntityManagerFactory = this.buildNativeEntityManagerFactory();
+&nbsp;        }
+&nbsp;
+&nbsp;        this.entityManagerFactory = this.createEntityManagerFactoryProxy(this.nativeEntityManagerFactory);
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public void afterSingletonsInstantiated() {
+&nbsp;        this.getNativeEntityManagerFactory();
+&nbsp;    }
+&nbsp;
+&nbsp;    private EntityManagerFactory buildNativeEntityManagerFactory() {
+&nbsp;        EntityManagerFactory emf;
+&nbsp;        try {
+&nbsp;            emf = this.createNativeEntityManagerFactory();
+&nbsp;        } catch (PersistenceException var6) {
+&nbsp;            PersistenceException ex = var6;
+&nbsp;            if (var6.getClass() == PersistenceException.class) {
+<b class="nc">&nbsp;                Throwable cause = var6.getCause();</b>
+&nbsp;                if (cause != null) {
+&nbsp;                    String message = var6.getMessage();
+&nbsp;                    String causeString = cause.toString();
+&nbsp;                    if (message != null &amp;&amp; !message.endsWith(causeString)) {
+&nbsp;                        ex = new PersistenceException(message + &quot;; nested exception is &quot; + causeString, cause);
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            if (this.logger.isErrorEnabled()) {
+&nbsp;                this.logger.error(&quot;Failed to initialize JPA EntityManagerFactory: &quot; + ex.getMessage());
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            throw ex;
+&nbsp;        }
+&nbsp;
+&nbsp;        JpaVendorAdapter jpaVendorAdapter = this.getJpaVendorAdapter();
+&nbsp;        if (jpaVendorAdapter != null) {
+<b class="nc">&nbsp;            jpaVendorAdapter.postProcessEntityManagerFactory(emf);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        if (this.logger.isInfoEnabled()) {
+&nbsp;            this.logger.info(&quot;Initialized JPA EntityManagerFactory for persistence unit &#39;&quot; + this.getPersistenceUnitName() + &quot;&#39;&quot;);
+&nbsp;        }
+&nbsp;
+&nbsp;        return emf;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected EntityManagerFactory createEntityManagerFactoryProxy(@Nullable EntityManagerFactory emf) {
+<b class="nc">&nbsp;        Set&lt;Class&lt;?&gt;&gt; ifcs = new LinkedHashSet();</b>
+&nbsp;        Class&lt;?&gt; entityManagerFactoryInterface = this.entityManagerFactoryInterface;
+&nbsp;        if (entityManagerFactoryInterface != null) {
+&nbsp;            ifcs.add(entityManagerFactoryInterface);
+&nbsp;        } else if (emf != null) {
+&nbsp;            ifcs.addAll(ClassUtils.getAllInterfacesForClassAsSet(emf.getClass(), this.beanClassLoader));
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            ifcs.add(EntityManagerFactory.class);
+&nbsp;        }
+&nbsp;
+&nbsp;        ifcs.add(EntityManagerFactoryInfo.class);
+&nbsp;
+&nbsp;        try {
+&nbsp;            return (EntityManagerFactory)Proxy.newProxyInstance(this.beanClassLoader, ClassUtils.toClassArray(ifcs), new ManagedEntityManagerFactoryInvocationHandler(this));
+&nbsp;        } catch (IllegalArgumentException ex) {
+&nbsp;            if (entityManagerFactoryInterface != null) {
+<b class="fc">&nbsp;                throw new IllegalStateException(&quot;EntityManagerFactory interface [&quot; + String.valueOf(entityManagerFactoryInterface) + &quot;] seems to conflict with Spring&#39;s EntityManagerFactoryInfo mixin - consider resetting the &#39;entityManagerFactoryInterface&#39; property to plain [jakarta.persistence.EntityManagerFactory]&quot;, ex);</b>
+&nbsp;            } else {
+&nbsp;                throw new IllegalStateException(&quot;Conflicting EntityManagerFactory interfaces - consider specifying the &#39;jpaVendorAdapter&#39; or &#39;entityManagerFactoryInterface&#39; property to select a specific EntityManagerFactory interface to proceed with&quot;, ex);
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    Object invokeProxyMethod(Method method, @Nullable Object[] args) throws Throwable {
+&nbsp;        if (method.getDeclaringClass().isAssignableFrom(EntityManagerFactoryInfo.class)) {
+<b class="fc">&nbsp;            return method.invoke(this, args);</b>
+&nbsp;        } else if (method.getName().equals(&quot;createEntityManager&quot;) &amp;&amp; args != null &amp;&amp; args.length &gt; 0 &amp;&amp; args[0] == SynchronizationType.SYNCHRONIZED) {
+&nbsp;            EntityManager rawEntityManager = args.length &gt; 1 ? this.getNativeEntityManagerFactory().createEntityManager((Map)args[1]) : this.getNativeEntityManagerFactory().createEntityManager();
+&nbsp;            this.postProcessEntityManager(rawEntityManager);
+&nbsp;            return ExtendedEntityManagerCreator.createApplicationManagedEntityManager(rawEntityManager, this, true);
+&nbsp;        } else {
+&nbsp;            if (args != null) {
+&nbsp;                for(int i = 0; i &lt; args.length; ++i) {
+&nbsp;                    Object arg = args[i];
+&nbsp;                    if (arg instanceof Query) {
+&nbsp;                        Query query = (Query)arg;
+&nbsp;                        if (Proxy.isProxyClass(arg.getClass())) {
+&nbsp;                            try {
+&nbsp;                                args[i] = query.unwrap((Class)null);
+<b class="nc">&nbsp;                            } catch (RuntimeException var7) {</b>
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            Object retVal = method.invoke(this.getNativeEntityManagerFactory(), args);
+&nbsp;            if (retVal instanceof EntityManager) {
+&nbsp;                EntityManager rawEntityManager = (EntityManager)retVal;
+&nbsp;                this.postProcessEntityManager(rawEntityManager);
+&nbsp;                retVal = ExtendedEntityManagerCreator.createApplicationManagedEntityManager(rawEntityManager, this, false);
+&nbsp;            }
+&nbsp;
+&nbsp;            return retVal;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected abstract EntityManagerFactory createNativeEntityManagerFactory() throws PersistenceException;</b>
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public DataAccessException translateExceptionIfPossible(RuntimeException ex) {
+&nbsp;        JpaDialect jpaDialect = this.getJpaDialect();
+&nbsp;        return jpaDialect != null ? jpaDialect.translateExceptionIfPossible(ex) : EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(ex);
+&nbsp;    }
+&nbsp;
+&nbsp;    public EntityManagerFactory getNativeEntityManagerFactory() {
+<b class="fc">&nbsp;        if (this.nativeEntityManagerFactory != null) {</b>
+&nbsp;            return this.nativeEntityManagerFactory;
+&nbsp;        } else {
+&nbsp;            Assert.state(this.nativeEntityManagerFactoryFuture != null, &quot;No native EntityManagerFactory available&quot;);
+&nbsp;
+<b class="fc">&nbsp;            try {</b>
+&nbsp;                return (EntityManagerFactory)this.nativeEntityManagerFactoryFuture.get();
+&nbsp;            } catch (InterruptedException ex) {
+&nbsp;                Thread.currentThread().interrupt();
+&nbsp;                throw new IllegalStateException(&quot;Interrupted during initialization of native EntityManagerFactory&quot;, ex);
+<b class="nc">&nbsp;            } catch (ExecutionException ex) {</b>
+&nbsp;                Throwable cause = ex.getCause();
+&nbsp;                if (cause instanceof PersistenceException) {
+&nbsp;                    PersistenceException persistenceException = (PersistenceException)cause;
+&nbsp;                    throw persistenceException;
+<b class="fc">&nbsp;                } else {</b>
+&nbsp;                    throw new IllegalStateException(&quot;Failed to asynchronously initialize native EntityManagerFactory: &quot; + ex.getMessage(), cause);
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public EntityManager createNativeEntityManager(@Nullable Map&lt;?, ?&gt; properties) {
+&nbsp;        EntityManager rawEntityManager = !CollectionUtils.isEmpty(properties) ? this.getNativeEntityManagerFactory().createEntityManager(properties) : this.getNativeEntityManagerFactory().createEntityManager();
+&nbsp;        this.postProcessEntityManager(rawEntityManager);
+&nbsp;        return rawEntityManager;
+<b class="fc">&nbsp;    }</b>
+<b class="pc">&nbsp;</b>
+<b class="pc">&nbsp;    protected void postProcessEntityManager(EntityManager rawEntityManager) {</b>
+<b class="fc">&nbsp;        JpaVendorAdapter jpaVendorAdapter = this.getJpaVendorAdapter();</b>
+&nbsp;        if (jpaVendorAdapter != null) {
+<b class="fc">&nbsp;            jpaVendorAdapter.postProcessEntityManager(rawEntityManager);</b>
+<b class="pc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+<b class="pc">&nbsp;        Consumer&lt;EntityManager&gt; customizer = this.entityManagerInitializer;</b>
+<b class="fc">&nbsp;        if (customizer != null) {</b>
+<b class="pc">&nbsp;            customizer.accept(rawEntityManager);</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+<b class="pc">&nbsp;    @Nullable</b>
+<b class="fc">&nbsp;    public PersistenceUnitInfo getPersistenceUnitInfo() {</b>
+<b class="pc">&nbsp;        return null;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    @Nullable
+<b class="pc">&nbsp;    public DataSource getDataSource() {</b>
+<b class="fc">&nbsp;        return null;</b>
+<b class="pc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    @Nullable
+&nbsp;    public EntityManagerFactory getObject() {
+<b class="pc">&nbsp;        return this.entityManagerFactory;</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public Class&lt;? extends EntityManagerFactory&gt; getObjectType() {
+&nbsp;        return this.entityManagerFactory != null ? this.entityManagerFactory.getClass() : EntityManagerFactory.class;
+<b class="fc">&nbsp;    }</b>
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;    public boolean isSingleton() {</b>
+&nbsp;        return true;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public void destroy() {
+&nbsp;        if (this.entityManagerFactory != null) {
+&nbsp;            if (this.logger.isInfoEnabled()) {
+&nbsp;                this.logger.info(&quot;Closing JPA EntityManagerFactory for persistence unit &#39;&quot; + this.getPersistenceUnitName() + &quot;&#39;&quot;);
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            this.entityManagerFactory.close();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
+<b class="nc">&nbsp;        throw new NotSerializableException(&quot;An EntityManagerFactoryBean itself is not deserializable - just a SerializedEntityManagerFactoryBeanReference is&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Object writeReplace() throws ObjectStreamException {
+&nbsp;        if (this.beanFactory != null &amp;&amp; this.beanName != null) {
+&nbsp;            return new SerializedEntityManagerFactoryBeanReference(this.beanFactory, this.beanName);
+<b class="fc">&nbsp;        } else {</b>
+&nbsp;            throw new NotSerializableException(&quot;EntityManagerFactoryBean does not run within a BeanFactory&quot;);
+&nbsp;        }
+<b class="pc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private static class SerializedEntityManagerFactoryBeanReference implements Serializable {
+&nbsp;        private final BeanFactory beanFactory;
+<b class="fc">&nbsp;        private final String lookupName;</b>
+<b class="pc">&nbsp;</b>
+<b class="fc">&nbsp;        public SerializedEntityManagerFactoryBeanReference(BeanFactory beanFactory, String beanName) {</b>
+<b class="fc">&nbsp;            this.beanFactory = beanFactory;</b>
+<b class="pc">&nbsp;            this.lookupName = &quot;&amp;&quot; + beanName;</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        private Object readResolve() {
+&nbsp;            return this.beanFactory.getBean(this.lookupName, AbstractEntityManagerFactoryBean.class);
+<b class="pc">&nbsp;        }</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private static class ManagedEntityManagerFactoryInvocationHandler implements InvocationHandler, Serializable {
+&nbsp;        private final AbstractEntityManagerFactoryBean entityManagerFactoryBean;
+&nbsp;
+<b class="nc">&nbsp;        public ManagedEntityManagerFactoryInvocationHandler(AbstractEntityManagerFactoryBean emfb) {</b>
+<b class="nc">&nbsp;            this.entityManagerFactoryBean = emfb;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        @Nullable
+<b class="nc">&nbsp;        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {</b>
+<b class="nc">&nbsp;            switch (method.getName()) {</b>
+&nbsp;                case &quot;equals&quot;:
+<b class="nc">&nbsp;                    return proxy == args[0];</b>
+&nbsp;                case &quot;hashCode&quot;:
+&nbsp;                    return System.identityHashCode(proxy);
+&nbsp;                case &quot;unwrap&quot;:
+&nbsp;                    Class&lt;?&gt; targetClass = (Class)args[0];
+&nbsp;                    if (targetClass == null) {
+&nbsp;                        return this.entityManagerFactoryBean.getNativeEntityManagerFactory();
+&nbsp;                    } else if (targetClass.isInstance(proxy)) {
+&nbsp;                        return proxy;
+&nbsp;                    }
+&nbsp;                default:
+<b class="nc">&nbsp;                    try {</b>
+<b class="nc">&nbsp;                        return this.entityManagerFactoryBean.invokeProxyMethod(method, args);</b>
+<b class="nc">&nbsp;                    } catch (InvocationTargetException ex) {</b>
+<b class="nc">&nbsp;                        throw ex.getTargetException();</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                case &quot;getName&quot;:</b>
+<b class="nc">&nbsp;                    return this.entityManagerFactoryBean.getPersistenceUnitName();</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
+</div>
+</body>
+</html>

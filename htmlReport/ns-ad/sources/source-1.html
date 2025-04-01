@@ -5,7 +5,7 @@
 <html id="htmlId">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
-  <title>Coverage Report > IOUtil</title>
+  <title>Coverage Report > Tomcat</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -19,10 +19,10 @@
 <div class="breadCrumbs">
 Current scope:     <a href="../../index.html">all classes</a>
     <span class="separator">|</span>
-    <a href="../index.html">org.mockito.internal.util.io</a>
+    <a href="../index.html">org.apache.catalina.startup</a>
 </div>
 
-<h1>Coverage Summary for Class: IOUtil (org.mockito.internal.util.io)</h1>
+<h1>Coverage Summary for Class: Tomcat (org.apache.catalina.startup)</h1>
 
 <table class="coverageStats">
 <tr>
@@ -45,37 +45,37 @@ Current scope:     <a href="../../index.html">all classes</a>
 </th>
 </tr>
 <tr>
-  <td class="name">IOUtil</td>
+  <td class="name">Tomcat</td>
 <td class="coverageStat">
   <span class="percent">
-    100%
+    0%
   </span>
   <span class="absValue">
-    (1/1)
+    (0/1)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    75%
+    0%
   </span>
   <span class="absValue">
-    (3/4)
+    (0/48)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    75%
+    0%
   </span>
   <span class="absValue">
-    (3/4)
+    (0/120)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    50%
+    0%
   </span>
   <span class="absValue">
-    (7/14)
+    (0/307)
   </span>
 </td>
 </tr>
@@ -92,73 +92,754 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;// (powered by FernFlower decompiler)
 &nbsp;//
 &nbsp;
-&nbsp;package org.mockito.internal.util.io;
+&nbsp;package org.apache.catalina.startup;
 &nbsp;
-&nbsp;import java.io.BufferedReader;
-&nbsp;import java.io.Closeable;
+&nbsp;import jakarta.servlet.Servlet;
+&nbsp;import jakarta.servlet.ServletException;
+&nbsp;import jakarta.servlet.annotation.WebServlet;
 &nbsp;import java.io.File;
+&nbsp;import java.io.FileInputStream;
 &nbsp;import java.io.FileOutputStream;
 &nbsp;import java.io.IOException;
 &nbsp;import java.io.InputStream;
-&nbsp;import java.io.InputStreamReader;
-&nbsp;import java.io.OutputStreamWriter;
-&nbsp;import java.nio.charset.StandardCharsets;
-&nbsp;import java.util.Collection;
-&nbsp;import java.util.LinkedList;
+&nbsp;import java.io.OutputStream;
+&nbsp;import java.net.MalformedURLException;
+&nbsp;import java.net.URL;
+&nbsp;import java.net.URLConnection;
+&nbsp;import java.security.Principal;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.HashMap;
 &nbsp;import java.util.List;
-&nbsp;import org.mockito.exceptions.base.MockitoException;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Properties;
+&nbsp;import java.util.jar.JarEntry;
+&nbsp;import java.util.jar.JarFile;
+&nbsp;import java.util.logging.Level;
+&nbsp;import java.util.logging.LogManager;
+&nbsp;import java.util.logging.Logger;
+&nbsp;import org.apache.catalina.Container;
+&nbsp;import org.apache.catalina.Context;
+&nbsp;import org.apache.catalina.Engine;
+&nbsp;import org.apache.catalina.Host;
+&nbsp;import org.apache.catalina.LifecycleEvent;
+&nbsp;import org.apache.catalina.LifecycleException;
+&nbsp;import org.apache.catalina.LifecycleListener;
+&nbsp;import org.apache.catalina.Realm;
+&nbsp;import org.apache.catalina.Server;
+&nbsp;import org.apache.catalina.Service;
+&nbsp;import org.apache.catalina.Wrapper;
+&nbsp;import org.apache.catalina.authenticator.NonLoginAuthenticator;
+&nbsp;import org.apache.catalina.connector.Connector;
+&nbsp;import org.apache.catalina.core.ContainerBase;
+&nbsp;import org.apache.catalina.core.NamingContextListener;
+&nbsp;import org.apache.catalina.core.StandardContext;
+&nbsp;import org.apache.catalina.core.StandardEngine;
+&nbsp;import org.apache.catalina.core.StandardHost;
+&nbsp;import org.apache.catalina.core.StandardServer;
+&nbsp;import org.apache.catalina.core.StandardService;
+&nbsp;import org.apache.catalina.core.StandardWrapper;
+&nbsp;import org.apache.catalina.realm.GenericPrincipal;
+&nbsp;import org.apache.catalina.realm.RealmBase;
+&nbsp;import org.apache.catalina.security.SecurityClassLoad;
+&nbsp;import org.apache.catalina.util.ContextName;
+&nbsp;import org.apache.catalina.util.IOTools;
+&nbsp;import org.apache.tomcat.util.ExceptionUtils;
+&nbsp;import org.apache.tomcat.util.buf.UriUtil;
+&nbsp;import org.apache.tomcat.util.compat.JreCompat;
+&nbsp;import org.apache.tomcat.util.descriptor.web.LoginConfig;
+&nbsp;import org.apache.tomcat.util.file.ConfigFileLoader;
+&nbsp;import org.apache.tomcat.util.file.ConfigurationSource;
+&nbsp;import org.apache.tomcat.util.modeler.Registry;
+&nbsp;import org.apache.tomcat.util.res.StringManager;
 &nbsp;
-&nbsp;public final class IOUtil {
-&nbsp;    public static void writeText(String text, File output) {
-&nbsp;        OutputStreamWriter pw = null;
+&nbsp;public class Tomcat {
+&nbsp;    private static final StringManager sm = StringManager.getManager(Tomcat.class);
+&nbsp;    private final Map&lt;String, Logger&gt; pinnedLoggers = new HashMap();
+&nbsp;    protected Server server;
+&nbsp;    protected int port = 8080;
+&nbsp;    protected String hostname = &quot;localhost&quot;;
+&nbsp;    protected String basedir;
+&nbsp;    private final Map&lt;String, String&gt; userPass = new HashMap();
+&nbsp;    private final Map&lt;String, List&lt;String&gt;&gt; userRoles = new HashMap();
+&nbsp;    private final Map&lt;String, Principal&gt; userPrincipals = new HashMap();
+&nbsp;    private boolean addDefaultWebXmlToWebapp = true;
+&nbsp;    static final String[] silences = new String[]{&quot;org.apache.coyote.http11.Http11NioProtocol&quot;, &quot;org.apache.catalina.core.StandardService&quot;, &quot;org.apache.catalina.core.StandardEngine&quot;, &quot;org.apache.catalina.startup.ContextConfig&quot;, &quot;org.apache.catalina.core.ApplicationContext&quot;, &quot;org.apache.catalina.core.AprLifecycleListener&quot;, &quot;org.apache.catalina.core.OpenSSLLifecycleListener&quot;};
+&nbsp;    private boolean silent = false;
 &nbsp;
-&nbsp;        try {
-&nbsp;            pw = new OutputStreamWriter(new FileOutputStream(output), StandardCharsets.UTF_8);
-&nbsp;            pw.write(text);
-&nbsp;        } catch (Exception e) {
-&nbsp;            throw new MockitoException(&quot;Problems writing text to file: &quot; + String.valueOf(output), e);
-<b class="nc">&nbsp;        } finally {</b>
-&nbsp;            close(pw);
+&nbsp;    public Tomcat() {
+&nbsp;        ExceptionUtils.preload();
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setBaseDir(String basedir) {
+&nbsp;        this.basedir = basedir;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setPort(int port) {
+&nbsp;        this.port = port;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setHostname(String s) {
+&nbsp;        this.hostname = s;
+&nbsp;    }
+&nbsp;
+&nbsp;    public Context addWebapp(String contextPath, String docBase) {
+&nbsp;        return this.addWebapp(this.getHost(), contextPath, docBase);
+&nbsp;    }
+&nbsp;
+&nbsp;    public Context addWebapp(String contextPath, URL source) throws IOException {
+&nbsp;        ContextName cn = new ContextName(contextPath, (String)null);
+&nbsp;        Host h = this.getHost();
+&nbsp;        if (h.findChild(cn.getName()) != null) {
+&nbsp;            throw new IllegalArgumentException(sm.getString(&quot;tomcat.addWebapp.conflictChild&quot;, new Object[]{source, contextPath, cn.getName()}));
+&nbsp;        } else {
+&nbsp;            File targetWar = new File(h.getAppBaseFile(), cn.getBaseName() + &quot;.war&quot;);
+&nbsp;            File targetDir = new File(h.getAppBaseFile(), cn.getBaseName());
+&nbsp;            if (targetWar.exists()) {
+&nbsp;                throw new IllegalArgumentException(sm.getString(&quot;tomcat.addWebapp.conflictFile&quot;, new Object[]{source, contextPath, targetWar.getAbsolutePath()}));
+&nbsp;            } else if (targetDir.exists()) {
+&nbsp;                throw new IllegalArgumentException(sm.getString(&quot;tomcat.addWebapp.conflictFile&quot;, new Object[]{source, contextPath, targetDir.getAbsolutePath()}));
+&nbsp;            } else {
+&nbsp;                URLConnection uConn = source.openConnection();
+&nbsp;
+&nbsp;                try (
+&nbsp;                    InputStream is = uConn.getInputStream();
+&nbsp;                    OutputStream os = new FileOutputStream(targetWar);
+&nbsp;                ) {
+&nbsp;                    IOTools.flow(is, os);
+&nbsp;                }
+&nbsp;
+&nbsp;                return this.addWebapp(contextPath, targetWar.getAbsolutePath());
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public Context addContext(String contextPath, String docBase) {
+&nbsp;        return this.addContext(this.getHost(), contextPath, docBase);
+&nbsp;    }
+&nbsp;
+&nbsp;    public Wrapper addServlet(String contextPath, String servletName, String servletClass) {
+&nbsp;        Container ctx = this.getHost().findChild(contextPath);
+&nbsp;        return addServlet((Context)ctx, servletName, servletClass);
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Wrapper addServlet(Context ctx, String servletName, String servletClass) {
+&nbsp;        Wrapper sw = ctx.createWrapper();
+&nbsp;        if (sw == null) {
+<b class="nc">&nbsp;            throw new IllegalStateException(sm.getString(&quot;tomcat.noWrapper&quot;));</b>
+&nbsp;        } else {
+&nbsp;            sw.setServletClass(servletClass);
+&nbsp;            sw.setName(servletName);
+&nbsp;            ctx.addChild(sw);
+&nbsp;            return sw;
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public Wrapper addServlet(String contextPath, String servletName, Servlet servlet) {
+&nbsp;        Container ctx = this.getHost().findChild(contextPath);
+<b class="nc">&nbsp;        return addServlet((Context)ctx, servletName, servlet);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public static Wrapper addServlet(Context ctx, String servletName, Servlet servlet) {
+<b class="nc">&nbsp;        Wrapper sw = new ExistingStandardWrapper(servlet);</b>
+<b class="nc">&nbsp;        sw.setName(servletName);</b>
+<b class="nc">&nbsp;        ctx.addChild(sw);</b>
+&nbsp;        return sw;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public void init(ConfigurationSource source) {</b>
+<b class="nc">&nbsp;        this.init(source, (String[])null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void init(ConfigurationSource source, String[] catalinaArguments) {
+&nbsp;        ConfigFileLoader.setSource(source);
+&nbsp;        this.addDefaultWebXmlToWebapp = false;
+&nbsp;        Catalina catalina = new Catalina();
+&nbsp;        if (catalinaArguments == null) {
+&nbsp;            catalina.load();
+&nbsp;        } else {
+&nbsp;            catalina.load(catalinaArguments);
+&nbsp;        }
+&nbsp;
+&nbsp;        this.server = catalina.getServer();
+&nbsp;    }
+&nbsp;
+&nbsp;    public void init() throws LifecycleException {
+&nbsp;        this.getServer();
+&nbsp;        this.server.init();
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void start() throws LifecycleException {</b>
+&nbsp;        this.getServer();
+&nbsp;        this.server.start();
+&nbsp;    }
+&nbsp;
+&nbsp;    public void stop() throws LifecycleException {
+&nbsp;        this.getServer();
+&nbsp;        this.server.stop();
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void destroy() throws LifecycleException {
+&nbsp;        this.getServer();
+&nbsp;        this.server.destroy();
+&nbsp;    }
+&nbsp;
+&nbsp;    public void addUser(String user, String pass) {
+&nbsp;        this.userPass.put(user, pass);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void addRole(String user, String role) {
+&nbsp;        ((List)this.userRoles.computeIfAbsent(user, (k) -&gt; new ArrayList())).add(role);
+&nbsp;    }
+&nbsp;
+&nbsp;    public Connector getConnector() {
+&nbsp;        Service service = this.getService();
+&nbsp;        if (service.findConnectors().length &gt; 0) {
+&nbsp;            return service.findConnectors()[0];
+&nbsp;        } else {
+&nbsp;            Connector connector = new Connector(&quot;HTTP/1.1&quot;);
+&nbsp;            connector.setPort(this.port);
+&nbsp;            service.addConnector(connector);
+&nbsp;            return connector;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setConnector(Connector connector) {
+<b class="nc">&nbsp;        Service service = this.getService();</b>
+&nbsp;        boolean found = false;
+&nbsp;
+&nbsp;        for(Connector serviceConnector : service.findConnectors()) {
+&nbsp;            if (connector == serviceConnector) {
+&nbsp;                found = true;
+&nbsp;                break;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        if (!found) {
+&nbsp;            service.addConnector(connector);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public Service getService() {
+&nbsp;        return this.getServer().findServices()[0];
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void setHost(Host host) {
+&nbsp;        Engine engine = this.getEngine();
+<b class="nc">&nbsp;        boolean found = false;</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        for(Container engineHost : engine.findChildren()) {</b>
+<b class="nc">&nbsp;            if (engineHost == host) {</b>
+&nbsp;                found = true;
+&nbsp;                break;
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        if (!found) {
+<b class="nc">&nbsp;            engine.addChild(host);</b>
 <b class="nc">&nbsp;        }</b>
 <b class="nc">&nbsp;</b>
 &nbsp;    }
 <b class="nc">&nbsp;</b>
-&nbsp;    public static Collection&lt;String&gt; readLines(InputStream is) {
-<b class="nc">&nbsp;        List&lt;String&gt; out = new LinkedList();</b>
-&nbsp;        BufferedReader r = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
+<b class="nc">&nbsp;    public Host getHost() {</b>
+<b class="nc">&nbsp;        Engine engine = this.getEngine();</b>
+&nbsp;        if (engine.findChildren().length &gt; 0) {
+&nbsp;            return (Host)engine.findChildren()[0];
+&nbsp;        } else {
+<b class="nc">&nbsp;            Host host = new StandardHost();</b>
+&nbsp;            host.setName(this.hostname);
+<b class="nc">&nbsp;            this.getEngine().addChild(host);</b>
+<b class="nc">&nbsp;            return host;</b>
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public Engine getEngine() {
+&nbsp;        Service service = this.getServer().findServices()[0];
+&nbsp;        if (service.getContainer() != null) {
+&nbsp;            return service.getContainer();
+&nbsp;        } else {
+&nbsp;            Engine engine = new StandardEngine();
+&nbsp;            engine.setName(&quot;Tomcat&quot;);
+&nbsp;            engine.setDefaultHost(this.hostname);
+&nbsp;            engine.setRealm(this.createDefaultRealm());
+&nbsp;            service.setContainer(engine);
+&nbsp;            return engine;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public Server getServer() {
+&nbsp;        if (this.server != null) {
+&nbsp;            return this.server;
+&nbsp;        } else {
+&nbsp;            System.setProperty(&quot;catalina.useNaming&quot;, &quot;false&quot;);
+&nbsp;            this.server = new StandardServer();
+&nbsp;            this.initBaseDir();
+&nbsp;            ConfigFileLoader.setSource(new CatalinaBaseConfigurationSource(new File(this.basedir), (String)null));
+&nbsp;            this.server.setPort(-1);
+&nbsp;            Service service = new StandardService();
+&nbsp;            service.setName(&quot;Tomcat&quot;);
+&nbsp;            this.server.addService(service);
+&nbsp;            return this.server;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public Context addContext(Host host, String contextPath, String dir) {
+&nbsp;        return this.addContext(host, contextPath, contextPath, dir);
+&nbsp;    }
+&nbsp;
+&nbsp;    public Context addContext(Host host, String contextPath, String contextName, String dir) {
+&nbsp;        this.silence(host, contextName);
+&nbsp;        Context ctx = this.createContext(host, contextPath);
+<b class="nc">&nbsp;        ctx.setName(contextName);</b>
+&nbsp;        ctx.setPath(contextPath);
+&nbsp;        ctx.setDocBase(dir);
+&nbsp;        ctx.addLifecycleListener(new FixContextListener());
+&nbsp;        if (host == null) {
+&nbsp;            this.getHost().addChild(ctx);
+&nbsp;        } else {
+&nbsp;            host.addChild(ctx);
+&nbsp;        }
+&nbsp;
+&nbsp;        return ctx;
+&nbsp;    }
+&nbsp;
+&nbsp;    public Context addWebapp(Host host, String contextPath, String docBase) {
+&nbsp;        LifecycleListener listener = null;
 &nbsp;
 &nbsp;        try {
-&nbsp;            String line;
-&nbsp;            while((line = r.readLine()) != null) {
-&nbsp;                out.add(line);
-&nbsp;            }
-<b class="fc">&nbsp;</b>
-<b class="fc">&nbsp;            return out;</b>
-&nbsp;        } catch (IOException e) {
-&nbsp;            throw new MockitoException(&quot;Problems reading from: &quot; + String.valueOf(is), e);
-<b class="fc">&nbsp;        }</b>
-<b class="fc">&nbsp;    }</b>
-&nbsp;
-&nbsp;    public static void closeQuietly(Closeable closeable) {
-<b class="nc">&nbsp;        try {</b>
-&nbsp;            close(closeable);
-<b class="fc">&nbsp;        } catch (MockitoException var2) {</b>
-&nbsp;        }
-&nbsp;
+&nbsp;            Class&lt;?&gt; clazz = Class.forName(this.getHost().getConfigClass());
+&nbsp;            listener = (LifecycleListener)clazz.getConstructor().newInstance();
+&nbsp;        } catch (ReflectiveOperationException e) {
+&nbsp;            throw new IllegalArgumentException(e);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return this.addWebapp(host, contextPath, docBase, listener);
 &nbsp;    }
 &nbsp;
-&nbsp;    public static void close(Closeable closeable) {
-&nbsp;        if (closeable != null) {
+&nbsp;    public Context addWebapp(Host host, String contextPath, String docBase, LifecycleListener config) {
+&nbsp;        this.silence(host, contextPath);
+&nbsp;        Context ctx = this.createContext(host, contextPath);
+&nbsp;        ctx.setPath(contextPath);
+&nbsp;        ctx.setDocBase(docBase);
+&nbsp;        if (this.addDefaultWebXmlToWebapp) {
+&nbsp;            ctx.addLifecycleListener(this.getDefaultWebXmlListener());
+&nbsp;        }
+&nbsp;
+&nbsp;        ctx.setConfigFile(this.getWebappConfigFile(docBase, contextPath));
+<b class="nc">&nbsp;        ctx.addLifecycleListener(config);</b>
+<b class="nc">&nbsp;        if (this.addDefaultWebXmlToWebapp &amp;&amp; config instanceof ContextConfig) {</b>
+<b class="nc">&nbsp;            ((ContextConfig)config).setDefaultWebXml(this.noDefaultWebXmlPath());</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if (host == null) {</b>
+<b class="nc">&nbsp;            this.getHost().addChild(ctx);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            host.addChild(ctx);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        return ctx;
+&nbsp;    }
+&nbsp;
+&nbsp;    public LifecycleListener getDefaultWebXmlListener() {
+&nbsp;        return new DefaultWebXmlListener();
+&nbsp;    }
+&nbsp;
+&nbsp;    public String noDefaultWebXmlPath() {
+&nbsp;        return &quot;org/apache/catalina/startup/NO_DEFAULT_XML&quot;;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected Realm createDefaultRealm() {</b>
+&nbsp;        return new SimpleRealm();
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void initBaseDir() {
+&nbsp;        String catalinaHome = System.getProperty(&quot;catalina.home&quot;);
+&nbsp;        if (this.basedir == null) {
+&nbsp;            this.basedir = System.getProperty(&quot;catalina.base&quot;);
+&nbsp;        }
+&nbsp;
+&nbsp;        if (this.basedir == null) {
+&nbsp;            this.basedir = catalinaHome;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if (this.basedir == null) {</b>
+<b class="nc">&nbsp;            String var10001 = System.getProperty(&quot;user.dir&quot;);</b>
+<b class="nc">&nbsp;            this.basedir = var10001 + &quot;/tomcat.&quot; + this.port;</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        File baseFile = new File(this.basedir);
+&nbsp;        if (baseFile.exists()) {
+&nbsp;            if (!baseFile.isDirectory()) {
+&nbsp;                throw new IllegalArgumentException(sm.getString(&quot;tomcat.baseDirNotDir&quot;, new Object[]{baseFile}));
+&nbsp;            }
+&nbsp;        } else if (!baseFile.mkdirs()) {
+&nbsp;            throw new IllegalStateException(sm.getString(&quot;tomcat.baseDirMakeFail&quot;, new Object[]{baseFile}));
+&nbsp;        }
+&nbsp;
+&nbsp;        try {
+&nbsp;            baseFile = baseFile.getCanonicalFile();
+<b class="nc">&nbsp;        } catch (IOException var6) {</b>
+&nbsp;            baseFile = baseFile.getAbsoluteFile();
+&nbsp;        }
+&nbsp;
+&nbsp;        this.server.setCatalinaBase(baseFile);
+&nbsp;        System.setProperty(&quot;catalina.base&quot;, baseFile.getPath());
+&nbsp;        this.basedir = baseFile.getPath();
+&nbsp;        if (catalinaHome == null) {
+&nbsp;            this.server.setCatalinaHome(baseFile);
+&nbsp;        } else {
+&nbsp;            File homeFile = new File(catalinaHome);
+&nbsp;            if (!homeFile.isDirectory() &amp;&amp; !homeFile.mkdirs()) {
+<b class="nc">&nbsp;                throw new IllegalStateException(sm.getString(&quot;tomcat.homeDirMakeFail&quot;, new Object[]{homeFile}));</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
 &nbsp;            try {
-&nbsp;                closeable.close();
-&nbsp;            } catch (IOException e) {
-<b class="fc">&nbsp;                throw new MockitoException(&quot;Problems closing stream: &quot; + String.valueOf(closeable), e);</b>
+&nbsp;                homeFile = homeFile.getCanonicalFile();
+<b class="nc">&nbsp;            } catch (IOException var5) {</b>
+<b class="nc">&nbsp;                homeFile = homeFile.getAbsoluteFile();</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            this.server.setCatalinaHome(homeFile);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        System.setProperty(&quot;catalina.home&quot;, this.server.getCatalinaHome().getPath());
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setSilent(boolean silent) {
+&nbsp;        this.silent = silent;
+&nbsp;
+&nbsp;        for(String s : silences) {
+&nbsp;            Logger logger = Logger.getLogger(s);
+&nbsp;            this.pinnedLoggers.put(s, logger);
+<b class="nc">&nbsp;            if (silent) {</b>
+<b class="nc">&nbsp;                logger.setLevel(Level.WARNING);</b>
+&nbsp;            } else {
+&nbsp;                logger.setLevel(Level.INFO);
 &nbsp;            }
 &nbsp;        }
 &nbsp;
 &nbsp;    }
 &nbsp;
-&nbsp;    private IOUtil() {
+&nbsp;    private void silence(Host host, String contextPath) {
+&nbsp;        String loggerName = this.getLoggerName(host, contextPath);
+<b class="nc">&nbsp;        Logger logger = Logger.getLogger(loggerName);</b>
+<b class="nc">&nbsp;        this.pinnedLoggers.put(loggerName, logger);</b>
+&nbsp;        if (this.silent) {
+&nbsp;            logger.setLevel(Level.WARNING);
+&nbsp;        } else {
+&nbsp;            logger.setLevel(Level.INFO);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void setAddDefaultWebXmlToWebapp(boolean addDefaultWebXmlToWebapp) {</b>
+<b class="nc">&nbsp;        this.addDefaultWebXmlToWebapp = addDefaultWebXmlToWebapp;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private String getLoggerName(Host host, String contextName) {
+&nbsp;        if (host == null) {
+&nbsp;            host = this.getHost();
+&nbsp;        }
+&nbsp;
+&nbsp;        StringBuilder loggerName = new StringBuilder();
+&nbsp;        loggerName.append(ContainerBase.class.getName());
+<b class="nc">&nbsp;        loggerName.append(&quot;.[&quot;);</b>
+<b class="nc">&nbsp;        loggerName.append(host.getParent().getName());</b>
+&nbsp;        loggerName.append(&quot;].[&quot;);
+&nbsp;        loggerName.append(host.getName());
+&nbsp;        loggerName.append(&quot;].[&quot;);
+&nbsp;        if (contextName != null &amp;&amp; !contextName.equals(&quot;&quot;)) {
+&nbsp;            if (contextName.startsWith(&quot;##&quot;)) {
+&nbsp;                loggerName.append(&#39;/&#39;);
+&nbsp;                loggerName.append(contextName);
+&nbsp;            }
+&nbsp;        } else {
+&nbsp;            loggerName.append(&#39;/&#39;);
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        loggerName.append(&#39;]&#39;);
+&nbsp;        return loggerName.toString();
+&nbsp;    }
+&nbsp;
+&nbsp;    private Context createContext(Host host, String url) {
+&nbsp;        String defaultContextClass = StandardContext.class.getName();
+&nbsp;        String contextClass = StandardContext.class.getName();
+&nbsp;        if (host == null) {
+&nbsp;            host = this.getHost();
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        if (host instanceof StandardHost) {
+&nbsp;            contextClass = ((StandardHost)host).getContextClass();
+&nbsp;        }
+&nbsp;
+&nbsp;        try {
+&nbsp;            return (Context)(defaultContextClass.equals(contextClass) ? new StandardContext() : (Context)Class.forName(contextClass).getConstructor().newInstance());
+&nbsp;        } catch (IllegalArgumentException | SecurityException | ReflectiveOperationException e) {
+&nbsp;            throw new IllegalArgumentException(sm.getString(&quot;tomcat.noContextClass&quot;, new Object[]{contextClass, host, url}), e);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void enableNaming() {
+&nbsp;        this.getServer();
+<b class="nc">&nbsp;        this.server.addLifecycleListener(new NamingContextListener());</b>
+<b class="nc">&nbsp;        System.setProperty(&quot;catalina.useNaming&quot;, &quot;true&quot;);</b>
+<b class="nc">&nbsp;        String value = &quot;org.apache.naming&quot;;</b>
+&nbsp;        String oldValue = System.getProperty(&quot;java.naming.factory.url.pkgs&quot;);
+&nbsp;        if (oldValue != null) {
+&nbsp;            if (oldValue.contains(value)) {
+<b class="nc">&nbsp;                value = oldValue;</b>
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                value = value + &quot;:&quot; + oldValue;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        System.setProperty(&quot;java.naming.factory.url.pkgs&quot;, value);
+&nbsp;        value = System.getProperty(&quot;java.naming.factory.initial&quot;);
+&nbsp;        if (value == null) {
+&nbsp;            System.setProperty(&quot;java.naming.factory.initial&quot;, &quot;org.apache.naming.java.javaURLContextFactory&quot;);
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void initWebappDefaults(String contextPath) {</b>
+<b class="nc">&nbsp;        Container ctx = this.getHost().findChild(contextPath);</b>
+<b class="nc">&nbsp;        initWebappDefaults((Context)ctx);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void initWebappDefaults(Context ctx) {
+<b class="nc">&nbsp;        Wrapper servlet = addServlet(ctx, &quot;default&quot;, &quot;org.apache.catalina.servlets.DefaultServlet&quot;);</b>
+<b class="nc">&nbsp;        servlet.setLoadOnStartup(1);</b>
+&nbsp;        servlet.setOverridable(true);
+&nbsp;        servlet = addServlet(ctx, &quot;jsp&quot;, &quot;org.apache.jasper.servlet.JspServlet&quot;);
+&nbsp;        servlet.addInitParameter(&quot;fork&quot;, &quot;false&quot;);
+&nbsp;        servlet.setLoadOnStartup(3);
+&nbsp;        servlet.setOverridable(true);
+&nbsp;        ctx.addServletMappingDecoded(&quot;/&quot;, &quot;default&quot;);
+&nbsp;        ctx.addServletMappingDecoded(&quot;*.jsp&quot;, &quot;jsp&quot;);
+&nbsp;        ctx.addServletMappingDecoded(&quot;*.jspx&quot;, &quot;jsp&quot;);
+&nbsp;        ctx.setSessionTimeout(30);
+<b class="nc">&nbsp;        addDefaultMimeTypeMappings(ctx);</b>
+&nbsp;        ctx.addWelcomeFile(&quot;index.html&quot;);
+&nbsp;        ctx.addWelcomeFile(&quot;index.htm&quot;);
+&nbsp;        ctx.addWelcomeFile(&quot;index.jsp&quot;);
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void addDefaultMimeTypeMappings(Context context) {
+&nbsp;        Properties defaultMimeMappings = new Properties();
+&nbsp;
+&nbsp;        try {
+<b class="nc">&nbsp;            try (InputStream is = Tomcat.class.getResourceAsStream(&quot;MimeTypeMappings.properties&quot;)) {</b>
+<b class="nc">&nbsp;                defaultMimeMappings.load(is);</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                for(Map.Entry&lt;Object, Object&gt; entry : defaultMimeMappings.entrySet()) {</b>
+<b class="nc">&nbsp;                    context.addMimeMapping((String)entry.getKey(), (String)entry.getValue());</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;        } catch (IOException e) {</b>
+<b class="nc">&nbsp;            throw new IllegalStateException(sm.getString(&quot;tomcat.defaultMimeTypeMappingsFail&quot;), e);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected URL getWebappConfigFile(String path, String contextName) {
+<b class="nc">&nbsp;        File docBase = new File(path);</b>
+<b class="nc">&nbsp;        return docBase.isDirectory() ? this.getWebappConfigFileFromDirectory(docBase, contextName) : this.getWebappConfigFileFromWar(docBase, contextName);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private URL getWebappConfigFileFromDirectory(File docBase, String contextName) {
+<b class="nc">&nbsp;        URL result = null;</b>
+<b class="nc">&nbsp;        File webAppContextXml = new File(docBase, &quot;META-INF/context.xml&quot;);</b>
+<b class="nc">&nbsp;        if (webAppContextXml.exists()) {</b>
+<b class="nc">&nbsp;            try {</b>
+&nbsp;                result = webAppContextXml.toURI().toURL();
+&nbsp;            } catch (MalformedURLException e) {
+&nbsp;                Logger.getLogger(this.getLoggerName(this.getHost(), contextName)).log(Level.WARNING, sm.getString(&quot;tomcat.noContextXml&quot;, new Object[]{docBase}), e);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return result;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private URL getWebappConfigFileFromWar(File docBase, String contextName) {</b>
+<b class="nc">&nbsp;        URL result = null;</b>
+&nbsp;
+<b class="nc">&nbsp;        try (JarFile jar = new JarFile(docBase)) {</b>
+<b class="nc">&nbsp;            JarEntry entry = jar.getJarEntry(&quot;META-INF/context.xml&quot;);</b>
+<b class="nc">&nbsp;            if (entry != null) {</b>
+<b class="nc">&nbsp;                result = UriUtil.buildJarUrl(docBase, &quot;META-INF/context.xml&quot;);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        } catch (IOException e) {</b>
+&nbsp;            Logger.getLogger(this.getLoggerName(this.getHost(), contextName)).log(Level.WARNING, sm.getString(&quot;tomcat.noContextXml&quot;, new Object[]{docBase}), e);
+&nbsp;        }
+&nbsp;
+&nbsp;        return result;
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void main(String[] args) throws Exception {
+&nbsp;        String[] catalinaArguments = null;
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; args.length; ++i) {</b>
+<b class="nc">&nbsp;            if (args[i].equals(&quot;--no-jmx&quot;)) {</b>
+&nbsp;                Registry.disableRegistry();
+&nbsp;            } else if (args[i].equals(&quot;--catalina&quot;)) {
+<b class="nc">&nbsp;                ArrayList&lt;String&gt; result = new ArrayList();</b>
+&nbsp;
+<b class="nc">&nbsp;                for(int j = i + 1; j &lt; args.length; ++j) {</b>
+&nbsp;                    result.add(args[j]);
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                catalinaArguments = (String[])result.toArray(new String[0]);
+<b class="nc">&nbsp;                break;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        SecurityClassLoad.securityClassLoad(Thread.currentThread().getContextClassLoader());</b>
+<b class="nc">&nbsp;        Tomcat tomcat = new Tomcat();</b>
+<b class="nc">&nbsp;        tomcat.init((ConfigurationSource)null, catalinaArguments);</b>
+<b class="nc">&nbsp;        boolean await = false;</b>
+&nbsp;        String path = &quot;&quot;;
+&nbsp;
+&nbsp;        for(int i = 0; i &lt; args.length; ++i) {
+&nbsp;            if (args[i].equals(&quot;--war&quot;)) {
+&nbsp;                ++i;
+&nbsp;                if (i &gt;= args.length) {
+&nbsp;                    throw new IllegalArgumentException(sm.getString(&quot;tomcat.invalidCommandLine&quot;, new Object[]{args[i - 1]}));
+&nbsp;                }
+&nbsp;
+&nbsp;                File war = new File(args[i]);
+&nbsp;                tomcat.addWebapp(path, war.getAbsolutePath());
+&nbsp;            } else if (args[i].equals(&quot;--path&quot;)) {
+<b class="nc">&nbsp;                ++i;</b>
+&nbsp;                if (i &gt;= args.length) {
+&nbsp;                    throw new IllegalArgumentException(sm.getString(&quot;tomcat.invalidCommandLine&quot;, new Object[]{args[i - 1]}));
+&nbsp;                }
+&nbsp;
+&nbsp;                path = args[i];
+&nbsp;            } else if (args[i].equals(&quot;--await&quot;)) {
+&nbsp;                await = true;
+&nbsp;            } else if (!args[i].equals(&quot;--no-jmx&quot;)) {
+&nbsp;                if (!args[i].equals(&quot;--catalina&quot;)) {
+&nbsp;                    throw new IllegalArgumentException(sm.getString(&quot;tomcat.invalidCommandLine&quot;, new Object[]{args[i]}));
+&nbsp;                }
+&nbsp;                break;
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        tomcat.start();</b>
+<b class="nc">&nbsp;        if (await) {</b>
+<b class="nc">&nbsp;            tomcat.getServer().await();</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    static {
+<b class="nc">&nbsp;        if (JreCompat.isGraalAvailable()) {</b>
+&nbsp;            try (InputStream is = new FileInputStream(new File(System.getProperty(&quot;java.util.logging.config.file&quot;, &quot;conf/logging.properties&quot;)))) {
+<b class="nc">&nbsp;                LogManager.getLogManager().readConfiguration(is);</b>
+&nbsp;            } catch (IOException | SecurityException var5) {
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private class SimpleRealm extends RealmBase {
+&nbsp;        private SimpleRealm() {
+&nbsp;        }
+&nbsp;
+&nbsp;        protected String getPassword(String username) {
+&nbsp;            return (String)Tomcat.this.userPass.get(username);
+&nbsp;        }
+&nbsp;
+&nbsp;        protected Principal getPrincipal(String username) {
+&nbsp;            Principal p = (Principal)Tomcat.this.userPrincipals.get(username);
+&nbsp;            if (p == null) {
+&nbsp;                String pass = (String)Tomcat.this.userPass.get(username);
+<b class="nc">&nbsp;                if (pass != null) {</b>
+&nbsp;                    p = new GenericPrincipal(username, (List)Tomcat.this.userRoles.get(username));
+<b class="nc">&nbsp;                    Tomcat.this.userPrincipals.put(username, p);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            return p;
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public static class FixContextListener implements LifecycleListener {</b>
+&nbsp;        public FixContextListener() {
+&nbsp;        }
+&nbsp;
+&nbsp;        public void lifecycleEvent(LifecycleEvent event) {
+&nbsp;            try {
+&nbsp;                Context context = (Context)event.getLifecycle();
+&nbsp;                if (event.getType().equals(&quot;configure_start&quot;)) {
+&nbsp;                    context.setConfigured(true);
+&nbsp;                    WebAnnotationSet.loadApplicationAnnotations(context);
+&nbsp;                    if (context.getLoginConfig() == null) {
+&nbsp;                        context.setLoginConfig(new LoginConfig(&quot;NONE&quot;, (String)null, (String)null, (String)null));
+&nbsp;                        context.getPipeline().addValve(new NonLoginAuthenticator());
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            } catch (ClassCastException var3) {
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static class DefaultWebXmlListener implements LifecycleListener {
+<b class="nc">&nbsp;        public DefaultWebXmlListener() {</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        public void lifecycleEvent(LifecycleEvent event) {</b>
+<b class="nc">&nbsp;            if (&quot;before_start&quot;.equals(event.getType())) {</b>
+&nbsp;                Tomcat.initWebappDefaults((Context)event.getLifecycle());
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public static class ExistingStandardWrapper extends StandardWrapper {
+<b class="nc">&nbsp;        private final Servlet existing;</b>
+&nbsp;
+<b class="nc">&nbsp;        public ExistingStandardWrapper(Servlet existing) {</b>
+&nbsp;            this.existing = existing;
+<b class="nc">&nbsp;            this.asyncSupported = hasAsync(existing);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        private static boolean hasAsync(Servlet existing) {</b>
+<b class="nc">&nbsp;            boolean result = false;</b>
+&nbsp;            Class&lt;?&gt; clazz = existing.getClass();
+<b class="nc">&nbsp;            WebServlet ws = (WebServlet)clazz.getAnnotation(WebServlet.class);</b>
+&nbsp;            if (ws != null) {
+&nbsp;                result = ws.asyncSupported();
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            return result;
+&nbsp;        }
+&nbsp;
+&nbsp;        public synchronized Servlet loadServlet() throws ServletException {
+&nbsp;            if (!this.instanceInitialized) {
+&nbsp;                this.existing.init(this.facade);
+&nbsp;                this.instanceInitialized = true;
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            return this.existing;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public long getAvailable() {
+&nbsp;            return 0L;
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean isUnavailable() {
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public Servlet getServlet() {
+&nbsp;            return this.existing;
+&nbsp;        }
+&nbsp;
+&nbsp;        public String getServletClass() {
+&nbsp;            return this.existing.getClass().getName();
+&nbsp;        }
 &nbsp;    }
 &nbsp;}
 </code>
@@ -184,7 +865,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2025-03-20 13:43</div>
+    <div style="float:right;">generated on 2025-03-31 21:00</div>
 </div>
 </body>
 </html>

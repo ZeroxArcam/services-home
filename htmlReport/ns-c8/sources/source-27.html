@@ -1,0 +1,523 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > Dump</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.aspectj.weaver</a>
+</div>
+
+<h1>Coverage Summary for Class: Dump (org.aspectj.weaver)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+</tr>
+  <tr>
+    <td class="name">Dump$INode</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.aspectj.weaver;
+&nbsp;
+&nbsp;import java.io.File;
+&nbsp;import java.io.FileOutputStream;
+&nbsp;import java.io.PrintStream;
+&nbsp;import java.net.URL;
+&nbsp;import java.text.SimpleDateFormat;
+&nbsp;import java.util.Date;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Properties;
+&nbsp;import org.aspectj.bridge.IMessage;
+&nbsp;import org.aspectj.bridge.IMessageHolder;
+&nbsp;import org.aspectj.bridge.Version;
+&nbsp;import org.aspectj.weaver.tools.Trace;
+&nbsp;import org.aspectj.weaver.tools.TraceFactory;
+&nbsp;import org.aspectj.weaver.tools.Traceable;
+&nbsp;
+&nbsp;public class Dump {
+&nbsp;    public static final String DUMP_CONDITION_PROPERTY = &quot;org.aspectj.weaver.Dump.condition&quot;;
+&nbsp;    public static final String DUMP_DIRECTORY_PROPERTY = &quot;org.aspectj.dump.directory&quot;;
+&nbsp;    private static final String FILENAME_PREFIX = &quot;ajcore&quot;;
+&nbsp;    private static final String FILENAME_SUFFIX = &quot;txt&quot;;
+&nbsp;    public static final String UNKNOWN_FILENAME = &quot;Unknown&quot;;
+&nbsp;    public static final String DUMP_EXCLUDED = &quot;Excluded&quot;;
+&nbsp;    public static final String NULL_OR_EMPTY = &quot;Empty&quot;;
+&nbsp;    private static Class&lt;?&gt; exceptionClass;
+&nbsp;    private static IMessage.Kind conditionKind;
+&nbsp;    private static File directory;
+&nbsp;    private String reason;
+&nbsp;    private String fileName;
+&nbsp;    private PrintStream print;
+&nbsp;    private static String[] savedCommandLine;
+&nbsp;    private static List&lt;String&gt; savedFullClasspath;
+&nbsp;    private static IMessageHolder savedMessageHolder;
+&nbsp;    private static String lastDumpFileName;
+&nbsp;    private static boolean preserveOnNextReset;
+&nbsp;    private static Trace trace;
+&nbsp;
+&nbsp;    public static void preserveOnNextReset() {
+&nbsp;        preserveOnNextReset = true;
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void reset() {
+&nbsp;        if (preserveOnNextReset) {
+&nbsp;            preserveOnNextReset = false;
+&nbsp;        } else {
+&nbsp;            savedMessageHolder = null;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static String dump(String reason) {
+&nbsp;        String fileName = &quot;Unknown&quot;;
+&nbsp;        Dump dump = null;
+&nbsp;
+&nbsp;        try {
+&nbsp;            dump = new Dump(reason);
+&nbsp;            fileName = dump.getFileName();
+&nbsp;            dump.dumpDefault();
+&nbsp;        } finally {
+&nbsp;            if (dump != null) {
+&nbsp;                dump.close();
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;
+&nbsp;        return fileName;
+&nbsp;    }
+&nbsp;
+&nbsp;    public static String dumpWithException(Throwable th) {
+&nbsp;        return dumpWithException(savedMessageHolder, th);
+&nbsp;    }
+&nbsp;
+&nbsp;    public static String dumpWithException(IMessageHolder messageHolder, Throwable th) {
+&nbsp;        if (!getDumpOnException()) {
+&nbsp;            return null;
+&nbsp;        } else {
+&nbsp;            if (trace.isTraceEnabled()) {
+&nbsp;                trace.enter(&quot;dumpWithException&quot;, (Object)null, new Object[]{messageHolder, th});
+&nbsp;            }
+&nbsp;
+&nbsp;            String fileName = &quot;Unknown&quot;;
+&nbsp;            Dump dump = null;
+&nbsp;
+&nbsp;            try {
+&nbsp;                dump = new Dump(th.getClass().getName());
+&nbsp;                fileName = dump.getFileName();
+&nbsp;                dump.dumpException(messageHolder, th);
+&nbsp;            } finally {
+&nbsp;                if (dump != null) {
+&nbsp;                    dump.close();
+&nbsp;                }
+&nbsp;
+&nbsp;            }
+&nbsp;
+&nbsp;            if (trace.isTraceEnabled()) {
+&nbsp;                trace.exit(&quot;dumpWithException&quot;, fileName);
+&nbsp;            }
+&nbsp;
+&nbsp;            return fileName;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static String dumpOnExit() {
+&nbsp;        return dumpOnExit(savedMessageHolder, false);
+&nbsp;    }
+&nbsp;
+&nbsp;    public static String dumpOnExit(IMessageHolder messageHolder, boolean reset) {
+&nbsp;        if (!getDumpOnException()) {
+&nbsp;            return null;
+&nbsp;        } else {
+&nbsp;            if (trace.isTraceEnabled()) {
+&nbsp;                trace.enter(&quot;dumpOnExit&quot;, (Object)null, messageHolder);
+&nbsp;            }
+&nbsp;
+&nbsp;            String fileName = &quot;Unknown&quot;;
+&nbsp;            if (!shouldDumpOnExit(messageHolder)) {
+&nbsp;                fileName = &quot;Excluded&quot;;
+&nbsp;            } else {
+&nbsp;                Dump dump = null;
+&nbsp;
+&nbsp;                try {
+&nbsp;                    dump = new Dump(conditionKind.toString());
+&nbsp;                    fileName = dump.getFileName();
+&nbsp;                    dump.dumpDefault(messageHolder);
+&nbsp;                } finally {
+&nbsp;                    if (dump != null) {
+&nbsp;                        dump.close();
+&nbsp;                    }
+&nbsp;
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            if (reset) {
+&nbsp;                messageHolder.clearMessages();
+&nbsp;            }
+&nbsp;
+&nbsp;            if (trace.isTraceEnabled()) {
+&nbsp;                trace.exit(&quot;dumpOnExit&quot;, fileName);
+&nbsp;            }
+&nbsp;
+&nbsp;            return fileName;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static boolean shouldDumpOnExit(IMessageHolder messageHolder) {
+&nbsp;        if (trace.isTraceEnabled()) {
+&nbsp;            trace.enter(&quot;shouldDumpOnExit&quot;, (Object)null, messageHolder);
+&nbsp;        }
+&nbsp;
+&nbsp;        if (trace.isTraceEnabled()) {
+&nbsp;            trace.event(&quot;shouldDumpOnExit&quot;, (Object)null, conditionKind);
+&nbsp;        }
+&nbsp;
+&nbsp;        boolean result = messageHolder == null || messageHolder.hasAnyMessage(conditionKind, true);
+&nbsp;        if (trace.isTraceEnabled()) {
+&nbsp;            trace.exit(&quot;shouldDumpOnExit&quot;, result);
+&nbsp;        }
+&nbsp;
+&nbsp;        return result;
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void setDumpOnException(boolean b) {
+&nbsp;        if (b) {
+&nbsp;            exceptionClass = Throwable.class;
+&nbsp;        } else {
+&nbsp;            exceptionClass = null;
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public static boolean setDumpDirectory(String directoryName) {
+&nbsp;        if (trace.isTraceEnabled()) {
+&nbsp;            trace.enter(&quot;setDumpDirectory&quot;, (Object)null, directoryName);
+&nbsp;        }
+&nbsp;
+&nbsp;        boolean success = false;
+&nbsp;        File newDirectory = new File(directoryName);
+&nbsp;        if (newDirectory.exists()) {
+&nbsp;            directory = newDirectory;
+&nbsp;            success = true;
+&nbsp;        }
+&nbsp;
+&nbsp;        if (trace.isTraceEnabled()) {
+&nbsp;            trace.exit(&quot;setDumpDirectory&quot;, success);
+&nbsp;        }
+&nbsp;
+&nbsp;        return success;
+&nbsp;    }
+&nbsp;
+&nbsp;    public static boolean getDumpOnException() {
+&nbsp;        return exceptionClass != null;
+&nbsp;    }
+&nbsp;
+&nbsp;    public static boolean setDumpOnExit(IMessage.Kind condition) {
+&nbsp;        if (trace.isTraceEnabled()) {
+&nbsp;            trace.event(&quot;setDumpOnExit&quot;, (Object)null, condition);
+&nbsp;        }
+&nbsp;
+&nbsp;        conditionKind = condition;
+&nbsp;        return true;
+&nbsp;    }
+&nbsp;
+&nbsp;    public static boolean setDumpOnExit(String condition) {
+&nbsp;        for(IMessage.Kind kind : IMessage.KINDS) {
+&nbsp;            if (kind.toString().equals(condition)) {
+&nbsp;                return setDumpOnExit(kind);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return false;
+&nbsp;    }
+&nbsp;
+&nbsp;    public static IMessage.Kind getDumpOnExit() {
+&nbsp;        return conditionKind;
+&nbsp;    }
+&nbsp;
+&nbsp;    public static String getLastDumpFileName() {
+&nbsp;        return lastDumpFileName;
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void saveCommandLine(String[] args) {
+&nbsp;        savedCommandLine = new String[args.length];
+&nbsp;        System.arraycopy(args, 0, savedCommandLine, 0, args.length);
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void saveFullClasspath(List&lt;String&gt; list) {
+&nbsp;        savedFullClasspath = list;
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void saveMessageHolder(IMessageHolder holder) {
+&nbsp;        savedMessageHolder = holder;
+&nbsp;    }
+&nbsp;
+&nbsp;    private Dump(String reason) {
+&nbsp;        if (trace.isTraceEnabled()) {
+&nbsp;            trace.enter(&quot;&lt;init&gt;&quot;, this, reason);
+&nbsp;        }
+&nbsp;
+&nbsp;        this.reason = reason;
+&nbsp;        this.openDump();
+&nbsp;        this.dumpAspectJProperties();
+&nbsp;        this.dumpDumpConfiguration();
+&nbsp;        if (trace.isTraceEnabled()) {
+&nbsp;            trace.exit(&quot;&lt;init&gt;&quot;, this);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getFileName() {
+&nbsp;        return this.fileName;
+&nbsp;    }
+&nbsp;
+&nbsp;    private void dumpDefault() {
+&nbsp;        this.dumpDefault(savedMessageHolder);
+&nbsp;    }
+&nbsp;
+&nbsp;    private void dumpDefault(IMessageHolder holder) {
+&nbsp;        this.dumpSytemProperties();
+&nbsp;        this.dumpCommandLine();
+&nbsp;        this.dumpFullClasspath();
+&nbsp;        this.dumpCompilerMessages(holder);
+&nbsp;    }
+&nbsp;
+&nbsp;    private void dumpException(IMessageHolder messageHolder, Throwable th) {
+&nbsp;        this.println((Object)&quot;---- Exception Information ---&quot;);
+&nbsp;        this.println(th);
+&nbsp;        this.dumpDefault(messageHolder);
+&nbsp;    }
+&nbsp;
+&nbsp;    private void dumpAspectJProperties() {
+&nbsp;        this.println((Object)&quot;---- AspectJ Properties ---&quot;);
+&nbsp;        this.println((Object)(&quot;AspectJ Compiler &quot; + Version.getText() + &quot; built on &quot; + Version.getTimeText()));
+&nbsp;    }
+&nbsp;
+&nbsp;    private void dumpDumpConfiguration() {
+&nbsp;        this.println((Object)&quot;---- Dump Properties ---&quot;);
+&nbsp;        this.println((Object)(&quot;Dump file: &quot; + this.fileName));
+&nbsp;        this.println((Object)(&quot;Dump reason: &quot; + this.reason));
+&nbsp;        this.println((Object)(&quot;Dump on exception: &quot; + (exceptionClass != null)));
+&nbsp;        this.println((Object)(&quot;Dump at exit condition: &quot; + conditionKind));
+&nbsp;    }
+&nbsp;
+&nbsp;    private void dumpFullClasspath() {
+&nbsp;        this.println((Object)&quot;---- Full Classpath ---&quot;);
+&nbsp;        if (savedFullClasspath != null &amp;&amp; savedFullClasspath.size() &gt; 0) {
+&nbsp;            for(String fileName : savedFullClasspath) {
+&nbsp;                File file = new File(fileName);
+&nbsp;                this.println(file);
+&nbsp;            }
+&nbsp;        } else {
+&nbsp;            this.println((Object)&quot;Empty&quot;);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private void dumpSytemProperties() {
+&nbsp;        this.println((Object)&quot;---- System Properties ---&quot;);
+&nbsp;        Properties props = System.getProperties();
+&nbsp;        this.println(props);
+&nbsp;    }
+&nbsp;
+&nbsp;    private void dumpCommandLine() {
+&nbsp;        this.println((Object)&quot;---- Command Line ---&quot;);
+&nbsp;        this.println((Object[])savedCommandLine);
+&nbsp;    }
+&nbsp;
+&nbsp;    private void dumpCompilerMessages(IMessageHolder messageHolder) {
+&nbsp;        this.println((Object)&quot;---- Compiler Messages ---&quot;);
+&nbsp;        if (messageHolder != null) {
+&nbsp;            for(IMessage message : messageHolder.getUnmodifiableListView()) {
+&nbsp;                this.println((Object)message.toString());
+&nbsp;            }
+&nbsp;        } else {
+&nbsp;            this.println((Object)&quot;Empty&quot;);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private void openDump() {
+&nbsp;        if (this.print == null) {
+&nbsp;            Date now = new Date();
+&nbsp;            this.fileName = &quot;ajcore.&quot; + (new SimpleDateFormat(&quot;yyyyMMdd&quot;)).format(now) + &quot;.&quot; + (new SimpleDateFormat(&quot;HHmmss.SSS&quot;)).format(now) + &quot;.&quot; + &quot;txt&quot;;
+&nbsp;
+&nbsp;            try {
+&nbsp;                File file = new File(directory, this.fileName);
+&nbsp;                this.print = new PrintStream(new FileOutputStream(file), true);
+&nbsp;                trace.info(&quot;Dumping to &quot; + file.getAbsolutePath());
+&nbsp;            } catch (Exception var3) {
+&nbsp;                this.print = System.err;
+&nbsp;                trace.info(&quot;Dumping to stderr&quot;);
+&nbsp;                this.fileName = &quot;Unknown&quot;;
+&nbsp;            }
+&nbsp;
+&nbsp;            lastDumpFileName = this.fileName;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void close() {
+&nbsp;        this.print.close();
+&nbsp;    }
+&nbsp;
+&nbsp;    private void println(Object obj) {
+&nbsp;        this.print.println(obj);
+&nbsp;    }
+&nbsp;
+&nbsp;    private void println(Object[] array) {
+&nbsp;        if (array == null) {
+&nbsp;            this.println((Object)&quot;Empty&quot;);
+&nbsp;        } else {
+&nbsp;            for(Object o : array) {
+&nbsp;                this.print.println(o);
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void println(Properties props) {
+&nbsp;        for(Object o : props.keySet()) {
+&nbsp;            String key = (String)o;
+&nbsp;            String value = props.getProperty(key);
+&nbsp;            this.print.println(key + &quot;=&quot; + value);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private void println(Throwable th) {
+&nbsp;        th.printStackTrace(this.print);
+&nbsp;    }
+&nbsp;
+&nbsp;    private void println(File file) {
+&nbsp;        this.print.print(file.getAbsolutePath());
+&nbsp;        if (!file.exists()) {
+&nbsp;            this.println((Object)&quot;(missing)&quot;);
+&nbsp;        } else if (file.isDirectory()) {
+&nbsp;            int count = file.listFiles().length;
+&nbsp;            this.println((Object)(&quot;(&quot; + count + &quot; entries)&quot;));
+&nbsp;        } else {
+&nbsp;            this.println((Object)(&quot;(&quot; + file.length() + &quot; bytes)&quot;));
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private void println(List list) {
+&nbsp;        if (list != null &amp;&amp; !list.isEmpty()) {
+&nbsp;            for(Object o : list) {
+&nbsp;                if (o instanceof Exception) {
+&nbsp;                    this.println((Throwable)((Exception)o));
+&nbsp;                } else {
+&nbsp;                    this.println((Object)o.toString());
+&nbsp;                }
+&nbsp;            }
+&nbsp;        } else {
+&nbsp;            this.println((Object)&quot;Empty&quot;);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private static Object formatObj(Object obj) {
+&nbsp;        if (obj != null &amp;&amp; !(obj instanceof String) &amp;&amp; !(obj instanceof Number) &amp;&amp; !(obj instanceof Boolean) &amp;&amp; !(obj instanceof Exception) &amp;&amp; !(obj instanceof Character) &amp;&amp; !(obj instanceof Class) &amp;&amp; !(obj instanceof File) &amp;&amp; !(obj instanceof StringBuffer) &amp;&amp; !(obj instanceof URL)) {
+&nbsp;            try {
+&nbsp;                if (obj instanceof Traceable) {
+&nbsp;                    Traceable t = (Traceable)obj;
+&nbsp;                    return t.toTraceString();
+&nbsp;                } else {
+&nbsp;                    return obj.getClass().getName() + &quot;@&quot; + Integer.toHexString(System.identityHashCode(obj));
+&nbsp;                }
+&nbsp;            } catch (Exception var2) {
+&nbsp;                return obj.getClass().getName() + &quot;@FFFFFFFF&quot;;
+&nbsp;            }
+&nbsp;        } else {
+&nbsp;            return obj;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    static {
+&nbsp;        conditionKind = IMessage.ABORT;
+&nbsp;        directory = new File(&quot;.&quot;);
+&nbsp;        lastDumpFileName = &quot;Unknown&quot;;
+&nbsp;        preserveOnNextReset = false;
+&nbsp;        trace = TraceFactory.getTraceFactory().getTrace(Dump.class);
+&nbsp;        String exceptionName = System.getProperty(&quot;org.aspectj.weaver.Dump.exception&quot;, &quot;true&quot;);
+&nbsp;        if (!exceptionName.equals(&quot;false&quot;)) {
+&nbsp;            setDumpOnException(true);
+&nbsp;        }
+&nbsp;
+&nbsp;        String conditionName = System.getProperty(&quot;org.aspectj.weaver.Dump.condition&quot;);
+&nbsp;        if (conditionName != null) {
+&nbsp;            setDumpOnExit(conditionName);
+&nbsp;        }
+&nbsp;
+&nbsp;        String directoryName = System.getProperty(&quot;org.aspectj.dump.directory&quot;);
+&nbsp;        if (directoryName != null) {
+&nbsp;            setDumpDirectory(directoryName);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public interface INode {
+&nbsp;        void accept(IVisitor var1);
+&nbsp;    }
+&nbsp;
+&nbsp;    public interface IVisitor {
+&nbsp;        void visitObject(Object var1);
+&nbsp;
+&nbsp;        void visitList(List var1);
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

@@ -5,7 +5,7 @@
 <html id="htmlId">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
-  <title>Coverage Report > MethodReturn</title>
+  <title>Coverage Report > BeanDeserializer</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -19,10 +19,10 @@
 <div class="breadCrumbs">
 Current scope:     <a href="../../index.html">all classes</a>
     <span class="separator">|</span>
-    <a href="../index.html">net.bytebuddy.implementation.bytecode.member</a>
+    <a href="../index.html">com.fasterxml.jackson.databind.deser</a>
 </div>
 
-<h1>Coverage Summary for Class: MethodReturn (net.bytebuddy.implementation.bytecode.member)</h1>
+<h1>Coverage Summary for Class: BeanDeserializer (com.fasterxml.jackson.databind.deser)</h1>
 
 <table class="coverageStats">
 <tr>
@@ -45,37 +45,37 @@ Current scope:     <a href="../../index.html">all classes</a>
 </th>
 </tr>
 <tr>
-  <td class="name">MethodReturn</td>
+  <td class="name">BeanDeserializer</td>
 <td class="coverageStat">
   <span class="percent">
-    100%
+    0%
   </span>
   <span class="absValue">
-    (1/1)
+    (0/1)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    100%
+    0%
   </span>
   <span class="absValue">
-    (5/5)
+    (0/34)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    70%
+    0%
   </span>
   <span class="absValue">
-    (7/10)
+    (0/291)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    87.5%
+    0%
   </span>
   <span class="absValue">
-    (21/24)
+    (0/413)
   </span>
 </td>
 </tr>
@@ -92,54 +92,824 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;// (powered by FernFlower decompiler)
 &nbsp;//
 &nbsp;
-&nbsp;package net.bytebuddy.implementation.bytecode.member;
+&nbsp;package com.fasterxml.jackson.databind.deser;
 &nbsp;
-&nbsp;import net.bytebuddy.description.type.TypeDefinition;
-&nbsp;import net.bytebuddy.implementation.Implementation;
-&nbsp;import net.bytebuddy.implementation.bytecode.StackManipulation;
-&nbsp;import net.bytebuddy.implementation.bytecode.StackSize;
-&nbsp;import net.bytebuddy.jar.asm.MethodVisitor;
+&nbsp;import com.fasterxml.jackson.core.JsonParser;
+&nbsp;import com.fasterxml.jackson.core.JsonToken;
+&nbsp;import com.fasterxml.jackson.databind.BeanDescription;
+&nbsp;import com.fasterxml.jackson.databind.DeserializationContext;
+&nbsp;import com.fasterxml.jackson.databind.DeserializationFeature;
+&nbsp;import com.fasterxml.jackson.databind.JavaType;
+&nbsp;import com.fasterxml.jackson.databind.JsonDeserializer;
+&nbsp;import com.fasterxml.jackson.databind.JsonMappingException;
+&nbsp;import com.fasterxml.jackson.databind.cfg.CoercionAction;
+&nbsp;import com.fasterxml.jackson.databind.deser.impl.BeanAsArrayDeserializer;
+&nbsp;import com.fasterxml.jackson.databind.deser.impl.BeanPropertyMap;
+&nbsp;import com.fasterxml.jackson.databind.deser.impl.ExternalTypeHandler;
+&nbsp;import com.fasterxml.jackson.databind.deser.impl.MethodProperty;
+&nbsp;import com.fasterxml.jackson.databind.deser.impl.ObjectIdReader;
+&nbsp;import com.fasterxml.jackson.databind.deser.impl.PropertyBasedCreator;
+&nbsp;import com.fasterxml.jackson.databind.deser.impl.PropertyValueBuffer;
+&nbsp;import com.fasterxml.jackson.databind.deser.impl.ReadableObjectId;
+&nbsp;import com.fasterxml.jackson.databind.util.ClassUtil;
+&nbsp;import com.fasterxml.jackson.databind.util.IgnorePropertiesUtil;
+&nbsp;import com.fasterxml.jackson.databind.util.NameTransformer;
+&nbsp;import com.fasterxml.jackson.databind.util.TokenBuffer;
+&nbsp;import java.io.IOException;
+&nbsp;import java.io.Serializable;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.HashSet;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Set;
 &nbsp;
-&nbsp;public enum MethodReturn implements StackManipulation {
-&nbsp;    INTEGER(172, StackSize.SINGLE),
-&nbsp;    DOUBLE(175, StackSize.DOUBLE),
-&nbsp;    FLOAT(174, StackSize.SINGLE),
-&nbsp;    LONG(173, StackSize.DOUBLE),
-&nbsp;    VOID(177, StackSize.ZERO),
-&nbsp;    REFERENCE(176, StackSize.SINGLE);
+&nbsp;public class BeanDeserializer extends BeanDeserializerBase implements Serializable {
+&nbsp;    private static final long serialVersionUID = 1L;
+&nbsp;    protected transient Exception _nullFromCreator;
+&nbsp;    private transient volatile NameTransformer _currentlyTransforming;
 &nbsp;
-&nbsp;    private final int returnOpcode;
-&nbsp;    private final StackManipulation.Size size;
-&nbsp;
-&nbsp;    private MethodReturn(int returnOpcode, StackSize stackSize) {
-&nbsp;        this.returnOpcode = returnOpcode;
-&nbsp;        this.size = stackSize.toDecreasingSize();
-<b class="fc">&nbsp;    }</b>
-&nbsp;
-&nbsp;    public static StackManipulation of(TypeDefinition typeDefinition) {
-&nbsp;        if (typeDefinition.isPrimitive()) {
-&nbsp;            if (typeDefinition.represents(Long.TYPE)) {
-<b class="fc">&nbsp;                return LONG;</b>
-&nbsp;            } else if (typeDefinition.represents(Double.TYPE)) {
-&nbsp;                return DOUBLE;
-&nbsp;            } else if (typeDefinition.represents(Float.TYPE)) {
-&nbsp;                return FLOAT;
-<b class="fc">&nbsp;            } else {</b>
-&nbsp;                return typeDefinition.represents(Void.TYPE) ? VOID : INTEGER;
-&nbsp;            }
-&nbsp;        } else {
-&nbsp;            return REFERENCE;
-<b class="fc">&nbsp;        }</b>
+&nbsp;    /** @deprecated */
+&nbsp;    @Deprecated
+&nbsp;    public BeanDeserializer(BeanDeserializerBuilder builder, BeanDescription beanDesc, BeanPropertyMap properties, Map&lt;String, SettableBeanProperty&gt; backRefs, HashSet&lt;String&gt; ignorableProps, boolean ignoreAllUnknown, boolean hasViews) {
+&nbsp;        super(builder, beanDesc, properties, backRefs, ignorableProps, ignoreAllUnknown, (Set)null, hasViews);
 &nbsp;    }
 &nbsp;
-&nbsp;    public boolean isValid() {
-&nbsp;        return true;
-<b class="fc">&nbsp;    }</b>
+&nbsp;    public BeanDeserializer(BeanDeserializerBuilder builder, BeanDescription beanDesc, BeanPropertyMap properties, Map&lt;String, SettableBeanProperty&gt; backRefs, HashSet&lt;String&gt; ignorableProps, boolean ignoreAllUnknown, Set&lt;String&gt; includableProps, boolean hasViews) {
+&nbsp;        super(builder, beanDesc, properties, backRefs, ignorableProps, ignoreAllUnknown, includableProps, hasViews);
+&nbsp;    }
 &nbsp;
-&nbsp;    public StackManipulation.Size apply(MethodVisitor methodVisitor, Implementation.Context implementationContext) {
-&nbsp;        methodVisitor.visitInsn(this.returnOpcode);
-&nbsp;        return this.size;
-<b class="fc">&nbsp;    }</b>
+&nbsp;    protected BeanDeserializer(BeanDeserializerBase src) {
+&nbsp;        super(src, src._ignoreAllUnknown);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected BeanDeserializer(BeanDeserializerBase src, boolean ignoreAllUnknown) {
+&nbsp;        super(src, ignoreAllUnknown);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected BeanDeserializer(BeanDeserializerBase src, NameTransformer unwrapper) {
+&nbsp;        super(src, unwrapper);
+&nbsp;    }
+&nbsp;
+&nbsp;    public BeanDeserializer(BeanDeserializerBase src, ObjectIdReader oir) {
+&nbsp;        super(src, oir);
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @deprecated */
+&nbsp;    @Deprecated
+&nbsp;    public BeanDeserializer(BeanDeserializerBase src, Set&lt;String&gt; ignorableProps) {
+&nbsp;        super(src, ignorableProps);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public BeanDeserializer(BeanDeserializerBase src, Set&lt;String&gt; ignorableProps, Set&lt;String&gt; includableProps) {
+&nbsp;        super(src, ignorableProps, includableProps);
+&nbsp;    }
+&nbsp;
+&nbsp;    public BeanDeserializer(BeanDeserializerBase src, BeanPropertyMap props) {
+&nbsp;        super(src, props);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public JsonDeserializer&lt;Object&gt; unwrappingDeserializer(NameTransformer transformer) {</b>
+&nbsp;        if (this.getClass() != BeanDeserializer.class) {
+&nbsp;            return this;
+&nbsp;        } else if (this._currentlyTransforming == transformer) {
+<b class="nc">&nbsp;            return this;</b>
+&nbsp;        } else {
+&nbsp;            this._currentlyTransforming = transformer;
+&nbsp;
+<b class="nc">&nbsp;            BeanDeserializer var2;</b>
+&nbsp;            try {
+&nbsp;                var2 = new BeanDeserializer(this, transformer);
+&nbsp;            } finally {
+<b class="nc">&nbsp;                this._currentlyTransforming = null;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            return var2;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public BeanDeserializer withObjectIdReader(ObjectIdReader oir) {
+<b class="nc">&nbsp;        return new BeanDeserializer(this, oir);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public BeanDeserializer withByNameInclusion(Set&lt;String&gt; ignorableProps, Set&lt;String&gt; includableProps) {
+&nbsp;        return new BeanDeserializer(this, ignorableProps, includableProps);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public BeanDeserializerBase withIgnoreAllUnknown(boolean ignoreUnknown) {</b>
+&nbsp;        return new BeanDeserializer(this, ignoreUnknown);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public BeanDeserializerBase withBeanProperties(BeanPropertyMap props) {</b>
+&nbsp;        return new BeanDeserializer(this, props);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected BeanDeserializerBase asArrayDeserializer() {
+&nbsp;        SettableBeanProperty[] props = this._beanProperties.getPropertiesInInsertionOrder();
+&nbsp;        return new BeanAsArrayDeserializer(this, props);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public Object deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {</b>
+&nbsp;        if (p.isExpectedStartObjectToken()) {
+&nbsp;            if (this._vanillaProcessing) {
+&nbsp;                return this.vanillaDeserialize(p, ctxt, p.nextToken());
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                p.nextToken();</b>
+&nbsp;                return this._objectIdReader != null ? this.deserializeWithObjectId(p, ctxt) : this.deserializeFromObject(p, ctxt);
+<b class="nc">&nbsp;            }</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            return this._deserializeOther(p, ctxt, p.currentToken());</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected final Object _deserializeOther(JsonParser p, DeserializationContext ctxt, JsonToken t) throws IOException {
+&nbsp;        if (t != null) {
+<b class="nc">&nbsp;            switch (t) {</b>
+&nbsp;                case VALUE_STRING:
+&nbsp;                    return this.deserializeFromString(p, ctxt);
+&nbsp;                case VALUE_NUMBER_INT:
+&nbsp;                    return this.deserializeFromNumber(p, ctxt);
+&nbsp;                case VALUE_NUMBER_FLOAT:
+<b class="nc">&nbsp;                    return this.deserializeFromDouble(p, ctxt);</b>
+&nbsp;                case VALUE_EMBEDDED_OBJECT:
+&nbsp;                    return this.deserializeFromEmbedded(p, ctxt);
+&nbsp;                case VALUE_TRUE:
+&nbsp;                case VALUE_FALSE:
+<b class="nc">&nbsp;                    return this.deserializeFromBoolean(p, ctxt);</b>
+&nbsp;                case VALUE_NULL:
+&nbsp;                    return this.deserializeFromNull(p, ctxt);
+&nbsp;                case START_ARRAY:
+&nbsp;                    return this._deserializeFromArray(p, ctxt);
+<b class="nc">&nbsp;                case FIELD_NAME:</b>
+&nbsp;                case END_OBJECT:
+&nbsp;                    if (this._vanillaProcessing) {
+&nbsp;                        return this.vanillaDeserialize(p, ctxt, t);
+&nbsp;                    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                    if (this._objectIdReader != null) {</b>
+&nbsp;                        return this.deserializeWithObjectId(p, ctxt);
+&nbsp;                    }
+&nbsp;
+&nbsp;                    return this.deserializeFromObject(p, ctxt);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return ctxt.handleUnexpectedToken(this.getValueType(ctxt), p);
+&nbsp;    }
+&nbsp;
+&nbsp;    public Object deserialize(JsonParser p, DeserializationContext ctxt, Object bean) throws IOException {
+&nbsp;        p.assignCurrentValue(bean);
+&nbsp;        if (this._injectables != null) {
+&nbsp;            this.injectValues(ctxt, bean);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if (this._unwrappedPropertyHandler != null) {</b>
+<b class="nc">&nbsp;            return this.deserializeWithUnwrapped(p, ctxt, bean);</b>
+&nbsp;        } else if (this._externalTypeIdHandler != null) {
+&nbsp;            return this.deserializeWithExternalTypeId(p, ctxt, bean);
+&nbsp;        } else {
+<b class="nc">&nbsp;            String propName;</b>
+<b class="nc">&nbsp;            if (p.isExpectedStartObjectToken()) {</b>
+<b class="nc">&nbsp;                propName = p.nextFieldName();</b>
+&nbsp;                if (propName == null) {
+<b class="nc">&nbsp;                    return bean;</b>
+&nbsp;                }
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                if (!p.hasTokenId(5)) {
+&nbsp;                    return bean;
+&nbsp;                }
+&nbsp;
+&nbsp;                propName = p.currentName();
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            if (this._needViewProcesing) {</b>
+&nbsp;                Class&lt;?&gt; view = ctxt.getActiveView();
+<b class="nc">&nbsp;                if (view != null) {</b>
+&nbsp;                    return this.deserializeWithView(p, ctxt, bean, view);
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            do {
+<b class="nc">&nbsp;                p.nextToken();</b>
+&nbsp;                SettableBeanProperty prop = this._beanProperties.find(propName);
+&nbsp;                if (prop != null) {
+<b class="nc">&nbsp;                    try {</b>
+&nbsp;                        prop.deserializeAndSet(p, ctxt, bean);
+<b class="nc">&nbsp;                    } catch (Exception e) {</b>
+&nbsp;                        this.wrapAndThrow(e, bean, propName, ctxt);
+&nbsp;                    }
+<b class="nc">&nbsp;                } else {</b>
+&nbsp;                    this.handleUnknownVanilla(p, ctxt, bean, propName);
+&nbsp;                }
+<b class="nc">&nbsp;            } while((propName = p.nextFieldName()) != null);</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            return bean;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private final Object vanillaDeserialize(JsonParser p, DeserializationContext ctxt, JsonToken t) throws IOException {</b>
+&nbsp;        Object bean = this._valueInstantiator.createUsingDefault(ctxt);
+&nbsp;        if (p.hasTokenId(5)) {
+&nbsp;            p.assignCurrentValue(bean);
+<b class="nc">&nbsp;            String propName = p.currentName();</b>
+&nbsp;
+&nbsp;            do {
+&nbsp;                p.nextToken();
+&nbsp;                SettableBeanProperty prop = this._beanProperties.find(propName);
+&nbsp;                if (prop != null) {
+&nbsp;                    try {
+&nbsp;                        prop.deserializeAndSet(p, ctxt, bean);
+&nbsp;                    } catch (Exception e) {
+&nbsp;                        this.wrapAndThrow(e, bean, propName, ctxt);
+&nbsp;                    }
+&nbsp;                } else {
+<b class="nc">&nbsp;                    this.handleUnknownVanilla(p, ctxt, bean, propName);</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            } while((propName = p.nextFieldName()) != null);</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return bean;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public Object deserializeFromObject(JsonParser p, DeserializationContext ctxt) throws IOException {</b>
+&nbsp;        if (this._objectIdReader != null &amp;&amp; this._objectIdReader.maySerializeAsObject() &amp;&amp; p.hasTokenId(5) &amp;&amp; this._objectIdReader.isValidReferencePropertyName(p.currentName(), p)) {
+&nbsp;            return this.deserializeFromObjectId(p, ctxt);
+&nbsp;        } else if (this._nonStandardCreation) {
+&nbsp;            if (this._unwrappedPropertyHandler != null) {
+<b class="nc">&nbsp;                return this.deserializeWithUnwrapped(p, ctxt);</b>
+<b class="nc">&nbsp;            } else if (this._externalTypeIdHandler != null) {</b>
+<b class="nc">&nbsp;                return this.deserializeWithExternalTypeId(p, ctxt);</b>
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                Object bean = this.deserializeFromObjectUsingNonDefault(p, ctxt);
+&nbsp;                return bean;
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            Object bean = this._valueInstantiator.createUsingDefault(ctxt);
+<b class="nc">&nbsp;            p.assignCurrentValue(bean);</b>
+&nbsp;            if (p.canReadObjectId()) {
+&nbsp;                Object id = p.getObjectId();
+<b class="nc">&nbsp;                if (id != null) {</b>
+<b class="nc">&nbsp;                    this._handleTypedObjectId(p, ctxt, bean, id);</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            } else if (this._objectIdReader != null &amp;&amp; p.hasTokenId(2) &amp;&amp; ctxt.isEnabled(DeserializationFeature.FAIL_ON_UNRESOLVED_OBJECT_IDS)) {</b>
+&nbsp;                ctxt.reportUnresolvedObjectId(this._objectIdReader, bean);
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if (this._injectables != null) {</b>
+<b class="nc">&nbsp;                this.injectValues(ctxt, bean);</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            if (this._needViewProcesing) {
+<b class="nc">&nbsp;                Class&lt;?&gt; view = ctxt.getActiveView();</b>
+&nbsp;                if (view != null) {
+<b class="nc">&nbsp;                    return this.deserializeWithView(p, ctxt, bean, view);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if (p.hasTokenId(5)) {</b>
+<b class="nc">&nbsp;                String propName = p.currentName();</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                do {
+&nbsp;                    p.nextToken();
+&nbsp;                    SettableBeanProperty prop = this._beanProperties.find(propName);
+&nbsp;                    if (prop != null) {
+&nbsp;                        try {
+&nbsp;                            prop.deserializeAndSet(p, ctxt, bean);
+&nbsp;                        } catch (Exception e) {
+&nbsp;                            this.wrapAndThrow(e, bean, propName, ctxt);
+&nbsp;                        }
+&nbsp;                    } else {
+&nbsp;                        this.handleUnknownVanilla(p, ctxt, bean, propName);
+&nbsp;                    }
+&nbsp;                } while((propName = p.nextFieldName()) != null);
+&nbsp;            }
+&nbsp;
+&nbsp;            return bean;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected Object _deserializeUsingPropertyBased(JsonParser p, DeserializationContext ctxt) throws IOException {
+<b class="nc">&nbsp;        PropertyBasedCreator creator = this._propertyBasedCreator;</b>
+<b class="nc">&nbsp;        PropertyValueBuffer buffer = this._anySetter != null ? creator.startBuildingWithAnySetter(p, ctxt, this._objectIdReader, this._anySetter) : creator.startBuilding(p, ctxt, this._objectIdReader);</b>
+&nbsp;        TokenBuffer unknown = null;
+<b class="nc">&nbsp;        Class&lt;?&gt; activeView = this._needViewProcesing ? ctxt.getActiveView() : null;</b>
+<b class="nc">&nbsp;        JsonToken t = p.currentToken();</b>
+&nbsp;
+<b class="nc">&nbsp;        List&lt;BeanReferring&gt; referrings;</b>
+&nbsp;        for(referrings = null; t == JsonToken.FIELD_NAME; t = p.nextToken()) {
+<b class="nc">&nbsp;            String propName = p.currentName();</b>
+&nbsp;            p.nextToken();
+<b class="nc">&nbsp;            SettableBeanProperty creatorProp = creator.findCreatorProperty(propName);</b>
+&nbsp;            if (!buffer.readIdProperty(propName) || creatorProp != null) {
+&nbsp;                if (creatorProp != null) {
+&nbsp;                    if (activeView != null &amp;&amp; !creatorProp.visibleInView(activeView)) {
+<b class="nc">&nbsp;                        p.skipChildren();</b>
+<b class="nc">&nbsp;                    } else {</b>
+&nbsp;                        Object value = this._deserializeWithErrorWrapping(p, ctxt, creatorProp);
+<b class="nc">&nbsp;                        if (buffer.assignParameter(creatorProp, value)) {</b>
+&nbsp;                            p.nextToken();
+&nbsp;
+&nbsp;                            Object bean;
+&nbsp;                            try {
+&nbsp;                                bean = creator.build(ctxt, buffer);
+&nbsp;                            } catch (Exception e) {
+&nbsp;                                bean = this.wrapInstantiationProblem(e, ctxt);
+&nbsp;                            }
+&nbsp;
+&nbsp;                            if (bean == null) {
+&nbsp;                                return ctxt.handleInstantiationProblem(this.handledType(), (Object)null, this._creatorReturnedNullException());
+&nbsp;                            }
+&nbsp;
+&nbsp;                            p.assignCurrentValue(bean);
+&nbsp;                            if (bean.getClass() != this._beanType.getRawClass()) {
+<b class="nc">&nbsp;                                return this.handlePolymorphic(p, ctxt, p.streamReadConstraints(), bean, unknown);</b>
+<b class="nc">&nbsp;                            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                            if (unknown != null) {</b>
+&nbsp;                                bean = this.handleUnknownProperties(ctxt, bean, unknown);
+&nbsp;                            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                            return this.deserialize(p, ctxt, bean);</b>
+<b class="nc">&nbsp;                        }</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                } else {</b>
+<b class="nc">&nbsp;                    SettableBeanProperty prop = this._beanProperties.find(propName);</b>
+&nbsp;                    if (prop != null &amp;&amp; (!this._beanType.isRecordType() || prop instanceof MethodProperty)) {
+<b class="nc">&nbsp;                        try {</b>
+&nbsp;                            buffer.bufferProperty(prop, this._deserializeWithErrorWrapping(p, ctxt, prop));
+&nbsp;                        } catch (UnresolvedForwardReference reference) {
+&nbsp;                            BeanReferring referring = this.handleUnresolvedReference(ctxt, prop, buffer, reference);
+&nbsp;                            if (referrings == null) {
+&nbsp;                                referrings = new ArrayList();
+&nbsp;                            }
+&nbsp;
+&nbsp;                            referrings.add(referring);
+&nbsp;                        }
+&nbsp;                    } else if (IgnorePropertiesUtil.shouldIgnore(propName, this._ignorableProps, this._includableProps)) {
+&nbsp;                        this.handleIgnoredProperty(p, ctxt, this.handledType(), propName);
+&nbsp;                    } else if (this._anySetter != null) {
+<b class="nc">&nbsp;                        try {</b>
+&nbsp;                            if (!this._anySetter.isFieldType() &amp;&amp; !this._anySetter.isSetterType()) {
+<b class="nc">&nbsp;                                buffer.bufferAnyParameterProperty(this._anySetter, propName, this._anySetter.deserialize(p, ctxt));</b>
+&nbsp;                            } else {
+<b class="nc">&nbsp;                                buffer.bufferAnyProperty(this._anySetter, propName, this._anySetter.deserialize(p, ctxt));</b>
+&nbsp;                            }
+&nbsp;                        } catch (Exception e) {
+<b class="nc">&nbsp;                            this.wrapAndThrow(e, this._beanType.getRawClass(), propName, ctxt);</b>
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;                    } else if (this._ignoreAllUnknown) {</b>
+<b class="nc">&nbsp;                        p.skipChildren();</b>
+&nbsp;                    } else {
+&nbsp;                        if (unknown == null) {
+&nbsp;                            unknown = ctxt.bufferForInputBuffering(p);
+&nbsp;                        }
+&nbsp;
+<b class="nc">&nbsp;                        unknown.writeFieldName(propName);</b>
+&nbsp;                        unknown.copyCurrentStructure(p);
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        Object bean;</b>
+&nbsp;        try {
+<b class="nc">&nbsp;            bean = creator.build(ctxt, buffer);</b>
+<b class="nc">&nbsp;        } catch (Exception e) {</b>
+<b class="nc">&nbsp;            return this.wrapInstantiationProblem(e, ctxt);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        if (this._injectables != null) {
+<b class="nc">&nbsp;            this.injectValues(ctxt, bean);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        if (referrings != null) {</b>
+<b class="nc">&nbsp;            for(BeanReferring referring : referrings) {</b>
+<b class="nc">&nbsp;                referring.setBean(bean);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        if (unknown != null) {</b>
+&nbsp;            if (bean.getClass() != this._beanType.getRawClass()) {
+&nbsp;                return this.handlePolymorphic((JsonParser)null, ctxt, p.streamReadConstraints(), bean, unknown);
+&nbsp;            } else {
+<b class="nc">&nbsp;                return this.handleUnknownProperties(ctxt, bean, unknown);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            return bean;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private BeanReferring handleUnresolvedReference(DeserializationContext ctxt, SettableBeanProperty prop, PropertyValueBuffer buffer, UnresolvedForwardReference reference) throws JsonMappingException {
+&nbsp;        BeanReferring referring = new BeanReferring(ctxt, reference, prop.getType(), buffer, prop);
+&nbsp;        reference.getRoid().appendReferring(referring);
+&nbsp;        return referring;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected final Object _deserializeWithErrorWrapping(JsonParser p, DeserializationContext ctxt, SettableBeanProperty prop) throws IOException {
+&nbsp;        try {
+&nbsp;            return prop.deserialize(p, ctxt);
+&nbsp;        } catch (Exception e) {
+&nbsp;            return this.wrapAndThrow(e, this._beanType.getRawClass(), prop.getName(), ctxt);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected Object deserializeFromNull(JsonParser p, DeserializationContext ctxt) throws IOException {</b>
+<b class="nc">&nbsp;        if (p.requiresCustomCodec()) {</b>
+<b class="nc">&nbsp;            TokenBuffer tb = ctxt.bufferForInputBuffering(p);</b>
+&nbsp;            tb.writeEndObject();
+<b class="nc">&nbsp;            JsonParser p2 = tb.asParser(p);</b>
+<b class="nc">&nbsp;            p2.nextToken();</b>
+<b class="nc">&nbsp;            Object ob = this._vanillaProcessing ? this.vanillaDeserialize(p2, ctxt, JsonToken.END_OBJECT) : this.deserializeFromObject(p2, ctxt);</b>
+<b class="nc">&nbsp;            p2.close();</b>
+<b class="nc">&nbsp;            return ob;</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            return ctxt.handleUnexpectedToken(this.getValueType(ctxt), p);
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Object _deserializeFromArray(JsonParser p, DeserializationContext ctxt) throws IOException {
+<b class="nc">&nbsp;        JsonDeserializer&lt;Object&gt; delegateDeser = this._arrayDelegateDeserializer;</b>
+&nbsp;        if (delegateDeser == null &amp;&amp; (delegateDeser = this._delegateDeserializer) == null) {
+<b class="nc">&nbsp;            CoercionAction act = this._findCoercionFromEmptyArray(ctxt);</b>
+<b class="nc">&nbsp;            boolean unwrap = ctxt.isEnabled(DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS);</b>
+&nbsp;            if (unwrap || act != CoercionAction.Fail) {
+&nbsp;                JsonToken unwrappedToken = p.nextToken();
+<b class="nc">&nbsp;                if (unwrappedToken == JsonToken.END_ARRAY) {</b>
+&nbsp;                    switch (act) {
+<b class="nc">&nbsp;                        case AsEmpty:</b>
+<b class="nc">&nbsp;                            return this.getEmptyValue(ctxt);</b>
+&nbsp;                        case AsNull:
+&nbsp;                        case TryConvert:
+<b class="nc">&nbsp;                            return this.getNullValue(ctxt);</b>
+&nbsp;                        default:
+<b class="nc">&nbsp;                            return ctxt.handleUnexpectedToken(this.getValueType(ctxt), JsonToken.START_ARRAY, p, (String)null, new Object[0]);</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                if (unwrap) {</b>
+&nbsp;                    if (unwrappedToken == JsonToken.START_ARRAY) {
+&nbsp;                        JavaType targetType = this.getValueType(ctxt);
+<b class="nc">&nbsp;                        return ctxt.handleUnexpectedToken(targetType, JsonToken.START_ARRAY, p, &quot;Cannot deserialize value of type %s from deeply-nested Array: only single wrapper allowed with `%s`&quot;, new Object[]{ClassUtil.getTypeDescription(targetType), &quot;DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS&quot;});</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    Object value = this.deserialize(p, ctxt);</b>
+<b class="nc">&nbsp;                    if (p.nextToken() != JsonToken.END_ARRAY) {</b>
+&nbsp;                        this.handleMissingEndArrayForSingle(p, ctxt);
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                    return value;
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            return ctxt.handleUnexpectedToken(this.getValueType(ctxt), p);
+&nbsp;        } else {
+&nbsp;            Object bean = this._valueInstantiator.createUsingArrayDelegate(ctxt, delegateDeser.deserialize(p, ctxt));
+<b class="nc">&nbsp;            if (this._injectables != null) {</b>
+&nbsp;                this.injectValues(ctxt, bean);
+&nbsp;            }
+&nbsp;
+&nbsp;            return bean;
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected final Object deserializeWithView(JsonParser p, DeserializationContext ctxt, Object bean, Class&lt;?&gt; activeView) throws IOException {
+<b class="nc">&nbsp;        if (p.hasTokenId(5)) {</b>
+&nbsp;            String propName = p.currentName();
+&nbsp;
+&nbsp;            do {
+&nbsp;                p.nextToken();
+<b class="nc">&nbsp;                SettableBeanProperty prop = this._beanProperties.find(propName);</b>
+&nbsp;                if (prop != null) {
+<b class="nc">&nbsp;                    if (!prop.visibleInView(activeView)) {</b>
+<b class="nc">&nbsp;                        if (ctxt.isEnabled(DeserializationFeature.FAIL_ON_UNEXPECTED_VIEW_PROPERTIES)) {</b>
+&nbsp;                            ctxt.reportInputMismatch(this.handledType(), String.format(&quot;Input mismatch while deserializing %s. Property &#39;%s&#39; is not part of current active view &#39;%s&#39; (disable &#39;DeserializationFeature.FAIL_ON_UNEXPECTED_VIEW_PROPERTIES&#39; to allow)&quot;, ClassUtil.nameOf(this.handledType()), prop.getName(), activeView.getName()), new Object[0]);
+<b class="nc">&nbsp;                        }</b>
+&nbsp;
+&nbsp;                        p.skipChildren();
+&nbsp;                    } else {
+&nbsp;                        try {
+<b class="nc">&nbsp;                            prop.deserializeAndSet(p, ctxt, bean);</b>
+<b class="nc">&nbsp;                        } catch (Exception e) {</b>
+&nbsp;                            this.wrapAndThrow(e, bean, propName, ctxt);
+&nbsp;                        }
+&nbsp;                    }
+<b class="nc">&nbsp;                } else {</b>
+&nbsp;                    this.handleUnknownVanilla(p, ctxt, bean, propName);
+&nbsp;                }
+<b class="nc">&nbsp;            } while((propName = p.nextFieldName()) != null);</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return bean;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected Object deserializeWithUnwrapped(JsonParser p, DeserializationContext ctxt) throws IOException {
+&nbsp;        if (this._delegateDeserializer != null) {
+<b class="nc">&nbsp;            return this._valueInstantiator.createUsingDelegate(ctxt, this._delegateDeserializer.deserialize(p, ctxt));</b>
+&nbsp;        } else if (this._propertyBasedCreator != null) {
+&nbsp;            return this.deserializeUsingPropertyBasedWithUnwrapped(p, ctxt);
+&nbsp;        } else {
+&nbsp;            TokenBuffer tokens = ctxt.bufferForInputBuffering(p);
+&nbsp;            tokens.writeStartObject();
+&nbsp;            Object bean = this._valueInstantiator.createUsingDefault(ctxt);
+&nbsp;            p.assignCurrentValue(bean);
+<b class="nc">&nbsp;            if (this._injectables != null) {</b>
+&nbsp;                this.injectValues(ctxt, bean);
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            Class&lt;?&gt; activeView = this._needViewProcesing ? ctxt.getActiveView() : null;
+&nbsp;
+<b class="nc">&nbsp;            for(String propName = p.hasTokenId(5) ? p.currentName() : null; propName != null; propName = p.nextFieldName()) {</b>
+<b class="nc">&nbsp;                p.nextToken();</b>
+&nbsp;                SettableBeanProperty prop = this._beanProperties.find(propName);
+<b class="nc">&nbsp;                if (prop != null) {</b>
+<b class="nc">&nbsp;                    if (activeView != null &amp;&amp; !prop.visibleInView(activeView)) {</b>
+&nbsp;                        p.skipChildren();
+&nbsp;                    } else {
+&nbsp;                        try {
+&nbsp;                            prop.deserializeAndSet(p, ctxt, bean);
+&nbsp;                        } catch (Exception e) {
+<b class="nc">&nbsp;                            this.wrapAndThrow(e, bean, propName, ctxt);</b>
+&nbsp;                        }
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                } else if (IgnorePropertiesUtil.shouldIgnore(propName, this._ignorableProps, this._includableProps)) {
+&nbsp;                    this.handleIgnoredProperty(p, ctxt, bean, propName);
+<b class="nc">&nbsp;                } else if (this._anySetter == null) {</b>
+<b class="nc">&nbsp;                    tokens.writeFieldName(propName);</b>
+&nbsp;                    tokens.copyCurrentStructure(p);
+&nbsp;                } else {
+<b class="nc">&nbsp;                    TokenBuffer b2 = ctxt.bufferAsCopyOfValue(p);</b>
+<b class="nc">&nbsp;                    tokens.writeFieldName(propName);</b>
+<b class="nc">&nbsp;                    tokens.append(b2);</b>
+&nbsp;
+&nbsp;                    try {
+<b class="nc">&nbsp;                        this._anySetter.deserializeAndSet(b2.asParserOnFirstToken(), ctxt, bean, propName);</b>
+&nbsp;                    } catch (Exception e) {
+<b class="nc">&nbsp;                        this.wrapAndThrow(e, bean, propName, ctxt);</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            tokens.writeEndObject();
+<b class="nc">&nbsp;            this._unwrappedPropertyHandler.processUnwrapped(p, ctxt, bean, tokens);</b>
+&nbsp;            return bean;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Object deserializeWithUnwrapped(JsonParser p, DeserializationContext ctxt, Object bean) throws IOException {
+&nbsp;        JsonToken t = p.currentToken();
+&nbsp;        if (t == JsonToken.START_OBJECT) {
+&nbsp;            t = p.nextToken();
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        TokenBuffer tokens = ctxt.bufferForInputBuffering(p);</b>
+<b class="nc">&nbsp;        tokens.writeStartObject();</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        for(Class&lt;?&gt; activeView = this._needViewProcesing ? ctxt.getActiveView() : null; t == JsonToken.FIELD_NAME; t = p.nextToken()) {</b>
+&nbsp;            String propName = p.currentName();
+&nbsp;            SettableBeanProperty prop = this._beanProperties.find(propName);
+&nbsp;            p.nextToken();
+&nbsp;            if (prop != null) {
+&nbsp;                if (activeView != null &amp;&amp; !prop.visibleInView(activeView)) {
+&nbsp;                    p.skipChildren();
+&nbsp;                } else {
+<b class="nc">&nbsp;                    try {</b>
+&nbsp;                        prop.deserializeAndSet(p, ctxt, bean);
+<b class="nc">&nbsp;                    } catch (Exception e) {</b>
+&nbsp;                        this.wrapAndThrow(e, bean, propName, ctxt);
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            } else if (IgnorePropertiesUtil.shouldIgnore(propName, this._ignorableProps, this._includableProps)) {
+&nbsp;                this.handleIgnoredProperty(p, ctxt, bean, propName);
+&nbsp;            } else if (this._anySetter == null) {
+&nbsp;                tokens.writeFieldName(propName);
+&nbsp;                tokens.copyCurrentStructure(p);
+&nbsp;            } else {
+&nbsp;                TokenBuffer b2 = ctxt.bufferAsCopyOfValue(p);
+&nbsp;                tokens.writeFieldName(propName);
+&nbsp;                tokens.append(b2);
+&nbsp;
+&nbsp;                try {
+&nbsp;                    this._anySetter.deserializeAndSet(b2.asParserOnFirstToken(), ctxt, bean, propName);
+&nbsp;                } catch (Exception e) {
+&nbsp;                    this.wrapAndThrow(e, bean, propName, ctxt);
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        tokens.writeEndObject();</b>
+<b class="nc">&nbsp;        this._unwrappedPropertyHandler.processUnwrapped(p, ctxt, bean, tokens);</b>
+&nbsp;        return bean;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    protected Object deserializeUsingPropertyBasedWithUnwrapped(JsonParser p, DeserializationContext ctxt) throws IOException {
+<b class="nc">&nbsp;        PropertyBasedCreator creator = this._propertyBasedCreator;</b>
+&nbsp;        PropertyValueBuffer buffer = creator.startBuilding(p, ctxt, this._objectIdReader);
+<b class="nc">&nbsp;        TokenBuffer tokens = ctxt.bufferForInputBuffering(p);</b>
+&nbsp;        tokens.writeStartObject();
+&nbsp;
+&nbsp;        for(JsonToken t = p.currentToken(); t == JsonToken.FIELD_NAME; t = p.nextToken()) {
+&nbsp;            String propName = p.currentName();
+&nbsp;            p.nextToken();
+&nbsp;            SettableBeanProperty creatorProp = creator.findCreatorProperty(propName);
+<b class="nc">&nbsp;            if (!buffer.readIdProperty(propName) || creatorProp != null) {</b>
+&nbsp;                if (creatorProp != null) {
+<b class="nc">&nbsp;                    if (buffer.assignParameter(creatorProp, this._deserializeWithErrorWrapping(p, ctxt, creatorProp))) {</b>
+<b class="nc">&nbsp;                        t = p.nextToken();</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                        Object bean;</b>
+<b class="nc">&nbsp;                        try {</b>
+&nbsp;                            bean = creator.build(ctxt, buffer);
+<b class="nc">&nbsp;                        } catch (Exception e) {</b>
+&nbsp;                            bean = this.wrapInstantiationProblem(e, ctxt);
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                        p.assignCurrentValue(bean);
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                        while(t == JsonToken.FIELD_NAME) {</b>
+<b class="nc">&nbsp;                            tokens.copyCurrentStructure(p);</b>
+<b class="nc">&nbsp;                            t = p.nextToken();</b>
+&nbsp;                        }
+<b class="nc">&nbsp;</b>
+&nbsp;                        if (t != JsonToken.END_OBJECT) {
+&nbsp;                            ctxt.reportWrongTokenException(this, JsonToken.END_OBJECT, &quot;Attempted to unwrap &#39;%s&#39; value&quot;, new Object[]{this.handledType().getName()});
+<b class="nc">&nbsp;                        }</b>
+&nbsp;
+&nbsp;                        tokens.writeEndObject();
+<b class="nc">&nbsp;                        if (bean.getClass() != this._beanType.getRawClass()) {</b>
+&nbsp;                            return ctxt.reportInputMismatch(creatorProp, &quot;Cannot create polymorphic instances with unwrapped values&quot;, new Object[0]);
+<b class="nc">&nbsp;                        }</b>
+&nbsp;
+&nbsp;                        return this._unwrappedPropertyHandler.processUnwrapped(p, ctxt, bean, tokens);
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                } else {</b>
+<b class="nc">&nbsp;                    SettableBeanProperty prop = this._beanProperties.find(propName);</b>
+&nbsp;                    if (prop != null) {
+<b class="nc">&nbsp;                        buffer.bufferProperty(prop, this._deserializeWithErrorWrapping(p, ctxt, prop));</b>
+&nbsp;                    } else if (IgnorePropertiesUtil.shouldIgnore(propName, this._ignorableProps, this._includableProps)) {
+&nbsp;                        this.handleIgnoredProperty(p, ctxt, this.handledType(), propName);
+<b class="nc">&nbsp;                    } else if (this._anySetter == null) {</b>
+<b class="nc">&nbsp;                        tokens.writeFieldName(propName);</b>
+<b class="nc">&nbsp;                        tokens.copyCurrentStructure(p);</b>
+&nbsp;                    } else {
+<b class="nc">&nbsp;                        TokenBuffer b2 = ctxt.bufferAsCopyOfValue(p);</b>
+&nbsp;                        tokens.writeFieldName(propName);
+&nbsp;                        tokens.append(b2);
+&nbsp;
+&nbsp;                        try {
+<b class="nc">&nbsp;                            buffer.bufferAnyProperty(this._anySetter, propName, this._anySetter.deserialize(b2.asParserOnFirstToken(), ctxt));</b>
+&nbsp;                        } catch (Exception e) {
+&nbsp;                            this.wrapAndThrow(e, this._beanType.getRawClass(), propName, ctxt);
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        Object bean;
+&nbsp;        try {
+&nbsp;            bean = creator.build(ctxt, buffer);
+&nbsp;        } catch (Exception e) {
+<b class="nc">&nbsp;            return this.wrapInstantiationProblem(e, ctxt);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        return this._unwrappedPropertyHandler.processUnwrapped(p, ctxt, bean, tokens);</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt) throws IOException {</b>
+<b class="nc">&nbsp;        if (this._propertyBasedCreator != null) {</b>
+&nbsp;            return this.deserializeUsingPropertyBasedWithExternalTypeId(p, ctxt);
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            return this._delegateDeserializer != null ? this._valueInstantiator.createUsingDelegate(ctxt, this._delegateDeserializer.deserialize(p, ctxt)) : this.deserializeWithExternalTypeId(p, ctxt, this._valueInstantiator.createUsingDefault(ctxt));</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected Object deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt, Object bean) throws IOException {
+<b class="nc">&nbsp;        return this._deserializeWithExternalTypeId(p, ctxt, bean, this._externalTypeIdHandler.start());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Object _deserializeWithExternalTypeId(JsonParser p, DeserializationContext ctxt, Object bean, ExternalTypeHandler ext) throws IOException {
+<b class="nc">&nbsp;        Class&lt;?&gt; activeView = this._needViewProcesing ? ctxt.getActiveView() : null;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(JsonToken t = p.currentToken(); t == JsonToken.FIELD_NAME; t = p.nextToken()) {</b>
+&nbsp;            String propName = p.currentName();
+&nbsp;            t = p.nextToken();
+&nbsp;            SettableBeanProperty prop = this._beanProperties.find(propName);
+<b class="nc">&nbsp;            if (prop != null) {</b>
+<b class="nc">&nbsp;                if (t.isScalarValue()) {</b>
+&nbsp;                    ext.handleTypePropertyValue(p, ctxt, propName, bean);
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                if (activeView != null &amp;&amp; !prop.visibleInView(activeView)) {
+&nbsp;                    p.skipChildren();
+&nbsp;                } else {
+&nbsp;                    try {
+&nbsp;                        prop.deserializeAndSet(p, ctxt, bean);
+&nbsp;                    } catch (Exception e) {
+&nbsp;                        this.wrapAndThrow(e, bean, propName, ctxt);
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            } else if (IgnorePropertiesUtil.shouldIgnore(propName, this._ignorableProps, this._includableProps)) {
+&nbsp;                this.handleIgnoredProperty(p, ctxt, bean, propName);
+&nbsp;            } else if (!ext.handlePropertyValue(p, ctxt, propName, bean)) {
+&nbsp;                if (this._anySetter != null) {
+&nbsp;                    try {
+&nbsp;                        this._anySetter.deserializeAndSet(p, ctxt, bean, propName);
+<b class="nc">&nbsp;                    } catch (Exception e) {</b>
+<b class="nc">&nbsp;                        this.wrapAndThrow(e, bean, propName, ctxt);</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                } else {</b>
+<b class="nc">&nbsp;                    this.handleUnknownProperty(p, ctxt, bean, propName);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return ext.complete(p, ctxt, bean);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected Object deserializeUsingPropertyBasedWithExternalTypeId(JsonParser p, DeserializationContext ctxt) throws IOException {
+<b class="nc">&nbsp;        ExternalTypeHandler ext = this._externalTypeIdHandler.start();</b>
+<b class="nc">&nbsp;        PropertyBasedCreator creator = this._propertyBasedCreator;</b>
+&nbsp;        PropertyValueBuffer buffer = creator.startBuilding(p, ctxt, this._objectIdReader);
+<b class="nc">&nbsp;        Class&lt;?&gt; activeView = this._needViewProcesing ? ctxt.getActiveView() : null;</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        for(JsonToken t = p.currentToken(); t == JsonToken.FIELD_NAME; t = p.nextToken()) {
+<b class="nc">&nbsp;            String propName = p.currentName();</b>
+<b class="nc">&nbsp;            t = p.nextToken();</b>
+<b class="nc">&nbsp;            SettableBeanProperty creatorProp = creator.findCreatorProperty(propName);</b>
+<b class="nc">&nbsp;            if (!buffer.readIdProperty(propName) || creatorProp != null) {</b>
+<b class="nc">&nbsp;                if (creatorProp != null) {</b>
+<b class="nc">&nbsp;                    if (!ext.handlePropertyValue(p, ctxt, propName, (Object)null) &amp;&amp; buffer.assignParameter(creatorProp, this._deserializeWithErrorWrapping(p, ctxt, creatorProp))) {</b>
+&nbsp;                        t = p.nextToken();
+&nbsp;
+&nbsp;                        try {
+<b class="nc">&nbsp;                            Object bean = creator.build(ctxt, buffer);</b>
+&nbsp;                            return bean.getClass() != this._beanType.getRawClass() ? ctxt.reportBadDefinition(this._beanType, String.format(&quot;Cannot create polymorphic instances with external type ids (%s -&gt; %s)&quot;, this._beanType, bean.getClass())) : this._deserializeWithExternalTypeId(p, ctxt, bean, ext);
+<b class="nc">&nbsp;                        } catch (Exception e) {</b>
+&nbsp;                            this.wrapAndThrow(e, this._beanType.getRawClass(), propName, ctxt);
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                } else {
+<b class="nc">&nbsp;                    SettableBeanProperty prop = this._beanProperties.find(propName);</b>
+<b class="nc">&nbsp;                    if (prop != null) {</b>
+&nbsp;                        if (t.isScalarValue()) {
+&nbsp;                            ext.handleTypePropertyValue(p, ctxt, propName, (Object)null);
+&nbsp;                        }
+&nbsp;
+&nbsp;                        if (activeView != null &amp;&amp; !prop.visibleInView(activeView)) {
+&nbsp;                            p.skipChildren();
+<b class="nc">&nbsp;                        } else {</b>
+&nbsp;                            buffer.bufferProperty(prop, prop.deserialize(p, ctxt));
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;                    } else if (!ext.handlePropertyValue(p, ctxt, propName, (Object)null)) {</b>
+&nbsp;                        if (IgnorePropertiesUtil.shouldIgnore(propName, this._ignorableProps, this._includableProps)) {
+&nbsp;                            this.handleIgnoredProperty(p, ctxt, this.handledType(), propName);
+&nbsp;                        } else if (this._anySetter != null) {
+<b class="nc">&nbsp;                            buffer.bufferAnyProperty(this._anySetter, propName, this._anySetter.deserialize(p, ctxt));</b>
+<b class="nc">&nbsp;                        } else {</b>
+<b class="nc">&nbsp;                            this.handleUnknownProperty(p, ctxt, this._valueClass, propName);</b>
+&nbsp;                        }
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        try {</b>
+<b class="nc">&nbsp;            return ext.complete(p, ctxt, buffer, creator);</b>
+<b class="nc">&nbsp;        } catch (Exception e) {</b>
+&nbsp;            return this.wrapInstantiationProblem(e, ctxt);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Exception _creatorReturnedNullException() {
+&nbsp;        if (this._nullFromCreator == null) {
+&nbsp;            this._nullFromCreator = new NullPointerException(&quot;JSON Creator returned null&quot;);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return this._nullFromCreator;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    static class BeanReferring extends ReadableObjectId.Referring {</b>
+<b class="nc">&nbsp;        private final DeserializationContext _context;</b>
+<b class="nc">&nbsp;        private final SettableBeanProperty _prop;</b>
+<b class="nc">&nbsp;        private Object _bean;</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        BeanReferring(DeserializationContext ctxt, UnresolvedForwardReference ref, JavaType valueType, PropertyValueBuffer buffer, SettableBeanProperty prop) {</b>
+<b class="nc">&nbsp;            super(ref, valueType);</b>
+<b class="nc">&nbsp;            this._context = ctxt;</b>
+<b class="nc">&nbsp;            this._prop = prop;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void setBean(Object bean) {
+<b class="nc">&nbsp;            this._bean = bean;</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        public void handleResolvedForwardReference(Object id, Object value) throws IOException {
+&nbsp;            if (this._bean == null) {
+&nbsp;                this._context.reportInputMismatch(this._prop, &quot;Cannot resolve ObjectId forward reference using property &#39;%s&#39; (of type %s): Bean not yet resolved&quot;, new Object[]{this._prop.getName(), this._prop.getDeclaringClass().getName()});
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            this._prop.set(this._bean, value);
+&nbsp;        }
+&nbsp;    }
 &nbsp;}
 </code>
 </pre>
@@ -164,7 +934,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2025-03-20 13:41</div>
+    <div style="float:right;">generated on 2025-03-31 20:57</div>
 </div>
 </body>
 </html>

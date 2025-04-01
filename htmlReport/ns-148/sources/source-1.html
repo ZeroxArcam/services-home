@@ -1,0 +1,528 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ConnectionProviderInitiator</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.engine.jdbc.connections.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: ConnectionProviderInitiator (org.hibernate.engine.jdbc.connections.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ConnectionProviderInitiator</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    15.4%
+  </span>
+  <span class="absValue">
+    (4/26)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    2.5%
+  </span>
+  <span class="absValue">
+    (3/118)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    24%
+  </span>
+  <span class="absValue">
+    (47/196)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.engine.jdbc.connections.internal;
+&nbsp;
+&nbsp;import java.beans.PropertyDescriptor;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.HashSet;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Properties;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import org.hibernate.HibernateException;
+&nbsp;import org.hibernate.boot.registry.StandardServiceInitiator;
+&nbsp;import org.hibernate.boot.registry.selector.spi.StrategySelector;
+&nbsp;import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
+&nbsp;import org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentImpl;
+&nbsp;import org.hibernate.internal.CoreLogging;
+&nbsp;import org.hibernate.internal.CoreMessageLogger;
+&nbsp;import org.hibernate.internal.log.DeprecationLogger;
+&nbsp;import org.hibernate.internal.util.StringHelper;
+&nbsp;import org.hibernate.internal.util.beans.BeanInfoHelper;
+&nbsp;import org.hibernate.service.spi.ServiceRegistryImplementor;
+&nbsp;
+&nbsp;public class ConnectionProviderInitiator implements StandardServiceInitiator&lt;ConnectionProvider&gt; {
+&nbsp;    private static final CoreMessageLogger LOG = CoreLogging.messageLogger(ConnectionProviderInitiator.class);
+&nbsp;    public static final ConnectionProviderInitiator INSTANCE = new ConnectionProviderInitiator();
+&nbsp;    public static final String C3P0_STRATEGY = &quot;c3p0&quot;;
+&nbsp;    public static final String PROXOOL_STRATEGY = &quot;proxool&quot;;
+&nbsp;    public static final String HIKARI_STRATEGY = &quot;hikari&quot;;
+&nbsp;    public static final String VIBUR_STRATEGY = &quot;vibur&quot;;
+&nbsp;    public static final String UCP_STRATEGY = &quot;ucp&quot;;
+&nbsp;    public static final String AGROAL_STRATEGY = &quot;agroal&quot;;
+&nbsp;    public static final String INJECTION_DATA = &quot;hibernate.connection_provider.injection_data&quot;;
+&nbsp;    private static final Map&lt;String, String&gt; LEGACY_CONNECTION_PROVIDER_MAPPING = Map.of(&quot;org.hibernate.connection.DatasourceConnectionProvider&quot;, DatasourceConnectionProviderImpl.class.getName(), &quot;org.hibernate.connection.DriverManagerConnectionProvider&quot;, DriverManagerConnectionProviderImpl.class.getName(), &quot;org.hibernate.connection.UserSuppliedConnectionProvider&quot;, UserSuppliedConnectionProviderImpl.class.getName());
+&nbsp;    private static final Set&lt;String&gt; SPECIAL_PROPERTIES = new HashSet();
+&nbsp;    private static final Map&lt;String, Integer&gt; ISOLATION_VALUE_MAP;
+&nbsp;    private static final Map&lt;Integer, String&gt; ISOLATION_VALUE_CONSTANT_NAME_MAP;
+<b class="fc">&nbsp;    private static final Map&lt;Integer, String&gt; ISOLATION_VALUE_NICE_NAME_MAP;</b>
+<b class="fc">&nbsp;    private static final Map&lt;String, String&gt; CONDITIONAL_PROPERTIES;</b>
+&nbsp;
+&nbsp;    public ConnectionProviderInitiator() {
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public Class&lt;ConnectionProvider&gt; getServiceInitiated() {</b>
+&nbsp;        return ConnectionProvider.class;
+&nbsp;    }
+&nbsp;
+&nbsp;    public ConnectionProvider initiateService(Map&lt;String, Object&gt; configurationValues, ServiceRegistryImplementor registry) {
+&nbsp;        if (JdbcEnvironmentImpl.isMultiTenancyEnabled(registry)) {
+&nbsp;            return null;
+&nbsp;        } else {
+&nbsp;            StrategySelector strategySelector = (StrategySelector)registry.requireService(StrategySelector.class);
+&nbsp;            Object explicitSetting = configurationValues.get(&quot;hibernate.connection.provider_class&quot;);
+&nbsp;            if (explicitSetting != null) {
+&nbsp;                if (explicitSetting instanceof ConnectionProvider) {
+&nbsp;                    return (ConnectionProvider)explicitSetting;
+&nbsp;                }
+&nbsp;
+&nbsp;                if (explicitSetting instanceof Class) {
+&nbsp;                    Class&lt;?&gt; providerClass = (Class)explicitSetting;
+&nbsp;                    LOG.instantiatingExplicitConnectionProvider(providerClass.getName());
+&nbsp;                    return this.instantiateExplicitConnectionProvider(providerClass);
+&nbsp;                }
+&nbsp;
+&nbsp;                String providerName = StringHelper.nullIfEmpty(explicitSetting.toString());
+&nbsp;                if (providerName != null) {
+&nbsp;                    if (LEGACY_CONNECTION_PROVIDER_MAPPING.containsKey(providerName)) {
+&nbsp;                        String actualProviderName = (String)LEGACY_CONNECTION_PROVIDER_MAPPING.get(providerName);
+&nbsp;                        DeprecationLogger.DEPRECATION_LOGGER.connectionProviderClassDeprecated(providerName, actualProviderName);
+&nbsp;                        providerName = actualProviderName;
+&nbsp;                    }
+&nbsp;
+&nbsp;                    LOG.instantiatingExplicitConnectionProvider(providerName);
+&nbsp;                    Class&lt;?&gt; providerClass = strategySelector.selectStrategyImplementor(ConnectionProvider.class, providerName);
+&nbsp;
+&nbsp;                    try {
+&nbsp;                        return this.instantiateExplicitConnectionProvider(providerClass);
+&nbsp;                    } catch (Exception e) {
+&nbsp;                        throw new HibernateException(&quot;Could not instantiate connection provider [&quot; + providerName + &quot;]&quot;, e);
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+<b class="fc">&nbsp;</b>
+&nbsp;            if (configurationValues.get(&quot;hibernate.connection.datasource&quot;) != null) {
+<b class="fc">&nbsp;                return new DatasourceConnectionProviderImpl();</b>
+&nbsp;            } else {
+&nbsp;                ConnectionProvider connectionProvider = null;
+<b class="fc">&nbsp;                Class&lt;? extends ConnectionProvider&gt; singleRegisteredProvider = this.getSingleRegisteredProvider(strategySelector);</b>
+&nbsp;                if (singleRegisteredProvider != null) {
+&nbsp;                    try {
+<b class="fc">&nbsp;                        connectionProvider = (ConnectionProvider)singleRegisteredProvider.newInstance();</b>
+&nbsp;                    } catch (InstantiationException | IllegalAccessException e) {
+&nbsp;                        throw new HibernateException(&quot;Could not instantiate singular-registered ConnectionProvider&quot;, e);
+&nbsp;                    }
+&nbsp;                }
+<b class="fc">&nbsp;</b>
+&nbsp;                if (connectionProvider == null &amp;&amp; c3p0ConfigDefined(configurationValues)) {
+&nbsp;                    connectionProvider = this.instantiateC3p0Provider(strategySelector);
+&nbsp;                }
+&nbsp;
+&nbsp;                if (connectionProvider == null &amp;&amp; proxoolConfigDefined(configurationValues)) {
+&nbsp;                    connectionProvider = this.instantiateProxoolProvider(strategySelector);
+<b class="pc">&nbsp;                }</b>
+&nbsp;
+<b class="nc">&nbsp;                if (connectionProvider == null &amp;&amp; this.hikariConfigDefined(configurationValues)) {</b>
+&nbsp;                    connectionProvider = this.instantiateHikariProvider(strategySelector);
+&nbsp;                }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;                if (connectionProvider == null &amp;&amp; this.viburConfigDefined(configurationValues)) {</b>
+<b class="pc">&nbsp;                    connectionProvider = this.instantiateViburProvider(strategySelector);</b>
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                if (connectionProvider == null &amp;&amp; this.oracleUCPConfigDefined(configurationValues)) {</b>
+&nbsp;                    connectionProvider = this.instantiateUCPProvider(strategySelector);
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                if (connectionProvider == null &amp;&amp; this.agroalConfigDefined(configurationValues)) {</b>
+<b class="nc">&nbsp;                    connectionProvider = this.instantiateAgroalProvider(strategySelector);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if (connectionProvider == null &amp;&amp; configurationValues.get(&quot;hibernate.connection.url&quot;) != null) {</b>
+<b class="nc">&nbsp;                    connectionProvider = new DriverManagerConnectionProviderImpl();</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                if (connectionProvider == null) {</b>
+&nbsp;                    LOG.noAppropriateConnectionProvider();
+&nbsp;                    connectionProvider = new UserSuppliedConnectionProviderImpl();
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+&nbsp;                Map&lt;?, ?&gt; injectionData = (Map)configurationValues.get(&quot;hibernate.connection_provider.injection_data&quot;);
+&nbsp;                if (injectionData != null &amp;&amp; injectionData.size() &gt; 0) {
+<b class="nc">&nbsp;                    (new BeanInfoHelper(connectionProvider.getClass())).applyToBeanInfo(connectionProvider, (beanInfo) -&gt; {</b>
+<b class="nc">&nbsp;                        PropertyDescriptor[] descriptors = beanInfo.getPropertyDescriptors();</b>
+&nbsp;
+&nbsp;                        for(PropertyDescriptor descriptor : descriptors) {
+&nbsp;                            String propertyName = descriptor.getName();
+&nbsp;                            if (injectionData.containsKey(propertyName)) {
+<b class="nc">&nbsp;                                Method method = descriptor.getWriteMethod();</b>
+&nbsp;                                method.invoke(connectionProvider, injectionData.get(propertyName));
+&nbsp;                            }
+<b class="nc">&nbsp;                        }</b>
+&nbsp;
+&nbsp;                    });
+&nbsp;                }
+&nbsp;
+&nbsp;                return connectionProvider;
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+<b class="pc">&nbsp;</b>
+<b class="fc">&nbsp;    private Class&lt;? extends ConnectionProvider&gt; getSingleRegisteredProvider(StrategySelector strategySelector) {</b>
+&nbsp;        Collection&lt;Class&lt;? extends ConnectionProvider&gt;&gt; implementors = strategySelector.getRegisteredStrategyImplementors(ConnectionProvider.class);
+&nbsp;        return implementors != null &amp;&amp; implementors.size() == 1 ? (Class)implementors.iterator().next() : null;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private ConnectionProvider instantiateExplicitConnectionProvider(Class&lt;?&gt; providerClass) {</b>
+&nbsp;        try {
+<b class="nc">&nbsp;            return (ConnectionProvider)providerClass.newInstance();</b>
+&nbsp;        } catch (Exception e) {
+<b class="nc">&nbsp;            throw new HibernateException(&quot;Could not instantiate connection provider [&quot; + providerClass.getName() + &quot;]&quot;, e);</b>
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private static boolean c3p0ConfigDefined(Map&lt;String, Object&gt; configValues) {
+&nbsp;        for(String key : configValues.keySet()) {
+&nbsp;            if (key.startsWith(&quot;hibernate.c3p0.&quot;)) {
+<b class="nc">&nbsp;                return true;</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return false;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private ConnectionProvider instantiateC3p0Provider(StrategySelector strategySelector) {</b>
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            return (ConnectionProvider)strategySelector.selectStrategyImplementor(ConnectionProvider.class, &quot;c3p0&quot;).newInstance();
+&nbsp;        } catch (Exception var3) {
+&nbsp;            LOG.c3p0ProviderClassNotFound(&quot;c3p0&quot;);
+<b class="nc">&nbsp;            return null;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private static boolean proxoolConfigDefined(Map&lt;String, Object&gt; configValues) {
+&nbsp;        for(String key : configValues.keySet()) {
+<b class="nc">&nbsp;            if (key.startsWith(&quot;hibernate.proxool&quot;)) {</b>
+<b class="nc">&nbsp;                return true;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        return false;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private ConnectionProvider instantiateProxoolProvider(StrategySelector strategySelector) {</b>
+&nbsp;        try {
+&nbsp;            return (ConnectionProvider)strategySelector.selectStrategyImplementor(ConnectionProvider.class, &quot;proxool&quot;).newInstance();
+&nbsp;        } catch (Exception var3) {
+<b class="nc">&nbsp;            LOG.proxoolProviderClassNotFound(&quot;proxool&quot;);</b>
+<b class="nc">&nbsp;            return null;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean hikariConfigDefined(Map&lt;String, Object&gt; configValues) {
+<b class="nc">&nbsp;        for(String key : configValues.keySet()) {</b>
+<b class="nc">&nbsp;            if (key.startsWith(&quot;hibernate.hikari.&quot;)) {</b>
+<b class="nc">&nbsp;                return true;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return false;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private ConnectionProvider instantiateHikariProvider(StrategySelector strategySelector) {
+&nbsp;        try {
+&nbsp;            return (ConnectionProvider)strategySelector.selectStrategyImplementor(ConnectionProvider.class, &quot;hikari&quot;).newInstance();
+<b class="nc">&nbsp;        } catch (Exception var3) {</b>
+<b class="nc">&nbsp;            LOG.hikariProviderClassNotFound();</b>
+<b class="nc">&nbsp;            return null;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private boolean viburConfigDefined(Map&lt;String, Object&gt; configValues) {</b>
+<b class="nc">&nbsp;        for(String key : configValues.keySet()) {</b>
+<b class="nc">&nbsp;            if (key.startsWith(&quot;hibernate.vibur.&quot;)) {</b>
+<b class="nc">&nbsp;                return true;</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean agroalConfigDefined(Map&lt;String, Object&gt; configValues) {
+&nbsp;        for(String key : configValues.keySet()) {
+&nbsp;            if (key.startsWith(&quot;hibernate.agroal.&quot;)) {
+&nbsp;                return true;
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return false;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private ConnectionProvider instantiateViburProvider(StrategySelector strategySelector) {</b>
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            return (ConnectionProvider)strategySelector.selectStrategyImplementor(ConnectionProvider.class, &quot;vibur&quot;).newInstance();
+&nbsp;        } catch (Exception var3) {
+<b class="nc">&nbsp;            LOG.viburProviderClassNotFound();</b>
+&nbsp;            return null;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private ConnectionProvider instantiateAgroalProvider(StrategySelector strategySelector) {</b>
+&nbsp;        try {
+&nbsp;            return (ConnectionProvider)strategySelector.selectStrategyImplementor(ConnectionProvider.class, &quot;agroal&quot;).newInstance();
+<b class="nc">&nbsp;        } catch (Exception var3) {</b>
+&nbsp;            LOG.agroalProviderClassNotFound();
+&nbsp;            return null;
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private boolean oracleUCPConfigDefined(Map&lt;String, Object&gt; configValues) {</b>
+<b class="nc">&nbsp;        for(String key : configValues.keySet()) {</b>
+&nbsp;            if (key.startsWith(&quot;hibernate.oracleucp.&quot;)) {
+&nbsp;                return true;
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        return false;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private ConnectionProvider instantiateUCPProvider(StrategySelector strategySelector) {
+&nbsp;        try {
+<b class="nc">&nbsp;            return (ConnectionProvider)strategySelector.selectStrategyImplementor(ConnectionProvider.class, &quot;ucp&quot;).newInstance();</b>
+<b class="nc">&nbsp;        } catch (Exception var3) {</b>
+&nbsp;            LOG.ucpProviderClassNotFound();
+&nbsp;            return null;
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public static Properties getConnectionProperties(Map&lt;String, Object&gt; properties) {</b>
+<b class="nc">&nbsp;        Properties result = new Properties();</b>
+&nbsp;
+&nbsp;        for(Map.Entry&lt;?, ?&gt; entry : properties.entrySet()) {
+<b class="nc">&nbsp;            if (entry.getKey() instanceof String &amp;&amp; entry.getValue() instanceof String) {</b>
+&nbsp;                String key = (String)entry.getKey();
+&nbsp;                String value = (String)entry.getValue();
+&nbsp;                if (key.startsWith(&quot;hibernate.connection&quot;)) {
+&nbsp;                    if (SPECIAL_PROPERTIES.contains(key)) {
+<b class="nc">&nbsp;                        if (&quot;hibernate.connection.username&quot;.equals(key)) {</b>
+&nbsp;                            result.setProperty(&quot;user&quot;, value);
+&nbsp;                        }
+<b class="nc">&nbsp;                    } else {</b>
+<b class="nc">&nbsp;                        result.setProperty(key.substring(&quot;hibernate.connection&quot;.length() + 1), value);</b>
+&nbsp;                    }
+&nbsp;                } else if (CONDITIONAL_PROPERTIES.containsKey(key)) {
+&nbsp;                    result.setProperty((String)CONDITIONAL_PROPERTIES.get(key), value);
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return result;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public static Integer extractIsolation(Map&lt;String, ?&gt; settings) {
+&nbsp;        return interpretIsolation(settings.get(&quot;hibernate.connection.isolation&quot;));
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public static Integer interpretIsolation(Object setting) {</b>
+&nbsp;        if (setting == null) {
+&nbsp;            return null;
+<b class="nc">&nbsp;        } else if (setting instanceof Number) {</b>
+<b class="nc">&nbsp;            return ((Number)setting).intValue();</b>
+&nbsp;        } else {
+&nbsp;            String settingAsString = setting.toString();
+&nbsp;            if (StringHelper.isEmpty(settingAsString)) {
+&nbsp;                return null;
+<b class="nc">&nbsp;            } else if (ISOLATION_VALUE_MAP.containsKey(settingAsString)) {</b>
+<b class="nc">&nbsp;                return (Integer)ISOLATION_VALUE_MAP.get(settingAsString);</b>
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                try {
+&nbsp;                    return Integer.valueOf(settingAsString);
+<b class="nc">&nbsp;                } catch (NumberFormatException var3) {</b>
+&nbsp;                    throw new HibernateException(&quot;Could not interpret transaction isolation setting [&quot; + setting + &quot;]&quot;);
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public static String toIsolationConnectionConstantName(Integer isolation) {</b>
+&nbsp;        String name = (String)ISOLATION_VALUE_CONSTANT_NAME_MAP.get(isolation);
+&nbsp;        if (name == null) {
+<b class="nc">&nbsp;            throw new HibernateException(&quot;Could not convert isolation value [&quot; + isolation + &quot;] to java.sql.Connection constant name&quot;);</b>
+&nbsp;        } else {
+&nbsp;            return name;
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public static String toIsolationNiceName(Integer isolation) {
+&nbsp;        String name = null;
+<b class="nc">&nbsp;        if (isolation != null) {</b>
+<b class="nc">&nbsp;            name = (String)ISOLATION_VALUE_NICE_NAME_MAP.get(isolation);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        if (name == null) {
+&nbsp;            name = &quot;&lt;unknown&gt;&quot;;
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        return name;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public static String extractSetting(Map&lt;String, Object&gt; settings, String... names) {</b>
+&nbsp;        for(int i = 0; i &lt; names.length; ++i) {
+&nbsp;            if (settings.containsKey(names[i])) {
+&nbsp;                return (String)settings.get(names[i]);
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public static void consumeSetting(Map&lt;String, Object&gt; settings, SettingConsumer consumer, String... names) {</b>
+&nbsp;        for(int i = 0; i &lt; names.length; ++i) {
+&nbsp;            if (settings.containsKey(names[i])) {
+&nbsp;                consumer.consumeSetting(names[i], (String)settings.get(names[i]));
+&nbsp;                return;
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    static {
+&nbsp;        SPECIAL_PROPERTIES.add(&quot;hibernate.connection.datasource&quot;);
+&nbsp;        SPECIAL_PROPERTIES.add(&quot;hibernate.connection.url&quot;);
+&nbsp;        SPECIAL_PROPERTIES.add(&quot;hibernate.connection.provider_class&quot;);
+&nbsp;        SPECIAL_PROPERTIES.add(&quot;hibernate.connection.pool_size&quot;);
+&nbsp;        SPECIAL_PROPERTIES.add(&quot;hibernate.connection.isolation&quot;);
+&nbsp;        SPECIAL_PROPERTIES.add(&quot;hibernate.connection.driver_class&quot;);
+&nbsp;        SPECIAL_PROPERTIES.add(&quot;hibernate.connection.username&quot;);
+&nbsp;        SPECIAL_PROPERTIES.add(&quot;hibernate.connection.provider_disables_autocommit&quot;);
+&nbsp;        ISOLATION_VALUE_MAP = new ConcurrentHashMap();
+&nbsp;        ISOLATION_VALUE_MAP.put(&quot;TRANSACTION_NONE&quot;, 0);
+&nbsp;        ISOLATION_VALUE_MAP.put(&quot;NONE&quot;, 0);
+&nbsp;        ISOLATION_VALUE_MAP.put(&quot;TRANSACTION_READ_UNCOMMITTED&quot;, 1);
+&nbsp;        ISOLATION_VALUE_MAP.put(&quot;READ_UNCOMMITTED&quot;, 1);
+&nbsp;        ISOLATION_VALUE_MAP.put(&quot;TRANSACTION_READ_COMMITTED&quot;, 2);
+<b class="nc">&nbsp;        ISOLATION_VALUE_MAP.put(&quot;READ_COMMITTED&quot;, 2);</b>
+<b class="nc">&nbsp;        ISOLATION_VALUE_MAP.put(&quot;TRANSACTION_REPEATABLE_READ&quot;, 4);</b>
+<b class="nc">&nbsp;        ISOLATION_VALUE_MAP.put(&quot;REPEATABLE_READ&quot;, 4);</b>
+&nbsp;        ISOLATION_VALUE_MAP.put(&quot;TRANSACTION_SERIALIZABLE&quot;, 8);
+&nbsp;        ISOLATION_VALUE_MAP.put(&quot;SERIALIZABLE&quot;, 8);
+<b class="nc">&nbsp;        ISOLATION_VALUE_CONSTANT_NAME_MAP = new ConcurrentHashMap();</b>
+<b class="nc">&nbsp;        ISOLATION_VALUE_CONSTANT_NAME_MAP.put(0, &quot;TRANSACTION_NONE&quot;);</b>
+<b class="nc">&nbsp;        ISOLATION_VALUE_CONSTANT_NAME_MAP.put(1, &quot;TRANSACTION_READ_UNCOMMITTED&quot;);</b>
+<b class="nc">&nbsp;        ISOLATION_VALUE_CONSTANT_NAME_MAP.put(2, &quot;TRANSACTION_READ_COMMITTED&quot;);</b>
+<b class="nc">&nbsp;        ISOLATION_VALUE_CONSTANT_NAME_MAP.put(4, &quot;TRANSACTION_REPEATABLE_READ&quot;);</b>
+<b class="nc">&nbsp;        ISOLATION_VALUE_CONSTANT_NAME_MAP.put(8, &quot;TRANSACTION_SERIALIZABLE&quot;);</b>
+&nbsp;        ISOLATION_VALUE_NICE_NAME_MAP = new ConcurrentHashMap();
+&nbsp;        ISOLATION_VALUE_NICE_NAME_MAP.put(0, &quot;NONE&quot;);
+&nbsp;        ISOLATION_VALUE_NICE_NAME_MAP.put(1, &quot;READ_UNCOMMITTED&quot;);
+<b class="nc">&nbsp;        ISOLATION_VALUE_NICE_NAME_MAP.put(2, &quot;READ_COMMITTED&quot;);</b>
+<b class="nc">&nbsp;        ISOLATION_VALUE_NICE_NAME_MAP.put(4, &quot;REPEATABLE_READ&quot;);</b>
+&nbsp;        ISOLATION_VALUE_NICE_NAME_MAP.put(8, &quot;SERIALIZABLE&quot;);
+&nbsp;        CONDITIONAL_PROPERTIES = Map.of(&quot;hibernate.synonyms&quot;, &quot;includeSynonyms&quot;);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    @FunctionalInterface</b>
+<b class="nc">&nbsp;    public interface SettingConsumer {</b>
+&nbsp;        void consumeSetting(String var1, String var2);
+&nbsp;    }
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
+</div>
+</body>
+</html>

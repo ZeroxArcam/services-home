@@ -5,7 +5,7 @@
 <html id="htmlId">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
-  <title>Coverage Report > DefaultJupiterConfiguration</title>
+  <title>Coverage Report > ELContext</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -19,10 +19,10 @@
 <div class="breadCrumbs">
 Current scope:     <a href="../../index.html">all classes</a>
     <span class="separator">|</span>
-    <a href="../index.html">org.junit.jupiter.engine.config</a>
+    <a href="../index.html">jakarta.el</a>
 </div>
 
-<h1>Coverage Summary for Class: DefaultJupiterConfiguration (org.junit.jupiter.engine.config)</h1>
+<h1>Coverage Summary for Class: ELContext (jakarta.el)</h1>
 
 <table class="coverageStats">
 <tr>
@@ -37,33 +37,45 @@ Current scope:     <a href="../../index.html">all classes</a>
 </th>
 <th class="coverageStat 
 ">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
   Line, %
 </th>
 </tr>
 <tr>
-  <td class="name">DefaultJupiterConfiguration</td>
+  <td class="name">ELContext</td>
 <td class="coverageStat">
   <span class="percent">
-    100%
+    0%
   </span>
   <span class="absValue">
-    (1/1)
+    (0/1)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    66.7%
+    0%
   </span>
   <span class="absValue">
-    (10/15)
+    (0/22)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    73.1%
+    0%
   </span>
   <span class="absValue">
-    (19/26)
+    (0/70)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/88)
   </span>
 </td>
 </tr>
@@ -80,98 +92,229 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;// (powered by FernFlower decompiler)
 &nbsp;//
 &nbsp;
-&nbsp;package org.junit.jupiter.engine.config;
+&nbsp;package jakarta.el;
 &nbsp;
-&nbsp;import java.util.Optional;
-&nbsp;import java.util.function.Function;
-&nbsp;import java.util.function.Predicate;
-&nbsp;import java.util.function.Supplier;
-&nbsp;import org.apiguardian.api.API;
-&nbsp;import org.apiguardian.api.API.Status;
-&nbsp;import org.junit.jupiter.api.ClassOrderer;
-&nbsp;import org.junit.jupiter.api.DisplayNameGenerator;
-&nbsp;import org.junit.jupiter.api.MethodOrderer;
-&nbsp;import org.junit.jupiter.api.TestInstance;
-&nbsp;import org.junit.jupiter.api.TestInstance.Lifecycle;
-&nbsp;import org.junit.jupiter.api.extension.ExecutionCondition;
-&nbsp;import org.junit.jupiter.api.io.CleanupMode;
-&nbsp;import org.junit.jupiter.api.io.TempDirFactory;
-&nbsp;import org.junit.jupiter.api.io.TempDirFactory.Standard;
-&nbsp;import org.junit.jupiter.api.parallel.ExecutionMode;
-&nbsp;import org.junit.platform.commons.util.ClassNamePatternFilterUtils;
-&nbsp;import org.junit.platform.commons.util.Preconditions;
-&nbsp;import org.junit.platform.engine.ConfigurationParameters;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;import java.lang.reflect.Modifier;
+&nbsp;import java.util.ArrayDeque;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.Deque;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Locale;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Objects;
 &nbsp;
-&nbsp;@API(
-&nbsp;    status = Status.INTERNAL,
-&nbsp;    since = &quot;5.4&quot;
-&nbsp;)
-&nbsp;public class DefaultJupiterConfiguration implements JupiterConfiguration {
-&nbsp;    private static final EnumConfigurationParameterConverter&lt;ExecutionMode&gt; executionModeConverter = new EnumConfigurationParameterConverter(ExecutionMode.class, &quot;parallel execution mode&quot;);
-&nbsp;    private static final EnumConfigurationParameterConverter&lt;TestInstance.Lifecycle&gt; lifecycleConverter = new EnumConfigurationParameterConverter(TestInstance.Lifecycle.class, &quot;test instance lifecycle mode&quot;);
-&nbsp;    private static final InstantiatingConfigurationParameterConverter&lt;DisplayNameGenerator&gt; displayNameGeneratorConverter = new InstantiatingConfigurationParameterConverter(DisplayNameGenerator.class, &quot;display name generator&quot;);
-&nbsp;    private static final InstantiatingConfigurationParameterConverter&lt;MethodOrderer&gt; methodOrdererConverter = new InstantiatingConfigurationParameterConverter(MethodOrderer.class, &quot;method orderer&quot;);
-&nbsp;    private static final InstantiatingConfigurationParameterConverter&lt;ClassOrderer&gt; classOrdererConverter = new InstantiatingConfigurationParameterConverter(ClassOrderer.class, &quot;class orderer&quot;);
-&nbsp;    private static final EnumConfigurationParameterConverter&lt;CleanupMode&gt; cleanupModeConverter = new EnumConfigurationParameterConverter(CleanupMode.class, &quot;cleanup mode&quot;);
-&nbsp;    private static final InstantiatingConfigurationParameterConverter&lt;TempDirFactory&gt; tempDirFactoryConverter = new InstantiatingConfigurationParameterConverter(TempDirFactory.class, &quot;temp dir factory&quot;);
-&nbsp;    private final ConfigurationParameters configurationParameters;
+&nbsp;public abstract class ELContext {
+&nbsp;    private Locale locale;
+&nbsp;    private Map&lt;Class&lt;?&gt;, Object&gt; map;
+&nbsp;    private boolean resolved = false;
+&nbsp;    private ImportHandler importHandler = null;
+&nbsp;    private List&lt;EvaluationListener&gt; listeners;
+&nbsp;    private Deque&lt;Map&lt;String, Object&gt;&gt; lambdaArguments = null;
 &nbsp;
-&nbsp;    public DefaultJupiterConfiguration(ConfigurationParameters configurationParameters) {
-&nbsp;        this.configurationParameters = (ConfigurationParameters)Preconditions.notNull(configurationParameters, &quot;ConfigurationParameters must not be null&quot;);
-<b class="fc">&nbsp;    }</b>
-&nbsp;
-&nbsp;    public Optional&lt;String&gt; getRawConfigurationParameter(String key) {
-<b class="fc">&nbsp;        return this.configurationParameters.get(key);</b>
+&nbsp;    public ELContext() {
 &nbsp;    }
 &nbsp;
-<b class="fc">&nbsp;    public &lt;T&gt; Optional&lt;T&gt; getRawConfigurationParameter(String key, Function&lt;String, T&gt; transformer) {</b>
-&nbsp;        return this.configurationParameters.get(key, transformer);
-&nbsp;    }
-<b class="fc">&nbsp;</b>
-&nbsp;    public boolean isParallelExecutionEnabled() {
-&nbsp;        return (Boolean)this.configurationParameters.getBoolean(&quot;junit.jupiter.execution.parallel.enabled&quot;).orElse(false);
-<b class="fc">&nbsp;    }</b>
+&nbsp;    private Deque&lt;Map&lt;String, Object&gt;&gt; getLambdaArguments() {
+&nbsp;        if (this.lambdaArguments == null) {
+&nbsp;            this.lambdaArguments = new ArrayDeque(4);
+&nbsp;        }
 &nbsp;
-&nbsp;    public boolean isExtensionAutoDetectionEnabled() {
-<b class="fc">&nbsp;        return (Boolean)this.configurationParameters.getBoolean(&quot;junit.jupiter.extensions.autodetection.enabled&quot;).orElse(false);</b>
+&nbsp;        return this.lambdaArguments;
 &nbsp;    }
 &nbsp;
-<b class="fc">&nbsp;    public ExecutionMode getDefaultExecutionMode() {</b>
-&nbsp;        return (ExecutionMode)executionModeConverter.get(this.configurationParameters, &quot;junit.jupiter.execution.parallel.mode.default&quot;, ExecutionMode.SAME_THREAD);
+<b class="nc">&nbsp;    public void setPropertyResolved(boolean resolved) {</b>
+&nbsp;        this.resolved = resolved;
 &nbsp;    }
 &nbsp;
-&nbsp;    public ExecutionMode getDefaultClassesExecutionMode() {
-<b class="fc">&nbsp;        return (ExecutionMode)executionModeConverter.get(this.configurationParameters, &quot;junit.jupiter.execution.parallel.mode.classes.default&quot;, this.getDefaultExecutionMode());</b>
-<b class="fc">&nbsp;    }</b>
+<b class="nc">&nbsp;    public void setPropertyResolved(Object base, Object property) {</b>
+&nbsp;        this.setPropertyResolved(true);
+<b class="nc">&nbsp;        this.notifyPropertyResolved(base, property);</b>
+<b class="nc">&nbsp;    }</b>
 &nbsp;
-&nbsp;    public TestInstance.Lifecycle getDefaultTestInstanceLifecycle() {
-&nbsp;        return (TestInstance.Lifecycle)lifecycleConverter.get(this.configurationParameters, &quot;junit.jupiter.testinstance.lifecycle.default&quot;, Lifecycle.PER_METHOD);
+&nbsp;    public boolean isPropertyResolved() {
+&nbsp;        return this.resolved;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public void putContext(Class&lt;?&gt; key, Object contextObject) {
+<b class="nc">&nbsp;        Objects.requireNonNull(key);</b>
+&nbsp;        Objects.requireNonNull(contextObject);
+&nbsp;        if (this.map == null) {
+&nbsp;            this.map = new HashMap();
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        this.map.put(key, contextObject);
 &nbsp;    }
 &nbsp;
-<b class="fc">&nbsp;    public Predicate&lt;ExecutionCondition&gt; getExecutionConditionFilter() {</b>
-&nbsp;        return ClassNamePatternFilterUtils.excludeMatchingClasses((String)this.configurationParameters.get(&quot;junit.jupiter.conditions.deactivate&quot;).orElse((Object)null));
+&nbsp;    public Object getContext(Class&lt;?&gt; key) {
+&nbsp;        Objects.requireNonNull(key);
+&nbsp;        return this.map == null ? null : this.map.get(key);
 &nbsp;    }
 &nbsp;
-&nbsp;    public DisplayNameGenerator getDefaultDisplayNameGenerator() {
-<b class="nc">&nbsp;        return (DisplayNameGenerator)displayNameGeneratorConverter.get(this.configurationParameters, &quot;junit.jupiter.displayname.generator.default&quot;).orElseGet(() -&gt; DisplayNameGenerator.getDisplayNameGenerator(DisplayNameGenerator.Standard.class));</b>
+&nbsp;    public abstract ELResolver getELResolver();
+&nbsp;
+<b class="nc">&nbsp;    public ImportHandler getImportHandler() {</b>
+<b class="nc">&nbsp;        if (this.importHandler == null) {</b>
+&nbsp;            this.importHandler = new ImportHandler();
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return this.importHandler;</b>
 &nbsp;    }
 &nbsp;
-&nbsp;    public Optional&lt;MethodOrderer&gt; getDefaultTestMethodOrderer() {
-&nbsp;        return methodOrdererConverter.get(this.configurationParameters, &quot;junit.jupiter.testmethod.order.default&quot;);
-<b class="fc">&nbsp;    }</b>
+&nbsp;    public abstract FunctionMapper getFunctionMapper();
 &nbsp;
-&nbsp;    public Optional&lt;ClassOrderer&gt; getDefaultTestClassOrderer() {
-&nbsp;        return classOrdererConverter.get(this.configurationParameters, &quot;junit.jupiter.testclass.order.default&quot;);
-&nbsp;    }
-<b class="fc">&nbsp;</b>
-&nbsp;    public CleanupMode getDefaultTempDirCleanupMode() {
-&nbsp;        return (CleanupMode)cleanupModeConverter.get(this.configurationParameters, &quot;junit.jupiter.tempdir.cleanup.mode.default&quot;, CleanupMode.ALWAYS);
+&nbsp;    public Locale getLocale() {
+&nbsp;        return this.locale;
 &nbsp;    }
 &nbsp;
-<b class="nc">&nbsp;    public Supplier&lt;TempDirFactory&gt; getDefaultTempDirFactorySupplier() {</b>
-&nbsp;        Supplier&lt;Optional&lt;TempDirFactory&gt;&gt; supplier = tempDirFactoryConverter.supply(this.configurationParameters, &quot;junit.jupiter.tempdir.factory.default&quot;);
-&nbsp;        return () -&gt; (TempDirFactory)((Optional)supplier.get()).orElse(Standard.INSTANCE);
+&nbsp;    public void setLocale(Locale locale) {
+&nbsp;        this.locale = locale;
 &nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public abstract VariableMapper getVariableMapper();</b>
+&nbsp;
+<b class="nc">&nbsp;    public void addEvaluationListener(EvaluationListener listener) {</b>
+<b class="nc">&nbsp;        if (this.listeners == null) {</b>
+&nbsp;            this.listeners = new ArrayList();
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        this.listeners.add(listener);
+&nbsp;    }
+&nbsp;
+&nbsp;    public List&lt;EvaluationListener&gt; getEvaluationListeners() {
+&nbsp;        return this.listeners == null ? Collections.emptyList() : this.listeners;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void notifyBeforeEvaluation(String expression) {
+&nbsp;        if (this.listeners != null) {
+&nbsp;            for(EvaluationListener listener : this.listeners) {
+&nbsp;                try {
+&nbsp;                    listener.beforeEvaluation(this, expression);
+<b class="nc">&nbsp;                } catch (Throwable t) {</b>
+<b class="nc">&nbsp;                    Util.handleThrowable(t);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void notifyAfterEvaluation(String expression) {
+&nbsp;        if (this.listeners != null) {
+&nbsp;            for(EvaluationListener listener : this.listeners) {
+&nbsp;                try {
+&nbsp;                    listener.afterEvaluation(this, expression);
+&nbsp;                } catch (Throwable t) {
+&nbsp;                    Util.handleThrowable(t);
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void notifyPropertyResolved(Object base, Object property) {
+&nbsp;        if (this.listeners != null) {
+&nbsp;            for(EvaluationListener listener : this.listeners) {
+&nbsp;                try {
+&nbsp;                    listener.propertyResolved(this, base, property);
+<b class="nc">&nbsp;                } catch (Throwable t) {</b>
+&nbsp;                    Util.handleThrowable(t);
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isLambdaArgument(String name) {
+&nbsp;        for(Map&lt;String, Object&gt; arguments : this.getLambdaArguments()) {
+&nbsp;            if (arguments.containsKey(name)) {
+&nbsp;                return true;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return false;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public Object getLambdaArgument(String name) {</b>
+&nbsp;        for(Map&lt;String, Object&gt; arguments : this.getLambdaArguments()) {
+&nbsp;            Object result = arguments.get(name);
+<b class="nc">&nbsp;            if (result != null) {</b>
+&nbsp;                return result;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return null;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void enterLambdaScope(Map&lt;String, Object&gt; arguments) {
+&nbsp;        this.getLambdaArguments().push(arguments);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void exitLambdaScope() {
+&nbsp;        this.getLambdaArguments().pop();
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;T&gt; T convertToType(Object obj, Class&lt;T&gt; type) {
+&nbsp;        boolean originalResolved = this.isPropertyResolved();
+&nbsp;        this.setPropertyResolved(false);
+&nbsp;
+&nbsp;        try {
+&nbsp;            ELResolver resolver = this.getELResolver();
+<b class="nc">&nbsp;            if (resolver != null) {</b>
+&nbsp;                T result = (T)resolver.convertToType(this, obj, type);
+&nbsp;                if (this.isPropertyResolved()) {
+&nbsp;                    Object var6 = result;
+<b class="nc">&nbsp;                    return (T)var6;</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;        } finally {
+<b class="nc">&nbsp;            this.setPropertyResolved(originalResolved);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        if (obj instanceof LambdaExpression &amp;&amp; isFunctionalInterface(type)) {
+&nbsp;            ((LambdaExpression)obj).setELContext(this);
+&nbsp;        }
+&nbsp;
+&nbsp;        return (T)ELManager.getExpressionFactory().coerceToType(obj, type);
+&nbsp;    }
+&nbsp;
+&nbsp;    static boolean isFunctionalInterface(Class&lt;?&gt; type) {
+&nbsp;        if (!type.isInterface()) {
+&nbsp;            return false;
+&nbsp;        } else {
+<b class="nc">&nbsp;            boolean foundAbstractMethod = false;</b>
+&nbsp;            Method[] methods = type.getMethods();
+&nbsp;
+&nbsp;            for(Method method : methods) {
+<b class="nc">&nbsp;                if (Modifier.isAbstract(method.getModifiers()) &amp;&amp; !overridesObjectMethod(method)) {</b>
+&nbsp;                    if (foundAbstractMethod) {
+<b class="nc">&nbsp;                        return false;</b>
+&nbsp;                    }
+<b class="nc">&nbsp;</b>
+&nbsp;                    foundAbstractMethod = true;
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            return foundAbstractMethod;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static boolean overridesObjectMethod(Method method) {
+&nbsp;        if (&quot;equals&quot;.equals(method.getName())) {
+&nbsp;            if (method.getReturnType().equals(Boolean.TYPE) &amp;&amp; method.getParameterCount() == 1 &amp;&amp; method.getParameterTypes()[0].equals(Object.class)) {
+&nbsp;                return true;
+&nbsp;            }
+&nbsp;        } else if (&quot;hashCode&quot;.equals(method.getName())) {
+<b class="nc">&nbsp;            if (method.getReturnType().equals(Integer.TYPE) &amp;&amp; method.getParameterCount() == 0) {</b>
+&nbsp;                return true;
+&nbsp;            }
+&nbsp;        } else if (&quot;toString&quot;.equals(method.getName()) &amp;&amp; method.getReturnType().equals(String.class) &amp;&amp; method.getParameterCount() == 0) {
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        return false;
+<b class="nc">&nbsp;    }</b>
 &nbsp;}
 </code>
 </pre>
@@ -196,7 +339,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2025-03-20 13:41</div>
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
 </div>
 </body>
 </html>

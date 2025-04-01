@@ -5,7 +5,7 @@
 <html id="htmlId">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
-  <title>Coverage Report > DefaultActorFactory</title>
+  <title>Coverage Report > AbandonedConnectionCleanupThread</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -19,15 +19,18 @@
 <div class="breadCrumbs">
 Current scope:     <a href="../../index.html">all classes</a>
     <span class="separator">|</span>
-    <a href="../index.html">org.gradle.internal.actor.internal</a>
+    <a href="../index.html">com.mysql.cj.jdbc</a>
 </div>
 
-<h1>Coverage Summary for Class: DefaultActorFactory (org.gradle.internal.actor.internal)</h1>
+<h1>Coverage Summary for Class: AbandonedConnectionCleanupThread (com.mysql.cj.jdbc)</h1>
 
 <table class="coverageStats">
-
 <tr>
   <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
 <th class="coverageStat 
 ">
   Method, %
@@ -42,92 +45,236 @@ Current scope:     <a href="../../index.html">all classes</a>
 </th>
 </tr>
 <tr>
-  <td class="name">DefaultActorFactory</td>
-<td class="coverageStat">
-  <span class="percent">
-    71.4%
-  </span>
-  <span class="absValue">
-    (5/7)
-  </span>
-</td>
-<td class="coverageStat">
-  <span class="percent">
-    20%
-  </span>
-  <span class="absValue">
-    (2/10)
-  </span>
-</td>
-<td class="coverageStat">
-  <span class="percent">
-    55.6%
-  </span>
-  <span class="absValue">
-    (20/36)
-  </span>
-</td>
-</tr>
-  <tr>
-    <td class="name">DefaultActorFactory$BlockingActor</td>
+  <td class="name">AbandonedConnectionCleanupThread</td>
 <td class="coverageStat">
   <span class="percent">
     100%
   </span>
   <span class="absValue">
-    (4/4)
+    (1/1)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    50%
+    41.7%
   </span>
   <span class="absValue">
-    (1/2)
+    (5/12)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    92.3%
+    10.7%
   </span>
   <span class="absValue">
-    (12/13)
-  </span>
-</td>
-  </tr>
-<tr>
-  <td class="name"><strong>Total</strong></td>
-<td class="coverageStat">
-  <span class="percent">
-    81.8%
-  </span>
-  <span class="absValue">
-    (9/11)
+    (3/28)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    25%
+    35.8%
   </span>
   <span class="absValue">
-    (3/12)
-  </span>
-</td>
-<td class="coverageStat">
-  <span class="percent">
-    65.3%
-  </span>
-  <span class="absValue">
-    (32/49)
+    (19/53)
   </span>
 </td>
 </tr>
+
 </table>
 
 <br/>
 <br/>
 
-  <code class="sourceCode">Source code is not available<br /></code>
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package com.mysql.cj.jdbc;
+&nbsp;
+&nbsp;import com.mysql.cj.MysqlConnection;
+&nbsp;import com.mysql.cj.protocol.NetworkResources;
+&nbsp;import java.lang.ref.PhantomReference;
+&nbsp;import java.lang.ref.Reference;
+&nbsp;import java.lang.ref.ReferenceQueue;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import java.util.concurrent.ExecutorService;
+&nbsp;import java.util.concurrent.Executors;
+&nbsp;import java.util.concurrent.locks.Lock;
+&nbsp;import java.util.concurrent.locks.ReentrantLock;
+&nbsp;
+&nbsp;public class AbandonedConnectionCleanupThread implements Runnable {
+&nbsp;    private static final Set&lt;ConnectionFinalizerPhantomReference&gt; connectionFinalizerPhantomRefs = ConcurrentHashMap.newKeySet();
+&nbsp;    private static final ReferenceQueue&lt;MysqlConnection&gt; referenceQueue = new ReferenceQueue();
+&nbsp;    private static final ExecutorService cleanupThreadExecutorService;
+&nbsp;    private static Thread threadRef = null;
+&nbsp;    private static Lock threadRefLock = new ReentrantLock();
+&nbsp;    private static boolean abandonedConnectionCleanupDisabled = Boolean.getBoolean(&quot;com.mysql.cj.disableAbandonedConnectionCleanup&quot;);
+&nbsp;
+&nbsp;    private AbandonedConnectionCleanupThread() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public void run() {
+&nbsp;        while(true) {
+&nbsp;            try {
+&nbsp;                this.checkThreadContextClassLoader();
+&nbsp;                Reference&lt;? extends MysqlConnection&gt; reference = referenceQueue.remove(5000L);
+&nbsp;                if (reference != null) {
+&nbsp;                    finalizeResource((ConnectionFinalizerPhantomReference)reference);
+&nbsp;                }
+&nbsp;            } catch (InterruptedException var8) {
+&nbsp;                threadRefLock.lock();
+&nbsp;
+&nbsp;                try {
+<b class="fc">&nbsp;                    threadRef = null;</b>
+<b class="fc">&nbsp;</b>
+&nbsp;                    Reference&lt;? extends MysqlConnection&gt; reference;
+&nbsp;                    while((reference = referenceQueue.poll()) != null) {
+<b class="fc">&nbsp;                        finalizeResource((ConnectionFinalizerPhantomReference)reference);</b>
+<b class="fc">&nbsp;                    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;                    connectionFinalizerPhantomRefs.clear();
+&nbsp;                } finally {
+<b class="pc">&nbsp;                    threadRefLock.unlock();</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="fc">&nbsp;                return;</b>
+<b class="fc">&nbsp;            } catch (Exception var9) {</b>
+<b class="fc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void checkThreadContextClassLoader() {
+&nbsp;        try {
+<b class="fc">&nbsp;            threadRef.getContextClassLoader().getResource(&quot;&quot;);</b>
+<b class="pc">&nbsp;        } catch (Throwable var2) {</b>
+&nbsp;            uncheckedShutdown();
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private static boolean consistentClassLoaders() {</b>
+&nbsp;        threadRefLock.lock();
+<b class="fc">&nbsp;</b>
+&nbsp;        boolean callerCtxClassLoader;
+&nbsp;        try {
+&nbsp;            if (threadRef != null) {
+<b class="fc">&nbsp;                ClassLoader callerCtxClassLoader = Thread.currentThread().getContextClassLoader();</b>
+&nbsp;                ClassLoader threadCtxClassLoader = threadRef.getContextClassLoader();
+&nbsp;                boolean var2 = callerCtxClassLoader != null &amp;&amp; threadCtxClassLoader != null &amp;&amp; callerCtxClassLoader == threadCtxClassLoader;
+&nbsp;                return var2;
+&nbsp;            }
+&nbsp;
+&nbsp;            callerCtxClassLoader = false;
+<b class="fc">&nbsp;        } finally {</b>
+<b class="fc">&nbsp;            threadRefLock.unlock();</b>
+<b class="pc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return callerCtxClassLoader;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private static void shutdown(boolean checked) {
+<b class="nc">&nbsp;        if (!checked || consistentClassLoaders()) {</b>
+&nbsp;            if (cleanupThreadExecutorService != null) {
+&nbsp;                cleanupThreadExecutorService.shutdownNow();
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public static void checkedShutdown() {
+<b class="nc">&nbsp;        shutdown(true);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void uncheckedShutdown() {
+&nbsp;        shutdown(false);
+&nbsp;    }
+&nbsp;
+&nbsp;    public static boolean isAlive() {
+&nbsp;        threadRefLock.lock();
+&nbsp;
+&nbsp;        boolean var0;
+&nbsp;        try {
+&nbsp;            var0 = threadRef != null &amp;&amp; threadRef.isAlive();
+&nbsp;        } finally {
+&nbsp;            threadRefLock.unlock();
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+&nbsp;        return var0;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected static void trackConnection(MysqlConnection conn, NetworkResources io) {
+&nbsp;        if (!abandonedConnectionCleanupDisabled) {
+&nbsp;            threadRefLock.lock();
+&nbsp;
+&nbsp;            try {
+&nbsp;                if (isAlive()) {
+&nbsp;                    ConnectionFinalizerPhantomReference reference = new ConnectionFinalizerPhantomReference(conn, io, referenceQueue);
+&nbsp;                    connectionFinalizerPhantomRefs.add(reference);
+&nbsp;                }
+<b class="nc">&nbsp;            } finally {</b>
+&nbsp;                threadRefLock.unlock();
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private static void finalizeResource(ConnectionFinalizerPhantomReference reference) {</b>
+&nbsp;        try {
+<b class="nc">&nbsp;            reference.finalizeResources();</b>
+&nbsp;            reference.clear();
+&nbsp;        } finally {
+&nbsp;            connectionFinalizerPhantomRefs.remove(reference);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    static {
+&nbsp;        if (abandonedConnectionCleanupDisabled) {
+&nbsp;            cleanupThreadExecutorService = null;
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            cleanupThreadExecutorService = Executors.newSingleThreadExecutor((r) -&gt; {
+&nbsp;                Thread t = new Thread(r, &quot;mysql-cj-abandoned-connection-cleanup&quot;);
+&nbsp;                t.setDaemon(true);
+&nbsp;                ClassLoader classLoader = AbandonedConnectionCleanupThread.class.getClassLoader();
+<b class="nc">&nbsp;                if (classLoader == null) {</b>
+<b class="nc">&nbsp;                    classLoader = ClassLoader.getSystemClassLoader();</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                t.setContextClassLoader(classLoader);
+&nbsp;                threadRef = t;
+&nbsp;                return t;
+&nbsp;            });
+&nbsp;            cleanupThreadExecutorService.execute(new AbandonedConnectionCleanupThread());
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static class ConnectionFinalizerPhantomReference extends PhantomReference&lt;MysqlConnection&gt; {
+&nbsp;        private NetworkResources networkResources;
+&nbsp;
+&nbsp;        ConnectionFinalizerPhantomReference(MysqlConnection conn, NetworkResources networkResources, ReferenceQueue&lt;? super MysqlConnection&gt; refQueue) {
+<b class="nc">&nbsp;            super(conn, refQueue);</b>
+&nbsp;            this.networkResources = networkResources;
+&nbsp;        }
+&nbsp;
+&nbsp;        void finalizeResources() {
+&nbsp;            if (this.networkResources != null) {
+&nbsp;                try {
+&nbsp;                    this.networkResources.forceClose();
+&nbsp;                } finally {
+<b class="nc">&nbsp;                    this.networkResources = null;</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
 </div>
 
 <script type="text/javascript">
@@ -149,7 +296,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2025-03-20 13:41</div>
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
 </div>
 </body>
 </html>

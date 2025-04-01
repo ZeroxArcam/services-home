@@ -1,0 +1,199 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > RegionFactoryInitiator</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.cache.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: RegionFactoryInitiator (org.hibernate.cache.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">RegionFactoryInitiator</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (6/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    41.7%
+  </span>
+  <span class="absValue">
+    (10/24)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    70.3%
+  </span>
+  <span class="absValue">
+    (26/37)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.cache.internal;
+&nbsp;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Properties;
+&nbsp;import org.hibernate.boot.registry.StandardServiceInitiator;
+&nbsp;import org.hibernate.boot.registry.selector.spi.StrategySelector;
+&nbsp;import org.hibernate.cache.CacheException;
+&nbsp;import org.hibernate.cache.spi.RegionFactory;
+&nbsp;import org.hibernate.internal.CoreLogging;
+&nbsp;import org.hibernate.internal.CoreMessageLogger;
+&nbsp;import org.hibernate.internal.util.config.ConfigurationHelper;
+&nbsp;import org.hibernate.service.spi.ServiceRegistryImplementor;
+&nbsp;
+&nbsp;public class RegionFactoryInitiator implements StandardServiceInitiator&lt;RegionFactory&gt; {
+&nbsp;    private static final CoreMessageLogger LOG = CoreLogging.messageLogger(RegionFactoryInitiator.class);
+&nbsp;    public static final RegionFactoryInitiator INSTANCE = new RegionFactoryInitiator();
+&nbsp;
+&nbsp;    public RegionFactoryInitiator() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public Class&lt;RegionFactory&gt; getServiceInitiated() {
+&nbsp;        return RegionFactory.class;
+&nbsp;    }
+&nbsp;
+&nbsp;    public RegionFactory initiateService(Map&lt;String, Object&gt; configurationValues, ServiceRegistryImplementor registry) {
+<b class="fc">&nbsp;        RegionFactory regionFactory = this.resolveRegionFactory(configurationValues, registry);</b>
+<b class="fc">&nbsp;        if (regionFactory instanceof NoCachingRegionFactory) {</b>
+&nbsp;            LOG.noRegionFactory();
+&nbsp;        } else {
+&nbsp;            LOG.regionFactory(regionFactory.getClass().getTypeName());
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+&nbsp;        return regionFactory;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    protected RegionFactory resolveRegionFactory(Map&lt;String, Object&gt; configurationValues, ServiceRegistryImplementor registry) {</b>
+&nbsp;        Properties p = new Properties();
+&nbsp;        p.putAll(configurationValues);
+&nbsp;        Boolean useSecondLevelCache = ConfigurationHelper.getBooleanWrapper(&quot;hibernate.cache.use_second_level_cache&quot;, configurationValues, (Boolean)null);
+&nbsp;        Boolean useQueryCache = ConfigurationHelper.getBooleanWrapper(&quot;hibernate.cache.use_query_cache&quot;, configurationValues, (Boolean)null);
+<b class="fc">&nbsp;        if (useSecondLevelCache != Boolean.FALSE || useQueryCache != null &amp;&amp; useQueryCache != Boolean.FALSE) {</b>
+&nbsp;            Object setting = configurationValues.get(&quot;hibernate.cache.region.factory_class&quot;);
+<b class="pc">&nbsp;            StrategySelector selector = (StrategySelector)registry.requireService(StrategySelector.class);</b>
+<b class="fc">&nbsp;            Collection&lt;Class&lt;? extends RegionFactory&gt;&gt; implementors = selector.getRegisteredStrategyImplementors(RegionFactory.class);</b>
+&nbsp;            if (setting != null || implementors.size() == 1 || useSecondLevelCache != Boolean.TRUE &amp;&amp; useQueryCache != Boolean.TRUE) {
+&nbsp;                RegionFactory regionFactory = (RegionFactory)((StrategySelector)registry.requireService(StrategySelector.class)).resolveStrategy(RegionFactory.class, setting, (RegionFactory)null, new StrategyCreatorRegionFactoryImpl(p));
+<b class="nc">&nbsp;                if (regionFactory != null) {</b>
+&nbsp;                    return regionFactory;
+&nbsp;                } else {
+<b class="fc">&nbsp;                    RegionFactory fallback = this.getFallback(configurationValues, registry);</b>
+&nbsp;                    if (fallback != null) {
+&nbsp;                        return fallback;
+&nbsp;                    } else if (implementors.size() == 1) {
+&nbsp;                        RegionFactory registeredFactory = (RegionFactory)selector.resolveStrategy(RegionFactory.class, implementors.iterator().next());
+<b class="fc">&nbsp;                        configurationValues.put(&quot;hibernate.cache.region.factory_class&quot;, registeredFactory);</b>
+<b class="fc">&nbsp;                        configurationValues.put(&quot;hibernate.cache.use_second_level_cache&quot;, &quot;true&quot;);</b>
+&nbsp;                        return registeredFactory;
+<b class="fc">&nbsp;                    } else {</b>
+&nbsp;                        if (LOG.isDebugEnabled()) {
+&nbsp;                            LOG.debugf(&quot;Cannot default RegionFactory based on registered strategies as `%s` RegionFactory strategies were registered&quot;, implementors);
+&nbsp;                        }
+&nbsp;
+<b class="fc">&nbsp;                        return NoCachingRegionFactory.INSTANCE;</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            } else {
+&nbsp;                throw new CacheException(&quot;Caching was explicitly requested, but no RegionFactory was defined and there is not a single registered RegionFactory&quot;);
+&nbsp;            }
+&nbsp;        } else {
+&nbsp;            return NoCachingRegionFactory.INSTANCE;
+&nbsp;        }
+<b class="pc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected RegionFactory getFallback(Map&lt;?, ?&gt; configurationValues, ServiceRegistryImplementor registry) {</b>
+&nbsp;        return null;
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

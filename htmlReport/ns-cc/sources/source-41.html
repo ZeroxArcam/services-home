@@ -1,0 +1,702 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > TypePatternList</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.aspectj.weaver.patterns</a>
+</div>
+
+<h1>Coverage Summary for Class: TypePatternList (org.aspectj.weaver.patterns)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TypePatternList</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    30.3%
+  </span>
+  <span class="absValue">
+    (10/33)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    6.1%
+  </span>
+  <span class="absValue">
+    (10/164)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    9.5%
+  </span>
+  <span class="absValue">
+    (26/273)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.aspectj.weaver.patterns;
+&nbsp;
+&nbsp;import java.io.IOException;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import org.aspectj.bridge.ISourceLocation;
+&nbsp;import org.aspectj.util.FuzzyBoolean;
+&nbsp;import org.aspectj.weaver.CompressingDataOutputStream;
+&nbsp;import org.aspectj.weaver.ISourceContext;
+&nbsp;import org.aspectj.weaver.IntMap;
+&nbsp;import org.aspectj.weaver.ResolvableTypeList;
+&nbsp;import org.aspectj.weaver.ResolvedType;
+&nbsp;import org.aspectj.weaver.UnresolvedType;
+&nbsp;import org.aspectj.weaver.VersionedDataInputStream;
+&nbsp;import org.aspectj.weaver.World;
+&nbsp;
+&nbsp;public class TypePatternList extends PatternNode {
+&nbsp;    private TypePattern[] typePatterns;
+&nbsp;    int ellipsisCount;
+&nbsp;    public static final TypePatternList EMPTY = new TypePatternList(new TypePattern[0]);
+&nbsp;    public static final TypePatternList ANY = new TypePatternList(new TypePattern[]{new EllipsisTypePattern()});
+&nbsp;
+&nbsp;    public TypePatternList() {
+&nbsp;        this.ellipsisCount = 0;
+&nbsp;        this.typePatterns = new TypePattern[0];
+&nbsp;        this.ellipsisCount = 0;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+<b class="fc">&nbsp;    public TypePatternList(TypePattern[] arguments) {</b>
+&nbsp;        this.ellipsisCount = 0;
+<b class="fc">&nbsp;        this.typePatterns = arguments;</b>
+&nbsp;
+&nbsp;        for(TypePattern argument : arguments) {
+&nbsp;            if (argument == TypePattern.ELLIPSIS) {
+&nbsp;                ++this.ellipsisCount;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public TypePatternList(List&lt;TypePattern&gt; l) {</b>
+<b class="fc">&nbsp;        this((TypePattern[])l.toArray(new TypePattern[0]));</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public int size() {
+<b class="fc">&nbsp;        return this.typePatterns.length;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public TypePattern get(int index) {</b>
+<b class="fc">&nbsp;        return this.typePatterns[index];</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String toString() {
+&nbsp;        StringBuilder buf = new StringBuilder();
+&nbsp;        buf.append(&quot;(&quot;);
+<b class="fc">&nbsp;        int i = 0;</b>
+&nbsp;
+&nbsp;        for(int len = this.typePatterns.length; i &lt; len; ++i) {
+&nbsp;            TypePattern type = this.typePatterns[i];
+<b class="fc">&nbsp;            if (i &gt; 0) {</b>
+&nbsp;                buf.append(&quot;, &quot;);
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if (type == TypePattern.ELLIPSIS) {</b>
+&nbsp;                buf.append(&quot;..&quot;);
+&nbsp;            } else {
+&nbsp;                buf.append(type.toString());
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        buf.append(&quot;)&quot;);</b>
+<b class="nc">&nbsp;        return buf.toString();</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public boolean canMatchSignatureWithNParameters(int numParams) {
+<b class="nc">&nbsp;        if (this.ellipsisCount == 0) {</b>
+<b class="nc">&nbsp;            return numParams == this.size();</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            return this.size() - this.ellipsisCount &lt;= numParams;</b>
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public FuzzyBoolean matches(ResolvedType[] types, TypePattern.MatchKind kind) {</b>
+&nbsp;        return this.matches((ResolvedType[])types, kind, (ResolvedType[][])null);
+&nbsp;    }
+&nbsp;
+&nbsp;    public FuzzyBoolean matches(ResolvedType[] types, TypePattern.MatchKind kind, ResolvedType[][] parameterAnnotations) {
+&nbsp;        int nameLength = types.length;
+&nbsp;        int patternLength = this.typePatterns.length;
+<b class="nc">&nbsp;        int nameIndex = 0;</b>
+<b class="nc">&nbsp;        int patternIndex = 0;</b>
+&nbsp;        if (this.ellipsisCount == 0) {
+<b class="nc">&nbsp;            if (nameLength != patternLength) {</b>
+&nbsp;                return FuzzyBoolean.NO;
+&nbsp;            } else {
+&nbsp;                FuzzyBoolean finalReturn = FuzzyBoolean.YES;
+&nbsp;
+<b class="nc">&nbsp;                while(patternIndex &lt; patternLength) {</b>
+&nbsp;                    ResolvedType t = types[nameIndex];
+&nbsp;                    FuzzyBoolean ret = null;
+&nbsp;
+&nbsp;                    try {
+&nbsp;                        if (parameterAnnotations != null) {
+&nbsp;                            t.temporaryAnnotationTypes = parameterAnnotations[nameIndex];
+&nbsp;                        }
+&nbsp;
+&nbsp;                        ret = this.typePatterns[patternIndex].matches(t, kind);
+&nbsp;                    } finally {
+&nbsp;                        t.temporaryAnnotationTypes = null;
+&nbsp;                    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                    ++patternIndex;</b>
+&nbsp;                    ++nameIndex;
+<b class="nc">&nbsp;                    if (ret == FuzzyBoolean.NO) {</b>
+<b class="nc">&nbsp;                        return ret;</b>
+&nbsp;                    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                    if (ret == FuzzyBoolean.MAYBE) {</b>
+<b class="nc">&nbsp;                        finalReturn = ret;</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                return finalReturn;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        } else if (this.ellipsisCount != 1) {
+<b class="nc">&nbsp;            FuzzyBoolean b = outOfStar(this.typePatterns, (ResolvedType[])types, 0, 0, patternLength - this.ellipsisCount, nameLength, this.ellipsisCount, kind, parameterAnnotations);</b>
+<b class="nc">&nbsp;            return b;</b>
+&nbsp;        } else if (nameLength &lt; patternLength - 1) {
+<b class="nc">&nbsp;            return FuzzyBoolean.NO;</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            FuzzyBoolean finalReturn = FuzzyBoolean.YES;</b>
+&nbsp;
+<b class="nc">&nbsp;            while(patternIndex &lt; patternLength) {</b>
+<b class="nc">&nbsp;                TypePattern p = this.typePatterns[patternIndex++];</b>
+<b class="nc">&nbsp;                if (p == TypePattern.ELLIPSIS) {</b>
+<b class="nc">&nbsp;                    nameIndex = nameLength - (patternLength - patternIndex);</b>
+&nbsp;                } else {
+<b class="nc">&nbsp;                    ResolvedType t = types[nameIndex];</b>
+<b class="nc">&nbsp;                    FuzzyBoolean ret = null;</b>
+&nbsp;
+&nbsp;                    try {
+<b class="nc">&nbsp;                        if (parameterAnnotations != null) {</b>
+<b class="nc">&nbsp;                            t.temporaryAnnotationTypes = parameterAnnotations[nameIndex];</b>
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                        ret = p.matches(t, kind);
+<b class="nc">&nbsp;                    } finally {</b>
+<b class="nc">&nbsp;                        t.temporaryAnnotationTypes = null;</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                    ++nameIndex;</b>
+&nbsp;                    if (ret == FuzzyBoolean.NO) {
+<b class="nc">&nbsp;                        return ret;</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;
+<b class="nc">&nbsp;                    if (ret == FuzzyBoolean.MAYBE) {</b>
+<b class="nc">&nbsp;                        finalReturn = ret;</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            return finalReturn;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private static FuzzyBoolean outOfStar(TypePattern[] pattern, ResolvedType[] target, int pi, int ti, int pLeft, int tLeft, int starsLeft, TypePattern.MatchKind kind, ResolvedType[][] parameterAnnotations) {
+<b class="nc">&nbsp;        if (pLeft &gt; tLeft) {</b>
+<b class="nc">&nbsp;            return FuzzyBoolean.NO;</b>
+&nbsp;        } else {
+&nbsp;            FuzzyBoolean finalReturn;
+&nbsp;            for(finalReturn = FuzzyBoolean.YES; tLeft != 0; --tLeft) {
+<b class="nc">&nbsp;                if (pLeft == 0) {</b>
+&nbsp;                    if (starsLeft &gt; 0) {
+&nbsp;                        return finalReturn;
+<b class="nc">&nbsp;                    }</b>
+&nbsp;
+&nbsp;                    return FuzzyBoolean.NO;
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                if (pattern[pi] == TypePattern.ELLIPSIS) {
+&nbsp;                    return inStar(pattern, target, pi + 1, ti, pLeft, tLeft, starsLeft - 1, kind, parameterAnnotations);
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                FuzzyBoolean ret = null;</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                try {
+<b class="nc">&nbsp;                    if (parameterAnnotations != null) {</b>
+&nbsp;                        target[ti].temporaryAnnotationTypes = parameterAnnotations[ti];
+&nbsp;                    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                    ret = pattern[pi].matches(target[ti], kind);</b>
+&nbsp;                } finally {
+<b class="nc">&nbsp;                    target[ti].temporaryAnnotationTypes = null;</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                if (ret == FuzzyBoolean.NO) {
+<b class="nc">&nbsp;                    return ret;</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if (ret == FuzzyBoolean.MAYBE) {</b>
+<b class="nc">&nbsp;                    finalReturn = ret;</b>
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+&nbsp;                ++pi;
+<b class="nc">&nbsp;                ++ti;</b>
+<b class="nc">&nbsp;                --pLeft;</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            return finalReturn;
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private static FuzzyBoolean inStar(TypePattern[] pattern, ResolvedType[] target, int pi, int ti, int pLeft, int tLeft, int starsLeft, TypePattern.MatchKind kind, ResolvedType[][] parameterAnnotations) {</b>
+&nbsp;        TypePattern patternChar;
+<b class="nc">&nbsp;        for(patternChar = pattern[pi]; patternChar == TypePattern.ELLIPSIS; patternChar = pattern[pi]) {</b>
+<b class="nc">&nbsp;            --starsLeft;</b>
+&nbsp;            ++pi;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        while(pLeft &lt;= tLeft) {</b>
+<b class="nc">&nbsp;            FuzzyBoolean ff = null;</b>
+&nbsp;
+&nbsp;            try {
+&nbsp;                if (parameterAnnotations != null) {
+&nbsp;                    target[ti].temporaryAnnotationTypes = parameterAnnotations[ti];
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                ff = patternChar.matches(target[ti], kind);</b>
+<b class="nc">&nbsp;            } finally {</b>
+<b class="nc">&nbsp;                target[ti].temporaryAnnotationTypes = null;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            if (ff.maybeTrue()) {
+&nbsp;                FuzzyBoolean xx = outOfStar(pattern, target, pi + 1, ti + 1, pLeft - 1, tLeft - 1, starsLeft, kind, parameterAnnotations);
+<b class="nc">&nbsp;                if (xx.maybeTrue()) {</b>
+<b class="nc">&nbsp;                    return ff.and(xx);</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            ++ti;
+<b class="nc">&nbsp;            --tLeft;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        return FuzzyBoolean.NO;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public FuzzyBoolean matches(ResolvableTypeList types, TypePattern.MatchKind kind, ResolvedType[][] parameterAnnotations) {
+&nbsp;        int nameLength = types.length;
+<b class="nc">&nbsp;        int patternLength = this.typePatterns.length;</b>
+<b class="nc">&nbsp;        int nameIndex = 0;</b>
+&nbsp;        int patternIndex = 0;
+<b class="nc">&nbsp;        if (this.ellipsisCount == 0) {</b>
+<b class="nc">&nbsp;            if (nameLength != patternLength) {</b>
+&nbsp;                return FuzzyBoolean.NO;
+&nbsp;            } else {
+<b class="nc">&nbsp;                FuzzyBoolean finalReturn = FuzzyBoolean.YES;</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                while(patternIndex &lt; patternLength) {
+&nbsp;                    ResolvedType t = types.getResolved(nameIndex);
+&nbsp;                    FuzzyBoolean ret = null;
+&nbsp;
+<b class="nc">&nbsp;                    try {</b>
+<b class="nc">&nbsp;                        if (parameterAnnotations != null) {</b>
+&nbsp;                            t.temporaryAnnotationTypes = parameterAnnotations[nameIndex];
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                        ret = this.typePatterns[patternIndex].matches(t, kind);
+<b class="nc">&nbsp;                    } finally {</b>
+<b class="nc">&nbsp;                        t.temporaryAnnotationTypes = null;</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;
+<b class="nc">&nbsp;                    ++patternIndex;</b>
+<b class="nc">&nbsp;                    ++nameIndex;</b>
+<b class="nc">&nbsp;                    if (ret == FuzzyBoolean.NO) {</b>
+<b class="nc">&nbsp;                        return ret;</b>
+&nbsp;                    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                    if (ret == FuzzyBoolean.MAYBE) {</b>
+&nbsp;                        finalReturn = ret;
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+&nbsp;                return finalReturn;
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        } else if (this.ellipsisCount != 1) {</b>
+<b class="nc">&nbsp;            FuzzyBoolean b = outOfStar(this.typePatterns, (ResolvableTypeList)types, 0, 0, patternLength - this.ellipsisCount, nameLength, this.ellipsisCount, kind, parameterAnnotations);</b>
+<b class="nc">&nbsp;            return b;</b>
+&nbsp;        } else if (nameLength &lt; patternLength - 1) {
+<b class="nc">&nbsp;            return FuzzyBoolean.NO;</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            FuzzyBoolean finalReturn = FuzzyBoolean.YES;
+&nbsp;
+<b class="nc">&nbsp;            while(patternIndex &lt; patternLength) {</b>
+<b class="nc">&nbsp;                TypePattern p = this.typePatterns[patternIndex++];</b>
+<b class="nc">&nbsp;                if (p == TypePattern.ELLIPSIS) {</b>
+<b class="nc">&nbsp;                    nameIndex = nameLength - (patternLength - patternIndex);</b>
+&nbsp;                } else {
+<b class="nc">&nbsp;                    ResolvedType t = types.getResolved(nameIndex);</b>
+<b class="nc">&nbsp;                    FuzzyBoolean ret = null;</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                    try {</b>
+<b class="nc">&nbsp;                        if (parameterAnnotations != null) {</b>
+&nbsp;                            t.temporaryAnnotationTypes = parameterAnnotations[nameIndex];
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                        ret = p.matches(t, kind);
+<b class="nc">&nbsp;                    } finally {</b>
+<b class="nc">&nbsp;                        t.temporaryAnnotationTypes = null;</b>
+&nbsp;                    }
+<b class="nc">&nbsp;</b>
+&nbsp;                    ++nameIndex;
+<b class="nc">&nbsp;                    if (ret == FuzzyBoolean.NO) {</b>
+&nbsp;                        return ret;
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                    if (ret == FuzzyBoolean.MAYBE) {</b>
+&nbsp;                        finalReturn = ret;
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            return finalReturn;
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private static FuzzyBoolean outOfStar(TypePattern[] pattern, ResolvableTypeList target, int pi, int ti, int pLeft, int tLeft, int starsLeft, TypePattern.MatchKind kind, ResolvedType[][] parameterAnnotations) {</b>
+&nbsp;        if (pLeft &gt; tLeft) {
+&nbsp;            return FuzzyBoolean.NO;
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            FuzzyBoolean finalReturn;
+&nbsp;            for(finalReturn = FuzzyBoolean.YES; tLeft != 0; --tLeft) {
+&nbsp;                if (pLeft == 0) {
+&nbsp;                    if (starsLeft &gt; 0) {
+&nbsp;                        return finalReturn;
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                    return FuzzyBoolean.NO;
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                if (pattern[pi] == TypePattern.ELLIPSIS) {
+<b class="nc">&nbsp;                    return inStar(pattern, target, pi + 1, ti, pLeft, tLeft, starsLeft - 1, kind, parameterAnnotations);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="nc">&nbsp;                FuzzyBoolean ret = null;</b>
+<b class="nc">&nbsp;                ResolvedType type = target.getResolved(ti);</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                try {
+<b class="nc">&nbsp;                    if (parameterAnnotations != null) {</b>
+&nbsp;                        type.temporaryAnnotationTypes = parameterAnnotations[ti];
+&nbsp;                    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                    ret = pattern[pi].matches(type, kind);</b>
+&nbsp;                } finally {
+<b class="nc">&nbsp;                    type.temporaryAnnotationTypes = null;</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="nc">&nbsp;                if (ret == FuzzyBoolean.NO) {</b>
+<b class="nc">&nbsp;                    return ret;</b>
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+&nbsp;                if (ret == FuzzyBoolean.MAYBE) {
+<b class="nc">&nbsp;                    finalReturn = ret;</b>
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                ++pi;</b>
+&nbsp;                ++ti;
+<b class="nc">&nbsp;                --pLeft;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            return finalReturn;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private static FuzzyBoolean inStar(TypePattern[] pattern, ResolvableTypeList target, int pi, int ti, int pLeft, int tLeft, int starsLeft, TypePattern.MatchKind kind, ResolvedType[][] parameterAnnotations) {
+&nbsp;        TypePattern patternChar;
+&nbsp;        for(patternChar = pattern[pi]; patternChar == TypePattern.ELLIPSIS; patternChar = pattern[pi]) {
+&nbsp;            --starsLeft;
+&nbsp;            ++pi;
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        while(pLeft &lt;= tLeft) {</b>
+<b class="nc">&nbsp;            ResolvedType type = target.getResolved(ti);</b>
+<b class="nc">&nbsp;            FuzzyBoolean ff = null;</b>
+&nbsp;
+&nbsp;            try {
+&nbsp;                if (parameterAnnotations != null) {
+<b class="nc">&nbsp;                    type.temporaryAnnotationTypes = parameterAnnotations[ti];</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                ff = patternChar.matches(type, kind);
+<b class="nc">&nbsp;            } finally {</b>
+<b class="nc">&nbsp;                type.temporaryAnnotationTypes = null;</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            if (ff.maybeTrue()) {</b>
+&nbsp;                FuzzyBoolean xx = outOfStar(pattern, target, pi + 1, ti + 1, pLeft - 1, tLeft - 1, starsLeft, kind, parameterAnnotations);
+<b class="nc">&nbsp;                if (xx.maybeTrue()) {</b>
+&nbsp;                    return ff.and(xx);
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            ++ti;</b>
+<b class="nc">&nbsp;            --tLeft;</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return FuzzyBoolean.NO;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public TypePatternList parameterizeWith(Map&lt;String, UnresolvedType&gt; typeVariableMap, World w) {</b>
+<b class="nc">&nbsp;        TypePattern[] parameterizedPatterns = new TypePattern[this.typePatterns.length];</b>
+&nbsp;
+&nbsp;        for(int i = 0; i &lt; parameterizedPatterns.length; ++i) {
+&nbsp;            parameterizedPatterns[i] = this.typePatterns[i].parameterizeWith(typeVariableMap, w);
+&nbsp;        }
+&nbsp;
+&nbsp;        return new TypePatternList(parameterizedPatterns);
+&nbsp;    }
+&nbsp;
+&nbsp;    public TypePatternList resolveBindings(IScope scope, Bindings bindings, boolean allowBinding, boolean requireExactType) {
+&nbsp;        for(int i = 0; i &lt; this.typePatterns.length; ++i) {
+&nbsp;            TypePattern p = this.typePatterns[i];
+<b class="nc">&nbsp;            if (p != null) {</b>
+<b class="nc">&nbsp;                this.typePatterns[i] = this.typePatterns[i].resolveBindings(scope, bindings, allowBinding, requireExactType);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        return this;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public TypePatternList resolveReferences(IntMap bindings) {</b>
+<b class="fc">&nbsp;        int len = this.typePatterns.length;</b>
+<b class="pc">&nbsp;        TypePattern[] ret = new TypePattern[len];</b>
+<b class="fc">&nbsp;</b>
+&nbsp;        for(int i = 0; i &lt; len; ++i) {
+&nbsp;            ret[i] = this.typePatterns[i].remapAdviceFormals(bindings);
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return new TypePatternList(ret);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void postRead(ResolvedType enclosingType) {</b>
+<b class="nc">&nbsp;        for(TypePattern p : this.typePatterns) {</b>
+<b class="nc">&nbsp;            p.postRead(enclosingType);</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean equals(Object other) {
+<b class="nc">&nbsp;        if (!(other instanceof TypePatternList)) {</b>
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        } else {
+&nbsp;            TypePatternList o = (TypePatternList)other;
+&nbsp;            int len = o.typePatterns.length;
+&nbsp;            if (len != this.typePatterns.length) {
+&nbsp;                return false;
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                for(int i = 0; i &lt; len; ++i) {</b>
+&nbsp;                    if (!this.typePatterns[i].equals(o.typePatterns[i])) {
+<b class="nc">&nbsp;                        return false;</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                return true;
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public int hashCode() {
+<b class="nc">&nbsp;        int result = 41;</b>
+&nbsp;
+&nbsp;        for(TypePattern typePattern : this.typePatterns) {
+&nbsp;            result = 37 * result + typePattern.hashCode();
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return result;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public static TypePatternList read(VersionedDataInputStream s, ISourceContext context) throws IOException {</b>
+&nbsp;        short len = s.readShort();
+&nbsp;        TypePattern[] arguments = new TypePattern[len];
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; len; ++i) {</b>
+<b class="nc">&nbsp;            arguments[i] = TypePattern.read(s, context);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        TypePatternList ret = new TypePatternList(arguments);
+<b class="nc">&nbsp;        if (!s.isAtLeast169()) {</b>
+<b class="nc">&nbsp;            ret.readLocation(context, s);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        return ret;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getEnd() {
+&nbsp;        throw new IllegalStateException();
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public ISourceContext getSourceContext() {
+&nbsp;        throw new IllegalStateException();
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public ISourceLocation getSourceLocation() {
+&nbsp;        throw new IllegalStateException();
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public int getStart() {</b>
+&nbsp;        throw new IllegalStateException();
+&nbsp;    }
+&nbsp;
+&nbsp;    public void write(CompressingDataOutputStream s) throws IOException {
+<b class="nc">&nbsp;        s.writeShort(this.typePatterns.length);</b>
+&nbsp;
+&nbsp;        for(TypePattern typePattern : this.typePatterns) {
+&nbsp;            typePattern.write(s);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public TypePattern[] getTypePatterns() {
+&nbsp;        return this.typePatterns;
+&nbsp;    }
+&nbsp;
+&nbsp;    public List&lt;UnresolvedType&gt; getExactTypes() {
+<b class="fc">&nbsp;        List&lt;UnresolvedType&gt; ret = new ArrayList();</b>
+&nbsp;
+&nbsp;        for(TypePattern typePattern : this.typePatterns) {
+&nbsp;            UnresolvedType t = typePattern.getExactType();
+<b class="nc">&nbsp;            if (!ResolvedType.isMissing(t)) {</b>
+<b class="nc">&nbsp;                ret.add(t);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return ret;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public Object accept(PatternNodeVisitor visitor, Object data) {
+&nbsp;        return visitor.visit(this, data);
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public Object traverse(PatternNodeVisitor visitor, Object data) {</b>
+&nbsp;        Object ret = this.accept(visitor, data);
+&nbsp;        if (this.typePatterns != null) {
+&nbsp;            for(TypePattern typePattern : this.typePatterns) {
+&nbsp;                typePattern.traverse(visitor, ret);
+<b class="fc">&nbsp;            }</b>
+<b class="pc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;        return ret;</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public boolean areAllExactWithNoSubtypesAllowed() {</b>
+&nbsp;        for(TypePattern array_element : this.typePatterns) {
+&nbsp;            if (!(array_element instanceof ExactTypePattern)) {
+&nbsp;                return false;
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            ExactTypePattern etp = (ExactTypePattern)array_element;</b>
+&nbsp;            if (etp.isIncludeSubtypes()) {
+<b class="nc">&nbsp;                return false;</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return true;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public String[] maybeGetCleanNames() {
+&nbsp;        String[] theParamNames = new String[this.typePatterns.length];
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; this.typePatterns.length; ++i) {</b>
+<b class="nc">&nbsp;            TypePattern string = this.typePatterns[i];</b>
+<b class="nc">&nbsp;            if (!(string instanceof ExactTypePattern)) {</b>
+<b class="nc">&nbsp;                return null;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            theParamNames[i] = ((ExactTypePattern)string).getExactType().getName();</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        return theParamNames;
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 21:00</div>
+</div>
+</body>
+</html>

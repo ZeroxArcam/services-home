@@ -1,0 +1,247 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > LoggingSystemProperties</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.boot.logging</a>
+</div>
+
+<h1>Coverage Summary for Class: LoggingSystemProperties (org.springframework.boot.logging)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LoggingSystemProperties</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    82.4%
+  </span>
+  <span class="absValue">
+    (14/17)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    71.4%
+  </span>
+  <span class="absValue">
+    (20/28)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    89.5%
+  </span>
+  <span class="absValue">
+    (51/57)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.boot.logging;
+&nbsp;
+&nbsp;import java.nio.charset.Charset;
+&nbsp;import java.nio.charset.StandardCharsets;
+&nbsp;import java.util.function.BiConsumer;
+&nbsp;import java.util.function.Function;
+&nbsp;import org.springframework.boot.system.ApplicationPid;
+&nbsp;import org.springframework.core.env.ConfigurableEnvironment;
+&nbsp;import org.springframework.core.env.Environment;
+&nbsp;import org.springframework.core.env.PropertyResolver;
+&nbsp;import org.springframework.core.env.PropertySourcesPropertyResolver;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.StringUtils;
+&nbsp;
+&nbsp;public class LoggingSystemProperties {
+&nbsp;    private static final BiConsumer&lt;String, String&gt; systemPropertySetter = (name, value) -&gt; {
+&nbsp;        if (System.getProperty(name) == null &amp;&amp; value != null) {
+&nbsp;            System.setProperty(name, value);
+&nbsp;        }
+&nbsp;
+&nbsp;    };
+&nbsp;    private final Environment environment;
+&nbsp;    private final Function&lt;String, String&gt; defaultValueResolver;
+&nbsp;    private final BiConsumer&lt;String, String&gt; setter;
+&nbsp;
+&nbsp;    public LoggingSystemProperties(Environment environment) {
+&nbsp;        this(environment, (BiConsumer)null);
+&nbsp;    }
+&nbsp;
+&nbsp;    public LoggingSystemProperties(Environment environment, BiConsumer&lt;String, String&gt; setter) {
+&nbsp;        this(environment, (Function)null, setter);
+&nbsp;    }
+&nbsp;
+&nbsp;    public LoggingSystemProperties(Environment environment, Function&lt;String, String&gt; defaultValueResolver, BiConsumer&lt;String, String&gt; setter) {
+&nbsp;        Assert.notNull(environment, &quot;Environment must not be null&quot;);
+&nbsp;        this.environment = environment;
+&nbsp;        this.defaultValueResolver = defaultValueResolver != null ? defaultValueResolver : (name) -&gt; null;
+&nbsp;        this.setter = setter != null ? setter : systemPropertySetter;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Charset getDefaultCharset() {
+<b class="fc">&nbsp;        return StandardCharsets.UTF_8;</b>
+<b class="pc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    public final void apply() {
+&nbsp;        this.apply((LogFile)null);
+&nbsp;    }
+&nbsp;
+&nbsp;    public final void apply(LogFile logFile) {
+&nbsp;        PropertyResolver resolver = this.getPropertyResolver();
+&nbsp;        this.apply(logFile, resolver);
+&nbsp;    }
+&nbsp;
+&nbsp;    private PropertyResolver getPropertyResolver() {
+&nbsp;        Environment resolver = this.environment;
+&nbsp;        if (resolver instanceof ConfigurableEnvironment configurableEnvironment) {
+&nbsp;            PropertySourcesPropertyResolver resolver = new PropertySourcesPropertyResolver(configurableEnvironment.getPropertySources());
+&nbsp;            resolver.setConversionService(configurableEnvironment.getConversionService());
+<b class="nc">&nbsp;            resolver.setIgnoreUnresolvableNestedPlaceholders(true);</b>
+&nbsp;            return resolver;
+&nbsp;        } else {
+&nbsp;            return this.environment;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void apply(LogFile logFile, PropertyResolver resolver) {
+&nbsp;        String defaultCharsetName = this.getDefaultCharset().name();
+&nbsp;        this.setSystemProperty(LoggingSystemProperty.APPLICATION_NAME, resolver);
+&nbsp;        this.setSystemProperty(LoggingSystemProperty.APPLICATION_GROUP, resolver);
+<b class="nc">&nbsp;        this.setSystemProperty(LoggingSystemProperty.PID, (new ApplicationPid()).toString());</b>
+&nbsp;        this.setSystemProperty(LoggingSystemProperty.CONSOLE_CHARSET, resolver, defaultCharsetName);
+&nbsp;        this.setSystemProperty(LoggingSystemProperty.FILE_CHARSET, resolver, defaultCharsetName);
+&nbsp;        this.setSystemProperty(LoggingSystemProperty.CONSOLE_THRESHOLD, resolver, this::thresholdMapper);
+&nbsp;        this.setSystemProperty(LoggingSystemProperty.FILE_THRESHOLD, resolver, this::thresholdMapper);
+&nbsp;        this.setSystemProperty(LoggingSystemProperty.EXCEPTION_CONVERSION_WORD, resolver);
+&nbsp;        this.setSystemProperty(LoggingSystemProperty.CONSOLE_PATTERN, resolver);
+&nbsp;        this.setSystemProperty(LoggingSystemProperty.FILE_PATTERN, resolver);
+&nbsp;        this.setSystemProperty(LoggingSystemProperty.CONSOLE_STRUCTURED_FORMAT, resolver);
+&nbsp;        this.setSystemProperty(LoggingSystemProperty.FILE_STRUCTURED_FORMAT, resolver);
+&nbsp;        this.setSystemProperty(LoggingSystemProperty.LEVEL_PATTERN, resolver);
+&nbsp;        this.setSystemProperty(LoggingSystemProperty.DATEFORMAT_PATTERN, resolver);
+<b class="fc">&nbsp;        this.setSystemProperty(LoggingSystemProperty.CORRELATION_PATTERN, resolver);</b>
+<b class="fc">&nbsp;        if (logFile != null) {</b>
+<b class="fc">&nbsp;            logFile.applyToSystemProperties();</b>
+<b class="pc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void setSystemProperty(LoggingSystemProperty property, PropertyResolver resolver) {
+<b class="nc">&nbsp;        this.setSystemProperty(property, resolver, Function.identity());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void setSystemProperty(LoggingSystemProperty property, PropertyResolver resolver, Function&lt;String, String&gt; mapper) {
+<b class="fc">&nbsp;        this.setSystemProperty(property, resolver, (String)null, mapper);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void setSystemProperty(LoggingSystemProperty property, PropertyResolver resolver, String defaultValue) {
+<b class="fc">&nbsp;        this.setSystemProperty(property, resolver, defaultValue, Function.identity());</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private void setSystemProperty(LoggingSystemProperty property, PropertyResolver resolver, String defaultValue, Function&lt;String, String&gt; mapper) {
+&nbsp;        if (property.getIncludePropertyName() == null || (Boolean)resolver.getProperty(property.getIncludePropertyName(), Boolean.class, Boolean.TRUE)) {
+<b class="pc">&nbsp;            String value = property.getApplicationPropertyName() != null ? resolver.getProperty(property.getApplicationPropertyName()) : null;</b>
+<b class="fc">&nbsp;            value = value != null ? value : (String)this.defaultValueResolver.apply(property.getApplicationPropertyName());</b>
+<b class="fc">&nbsp;            value = value != null ? value : defaultValue;</b>
+<b class="fc">&nbsp;            value = (String)mapper.apply(value);</b>
+<b class="fc">&nbsp;            this.setSystemProperty(property.getEnvironmentVariableName(), value);</b>
+<b class="fc">&nbsp;            if (property == LoggingSystemProperty.APPLICATION_NAME &amp;&amp; StringUtils.hasText(value)) {</b>
+&nbsp;                this.setSystemProperty(&quot;LOGGED_APPLICATION_NAME&quot;, &quot;[%s] &quot;.formatted(value));
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;        }
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private void setSystemProperty(LoggingSystemProperty property, String value) {</b>
+<b class="fc">&nbsp;        this.setSystemProperty(property.getEnvironmentVariableName(), value);</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private String thresholdMapper(String input) {</b>
+<b class="fc">&nbsp;        return &quot;false&quot;.equals(input) ? &quot;OFF&quot; : input;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    protected final void setSystemProperty(String name, String value) {</b>
+<b class="fc">&nbsp;        this.setter.accept(name, value);</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:57</div>
+</div>
+</body>
+</html>

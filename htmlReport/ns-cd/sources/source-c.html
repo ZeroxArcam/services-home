@@ -1,0 +1,351 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ReflectionWorld</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.aspectj.weaver.reflect</a>
+</div>
+
+<h1>Coverage Summary for Class: ReflectionWorld (org.aspectj.weaver.reflect)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ReflectionWorld</td>
+<td class="coverageStat">
+  <span class="percent">
+    68.8%
+  </span>
+  <span class="absValue">
+    (11/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (8/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    64.7%
+  </span>
+  <span class="absValue">
+    (33/51)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ReflectionWorld$ExceptionBasedMessageHandler</td>
+<td class="coverageStat">
+  <span class="percent">
+    20%
+  </span>
+  <span class="absValue">
+    (1/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    14.3%
+  </span>
+  <span class="absValue">
+    (1/7)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ReflectionWorld$ReflectionWorldException</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    54.5%
+  </span>
+  <span class="absValue">
+    (12/22)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    57.1%
+  </span>
+  <span class="absValue">
+    (8/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    57.6%
+  </span>
+  <span class="absValue">
+    (34/59)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.aspectj.weaver.reflect;
+&nbsp;
+&nbsp;import java.lang.reflect.InvocationTargetException;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.Map;
+&nbsp;import org.aspectj.bridge.AbortException;
+&nbsp;import org.aspectj.bridge.IMessage;
+&nbsp;import org.aspectj.bridge.IMessageHandler;
+&nbsp;import org.aspectj.weaver.BCException;
+&nbsp;import org.aspectj.weaver.IWeavingSupport;
+&nbsp;import org.aspectj.weaver.ReferenceType;
+&nbsp;import org.aspectj.weaver.ReferenceTypeDelegate;
+&nbsp;import org.aspectj.weaver.ResolvedType;
+&nbsp;import org.aspectj.weaver.UnresolvedType;
+&nbsp;import org.aspectj.weaver.WeakClassLoaderReference;
+&nbsp;import org.aspectj.weaver.World;
+&nbsp;
+&nbsp;public class ReflectionWorld extends World implements IReflectionWorld {
+&nbsp;    private static Map&lt;WeakClassLoaderReference, ReflectionWorld&gt; rworlds = Collections.synchronizedMap(new HashMap());
+&nbsp;    private WeakClassLoaderReference classLoaderReference;
+&nbsp;    private AnnotationFinder annotationFinder;
+&nbsp;    private boolean mustUseOneFourDelegates;
+&nbsp;    private Map&lt;String, Class&lt;?&gt;&gt; inProgressResolutionClasses;
+&nbsp;
+&nbsp;    public static ReflectionWorld getReflectionWorldFor(WeakClassLoaderReference classLoaderReference) {
+&nbsp;        return new ReflectionWorld(classLoaderReference);
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void cleanUpWorlds() {
+&nbsp;        synchronized(rworlds) {
+<b class="fc">&nbsp;            rworlds.clear();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    private ReflectionWorld() {</b>
+<b class="fc">&nbsp;        this.mustUseOneFourDelegates = false;</b>
+&nbsp;        this.inProgressResolutionClasses = new HashMap();
+&nbsp;    }
+&nbsp;
+&nbsp;    public ReflectionWorld(WeakClassLoaderReference classloaderRef) {
+&nbsp;        this.mustUseOneFourDelegates = false;
+&nbsp;        this.inProgressResolutionClasses = new HashMap();
+&nbsp;        this.setMessageHandler(new ExceptionBasedMessageHandler());
+<b class="fc">&nbsp;        this.setBehaveInJava5Way(true);</b>
+&nbsp;        this.classLoaderReference = classloaderRef;
+&nbsp;        this.annotationFinder = makeAnnotationFinderIfAny(this.classLoaderReference.getClassLoader(), this);
+&nbsp;    }
+&nbsp;
+&nbsp;    public ReflectionWorld(ClassLoader aClassLoader) {
+&nbsp;        this.mustUseOneFourDelegates = false;
+&nbsp;        this.inProgressResolutionClasses = new HashMap();
+&nbsp;        this.setMessageHandler(new ExceptionBasedMessageHandler());
+&nbsp;        this.setBehaveInJava5Way(true);
+&nbsp;        this.classLoaderReference = new WeakClassLoaderReference(aClassLoader);
+&nbsp;        this.annotationFinder = makeAnnotationFinderIfAny(this.classLoaderReference.getClassLoader(), this);
+&nbsp;    }
+&nbsp;
+&nbsp;    public ReflectionWorld(boolean forceUseOf14Delegates, ClassLoader aClassLoader) {
+&nbsp;        this(aClassLoader);
+&nbsp;        this.mustUseOneFourDelegates = forceUseOf14Delegates;
+&nbsp;        if (forceUseOf14Delegates) {
+&nbsp;            this.setBehaveInJava5Way(false);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public static AnnotationFinder makeAnnotationFinderIfAny(ClassLoader loader, World world) {
+&nbsp;        AnnotationFinder annotationFinder = null;
+&nbsp;
+<b class="nc">&nbsp;        try {</b>
+<b class="nc">&nbsp;            Class&lt;?&gt; java15AnnotationFinder = Class.forName(&quot;org.aspectj.weaver.reflect.Java15AnnotationFinder&quot;);</b>
+<b class="nc">&nbsp;            annotationFinder = (AnnotationFinder)java15AnnotationFinder.getDeclaredConstructor().newInstance();</b>
+&nbsp;            annotationFinder.setClassLoader(loader);
+&nbsp;            annotationFinder.setWorld(world);
+<b class="nc">&nbsp;        } catch (ClassNotFoundException var4) {</b>
+&nbsp;        } catch (InstantiationException | NoSuchMethodException | IllegalAccessException ex) {
+&nbsp;            throw new BCException(&quot;AspectJ internal error&quot;, ex);
+&nbsp;        } catch (InvocationTargetException e) {
+&nbsp;            e.printStackTrace();
+&nbsp;        }
+&nbsp;
+&nbsp;        return annotationFinder;
+&nbsp;    }
+&nbsp;
+&nbsp;    public ClassLoader getClassLoader() {
+<b class="fc">&nbsp;        return this.classLoaderReference.getClassLoader();</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public AnnotationFinder getAnnotationFinder() {</b>
+<b class="fc">&nbsp;        return this.annotationFinder;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public ResolvedType resolve(Class aClass) {
+<b class="nc">&nbsp;        return resolve(this, aClass);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public static ResolvedType resolve(World world, Class&lt;?&gt; aClass) {</b>
+<b class="nc">&nbsp;        String className = aClass.getName();</b>
+&nbsp;        return aClass.isArray() ? world.resolve(UnresolvedType.forSignature(className.replace(&#39;.&#39;, &#39;/&#39;))) : world.resolve(className);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public ResolvedType resolveUsingClass(Class&lt;?&gt; clazz) {</b>
+<b class="nc">&nbsp;        String signature = UnresolvedType.forName(clazz.getName()).getSignature();</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        ResolvedType var3;
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            this.inProgressResolutionClasses.put(signature, clazz);
+&nbsp;            var3 = this.resolve(clazz.getName());
+&nbsp;        } finally {
+&nbsp;            this.inProgressResolutionClasses.remove(signature);
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+<b class="fc">&nbsp;        return var3;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    protected ReferenceTypeDelegate resolveDelegate(ReferenceType ty) {</b>
+&nbsp;        ReferenceTypeDelegate result;
+&nbsp;        if (this.mustUseOneFourDelegates) {
+&nbsp;            result = ReflectionBasedReferenceTypeDelegateFactory.create14Delegate(ty, this, this.classLoaderReference.getClassLoader());
+&nbsp;        } else {
+<b class="nc">&nbsp;            result = ReflectionBasedReferenceTypeDelegateFactory.createDelegate(ty, this, this.classLoaderReference.getClassLoader());</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if (result == null &amp;&amp; this.inProgressResolutionClasses.size() != 0) {</b>
+&nbsp;            Class&lt;?&gt; clazz = (Class)this.inProgressResolutionClasses.get(ty.getSignature());
+<b class="fc">&nbsp;            if (clazz != null) {</b>
+&nbsp;                result = ReflectionBasedReferenceTypeDelegateFactory.createDelegate(ty, this, clazz);
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        return result;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public IWeavingSupport getWeavingSupport() {</b>
+&nbsp;        return null;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public boolean isLoadtimeWeaving() {</b>
+&nbsp;        return true;
+&nbsp;    }
+&nbsp;
+&nbsp;    public static class ReflectionWorldException extends RuntimeException {
+&nbsp;        private static final long serialVersionUID = -3432261918302793005L;
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;        public ReflectionWorldException(String message) {</b>
+<b class="fc">&nbsp;            super(message);</b>
+&nbsp;        }
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private static class ExceptionBasedMessageHandler implements IMessageHandler {
+&nbsp;        private ExceptionBasedMessageHandler() {
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean handleMessage(IMessage message) throws AbortException {
+&nbsp;            throw new ReflectionWorldException(message.toString());
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean isIgnoring(IMessage.Kind kind) {
+&nbsp;            return kind == IMessage.INFO;
+&nbsp;        }
+&nbsp;
+&nbsp;        public void dontIgnore(IMessage.Kind kind) {
+&nbsp;        }
+&nbsp;
+&nbsp;        public void ignore(IMessage.Kind kind) {
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
+</div>
+</body>
+</html>

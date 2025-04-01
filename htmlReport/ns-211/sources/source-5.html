@@ -1,0 +1,262 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ValidationOrderGenerator</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.validator.internal.engine.groups</a>
+</div>
+
+<h1>Coverage Summary for Class: ValidationOrderGenerator (org.hibernate.validator.internal.engine.groups)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ValidationOrderGenerator</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    18.2%
+  </span>
+  <span class="absValue">
+    (2/11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/46)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    4.5%
+  </span>
+  <span class="absValue">
+    (3/66)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.validator.internal.engine.groups;
+&nbsp;
+&nbsp;import jakarta.validation.GroupSequence;
+&nbsp;import jakarta.validation.groups.Default;
+&nbsp;import java.lang.invoke.MethodHandles;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.List;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import java.util.concurrent.ConcurrentMap;
+&nbsp;import org.hibernate.validator.internal.util.logging.Log;
+&nbsp;import org.hibernate.validator.internal.util.logging.LoggerFactory;
+&nbsp;
+&nbsp;public class ValidationOrderGenerator {
+&nbsp;    private static final Log LOG = LoggerFactory.make(MethodHandles.lookup());
+&nbsp;    private final ConcurrentMap&lt;Class&lt;?&gt;, Sequence&gt; resolvedSequences = new ConcurrentHashMap();
+&nbsp;
+&nbsp;    public ValidationOrderGenerator() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public ValidationOrder getValidationOrder(Class&lt;?&gt; group, boolean expand) {
+&nbsp;        if (Default.class.equals(group)) {
+<b class="fc">&nbsp;            return ValidationOrder.DEFAULT_GROUP;</b>
+&nbsp;        } else if (expand) {
+<b class="fc">&nbsp;            return this.getValidationOrder(Collections.singletonList(group));</b>
+&nbsp;        } else {
+<b class="fc">&nbsp;            DefaultValidationOrder validationOrder = new DefaultValidationOrder();</b>
+&nbsp;            validationOrder.insertGroup(new Group(group));
+&nbsp;            return validationOrder;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public ValidationOrder getValidationOrder(Collection&lt;Class&lt;?&gt;&gt; groups) {
+&nbsp;        if (groups != null &amp;&amp; groups.size() != 0) {
+&nbsp;            if (groups.size() == 1 &amp;&amp; groups.contains(Default.class)) {
+&nbsp;                return ValidationOrder.DEFAULT_GROUP;
+&nbsp;            } else {
+&nbsp;                for(Class&lt;?&gt; clazz : groups) {
+&nbsp;                    if (!clazz.isInterface()) {
+<b class="nc">&nbsp;                        throw LOG.getGroupHasToBeAnInterfaceException(clazz);</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                DefaultValidationOrder validationOrder = new DefaultValidationOrder();</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                for(Class&lt;?&gt; clazz : groups) {
+&nbsp;                    if (Default.class.equals(clazz)) {
+<b class="nc">&nbsp;                        validationOrder.insertGroup(Group.DEFAULT_GROUP);</b>
+<b class="nc">&nbsp;                    } else if (this.isGroupSequence(clazz)) {</b>
+<b class="nc">&nbsp;                        this.insertSequence(clazz, ((GroupSequence)clazz.getAnnotation(GroupSequence.class)).value(), true, validationOrder);</b>
+&nbsp;                    } else {
+&nbsp;                        Group group = new Group(clazz);
+&nbsp;                        validationOrder.insertGroup(group);
+&nbsp;                        this.insertInheritedGroups(clazz, validationOrder);
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                return validationOrder;
+&nbsp;            }
+&nbsp;        } else {
+&nbsp;            throw LOG.getAtLeastOneGroupHasToBeSpecifiedException();
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public ValidationOrder getDefaultValidationOrder(Class&lt;?&gt; clazz, List&lt;Class&lt;?&gt;&gt; defaultGroupSequence) {
+&nbsp;        DefaultValidationOrder validationOrder = new DefaultValidationOrder();
+&nbsp;        this.insertSequence(clazz, (Class[])defaultGroupSequence.toArray(new Class[defaultGroupSequence.size()]), false, validationOrder);
+<b class="nc">&nbsp;        return validationOrder;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private boolean isGroupSequence(Class&lt;?&gt; clazz) {
+<b class="nc">&nbsp;        return clazz.getAnnotation(GroupSequence.class) != null;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private void insertInheritedGroups(Class&lt;?&gt; clazz, DefaultValidationOrder chain) {
+&nbsp;        for(Class&lt;?&gt; inheritedGroup : clazz.getInterfaces()) {
+&nbsp;            Group group = new Group(inheritedGroup);
+<b class="nc">&nbsp;            chain.insertGroup(group);</b>
+<b class="nc">&nbsp;            this.insertInheritedGroups(inheritedGroup, chain);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private void insertSequence(Class&lt;?&gt; sequenceClass, Class&lt;?&gt;[] sequenceElements, boolean cache, DefaultValidationOrder validationOrder) {</b>
+&nbsp;        Sequence sequence = cache ? (Sequence)this.resolvedSequences.get(sequenceClass) : null;
+&nbsp;        if (sequence == null) {
+<b class="nc">&nbsp;            sequence = this.resolveSequence(sequenceClass, sequenceElements, new ArrayList());</b>
+<b class="nc">&nbsp;            sequence.expandInheritedGroups();</b>
+<b class="nc">&nbsp;            if (cache) {</b>
+&nbsp;                Sequence cachedResolvedSequence = (Sequence)this.resolvedSequences.putIfAbsent(sequenceClass, sequence);
+&nbsp;                if (cachedResolvedSequence != null) {
+&nbsp;                    sequence = cachedResolvedSequence;
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        validationOrder.insertSequence(sequence);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private Sequence resolveSequence(Class&lt;?&gt; sequenceClass, Class&lt;?&gt;[] sequenceElements, List&lt;Class&lt;?&gt;&gt; processedSequences) {
+&nbsp;        if (processedSequences.contains(sequenceClass)) {
+&nbsp;            throw LOG.getCyclicDependencyInGroupsDefinitionException();
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            processedSequences.add(sequenceClass);
+&nbsp;            List&lt;Group&gt; resolvedSequenceGroups = new ArrayList();
+&nbsp;
+&nbsp;            for(Class&lt;?&gt; clazz : sequenceElements) {
+&nbsp;                if (this.isGroupSequence(clazz)) {
+&nbsp;                    Sequence tmpSequence = this.resolveSequence(clazz, ((GroupSequence)clazz.getAnnotation(GroupSequence.class)).value(), processedSequences);
+&nbsp;                    this.addGroups(resolvedSequenceGroups, tmpSequence.getComposingGroups());
+&nbsp;                } else {
+&nbsp;                    List&lt;Group&gt; list = new ArrayList();
+<b class="nc">&nbsp;                    list.add(new Group(clazz));</b>
+<b class="nc">&nbsp;                    this.addGroups(resolvedSequenceGroups, list);</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            return new Sequence(sequenceClass, resolvedSequenceGroups);
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private void addGroups(List&lt;Group&gt; resolvedGroupSequence, List&lt;Group&gt; groups) {</b>
+<b class="nc">&nbsp;        for(Group tmpGroup : groups) {</b>
+&nbsp;            if (resolvedGroupSequence.contains(tmpGroup) &amp;&amp; resolvedGroupSequence.indexOf(tmpGroup) &lt; resolvedGroupSequence.size() - 1) {
+<b class="nc">&nbsp;                throw LOG.getUnableToExpandGroupSequenceException();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            resolvedGroupSequence.add(tmpGroup);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public String toString() {
+&nbsp;        StringBuilder sb = new StringBuilder();
+<b class="nc">&nbsp;        sb.append(&quot;ValidationOrderGenerator&quot;);</b>
+&nbsp;        sb.append(&quot;{resolvedSequences=&quot;).append(this.resolvedSequences);
+&nbsp;        sb.append(&#39;}&#39;);
+&nbsp;        return sb.toString();
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:58</div>
+</div>
+</body>
+</html>

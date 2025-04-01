@@ -1,0 +1,188 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > DefaultLockEventListener</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.event.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: DefaultLockEventListener (org.hibernate.event.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DefaultLockEventListener</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (2/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    10.7%
+  </span>
+  <span class="absValue">
+    (3/28)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.event.internal;
+&nbsp;
+&nbsp;import org.hibernate.HibernateException;
+&nbsp;import org.hibernate.LockMode;
+&nbsp;import org.hibernate.TransientObjectException;
+&nbsp;import org.hibernate.engine.internal.Cascade;
+&nbsp;import org.hibernate.engine.internal.CascadePoint;
+&nbsp;import org.hibernate.engine.internal.ForeignKeys;
+&nbsp;import org.hibernate.engine.spi.CascadingActions;
+&nbsp;import org.hibernate.engine.spi.EntityEntry;
+&nbsp;import org.hibernate.engine.spi.PersistenceContext;
+&nbsp;import org.hibernate.engine.spi.SessionImplementor;
+&nbsp;import org.hibernate.event.spi.EventSource;
+&nbsp;import org.hibernate.event.spi.LockEvent;
+&nbsp;import org.hibernate.event.spi.LockEventListener;
+&nbsp;import org.hibernate.internal.CoreMessageLogger;
+&nbsp;import org.hibernate.persister.entity.EntityPersister;
+&nbsp;import org.jboss.logging.Logger;
+&nbsp;
+&nbsp;public class DefaultLockEventListener extends AbstractLockUpgradeEventListener implements LockEventListener {
+&nbsp;    private static final CoreMessageLogger LOG = (CoreMessageLogger)Logger.getMessageLogger(CoreMessageLogger.class, DefaultLockEventListener.class.getName());
+&nbsp;
+&nbsp;    public DefaultLockEventListener() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public void onLock(LockEvent event) throws HibernateException {
+&nbsp;        if (event.getObject() == null) {
+<b class="fc">&nbsp;            throw new NullPointerException(&quot;attempted to lock null&quot;);</b>
+&nbsp;        } else if (event.getLockMode() == LockMode.WRITE) {
+<b class="fc">&nbsp;            throw new HibernateException(&quot;Invalid lock mode for lock()&quot;);</b>
+&nbsp;        } else {
+<b class="fc">&nbsp;            if (event.getLockMode() == LockMode.UPGRADE_SKIPLOCKED) {</b>
+&nbsp;                LOG.explicitSkipLockedLockCombo();
+&nbsp;            }
+&nbsp;
+&nbsp;            SessionImplementor source = event.getSession();
+&nbsp;            PersistenceContext persistenceContext = source.getPersistenceContextInternal();
+&nbsp;            Object entity = persistenceContext.unproxyAndReassociate(event.getObject());
+&nbsp;            EntityEntry entry = persistenceContext.getEntry(entity);
+&nbsp;            if (entry == null) {
+&nbsp;                EntityPersister persister = source.getEntityPersister(event.getEntityName(), entity);
+&nbsp;                Object id = persister.getIdentifier(entity, source);
+<b class="nc">&nbsp;                if (!ForeignKeys.isNotTransient(event.getEntityName(), entity, Boolean.FALSE, source)) {</b>
+<b class="nc">&nbsp;                    throw new TransientObjectException(&quot;cannot lock an unsaved transient instance: &quot; + persister.getEntityName());</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                entry = this.reassociate(event, entity, id, persister);</b>
+<b class="nc">&nbsp;                this.cascadeOnLock(event, persister, entity);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            this.upgradeLock(entity, entry, event.getLockOptions(), event.getSession());</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private void cascadeOnLock(LockEvent event, EntityPersister persister, Object entity) {</b>
+<b class="nc">&nbsp;        EventSource source = event.getSession();</b>
+<b class="nc">&nbsp;        PersistenceContext persistenceContext = source.getPersistenceContextInternal();</b>
+&nbsp;        persistenceContext.incrementCascadeLevel();
+&nbsp;
+&nbsp;        try {
+<b class="nc">&nbsp;            Cascade.cascade(CascadingActions.LOCK, CascadePoint.AFTER_LOCK, source, persister, entity, event.getLockOptions());</b>
+<b class="nc">&nbsp;        } finally {</b>
+<b class="nc">&nbsp;            persistenceContext.decrementCascadeLevel();</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:57</div>
+</div>
+</body>
+</html>

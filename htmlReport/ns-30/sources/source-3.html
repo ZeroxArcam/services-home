@@ -5,7 +5,7 @@
 <html id="htmlId">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
-  <title>Coverage Report > FieldRemapper</title>
+  <title>Coverage Report > CollectionDeserializer</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -19,10 +19,10 @@
 <div class="breadCrumbs">
 Current scope:     <a href="../../index.html">all classes</a>
     <span class="separator">|</span>
-    <a href="../index.html">net.bytebuddy.jar.asm.commons</a>
+    <a href="../index.html">com.fasterxml.jackson.databind.deser.std</a>
 </div>
 
-<h1>Coverage Summary for Class: FieldRemapper (net.bytebuddy.jar.asm.commons)</h1>
+<h1>Coverage Summary for Class: CollectionDeserializer (com.fasterxml.jackson.databind.deser.std)</h1>
 
 <table class="coverageStats">
 <tr>
@@ -45,21 +45,13 @@ Current scope:     <a href="../../index.html">all classes</a>
 </th>
 </tr>
 <tr>
-  <td class="name">FieldRemapper</td>
+  <td class="name">CollectionDeserializer</td>
 <td class="coverageStat">
   <span class="percent">
-    100%
+    0%
   </span>
   <span class="absValue">
-    (1/1)
-  </span>
-</td>
-<td class="coverageStat">
-  <span class="percent">
-    16.7%
-  </span>
-  <span class="absValue">
-    (1/6)
+    (0/1)
   </span>
 </td>
 <td class="coverageStat">
@@ -67,15 +59,23 @@ Current scope:     <a href="../../index.html">all classes</a>
     0%
   </span>
   <span class="absValue">
-    (0/4)
+    (0/18)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    12.5%
+    0%
   </span>
   <span class="absValue">
-    (2/16)
+    (0/100)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/136)
   </span>
 </td>
 </tr>
@@ -92,43 +92,357 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;// (powered by FernFlower decompiler)
 &nbsp;//
 &nbsp;
-&nbsp;package net.bytebuddy.jar.asm.commons;
+&nbsp;package com.fasterxml.jackson.databind.deser.std;
 &nbsp;
-&nbsp;import net.bytebuddy.jar.asm.AnnotationVisitor;
-&nbsp;import net.bytebuddy.jar.asm.FieldVisitor;
-&nbsp;import net.bytebuddy.jar.asm.TypePath;
+&nbsp;import com.fasterxml.jackson.annotation.JsonFormat.Feature;
+&nbsp;import com.fasterxml.jackson.core.JsonParser;
+&nbsp;import com.fasterxml.jackson.core.JsonToken;
+&nbsp;import com.fasterxml.jackson.databind.BeanProperty;
+&nbsp;import com.fasterxml.jackson.databind.DeserializationContext;
+&nbsp;import com.fasterxml.jackson.databind.DeserializationFeature;
+&nbsp;import com.fasterxml.jackson.databind.JavaType;
+&nbsp;import com.fasterxml.jackson.databind.JsonDeserializer;
+&nbsp;import com.fasterxml.jackson.databind.JsonMappingException;
+&nbsp;import com.fasterxml.jackson.databind.annotation.JacksonStdImpl;
+&nbsp;import com.fasterxml.jackson.databind.cfg.CoercionAction;
+&nbsp;import com.fasterxml.jackson.databind.cfg.CoercionInputShape;
+&nbsp;import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
+&nbsp;import com.fasterxml.jackson.databind.deser.NullValueProvider;
+&nbsp;import com.fasterxml.jackson.databind.deser.UnresolvedForwardReference;
+&nbsp;import com.fasterxml.jackson.databind.deser.ValueInstantiator;
+&nbsp;import com.fasterxml.jackson.databind.deser.impl.ReadableObjectId;
+&nbsp;import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
+&nbsp;import com.fasterxml.jackson.databind.type.LogicalType;
+&nbsp;import com.fasterxml.jackson.databind.util.ClassUtil;
+&nbsp;import java.io.IOException;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.Iterator;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Objects;
 &nbsp;
-&nbsp;public class FieldRemapper extends FieldVisitor {
-&nbsp;    protected final Remapper remapper;
+&nbsp;@JacksonStdImpl
+&nbsp;public class CollectionDeserializer extends ContainerDeserializerBase&lt;Collection&lt;Object&gt;&gt; implements ContextualDeserializer {
+&nbsp;    private static final long serialVersionUID = -1L;
+&nbsp;    protected final JsonDeserializer&lt;Object&gt; _valueDeserializer;
+&nbsp;    protected final TypeDeserializer _valueTypeDeserializer;
+&nbsp;    protected final ValueInstantiator _valueInstantiator;
+&nbsp;    protected final JsonDeserializer&lt;Object&gt; _delegateDeserializer;
 &nbsp;
-&nbsp;    public FieldRemapper(FieldVisitor fieldVisitor, Remapper remapper) {
-&nbsp;        this(589824, fieldVisitor, remapper);
+&nbsp;    public CollectionDeserializer(JavaType collectionType, JsonDeserializer&lt;Object&gt; valueDeser, TypeDeserializer valueTypeDeser, ValueInstantiator valueInstantiator) {
+&nbsp;        this(collectionType, valueDeser, valueTypeDeser, valueInstantiator, (JsonDeserializer)null, (NullValueProvider)null, (Boolean)null);
 &nbsp;    }
 &nbsp;
-&nbsp;    protected FieldRemapper(int api, FieldVisitor fieldVisitor, Remapper remapper) {
-&nbsp;        super(api, fieldVisitor);
-&nbsp;        this.remapper = remapper;
+&nbsp;    protected CollectionDeserializer(JavaType collectionType, JsonDeserializer&lt;Object&gt; valueDeser, TypeDeserializer valueTypeDeser, ValueInstantiator valueInstantiator, JsonDeserializer&lt;Object&gt; delegateDeser, NullValueProvider nuller, Boolean unwrapSingle) {
+&nbsp;        super(collectionType, nuller, unwrapSingle);
+&nbsp;        this._valueDeserializer = valueDeser;
+&nbsp;        this._valueTypeDeserializer = valueTypeDeser;
+&nbsp;        this._valueInstantiator = valueInstantiator;
+&nbsp;        this._delegateDeserializer = delegateDeser;
 &nbsp;    }
 &nbsp;
-&nbsp;    public AnnotationVisitor visitAnnotation(String descriptor, boolean visible) {
-&nbsp;        AnnotationVisitor annotationVisitor = super.visitAnnotation(this.remapper.mapDesc(descriptor), visible);
-&nbsp;        return annotationVisitor == null ? null : this.createAnnotationRemapper(descriptor, annotationVisitor);
+&nbsp;    protected CollectionDeserializer(CollectionDeserializer src) {
+&nbsp;        super(src);
+&nbsp;        this._valueDeserializer = src._valueDeserializer;
+&nbsp;        this._valueTypeDeserializer = src._valueTypeDeserializer;
+&nbsp;        this._valueInstantiator = src._valueInstantiator;
+&nbsp;        this._delegateDeserializer = src._delegateDeserializer;
 &nbsp;    }
 &nbsp;
-&nbsp;    public AnnotationVisitor visitTypeAnnotation(int typeRef, TypePath typePath, String descriptor, boolean visible) {
-&nbsp;        AnnotationVisitor annotationVisitor = super.visitTypeAnnotation(typeRef, typePath, this.remapper.mapDesc(descriptor), visible);
-&nbsp;        return annotationVisitor == null ? null : this.createAnnotationRemapper(descriptor, annotationVisitor);
+&nbsp;    protected CollectionDeserializer withResolved(JsonDeserializer&lt;?&gt; dd, JsonDeserializer&lt;?&gt; vd, TypeDeserializer vtd, NullValueProvider nuller, Boolean unwrapSingle) {
+&nbsp;        return new CollectionDeserializer(this._containerType, vd, vtd, this._valueInstantiator, dd, nuller, unwrapSingle);
 &nbsp;    }
 &nbsp;
-&nbsp;    /** @deprecated */
-&nbsp;    @Deprecated
-&nbsp;    protected AnnotationVisitor createAnnotationRemapper(AnnotationVisitor annotationVisitor) {
-&nbsp;        return new AnnotationRemapper(this.api, (String)null, annotationVisitor, this.remapper);
+&nbsp;    public boolean isCachable() {
+&nbsp;        return this._valueDeserializer == null &amp;&amp; this._valueTypeDeserializer == null &amp;&amp; this._delegateDeserializer == null;
 &nbsp;    }
 &nbsp;
-&nbsp;    protected AnnotationVisitor createAnnotationRemapper(String descriptor, AnnotationVisitor annotationVisitor) {
-&nbsp;        return (new AnnotationRemapper(this.api, descriptor, annotationVisitor, this.remapper)).orDeprecatedValue(this.createAnnotationRemapper(annotationVisitor));
+&nbsp;    public LogicalType logicalType() {
+&nbsp;        return LogicalType.Collection;
 &nbsp;    }
+&nbsp;
+&nbsp;    public CollectionDeserializer createContextual(DeserializationContext ctxt, BeanProperty property) throws JsonMappingException {
+<b class="nc">&nbsp;        JsonDeserializer&lt;Object&gt; delegateDeser = null;</b>
+&nbsp;        if (this._valueInstantiator != null) {
+&nbsp;            if (this._valueInstantiator.canCreateUsingDelegate()) {
+&nbsp;                JavaType delegateType = this._valueInstantiator.getDelegateType(ctxt.getConfig());
+&nbsp;                if (delegateType == null) {
+&nbsp;                    ctxt.reportBadDefinition(this._containerType, String.format(&quot;Invalid delegate-creator definition for %s: value instantiator (%s) returned true for &#39;canCreateUsingDelegate()&#39;, but null for &#39;getDelegateType()&#39;&quot;, this._containerType, this._valueInstantiator.getClass().getName()));
+&nbsp;                }
+&nbsp;
+&nbsp;                delegateDeser = this.findDeserializer(ctxt, delegateType, property);
+&nbsp;            } else if (this._valueInstantiator.canCreateUsingArrayDelegate()) {
+&nbsp;                JavaType delegateType = this._valueInstantiator.getArrayDelegateType(ctxt.getConfig());
+&nbsp;                if (delegateType == null) {
+&nbsp;                    ctxt.reportBadDefinition(this._containerType, String.format(&quot;Invalid delegate-creator definition for %s: value instantiator (%s) returned true for &#39;canCreateUsingArrayDelegate()&#39;, but null for &#39;getArrayDelegateType()&#39;&quot;, this._containerType, this._valueInstantiator.getClass().getName()));
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                delegateDeser = this.findDeserializer(ctxt, delegateType, property);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        Boolean unwrapSingle = this.findFormatFeature(ctxt, property, Collection.class, Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+&nbsp;        JsonDeserializer&lt;?&gt; valueDeser = this._valueDeserializer;
+&nbsp;        valueDeser = this.findConvertingContentDeserializer(ctxt, property, valueDeser);
+&nbsp;        JavaType vt = this._containerType.getContentType();
+&nbsp;        if (valueDeser == null) {
+&nbsp;            valueDeser = ctxt.findContextualValueDeserializer(vt, property);
+&nbsp;        } else {
+<b class="nc">&nbsp;            valueDeser = ctxt.handleSecondaryContextualization(valueDeser, property, vt);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        TypeDeserializer valueTypeDeser = this._valueTypeDeserializer;</b>
+<b class="nc">&nbsp;        if (valueTypeDeser != null) {</b>
+&nbsp;            valueTypeDeser = valueTypeDeser.forProperty(property);
+&nbsp;        }
+&nbsp;
+&nbsp;        NullValueProvider nuller = this.findContentNullProvider(ctxt, property, valueDeser);
+&nbsp;        return Objects.equals(unwrapSingle, this._unwrapSingle) &amp;&amp; nuller == this._nullProvider &amp;&amp; delegateDeser == this._delegateDeserializer &amp;&amp; valueDeser == this._valueDeserializer &amp;&amp; valueTypeDeser == this._valueTypeDeserializer ? this : this.withResolved(delegateDeser, valueDeser, valueTypeDeser, nuller, unwrapSingle);
+&nbsp;    }
+&nbsp;
+&nbsp;    public JsonDeserializer&lt;Object&gt; getContentDeserializer() {
+&nbsp;        return this._valueDeserializer;
+&nbsp;    }
+&nbsp;
+&nbsp;    public ValueInstantiator getValueInstantiator() {
+<b class="nc">&nbsp;        return this._valueInstantiator;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Collection&lt;Object&gt; deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+&nbsp;        if (this._delegateDeserializer != null) {
+&nbsp;            return (Collection)this._valueInstantiator.createUsingDelegate(ctxt, this._delegateDeserializer.deserialize(p, ctxt));
+&nbsp;        } else if (p.isExpectedStartArrayToken()) {
+&nbsp;            return this._deserializeFromArray(p, ctxt, this.createDefaultInstance(ctxt));
+&nbsp;        } else {
+&nbsp;            return p.hasToken(JsonToken.VALUE_STRING) ? this._deserializeFromString(p, ctxt, p.getText()) : this.handleNonArray(p, ctxt, this.createDefaultInstance(ctxt));
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Collection&lt;Object&gt; createDefaultInstance(DeserializationContext ctxt) throws IOException {
+&nbsp;        return (Collection)this._valueInstantiator.createUsingDefault(ctxt);
+&nbsp;    }
+&nbsp;
+&nbsp;    public Collection&lt;Object&gt; deserialize(JsonParser p, DeserializationContext ctxt, Collection&lt;Object&gt; result) throws IOException {
+<b class="nc">&nbsp;        return p.isExpectedStartArrayToken() ? this._deserializeFromArray(p, ctxt, result) : this.handleNonArray(p, ctxt, result);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Object deserializeWithType(JsonParser p, DeserializationContext ctxt, TypeDeserializer typeDeserializer) throws IOException {
+&nbsp;        return typeDeserializer.deserializeTypedFromArray(p, ctxt);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Collection&lt;Object&gt; _deserializeFromString(JsonParser p, DeserializationContext ctxt, String value) throws IOException {
+&nbsp;        Class&lt;?&gt; rawTargetType = this.handledType();
+&nbsp;        if (value.isEmpty()) {
+&nbsp;            CoercionAction act = ctxt.findCoercionAction(this.logicalType(), rawTargetType, CoercionInputShape.EmptyString);
+&nbsp;            if (act != null &amp;&amp; act != CoercionAction.Fail) {
+&nbsp;                return (Collection)this._deserializeFromEmptyString(p, ctxt, act, rawTargetType, &quot;empty String (\&quot;\&quot;)&quot;);
+&nbsp;            }
+&nbsp;        } else if (_isBlank(value)) {
+&nbsp;            CoercionAction act = ctxt.findCoercionFromBlankString(this.logicalType(), rawTargetType, CoercionAction.Fail);
+&nbsp;            if (act != CoercionAction.Fail) {
+&nbsp;                return (Collection)this._deserializeFromEmptyString(p, ctxt, act, rawTargetType, &quot;blank String (all whitespace)&quot;);
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return this.handleNonArray(p, ctxt, this.createDefaultInstance(ctxt));</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected Collection&lt;Object&gt; _deserializeFromArray(JsonParser p, DeserializationContext ctxt, Collection&lt;Object&gt; result) throws IOException {</b>
+&nbsp;        p.assignCurrentValue(result);
+&nbsp;        JsonDeserializer&lt;Object&gt; valueDes = this._valueDeserializer;
+<b class="nc">&nbsp;        if (valueDes.getObjectIdReader() != null) {</b>
+&nbsp;            return this._deserializeWithObjectId(p, ctxt, result);
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            TypeDeserializer typeDeser = this._valueTypeDeserializer;</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            JsonToken t;</b>
+<b class="nc">&nbsp;            while((t = p.nextToken()) != JsonToken.END_ARRAY) {</b>
+&nbsp;                try {
+&nbsp;                    Object value;
+<b class="nc">&nbsp;                    if (t == JsonToken.VALUE_NULL) {</b>
+&nbsp;                        if (this._skipNullValues) {
+<b class="nc">&nbsp;                            continue;</b>
+&nbsp;                        }
+&nbsp;
+&nbsp;                        value = this._nullProvider.getNullValue(ctxt);
+&nbsp;                    } else if (typeDeser == null) {
+&nbsp;                        value = valueDes.deserialize(p, ctxt);
+<b class="nc">&nbsp;                    } else {</b>
+&nbsp;                        value = valueDes.deserializeWithType(p, ctxt, typeDeser);
+&nbsp;                    }
+<b class="nc">&nbsp;</b>
+&nbsp;                    if (value == null) {
+&nbsp;                        this._tryToAddNull(p, ctxt, result);
+<b class="nc">&nbsp;                    } else {</b>
+<b class="nc">&nbsp;                        result.add(value);</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                } catch (Exception var9) {</b>
+&nbsp;                    boolean wrap = ctxt == null || ctxt.isEnabled(DeserializationFeature.WRAP_EXCEPTIONS);
+<b class="nc">&nbsp;                    if (!wrap) {</b>
+&nbsp;                        ClassUtil.throwIfRTE(var9);
+&nbsp;                    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                    throw JsonMappingException.wrapWithPath(var9, result, result.size());</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            return result;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected final Collection&lt;Object&gt; handleNonArray(JsonParser p, DeserializationContext ctxt, Collection&lt;Object&gt; result) throws IOException {
+&nbsp;        boolean canWrap = this._unwrapSingle == Boolean.TRUE || this._unwrapSingle == null &amp;&amp; ctxt.isEnabled(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+<b class="nc">&nbsp;        if (!canWrap) {</b>
+&nbsp;            return (Collection)ctxt.handleUnexpectedToken(this._containerType, p);
+&nbsp;        } else {
+<b class="nc">&nbsp;            JsonDeserializer&lt;Object&gt; valueDes = this._valueDeserializer;</b>
+&nbsp;            TypeDeserializer typeDeser = this._valueTypeDeserializer;
+&nbsp;
+&nbsp;            Object value;
+&nbsp;            try {
+&nbsp;                if (p.hasToken(JsonToken.VALUE_NULL)) {
+&nbsp;                    if (this._skipNullValues) {
+&nbsp;                        return result;
+&nbsp;                    }
+&nbsp;
+&nbsp;                    value = this._nullProvider.getNullValue(ctxt);
+<b class="nc">&nbsp;                } else if (typeDeser == null) {</b>
+&nbsp;                    value = valueDes.deserialize(p, ctxt);
+&nbsp;                } else {
+&nbsp;                    value = valueDes.deserializeWithType(p, ctxt, typeDeser);
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+&nbsp;                if (value == null) {
+&nbsp;                    this._tryToAddNull(p, ctxt, result);
+&nbsp;                    return result;
+&nbsp;                }
+&nbsp;            } catch (Exception var10) {
+&nbsp;                boolean wrap = ctxt.isEnabled(DeserializationFeature.WRAP_EXCEPTIONS);
+&nbsp;                if (!wrap) {
+&nbsp;                    ClassUtil.throwIfRTE(var10);
+&nbsp;                }
+&nbsp;
+&nbsp;                throw JsonMappingException.wrapWithPath(var10, Object.class, result.size());
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            result.add(value);</b>
+<b class="nc">&nbsp;            return result;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Collection&lt;Object&gt; _deserializeWithObjectId(JsonParser p, DeserializationContext ctxt, Collection&lt;Object&gt; result) throws IOException {
+<b class="nc">&nbsp;        if (!p.isExpectedStartArrayToken()) {</b>
+<b class="nc">&nbsp;            return this.handleNonArray(p, ctxt, result);</b>
+&nbsp;        } else {
+&nbsp;            p.assignCurrentValue(result);
+&nbsp;            JsonDeserializer&lt;Object&gt; valueDes = this._valueDeserializer;
+&nbsp;            TypeDeserializer typeDeser = this._valueTypeDeserializer;
+<b class="nc">&nbsp;            CollectionReferringAccumulator referringAccumulator = new CollectionReferringAccumulator(this._containerType.getContentType().getRawClass(), result);</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            JsonToken t;
+<b class="nc">&nbsp;            while((t = p.nextToken()) != JsonToken.END_ARRAY) {</b>
+&nbsp;                try {
+&nbsp;                    Object value;
+&nbsp;                    if (t == JsonToken.VALUE_NULL) {
+&nbsp;                        if (this._skipNullValues) {
+&nbsp;                            continue;
+&nbsp;                        }
+&nbsp;
+&nbsp;                        value = this._nullProvider.getNullValue(ctxt);
+&nbsp;                    } else if (typeDeser == null) {
+<b class="nc">&nbsp;                        value = valueDes.deserialize(p, ctxt);</b>
+&nbsp;                    } else {
+&nbsp;                        value = valueDes.deserializeWithType(p, ctxt, typeDeser);
+&nbsp;                    }
+&nbsp;
+&nbsp;                    if (value != null || !this._skipNullValues) {
+&nbsp;                        referringAccumulator.add(value);
+&nbsp;                    }
+&nbsp;                } catch (UnresolvedForwardReference reference) {
+<b class="nc">&nbsp;                    ReadableObjectId.Referring ref = referringAccumulator.handleUnresolvedReference(reference);</b>
+<b class="nc">&nbsp;                    reference.getRoid().appendReferring(ref);</b>
+&nbsp;                } catch (Exception var11) {
+<b class="nc">&nbsp;                    boolean wrap = ctxt == null || ctxt.isEnabled(DeserializationFeature.WRAP_EXCEPTIONS);</b>
+&nbsp;                    if (!wrap) {
+&nbsp;                        ClassUtil.throwIfRTE(var11);
+&nbsp;                    }
+&nbsp;
+&nbsp;                    throw JsonMappingException.wrapWithPath(var11, result, result.size());
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            return result;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void _tryToAddNull(JsonParser p, DeserializationContext ctxt, Collection&lt;?&gt; set) throws IOException {
+&nbsp;        if (!this._skipNullValues) {
+&nbsp;            try {
+&nbsp;                set.add((Object)null);
+&nbsp;            } catch (NullPointerException var5) {
+&nbsp;                ctxt.handleUnexpectedToken(this._valueType, JsonToken.VALUE_NULL, p, &quot;`java.util.Collection` of type %s does not accept `null` values&quot;, new Object[]{ClassUtil.getTypeDescription(this.getValueType(ctxt))});
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public static class CollectionReferringAccumulator {
+&nbsp;        private final Class&lt;?&gt; _elementType;
+&nbsp;        private final Collection&lt;Object&gt; _result;
+&nbsp;        private List&lt;CollectionReferring&gt; _accumulator = new ArrayList();
+&nbsp;
+&nbsp;        public CollectionReferringAccumulator(Class&lt;?&gt; elementType, Collection&lt;Object&gt; result) {
+&nbsp;            this._elementType = elementType;
+<b class="nc">&nbsp;            this._result = result;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        public void add(Object value) {
+&nbsp;            if (this._accumulator.isEmpty()) {
+&nbsp;                this._result.add(value);
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                CollectionReferring ref = (CollectionReferring)this._accumulator.get(this._accumulator.size() - 1);</b>
+&nbsp;                ref.next.add(value);
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;
+&nbsp;        public ReadableObjectId.Referring handleUnresolvedReference(UnresolvedForwardReference reference) {
+&nbsp;            CollectionReferring id = new CollectionReferring(this, reference, this._elementType);
+<b class="nc">&nbsp;            this._accumulator.add(id);</b>
+<b class="nc">&nbsp;            return id;</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        public void resolveForwardReference(Object id, Object value) throws IOException {</b>
+&nbsp;            Iterator&lt;CollectionReferring&gt; iterator = this._accumulator.iterator();
+&nbsp;
+&nbsp;            CollectionReferring ref;
+&nbsp;            for(Collection&lt;Object&gt; previous = this._result; iterator.hasNext(); previous = ref.next) {
+&nbsp;                ref = (CollectionReferring)iterator.next();
+<b class="nc">&nbsp;                if (ref.hasId(id)) {</b>
+&nbsp;                    iterator.remove();
+&nbsp;                    previous.add(value);
+&nbsp;                    previous.addAll(ref.next);
+&nbsp;                    return;
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            throw new IllegalArgumentException(&quot;Trying to resolve a forward reference with id [&quot; + id + &quot;] that wasn&#39;t previously seen as unresolved.&quot;);
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private static final class CollectionReferring extends ReadableObjectId.Referring {
+<b class="nc">&nbsp;        private final CollectionReferringAccumulator _parent;</b>
+&nbsp;        public final List&lt;Object&gt; next = new ArrayList();
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        CollectionReferring(CollectionReferringAccumulator parent, UnresolvedForwardReference reference, Class&lt;?&gt; contentType) {</b>
+&nbsp;            super(reference, contentType);
+<b class="nc">&nbsp;            this._parent = parent;</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        public void handleResolvedForwardReference(Object id, Object value) throws IOException {
+&nbsp;            this._parent.resolveForwardReference(id, value);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
 &nbsp;}
 </code>
 </pre>
@@ -153,7 +467,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2025-03-20 13:42</div>
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
 </div>
 </body>
 </html>

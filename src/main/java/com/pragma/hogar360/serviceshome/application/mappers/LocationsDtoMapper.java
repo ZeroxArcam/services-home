@@ -10,8 +10,6 @@ import org.mapstruct.ReportingPolicy;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface LocationsDtoMapper {
-//  "neighborhood": "El Poblado",
-//  "cityDepartmenId": 2
     @Mapping(source = "neighborhood", target = "neighborhood")
     @Mapping(source = "cityDepartmentId", target = "city.id")
     LocationModel requestToModel(SaveLocationRequest saveLocationRequest);

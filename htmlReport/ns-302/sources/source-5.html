@@ -1,0 +1,199 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > DataSourceJmxConfiguration</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.boot.autoconfigure.jdbc</a>
+</div>
+
+<h1>Coverage Summary for Class: DataSourceJmxConfiguration (org.springframework.boot.autoconfigure.jdbc)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DataSourceJmxConfiguration</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.boot.autoconfigure.jdbc;
+&nbsp;
+&nbsp;import com.zaxxer.hikari.HikariConfigMXBean;
+&nbsp;import com.zaxxer.hikari.HikariDataSource;
+&nbsp;import java.sql.SQLException;
+&nbsp;import javax.sql.DataSource;
+&nbsp;import org.apache.commons.logging.Log;
+&nbsp;import org.apache.commons.logging.LogFactory;
+&nbsp;import org.apache.tomcat.jdbc.pool.DataSourceProxy;
+&nbsp;import org.apache.tomcat.jdbc.pool.PoolConfiguration;
+&nbsp;import org.springframework.beans.factory.ObjectProvider;
+&nbsp;import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+&nbsp;import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+&nbsp;import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+&nbsp;import org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandidate;
+&nbsp;import org.springframework.boot.jdbc.DataSourceUnwrapper;
+&nbsp;import org.springframework.context.annotation.Bean;
+&nbsp;import org.springframework.context.annotation.Configuration;
+&nbsp;import org.springframework.jmx.export.MBeanExporter;
+&nbsp;
+&nbsp;@Configuration(
+&nbsp;    proxyBeanMethods = false
+&nbsp;)
+&nbsp;@ConditionalOnProperty(
+&nbsp;    prefix = &quot;spring.jmx&quot;,
+&nbsp;    name = {&quot;enabled&quot;},
+&nbsp;    havingValue = &quot;true&quot;,
+&nbsp;    matchIfMissing = true
+&nbsp;)
+&nbsp;class DataSourceJmxConfiguration {
+&nbsp;    private static final Log logger = LogFactory.getLog(DataSourceJmxConfiguration.class);
+&nbsp;
+&nbsp;    DataSourceJmxConfiguration() {
+&nbsp;    }
+&nbsp;
+&nbsp;    @Configuration(
+&nbsp;        proxyBeanMethods = false
+&nbsp;    )
+&nbsp;    @ConditionalOnClass({HikariDataSource.class})
+&nbsp;    @ConditionalOnSingleCandidate(DataSource.class)
+&nbsp;    static class Hikari {
+<b class="nc">&nbsp;        private final DataSource dataSource;</b>
+&nbsp;        private final ObjectProvider&lt;MBeanExporter&gt; mBeanExporter;
+<b class="nc">&nbsp;</b>
+&nbsp;        Hikari(DataSource dataSource, ObjectProvider&lt;MBeanExporter&gt; mBeanExporter) {
+&nbsp;            this.dataSource = dataSource;
+&nbsp;            this.mBeanExporter = mBeanExporter;
+&nbsp;            this.validateMBeans();
+&nbsp;        }
+&nbsp;
+&nbsp;        private void validateMBeans() {
+&nbsp;            HikariDataSource hikariDataSource = (HikariDataSource)DataSourceUnwrapper.unwrap(this.dataSource, HikariConfigMXBean.class, HikariDataSource.class);
+&nbsp;            if (hikariDataSource != null &amp;&amp; hikariDataSource.isRegisterMbeans()) {
+&nbsp;                this.mBeanExporter.ifUnique((exporter) -&gt; exporter.addExcludedBean(&quot;dataSource&quot;));
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Configuration(
+&nbsp;        proxyBeanMethods = false
+&nbsp;    )
+&nbsp;    @ConditionalOnProperty(
+&nbsp;        prefix = &quot;spring.datasource.tomcat&quot;,
+&nbsp;        name = {&quot;jmx-enabled&quot;}
+&nbsp;    )
+&nbsp;    @ConditionalOnClass({DataSourceProxy.class})
+&nbsp;    @ConditionalOnSingleCandidate(DataSource.class)
+&nbsp;    static class TomcatDataSourceJmxConfiguration {
+&nbsp;        TomcatDataSourceJmxConfiguration() {
+&nbsp;        }
+&nbsp;
+&nbsp;        @Bean
+&nbsp;        @ConditionalOnMissingBean(
+&nbsp;            name = {&quot;dataSourceMBean&quot;}
+&nbsp;        )
+&nbsp;        Object dataSourceMBean(DataSource dataSource) {
+&nbsp;            DataSourceProxy dataSourceProxy = (DataSourceProxy)DataSourceUnwrapper.unwrap(dataSource, PoolConfiguration.class, DataSourceProxy.class);
+&nbsp;            if (dataSourceProxy != null) {
+&nbsp;                try {
+&nbsp;                    return dataSourceProxy.createPool().getJmxPool();
+&nbsp;                } catch (SQLException var4) {
+&nbsp;                    DataSourceJmxConfiguration.logger.warn(&quot;Cannot expose DataSource to JMX (could not connect)&quot;);
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            return null;
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,220 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > StandardTemporaryTableExporter</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.dialect.temptable</a>
+</div>
+
+<h1>Coverage Summary for Class: StandardTemporaryTableExporter (org.hibernate.dialect.temptable)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">StandardTemporaryTableExporter</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    12.5%
+  </span>
+  <span class="absValue">
+    (1/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/18)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    4.4%
+  </span>
+  <span class="absValue">
+    (2/45)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.dialect.temptable;
+&nbsp;
+&nbsp;import java.util.function.Function;
+&nbsp;import org.hibernate.dialect.Dialect;
+&nbsp;import org.hibernate.engine.spi.SharedSessionContractImplementor;
+&nbsp;import org.hibernate.sql.ast.spi.ParameterMarkerStrategy;
+&nbsp;import org.hibernate.type.descriptor.jdbc.JdbcType;
+&nbsp;
+&nbsp;public class StandardTemporaryTableExporter implements TemporaryTableExporter {
+&nbsp;    private final Dialect dialect;
+&nbsp;
+&nbsp;    public StandardTemporaryTableExporter(Dialect dialect) {
+&nbsp;        this.dialect = dialect;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    protected String getCreateCommand() {</b>
+<b class="fc">&nbsp;        return this.dialect.getTemporaryTableCreateCommand();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected String getCreateOptions() {
+<b class="nc">&nbsp;        return this.dialect.getTemporaryTableCreateOptions();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected String getDropCommand() {
+<b class="nc">&nbsp;        return this.dialect.getTemporaryTableDropCommand();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected String getTruncateTableCommand() {
+<b class="nc">&nbsp;        return this.dialect.getTemporaryTableTruncateCommand();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getSqlCreateCommand(TemporaryTable temporaryTable) {
+<b class="nc">&nbsp;        StringBuilder buffer = (new StringBuilder(this.getCreateCommand())).append(&#39; &#39;);</b>
+&nbsp;        buffer.append(temporaryTable.getQualifiedTableName());
+&nbsp;        buffer.append(&#39;(&#39;);
+&nbsp;
+&nbsp;        for(TemporaryTableColumn column : temporaryTable.getColumnsForExport()) {
+<b class="nc">&nbsp;            buffer.append(column.getColumnName()).append(&#39; &#39;);</b>
+<b class="nc">&nbsp;            int sqlTypeCode = column.getJdbcMapping().getJdbcType().getDdlTypeCode();</b>
+<b class="nc">&nbsp;            String databaseTypeName = column.getSqlTypeDefinition();</b>
+&nbsp;            buffer.append(databaseTypeName);
+<b class="nc">&nbsp;            String columnAnnotation = this.dialect.getCreateTemporaryTableColumnAnnotation(sqlTypeCode);</b>
+<b class="nc">&nbsp;            if (!columnAnnotation.isEmpty()) {</b>
+<b class="nc">&nbsp;                buffer.append(&#39; &#39;).append(columnAnnotation);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            if (column.isNullable()) {</b>
+&nbsp;                String nullColumnString = this.dialect.getNullColumnString(databaseTypeName);
+<b class="nc">&nbsp;                if (!databaseTypeName.contains(nullColumnString)) {</b>
+<b class="nc">&nbsp;                    buffer.append(nullColumnString);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            } else {
+&nbsp;                buffer.append(&quot; not null&quot;);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            buffer.append(&quot;, &quot;);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        if (this.dialect.supportsTemporaryTablePrimaryKey()) {
+&nbsp;            buffer.append(&quot;primary key (&quot;);
+<b class="nc">&nbsp;</b>
+&nbsp;            for(TemporaryTableColumn column : temporaryTable.getColumnsForExport()) {
+<b class="nc">&nbsp;                if (column.isPrimaryKey()) {</b>
+&nbsp;                    buffer.append(column.getColumnName());
+<b class="nc">&nbsp;                    buffer.append(&quot;, &quot;);</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            buffer.setLength(buffer.length() - 2);</b>
+<b class="nc">&nbsp;            buffer.append(&#39;)&#39;);</b>
+&nbsp;        } else {
+&nbsp;            buffer.setLength(buffer.length() - 2);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        buffer.append(&#39;)&#39;);
+&nbsp;        String createOptions = this.getCreateOptions();
+<b class="nc">&nbsp;        if (createOptions != null) {</b>
+&nbsp;            buffer.append(&#39; &#39;).append(createOptions);
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        return buffer.toString();</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public String getSqlDropCommand(TemporaryTable idTable) {
+&nbsp;        String var10000 = this.getDropCommand();
+<b class="nc">&nbsp;        return var10000 + &quot; &quot; + idTable.getQualifiedTableName();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getSqlTruncateCommand(TemporaryTable idTable, Function&lt;SharedSessionContractImplementor, String&gt; sessionUidAccess, SharedSessionContractImplementor session) {
+&nbsp;        if (idTable.getSessionUidColumn() != null) {
+<b class="nc">&nbsp;            ParameterMarkerStrategy parameterMarkerStrategy = session.getSessionFactory().getFastSessionServices().parameterMarkerStrategy;</b>
+&nbsp;            String var5 = this.getTruncateTableCommand();
+&nbsp;            return var5 + &quot; &quot; + idTable.getQualifiedTableName() + &quot; where &quot; + idTable.getSessionUidColumn().getColumnName() + &quot; = &quot; + parameterMarkerStrategy.createMarker(1, (JdbcType)null);
+&nbsp;        } else {
+&nbsp;            String var10000 = this.getTruncateTableCommand();
+&nbsp;            return var10000 + &quot; &quot; + idTable.getQualifiedTableName();
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
+</div>
+</body>
+</html>

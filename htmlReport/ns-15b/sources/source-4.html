@@ -1,0 +1,373 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > AbstractSaveEventListener</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.event.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: AbstractSaveEventListener (org.hibernate.event.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AbstractSaveEventListener</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    15.8%
+  </span>
+  <span class="absValue">
+    (3/19)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/62)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    2.4%
+  </span>
+  <span class="absValue">
+    (3/123)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.event.internal;
+&nbsp;
+&nbsp;import java.util.Map;
+&nbsp;import org.hibernate.LockMode;
+&nbsp;import org.hibernate.NonUniqueObjectException;
+&nbsp;import org.hibernate.action.internal.AbstractEntityInsertAction;
+&nbsp;import org.hibernate.action.internal.EntityIdentityInsertAction;
+&nbsp;import org.hibernate.action.internal.EntityInsertAction;
+&nbsp;import org.hibernate.classic.Lifecycle;
+&nbsp;import org.hibernate.engine.internal.Cascade;
+&nbsp;import org.hibernate.engine.internal.CascadePoint;
+&nbsp;import org.hibernate.engine.internal.ManagedTypeHelper;
+&nbsp;import org.hibernate.engine.internal.Versioning;
+&nbsp;import org.hibernate.engine.spi.CascadingAction;
+&nbsp;import org.hibernate.engine.spi.EntityEntry;
+&nbsp;import org.hibernate.engine.spi.EntityEntryExtraState;
+&nbsp;import org.hibernate.engine.spi.EntityKey;
+&nbsp;import org.hibernate.engine.spi.PersistenceContext;
+&nbsp;import org.hibernate.engine.spi.SelfDirtinessTracker;
+&nbsp;import org.hibernate.engine.spi.SessionImplementor;
+&nbsp;import org.hibernate.engine.spi.Status;
+&nbsp;import org.hibernate.event.spi.EventSource;
+&nbsp;import org.hibernate.generator.BeforeExecutionGenerator;
+&nbsp;import org.hibernate.generator.EventType;
+&nbsp;import org.hibernate.generator.Generator;
+&nbsp;import org.hibernate.id.Assigned;
+&nbsp;import org.hibernate.id.CompositeNestedGeneratedValueGenerator;
+&nbsp;import org.hibernate.id.IdentifierGenerationException;
+&nbsp;import org.hibernate.id.IdentifierGeneratorHelper;
+&nbsp;import org.hibernate.internal.CoreLogging;
+&nbsp;import org.hibernate.internal.CoreMessageLogger;
+&nbsp;import org.hibernate.jpa.event.spi.CallbackRegistry;
+&nbsp;import org.hibernate.jpa.event.spi.CallbackRegistryConsumer;
+&nbsp;import org.hibernate.persister.entity.EntityPersister;
+&nbsp;import org.hibernate.pretty.MessageHelper;
+&nbsp;import org.hibernate.type.Type;
+&nbsp;import org.hibernate.type.TypeHelper;
+&nbsp;
+&nbsp;public abstract class AbstractSaveEventListener&lt;C&gt; extends AbstractReassociateEventListener implements CallbackRegistryConsumer {
+&nbsp;    private static final CoreMessageLogger LOG = CoreLogging.messageLogger(AbstractSaveEventListener.class);
+&nbsp;    private CallbackRegistry callbackRegistry;
+&nbsp;
+&nbsp;    public AbstractSaveEventListener() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public void injectCallbackRegistry(CallbackRegistry callbackRegistry) {
+&nbsp;        this.callbackRegistry = callbackRegistry;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    protected Object saveWithRequestedId(Object entity, Object requestedId, String entityName, C context, EventSource source) {
+&nbsp;        EntityPersister persister = source.getEntityPersister(entityName, entity);
+<b class="fc">&nbsp;        return this.performSave(entity, requestedId, persister, false, context, source, false);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Object saveWithGeneratedId(Object entity, String entityName, C context, EventSource source, boolean requiresImmediateIdAccess) {
+&nbsp;        EntityPersister persister = source.getEntityPersister(entityName, entity);
+&nbsp;        Generator generator = persister.getGenerator();
+<b class="fc">&nbsp;        boolean generatedOnExecution = generator.generatedOnExecution(entity, source);</b>
+&nbsp;        Object generatedId;
+&nbsp;        if (generatedOnExecution) {
+&nbsp;            generatedId = null;
+&nbsp;        } else if (generator instanceof Assigned) {
+&nbsp;            generatedId = null;
+&nbsp;        } else {
+&nbsp;            generatedId = generateId(entity, source, (BeforeExecutionGenerator)generator, persister);
+&nbsp;            if (generatedId == IdentifierGeneratorHelper.SHORT_CIRCUIT_INDICATOR) {
+&nbsp;                return source.getIdentifier(entity);
+&nbsp;            }
+&nbsp;
+&nbsp;            persister.setIdentifier(entity, generatedId, source);
+&nbsp;        }
+&nbsp;
+&nbsp;        boolean delayIdentityInserts = !source.isTransactionInProgress() &amp;&amp; !requiresImmediateIdAccess &amp;&amp; generatedOnExecution;
+&nbsp;        return this.performSave(entity, generatedId, persister, generatedOnExecution, context, source, delayIdentityInserts);
+&nbsp;    }
+&nbsp;
+&nbsp;    private static Object generateId(Object entity, EventSource source, BeforeExecutionGenerator generator, EntityPersister persister) {
+<b class="nc">&nbsp;        Object id = generator.generate(source, entity, (Object)null, EventType.INSERT);</b>
+<b class="nc">&nbsp;        if (id == null) {</b>
+&nbsp;            throw new IdentifierGenerationException(&quot;Null id generated for entity &#39;&quot; + persister.getEntityName() + &quot;&#39;&quot;);
+&nbsp;        } else {
+&nbsp;            if (LOG.isDebugEnabled()) {
+&nbsp;                LOG.debugf(&quot;Generated identifier: %s, using strategy: %s&quot;, persister.getIdentifierType().toLoggableString(id, source.getFactory()), generator.getClass().getName());
+&nbsp;            }
+&nbsp;
+&nbsp;            return id;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Object performSave(Object entity, Object id, EntityPersister persister, boolean useIdentityColumn, C context, EventSource source, boolean delayIdentityInserts) {
+&nbsp;        this.callbackRegistry.preCreate(entity);
+&nbsp;        ManagedTypeHelper.processIfSelfDirtinessTracker(entity, SelfDirtinessTracker::$$_hibernate_clearDirtyAttributes);
+&nbsp;        ManagedTypeHelper.processIfManagedEntity(entity, (managedEntity) -&gt; managedEntity.$$_hibernate_setUseTracker(true));
+&nbsp;        Generator generator = persister.getGenerator();
+&nbsp;        if (generator instanceof Assigned || generator instanceof CompositeNestedGeneratedValueGenerator) {
+&nbsp;            id = persister.getIdentifier(entity, source);
+&nbsp;            if (id == null) {
+&nbsp;                throw new IdentifierGenerationException(&quot;Identifier of entity &#39;&quot; + persister.getEntityName() + &quot;&#39; must be manually assigned before calling &#39;persist()&#39;&quot;);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        if (LOG.isTraceEnabled()) {
+<b class="nc">&nbsp;            LOG.tracev(&quot;Saving {0}&quot;, MessageHelper.infoString(persister, id, source.getFactory()));</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        EntityKey key = useIdentityColumn ? null : entityKey(id, persister, source);
+<b class="nc">&nbsp;        return this.invokeSaveLifecycle(entity, persister, source) ? id : this.performSaveOrReplicate(entity, key, persister, useIdentityColumn, context, source, delayIdentityInserts);</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private static EntityKey entityKey(Object id, EntityPersister persister, EventSource source) {</b>
+&nbsp;        EntityKey key = source.generateEntityKey(id, persister);
+<b class="nc">&nbsp;        PersistenceContext persistenceContext = source.getPersistenceContextInternal();</b>
+&nbsp;        Object old = persistenceContext.getEntity(key);
+&nbsp;        if (old != null) {
+<b class="nc">&nbsp;            if (persistenceContext.getEntry(old).getStatus() != Status.DELETED) {</b>
+&nbsp;                throw new NonUniqueObjectException(id, persister.getEntityName());
+&nbsp;            }
+&nbsp;
+&nbsp;            source.forceFlush(persistenceContext.getEntry(old));
+&nbsp;        } else if (persistenceContext.containsDeletedUnloadedEntityKey(key)) {
+<b class="nc">&nbsp;            source.forceFlush(key);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return key;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    protected boolean invokeSaveLifecycle(Object entity, EntityPersister persister, EventSource source) {</b>
+<b class="nc">&nbsp;        if (persister.implementsLifecycle()) {</b>
+&nbsp;            LOG.debug(&quot;Calling onSave()&quot;);
+&nbsp;            if (((Lifecycle)entity).onSave(source)) {
+<b class="nc">&nbsp;                LOG.debug(&quot;Insertion vetoed by onSave()&quot;);</b>
+&nbsp;                return true;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return false;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Object performSaveOrReplicate(Object entity, EntityKey key, EntityPersister persister, boolean useIdentityColumn, C context, EventSource source, boolean delayIdentityInserts) {
+&nbsp;        Object id = key == null ? null : key.getIdentifier();
+&nbsp;        PersistenceContext persistenceContext = source.getPersistenceContextInternal();
+&nbsp;        EntityEntry original = persistenceContext.addEntry(entity, Status.SAVING, (Object[])null, (Object)null, id, (Object)null, LockMode.WRITE, useIdentityColumn, persister, false);
+&nbsp;        if (original.getLoadedState() != null) {
+&nbsp;            persistenceContext.getEntityHolder(key).setEntityEntry(original);
+&nbsp;        }
+&nbsp;
+&nbsp;        this.cascadeBeforeSave(source, persister, entity, context);
+&nbsp;        AbstractEntityInsertAction insert = this.addInsertAction(this.cloneAndSubstituteValues(entity, persister, context, source, id), id, entity, persister, useIdentityColumn, source, delayIdentityInserts);
+&nbsp;        this.cascadeAfterSave(source, persister, entity, context);
+<b class="nc">&nbsp;        Object finalId = handleGeneratedId(useIdentityColumn, id, insert);</b>
+<b class="nc">&nbsp;        EntityEntry newEntry = persistenceContext.getEntry(entity);</b>
+<b class="nc">&nbsp;        if (newEntry != original) {</b>
+&nbsp;            EntityEntryExtraState extraState = newEntry.getExtraState(EntityEntryExtraState.class);
+&nbsp;            if (extraState == null) {
+<b class="nc">&nbsp;                newEntry.addExtraState(original.getExtraState(EntityEntryExtraState.class));</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        return finalId;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private static Object handleGeneratedId(boolean useIdentityColumn, Object id, AbstractEntityInsertAction insert) {
+<b class="nc">&nbsp;        if (useIdentityColumn &amp;&amp; insert.isEarlyInsert()) {</b>
+&nbsp;            if (insert instanceof EntityIdentityInsertAction) {
+&nbsp;                Object generatedId = ((EntityIdentityInsertAction)insert).getGeneratedId();
+&nbsp;                insert.handleNaturalIdPostSaveNotifications(generatedId);
+&nbsp;                return generatedId;
+&nbsp;            } else {
+&nbsp;                throw new IllegalStateException(&quot;Insert should be using an identity column, but action is of unexpected type: &quot; + insert.getClass().getName());
+&nbsp;            }
+&nbsp;        } else {
+&nbsp;            return id;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private Object[] cloneAndSubstituteValues(Object entity, EntityPersister persister, C context, EventSource source, Object id) {
+&nbsp;        Object[] values = persister.getPropertyValuesToInsert(entity, this.getMergeMap(context), source);
+&nbsp;        Type[] types = persister.getPropertyTypes();
+&nbsp;        boolean substitute = this.substituteValuesIfNecessary(entity, id, values, persister, source);
+&nbsp;        if (persister.hasCollections()) {
+&nbsp;            substitute = this.visitCollectionsBeforeSave(entity, id, values, types, source) || substitute;
+&nbsp;        }
+&nbsp;
+&nbsp;        if (substitute) {
+&nbsp;            persister.setValues(entity, values);
+&nbsp;        }
+&nbsp;
+&nbsp;        TypeHelper.deepCopy(values, types, persister.getPropertyUpdateability(), values, source);
+&nbsp;        return values;
+&nbsp;    }
+&nbsp;
+&nbsp;    private AbstractEntityInsertAction addInsertAction(Object[] values, Object id, Object entity, EntityPersister persister, boolean useIdentityColumn, EventSource source, boolean delayIdentityInserts) {
+<b class="nc">&nbsp;        if (useIdentityColumn) {</b>
+&nbsp;            EntityIdentityInsertAction insert = new EntityIdentityInsertAction(values, entity, persister, this.isVersionIncrementDisabled(), source, delayIdentityInserts);
+<b class="nc">&nbsp;            source.getActionQueue().addAction(insert);</b>
+<b class="nc">&nbsp;            return insert;</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            EntityInsertAction insert = new EntityInsertAction(id, values, entity, Versioning.getVersion(values, persister), persister, this.isVersionIncrementDisabled(), source);</b>
+<b class="nc">&nbsp;            source.getActionQueue().addAction(insert);</b>
+<b class="nc">&nbsp;            return insert;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    protected Map&lt;Object, Object&gt; getMergeMap(C anything) {
+&nbsp;        return null;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected boolean isVersionIncrementDisabled() {
+<b class="nc">&nbsp;        return false;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected boolean visitCollectionsBeforeSave(Object entity, Object id, Object[] values, Type[] types, EventSource source) {
+<b class="nc">&nbsp;        WrapVisitor visitor = new WrapVisitor(entity, id, source);</b>
+<b class="nc">&nbsp;        visitor.processEntityPropertyValues(values, types);</b>
+<b class="nc">&nbsp;        return visitor.isSubstitutionRequired();</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected boolean substituteValuesIfNecessary(Object entity, Object id, Object[] values, EntityPersister persister, SessionImplementor source) {</b>
+&nbsp;        boolean substitute = source.getInterceptor().onPersist(entity, id, values, persister.getPropertyNames(), persister.getPropertyTypes());
+&nbsp;        if (persister.isVersioned()) {
+&nbsp;            substitute = Versioning.seedVersion(entity, values, persister, source) || substitute;
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return substitute;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected void cascadeBeforeSave(EventSource source, EntityPersister persister, Object entity, C context) {</b>
+<b class="nc">&nbsp;        PersistenceContext persistenceContext = source.getPersistenceContextInternal();</b>
+&nbsp;        persistenceContext.incrementCascadeLevel();
+&nbsp;
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            Cascade.cascade(this.getCascadeAction(), CascadePoint.BEFORE_INSERT_AFTER_DELETE, source, persister, entity, context);
+&nbsp;        } finally {
+<b class="nc">&nbsp;            persistenceContext.decrementCascadeLevel();</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected void cascadeAfterSave(EventSource source, EntityPersister persister, Object entity, C context) {
+&nbsp;        PersistenceContext persistenceContext = source.getPersistenceContextInternal();
+&nbsp;        persistenceContext.incrementCascadeLevel();
+&nbsp;
+<b class="nc">&nbsp;        try {</b>
+<b class="nc">&nbsp;            Cascade.cascade(this.getCascadeAction(), CascadePoint.AFTER_INSERT_BEFORE_DELETE, source, persister, entity, context);</b>
+<b class="nc">&nbsp;        } finally {</b>
+<b class="nc">&nbsp;            persistenceContext.decrementCascadeLevel();</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected abstract CascadingAction&lt;C&gt; getCascadeAction();
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:57</div>
+</div>
+</body>
+</html>

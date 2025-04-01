@@ -1,0 +1,364 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ThreadPoolTaskExecutor</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.scheduling.concurrent</a>
+</div>
+
+<h1>Coverage Summary for Class: ThreadPoolTaskExecutor (org.springframework.scheduling.concurrent)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ThreadPoolTaskExecutor</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/26)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/24)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/87)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.scheduling.concurrent;
+&nbsp;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.concurrent.BlockingQueue;
+&nbsp;import java.util.concurrent.Callable;
+&nbsp;import java.util.concurrent.Executor;
+&nbsp;import java.util.concurrent.ExecutorService;
+&nbsp;import java.util.concurrent.Future;
+&nbsp;import java.util.concurrent.LinkedBlockingQueue;
+&nbsp;import java.util.concurrent.RejectedExecutionException;
+&nbsp;import java.util.concurrent.RejectedExecutionHandler;
+&nbsp;import java.util.concurrent.SynchronousQueue;
+&nbsp;import java.util.concurrent.ThreadFactory;
+&nbsp;import java.util.concurrent.ThreadPoolExecutor;
+&nbsp;import java.util.concurrent.TimeUnit;
+&nbsp;import org.springframework.core.task.AsyncListenableTaskExecutor;
+&nbsp;import org.springframework.core.task.TaskDecorator;
+&nbsp;import org.springframework.core.task.TaskRejectedException;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.scheduling.SchedulingTaskExecutor;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.ConcurrentReferenceHashMap;
+&nbsp;import org.springframework.util.ConcurrentReferenceHashMap.ReferenceType;
+&nbsp;import org.springframework.util.concurrent.ListenableFuture;
+&nbsp;import org.springframework.util.concurrent.ListenableFutureTask;
+&nbsp;
+&nbsp;public class ThreadPoolTaskExecutor extends ExecutorConfigurationSupport implements AsyncListenableTaskExecutor, SchedulingTaskExecutor {
+&nbsp;    private final Object poolSizeMonitor = new Object();
+&nbsp;    private int corePoolSize = 1;
+&nbsp;    private int maxPoolSize = Integer.MAX_VALUE;
+&nbsp;    private int keepAliveSeconds = 60;
+&nbsp;    private int queueCapacity = Integer.MAX_VALUE;
+&nbsp;    private boolean allowCoreThreadTimeOut = false;
+&nbsp;    private boolean prestartAllCoreThreads = false;
+&nbsp;    private boolean strictEarlyShutdown = false;
+&nbsp;    @Nullable
+&nbsp;    private TaskDecorator taskDecorator;
+&nbsp;    @Nullable
+&nbsp;    private ThreadPoolExecutor threadPoolExecutor;
+&nbsp;    private final Map&lt;Runnable, Object&gt; decoratedTaskMap;
+&nbsp;
+&nbsp;    public ThreadPoolTaskExecutor() {
+&nbsp;        this.decoratedTaskMap = new ConcurrentReferenceHashMap(16, ReferenceType.WEAK);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setCorePoolSize(int corePoolSize) {
+&nbsp;        synchronized(this.poolSizeMonitor) {
+&nbsp;            if (this.threadPoolExecutor != null) {
+&nbsp;                this.threadPoolExecutor.setCorePoolSize(corePoolSize);
+&nbsp;            }
+&nbsp;
+&nbsp;            this.corePoolSize = corePoolSize;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getCorePoolSize() {
+&nbsp;        synchronized(this.poolSizeMonitor) {
+&nbsp;            return this.corePoolSize;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setMaxPoolSize(int maxPoolSize) {
+&nbsp;        synchronized(this.poolSizeMonitor) {
+&nbsp;            if (this.threadPoolExecutor != null) {
+&nbsp;                this.threadPoolExecutor.setMaximumPoolSize(maxPoolSize);
+&nbsp;            }
+&nbsp;
+&nbsp;            this.maxPoolSize = maxPoolSize;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getMaxPoolSize() {
+&nbsp;        synchronized(this.poolSizeMonitor) {
+&nbsp;            return this.maxPoolSize;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setKeepAliveSeconds(int keepAliveSeconds) {
+<b class="nc">&nbsp;        synchronized(this.poolSizeMonitor) {</b>
+&nbsp;            if (this.threadPoolExecutor != null) {
+&nbsp;                this.threadPoolExecutor.setKeepAliveTime((long)keepAliveSeconds, TimeUnit.SECONDS);
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            this.keepAliveSeconds = keepAliveSeconds;</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public int getKeepAliveSeconds() {</b>
+&nbsp;        synchronized(this.poolSizeMonitor) {
+<b class="nc">&nbsp;            return this.keepAliveSeconds;</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public void setQueueCapacity(int queueCapacity) {</b>
+&nbsp;        this.queueCapacity = queueCapacity;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public int getQueueCapacity() {
+&nbsp;        return this.queueCapacity;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setAllowCoreThreadTimeOut(boolean allowCoreThreadTimeOut) {
+&nbsp;        this.allowCoreThreadTimeOut = allowCoreThreadTimeOut;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void setPrestartAllCoreThreads(boolean prestartAllCoreThreads) {
+&nbsp;        this.prestartAllCoreThreads = prestartAllCoreThreads;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setStrictEarlyShutdown(boolean defaultEarlyShutdown) {
+&nbsp;        this.strictEarlyShutdown = defaultEarlyShutdown;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setTaskDecorator(TaskDecorator taskDecorator) {
+<b class="nc">&nbsp;        this.taskDecorator = taskDecorator;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    protected ExecutorService initializeExecutor(ThreadFactory threadFactory, RejectedExecutionHandler rejectedExecutionHandler) {
+<b class="nc">&nbsp;        BlockingQueue&lt;Runnable&gt; queue = this.createQueue(this.queueCapacity);</b>
+<b class="nc">&nbsp;        ThreadPoolExecutor executor = new ThreadPoolExecutor(this.corePoolSize, this.maxPoolSize, (long)this.keepAliveSeconds, TimeUnit.SECONDS, queue, threadFactory, rejectedExecutionHandler) {</b>
+&nbsp;            public void execute(Runnable command) {
+&nbsp;                Runnable decorated = command;
+&nbsp;                if (ThreadPoolTaskExecutor.this.taskDecorator != null) {
+&nbsp;                    decorated = ThreadPoolTaskExecutor.this.taskDecorator.decorate(command);
+&nbsp;                    if (decorated != command) {
+&nbsp;                        ThreadPoolTaskExecutor.this.decoratedTaskMap.put(decorated, command);
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                super.execute(decorated);
+&nbsp;            }
+&nbsp;
+&nbsp;            protected void beforeExecute(Thread thread, Runnable task) {
+&nbsp;                ThreadPoolTaskExecutor.this.beforeExecute(thread, task);
+&nbsp;            }
+&nbsp;
+&nbsp;            protected void afterExecute(Runnable task, Throwable ex) {
+<b class="nc">&nbsp;                ThreadPoolTaskExecutor.this.afterExecute(task, ex);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        };</b>
+&nbsp;        if (this.allowCoreThreadTimeOut) {
+<b class="nc">&nbsp;            executor.allowCoreThreadTimeOut(true);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        if (this.prestartAllCoreThreads) {
+&nbsp;            executor.prestartAllCoreThreads();
+&nbsp;        }
+&nbsp;
+&nbsp;        this.threadPoolExecutor = executor;
+<b class="nc">&nbsp;        return executor;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    protected BlockingQueue&lt;Runnable&gt; createQueue(int queueCapacity) {
+&nbsp;        return (BlockingQueue&lt;Runnable&gt;)(queueCapacity &gt; 0 ? new LinkedBlockingQueue(queueCapacity) : new SynchronousQueue());
+&nbsp;    }
+&nbsp;
+&nbsp;    public ThreadPoolExecutor getThreadPoolExecutor() throws IllegalStateException {
+&nbsp;        Assert.state(this.threadPoolExecutor != null, &quot;ThreadPoolTaskExecutor not initialized&quot;);
+&nbsp;        return this.threadPoolExecutor;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public int getPoolSize() {</b>
+<b class="nc">&nbsp;        return this.threadPoolExecutor == null ? this.corePoolSize : this.threadPoolExecutor.getPoolSize();</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public int getQueueSize() {</b>
+&nbsp;        return this.threadPoolExecutor == null ? 0 : this.threadPoolExecutor.getQueue().size();
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getActiveCount() {
+&nbsp;        return this.threadPoolExecutor == null ? 0 : this.threadPoolExecutor.getActiveCount();
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void execute(Runnable task) {</b>
+<b class="nc">&nbsp;        Executor executor = this.getThreadPoolExecutor();</b>
+&nbsp;
+&nbsp;        try {
+&nbsp;            executor.execute(task);
+&nbsp;        } catch (RejectedExecutionException ex) {
+&nbsp;            throw new TaskRejectedException(executor, task, ex);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public Future&lt;?&gt; submit(Runnable task) {
+&nbsp;        ExecutorService executor = this.getThreadPoolExecutor();
+&nbsp;
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            return executor.submit(task);
+&nbsp;        } catch (RejectedExecutionException ex) {
+&nbsp;            throw new TaskRejectedException(executor, task, ex);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;T&gt; Future&lt;T&gt; submit(Callable&lt;T&gt; task) {
+&nbsp;        ExecutorService executor = this.getThreadPoolExecutor();
+<b class="nc">&nbsp;</b>
+&nbsp;        try {
+&nbsp;            return executor.submit(task);
+&nbsp;        } catch (RejectedExecutionException ex) {
+&nbsp;            throw new TaskRejectedException(executor, task, ex);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public ListenableFuture&lt;?&gt; submitListenable(Runnable task) {
+&nbsp;        ExecutorService executor = this.getThreadPoolExecutor();
+&nbsp;
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            ListenableFutureTask&lt;Object&gt; future = new ListenableFutureTask(task, (Object)null);
+&nbsp;            executor.execute(future);
+&nbsp;            return future;
+&nbsp;        } catch (RejectedExecutionException ex) {
+&nbsp;            throw new TaskRejectedException(executor, task, ex);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;T&gt; ListenableFuture&lt;T&gt; submitListenable(Callable&lt;T&gt; task) {
+<b class="nc">&nbsp;        ExecutorService executor = this.getThreadPoolExecutor();</b>
+&nbsp;
+&nbsp;        try {
+&nbsp;            ListenableFutureTask&lt;T&gt; future = new ListenableFutureTask(task);
+&nbsp;            executor.execute(future);
+&nbsp;            return future;
+&nbsp;        } catch (RejectedExecutionException ex) {
+&nbsp;            throw new TaskRejectedException(executor, task, ex);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void cancelRemainingTask(Runnable task) {
+&nbsp;        super.cancelRemainingTask(task);
+&nbsp;        Object original = this.decoratedTaskMap.get(task);
+&nbsp;        if (original instanceof Future&lt;?&gt; future) {
+&nbsp;            future.cancel(true);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void initiateEarlyShutdown() {
+&nbsp;        if (this.strictEarlyShutdown) {
+&nbsp;            super.initiateEarlyShutdown();
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:57</div>
+</div>
+</body>
+</html>

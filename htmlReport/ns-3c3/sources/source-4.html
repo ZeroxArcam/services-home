@@ -1,0 +1,208 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > SQLExceptionSubclassTranslator</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.jdbc.support</a>
+</div>
+
+<h1>Coverage Summary for Class: SQLExceptionSubclassTranslator (org.springframework.jdbc.support)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SQLExceptionSubclassTranslator</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/30)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    6.9%
+  </span>
+  <span class="absValue">
+    (2/29)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.jdbc.support;
+&nbsp;
+&nbsp;import java.sql.SQLDataException;
+&nbsp;import java.sql.SQLException;
+&nbsp;import java.sql.SQLFeatureNotSupportedException;
+&nbsp;import java.sql.SQLIntegrityConstraintViolationException;
+&nbsp;import java.sql.SQLInvalidAuthorizationSpecException;
+&nbsp;import java.sql.SQLNonTransientConnectionException;
+&nbsp;import java.sql.SQLNonTransientException;
+&nbsp;import java.sql.SQLRecoverableException;
+&nbsp;import java.sql.SQLSyntaxErrorException;
+&nbsp;import java.sql.SQLTimeoutException;
+&nbsp;import java.sql.SQLTransactionRollbackException;
+&nbsp;import java.sql.SQLTransientConnectionException;
+&nbsp;import java.sql.SQLTransientException;
+&nbsp;import org.springframework.dao.CannotAcquireLockException;
+&nbsp;import org.springframework.dao.DataAccessException;
+&nbsp;import org.springframework.dao.DataAccessResourceFailureException;
+&nbsp;import org.springframework.dao.DataIntegrityViolationException;
+&nbsp;import org.springframework.dao.DuplicateKeyException;
+&nbsp;import org.springframework.dao.InvalidDataAccessApiUsageException;
+&nbsp;import org.springframework.dao.PermissionDeniedDataAccessException;
+&nbsp;import org.springframework.dao.PessimisticLockingFailureException;
+&nbsp;import org.springframework.dao.QueryTimeoutException;
+&nbsp;import org.springframework.dao.RecoverableDataAccessException;
+&nbsp;import org.springframework.dao.TransientDataAccessResourceException;
+&nbsp;import org.springframework.jdbc.BadSqlGrammarException;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;
+&nbsp;public class SQLExceptionSubclassTranslator extends AbstractFallbackSQLExceptionTranslator {
+&nbsp;    public SQLExceptionSubclassTranslator() {
+&nbsp;        this.setFallbackTranslator(new SQLStateSQLExceptionTranslator());
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    protected DataAccessException doTranslate(String task, @Nullable String sql, SQLException ex) {
+&nbsp;        if (ex instanceof SQLTransientException) {
+&nbsp;            if (ex instanceof SQLTransientConnectionException) {
+&nbsp;                return new TransientDataAccessResourceException(this.buildMessage(task, sql, ex), ex);
+&nbsp;            }
+&nbsp;
+&nbsp;            if (ex instanceof SQLTransactionRollbackException) {
+&nbsp;                if (SQLStateSQLExceptionTranslator.indicatesCannotAcquireLock(ex.getSQLState())) {
+&nbsp;                    return new CannotAcquireLockException(this.buildMessage(task, sql, ex), ex);
+&nbsp;                }
+&nbsp;
+&nbsp;                return new PessimisticLockingFailureException(this.buildMessage(task, sql, ex), ex);
+&nbsp;            }
+&nbsp;
+&nbsp;            if (ex instanceof SQLTimeoutException) {
+&nbsp;                return new QueryTimeoutException(this.buildMessage(task, sql, ex), ex);
+&nbsp;            }
+&nbsp;        } else if (ex instanceof SQLNonTransientException) {
+&nbsp;            if (ex instanceof SQLNonTransientConnectionException) {
+&nbsp;                return new DataAccessResourceFailureException(this.buildMessage(task, sql, ex), ex);
+&nbsp;            }
+&nbsp;
+&nbsp;            if (ex instanceof SQLDataException) {
+&nbsp;                return new DataIntegrityViolationException(this.buildMessage(task, sql, ex), ex);
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;            if (ex instanceof SQLIntegrityConstraintViolationException) {
+&nbsp;                if (SQLStateSQLExceptionTranslator.indicatesDuplicateKey(ex.getSQLState(), ex.getErrorCode())) {
+&nbsp;                    return new DuplicateKeyException(this.buildMessage(task, sql, ex), ex);
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                return new DataIntegrityViolationException(this.buildMessage(task, sql, ex), ex);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            if (ex instanceof SQLInvalidAuthorizationSpecException) {
+<b class="nc">&nbsp;                return new PermissionDeniedDataAccessException(this.buildMessage(task, sql, ex), ex);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            if (ex instanceof SQLSyntaxErrorException) {
+<b class="nc">&nbsp;                return new BadSqlGrammarException(task, sql != null ? sql : &quot;&quot;, ex);</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            if (ex instanceof SQLFeatureNotSupportedException) {</b>
+&nbsp;                return new InvalidDataAccessApiUsageException(this.buildMessage(task, sql, ex), ex);
+&nbsp;            }
+<b class="nc">&nbsp;        } else if (ex instanceof SQLRecoverableException) {</b>
+<b class="nc">&nbsp;            return new RecoverableDataAccessException(this.buildMessage(task, sql, ex), ex);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        return null;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:57</div>
+</div>
+</body>
+</html>

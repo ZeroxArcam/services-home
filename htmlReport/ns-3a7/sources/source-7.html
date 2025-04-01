@@ -1,0 +1,358 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > FunctionReference</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.expression.spel.ast</a>
+</div>
+
+<h1>Coverage Summary for Class: FunctionReference (org.springframework.expression.spel.ast)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">FunctionReference</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/62)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/107)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.expression.spel.ast;
+&nbsp;
+&nbsp;import java.lang.invoke.MethodHandle;
+&nbsp;import java.lang.invoke.MethodType;
+&nbsp;import java.lang.reflect.InvocationTargetException;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;import java.lang.reflect.Modifier;
+&nbsp;import java.util.StringJoiner;
+&nbsp;import org.springframework.asm.MethodVisitor;
+&nbsp;import org.springframework.core.MethodParameter;
+&nbsp;import org.springframework.core.convert.TypeDescriptor;
+&nbsp;import org.springframework.expression.EvaluationException;
+&nbsp;import org.springframework.expression.TypeConverter;
+&nbsp;import org.springframework.expression.TypedValue;
+&nbsp;import org.springframework.expression.spel.CodeFlow;
+&nbsp;import org.springframework.expression.spel.ExpressionState;
+&nbsp;import org.springframework.expression.spel.SpelEvaluationException;
+&nbsp;import org.springframework.expression.spel.SpelMessage;
+&nbsp;import org.springframework.expression.spel.support.ReflectionHelper;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.ClassUtils;
+&nbsp;import org.springframework.util.ReflectionUtils;
+&nbsp;
+&nbsp;public class FunctionReference extends SpelNodeImpl {
+&nbsp;    private final String name;
+&nbsp;    @Nullable
+&nbsp;    private volatile Method method;
+&nbsp;
+&nbsp;    public FunctionReference(String functionName, int startPos, int endPos, SpelNodeImpl... arguments) {
+&nbsp;        super(startPos, endPos, arguments);
+&nbsp;        this.name = functionName;
+&nbsp;    }
+&nbsp;
+&nbsp;    public TypedValue getValueInternal(ExpressionState state) throws EvaluationException {
+&nbsp;        TypedValue value = state.lookupVariable(this.name);
+&nbsp;        if (value == TypedValue.NULL) {
+&nbsp;            throw new SpelEvaluationException(this.getStartPosition(), SpelMessage.FUNCTION_NOT_DEFINED, new Object[]{this.name});
+&nbsp;        } else {
+&nbsp;            Object function = value.getValue();
+&nbsp;            if (function instanceof Method) {
+&nbsp;                Method javaMethod = (Method)function;
+&nbsp;
+&nbsp;                try {
+&nbsp;                    return this.executeFunctionViaMethod(state, javaMethod);
+&nbsp;                } catch (SpelEvaluationException ex) {
+&nbsp;                    ex.setPosition(this.getStartPosition());
+&nbsp;                    throw ex;
+&nbsp;                }
+&nbsp;            } else if (function instanceof MethodHandle) {
+&nbsp;                MethodHandle methodHandle = (MethodHandle)function;
+&nbsp;
+&nbsp;                try {
+&nbsp;                    return this.executeFunctionViaMethodHandle(state, methodHandle);
+&nbsp;                } catch (SpelEvaluationException ex) {
+&nbsp;                    ex.setPosition(this.getStartPosition());
+&nbsp;                    throw ex;
+&nbsp;                }
+&nbsp;            } else {
+&nbsp;                throw new SpelEvaluationException(SpelMessage.FUNCTION_REFERENCE_CANNOT_BE_INVOKED, new Object[]{this.name, value.getClass()});
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private TypedValue executeFunctionViaMethod(ExpressionState state, Method method) throws EvaluationException {</b>
+<b class="nc">&nbsp;        Object[] functionArgs = this.getArguments(state);</b>
+&nbsp;        if (!method.isVarArgs()) {
+&nbsp;            int declaredParamCount = method.getParameterCount();
+&nbsp;            if (declaredParamCount != functionArgs.length) {
+&nbsp;                throw new SpelEvaluationException(SpelMessage.INCORRECT_NUMBER_OF_ARGUMENTS_TO_FUNCTION, new Object[]{this.name, functionArgs.length, declaredParamCount});
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if (!Modifier.isStatic(method.getModifiers())) {</b>
+&nbsp;            throw new SpelEvaluationException(this.getStartPosition(), SpelMessage.FUNCTION_MUST_BE_STATIC, new Object[]{ClassUtils.getQualifiedMethodName(method), this.name});
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            TypeConverter converter = state.getEvaluationContext().getTypeConverter();
+&nbsp;            boolean argumentConversionOccurred = ReflectionHelper.convertAllArguments(converter, functionArgs, method);
+&nbsp;            if (method.isVarArgs()) {
+<b class="nc">&nbsp;                functionArgs = ReflectionHelper.setupArgumentsForVarargsInvocation(method.getParameterTypes(), functionArgs);</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            boolean compilable = false;
+&nbsp;
+<b class="nc">&nbsp;            TypedValue var16;</b>
+&nbsp;            try {
+&nbsp;                ReflectionUtils.makeAccessible(method);
+&nbsp;                Object result = method.invoke(method.getClass(), functionArgs);
+&nbsp;                compilable = !argumentConversionOccurred;
+&nbsp;                var16 = new TypedValue(result, (new TypeDescriptor(new MethodParameter(method, -1))).narrow(result));
+<b class="nc">&nbsp;            } catch (Exception var13) {</b>
+&nbsp;                Object var10000;
+<b class="nc">&nbsp;                label95: {</b>
+&nbsp;                    if (var13 instanceof InvocationTargetException) {
+&nbsp;                        InvocationTargetException ite = (InvocationTargetException)var13;
+<b class="nc">&nbsp;                        if (ite.getCause() != null) {</b>
+&nbsp;                            var10000 = ite.getCause();
+&nbsp;                            break label95;
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    var10000 = var13;</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                Throwable cause = (Throwable)var10000;
+&nbsp;                throw new SpelEvaluationException(this.getStartPosition(), cause, SpelMessage.EXCEPTION_DURING_FUNCTION_CALL, new Object[]{this.name, cause.getMessage()});
+&nbsp;            } finally {
+&nbsp;                if (compilable) {
+&nbsp;                    this.exitTypeDescriptor = CodeFlow.toDescriptor(method.getReturnType());
+&nbsp;                    this.method = method;
+&nbsp;                } else {
+&nbsp;                    this.exitTypeDescriptor = null;
+&nbsp;                    this.method = null;
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            return var16;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private TypedValue executeFunctionViaMethodHandle(ExpressionState state, MethodHandle methodHandle) throws EvaluationException {
+<b class="nc">&nbsp;        Object[] functionArgs = this.getArguments(state);</b>
+<b class="nc">&nbsp;        MethodType declaredParams = methodHandle.type();</b>
+<b class="nc">&nbsp;        int spelParamCount = functionArgs.length;</b>
+&nbsp;        int declaredParamCount = declaredParams.parameterCount();
+&nbsp;        boolean isSuspectedVarargs = declaredParams.lastParameterType().isArray();
+&nbsp;        if (isSuspectedVarargs) {
+<b class="nc">&nbsp;            if (spelParamCount &lt; declaredParamCount - 1) {</b>
+<b class="nc">&nbsp;                throw new SpelEvaluationException(SpelMessage.INCORRECT_NUMBER_OF_ARGUMENTS_TO_FUNCTION, new Object[]{this.name, spelParamCount, declaredParamCount - 1 + &quot; or more&quot;});</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        } else if (spelParamCount != declaredParamCount) {</b>
+<b class="nc">&nbsp;            throw new SpelEvaluationException(SpelMessage.INCORRECT_NUMBER_OF_ARGUMENTS_TO_FUNCTION, new Object[]{this.name, spelParamCount, declaredParamCount});</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        if (declaredParamCount == 0) {
+&nbsp;            TypedValue var26;
+<b class="nc">&nbsp;            try {</b>
+<b class="nc">&nbsp;                var26 = new TypedValue(methodHandle.invoke());</b>
+<b class="nc">&nbsp;            } catch (Throwable ex) {</b>
+<b class="nc">&nbsp;                throw new SpelEvaluationException(this.getStartPosition(), ex, SpelMessage.EXCEPTION_DURING_FUNCTION_CALL, new Object[]{this.name, ex.getMessage()});</b>
+&nbsp;            } finally {
+&nbsp;                this.exitTypeDescriptor = null;
+<b class="nc">&nbsp;                this.method = null;</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            return var26;</b>
+&nbsp;        } else {
+&nbsp;            Integer varArgPosition = null;
+<b class="nc">&nbsp;            if (isSuspectedVarargs) {</b>
+<b class="nc">&nbsp;                varArgPosition = declaredParamCount - 1;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            TypeConverter converter = state.getEvaluationContext().getTypeConverter();
+<b class="nc">&nbsp;            ReflectionHelper.convertAllMethodHandleArguments(converter, functionArgs, methodHandle, varArgPosition);</b>
+<b class="nc">&nbsp;            if (isSuspectedVarargs) {</b>
+&nbsp;                if (declaredParamCount == 1 &amp;&amp; !methodHandle.isVarargsCollector()) {
+&nbsp;                    functionArgs = ReflectionHelper.setupArgumentsForVarargsInvocation(methodHandle.type().parameterArray(), functionArgs);
+&nbsp;                } else if (spelParamCount == declaredParamCount) {
+&nbsp;                    int actualVarargsIndex = functionArgs.length - 1;
+&nbsp;                    if (actualVarargsIndex &gt;= 0) {
+&nbsp;                        Object[] newArgs = (Object[])functionArgs[actualVarargsIndex];
+&nbsp;                        if (newArgs instanceof Object[]) {
+&nbsp;                            Object[] argsToUnpack = newArgs;
+&nbsp;                            newArgs = new Object[actualVarargsIndex + argsToUnpack.length];
+&nbsp;                            System.arraycopy(functionArgs, 0, newArgs, 0, actualVarargsIndex);
+&nbsp;                            System.arraycopy(argsToUnpack, 0, newArgs, actualVarargsIndex, argsToUnpack.length);
+&nbsp;                            functionArgs = newArgs;
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            TypedValue var27;</b>
+<b class="nc">&nbsp;            try {</b>
+<b class="nc">&nbsp;                var27 = new TypedValue(methodHandle.invokeWithArguments(functionArgs));</b>
+&nbsp;            } catch (Throwable ex) {
+&nbsp;                throw new SpelEvaluationException(this.getStartPosition(), ex, SpelMessage.EXCEPTION_DURING_FUNCTION_CALL, new Object[]{this.name, ex.getMessage()});
+&nbsp;            } finally {
+&nbsp;                this.exitTypeDescriptor = null;
+&nbsp;                this.method = null;
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            return var27;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String toStringAST() {
+&nbsp;        StringJoiner sj = new StringJoiner(&quot;,&quot;, &quot;(&quot;, &quot;)&quot;);
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; this.getChildCount(); ++i) {</b>
+<b class="nc">&nbsp;            sj.add(this.getChild(i).toStringAST());</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        String var10000 = this.name;</b>
+&nbsp;        return &quot;#&quot; + var10000 + String.valueOf(sj);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private Object[] getArguments(ExpressionState state) throws EvaluationException {</b>
+&nbsp;        Object[] arguments = new Object[this.getChildCount()];
+&nbsp;
+&nbsp;        for(int i = 0; i &lt; arguments.length; ++i) {
+<b class="nc">&nbsp;            arguments[i] = this.children[i].getValueInternal(state).getValue();</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        return arguments;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public boolean isCompilable() {</b>
+&nbsp;        Method method = this.method;
+&nbsp;        if (method == null) {
+&nbsp;            return false;
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            int methodModifiers = method.getModifiers();</b>
+&nbsp;            if (Modifier.isStatic(methodModifiers) &amp;&amp; Modifier.isPublic(methodModifiers) &amp;&amp; Modifier.isPublic(method.getDeclaringClass().getModifiers())) {
+&nbsp;                for(SpelNodeImpl child : this.children) {
+&nbsp;                    if (!child.isCompilable()) {
+&nbsp;                        return false;
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                return true;
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                return false;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void generateCode(MethodVisitor mv, CodeFlow cf) {
+&nbsp;        Method method = this.method;
+<b class="nc">&nbsp;        Assert.state(method != null, &quot;No method handle&quot;);</b>
+<b class="nc">&nbsp;        String classDesc = method.getDeclaringClass().getName().replace(&#39;.&#39;, &#39;/&#39;);</b>
+&nbsp;        generateCodeForArguments(mv, cf, method, this.children);
+<b class="nc">&nbsp;        mv.visitMethodInsn(184, classDesc, method.getName(), CodeFlow.createSignatureDescriptor(method), false);</b>
+&nbsp;        cf.pushDescriptor(this.exitTypeDescriptor);
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

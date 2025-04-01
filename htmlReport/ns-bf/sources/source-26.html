@@ -1,0 +1,270 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > LineNumberTable</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.aspectj.apache.bcel.classfile</a>
+</div>
+
+<h1>Coverage Summary for Class: LineNumberTable (org.aspectj.apache.bcel.classfile)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LineNumberTable</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    27.3%
+  </span>
+  <span class="absValue">
+    (3/11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    3.3%
+  </span>
+  <span class="absValue">
+    (1/30)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    17.9%
+  </span>
+  <span class="absValue">
+    (12/67)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.aspectj.apache.bcel.classfile;
+&nbsp;
+&nbsp;import java.io.ByteArrayInputStream;
+&nbsp;import java.io.DataInputStream;
+&nbsp;import java.io.DataOutputStream;
+&nbsp;import java.io.IOException;
+&nbsp;
+&nbsp;public final class LineNumberTable extends Attribute {
+&nbsp;    private boolean isInPackedState;
+&nbsp;    private byte[] data;
+&nbsp;    private int tableLength;
+&nbsp;    private LineNumber[] table;
+&nbsp;
+&nbsp;    public LineNumberTable(LineNumberTable c) {
+&nbsp;        this(c.getNameIndex(), c.getLength(), c.getLineNumberTable(), c.getConstantPool());
+&nbsp;    }
+&nbsp;
+&nbsp;    public LineNumberTable(int nameIndex, int length, LineNumber[] lineNumberTable, ConstantPool constantPool) {
+&nbsp;        super((byte)4, nameIndex, length, constantPool);
+&nbsp;        this.isInPackedState = false;
+&nbsp;        this.setLineNumberTable(lineNumberTable);
+&nbsp;        this.isInPackedState = false;
+&nbsp;    }
+&nbsp;
+&nbsp;    LineNumberTable(int name_index, int length, DataInputStream file, ConstantPool constant_pool) throws IOException {
+&nbsp;        this(name_index, length, (LineNumber[])null, constant_pool);
+&nbsp;        this.data = new byte[length];
+&nbsp;        file.readFully(this.data);
+&nbsp;        this.isInPackedState = true;
+&nbsp;    }
+&nbsp;
+&nbsp;    private void unpack() {
+&nbsp;        if (this.isInPackedState) {
+&nbsp;            try {
+&nbsp;                ByteArrayInputStream bs = new ByteArrayInputStream(this.data);
+&nbsp;                DataInputStream dis = new DataInputStream(bs);
+&nbsp;                this.tableLength = dis.readUnsignedShort();
+&nbsp;                this.table = new LineNumber[this.tableLength];
+&nbsp;
+&nbsp;                for(int i = 0; i &lt; this.tableLength; ++i) {
+&nbsp;                    this.table[i] = new LineNumber(dis);
+&nbsp;                }
+&nbsp;
+&nbsp;                dis.close();
+&nbsp;                this.data = null;
+&nbsp;            } catch (IOException var4) {
+&nbsp;                throw new RuntimeException(&quot;Unpacking of LineNumberTable attribute failed&quot;);
+&nbsp;            }
+&nbsp;
+&nbsp;            this.isInPackedState = false;
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void accept(ClassVisitor v) {
+&nbsp;        this.unpack();
+&nbsp;        v.visitLineNumberTable(this);
+&nbsp;    }
+&nbsp;
+&nbsp;    public final void dump(DataOutputStream file) throws IOException {
+&nbsp;        super.dump(file);
+&nbsp;        if (this.isInPackedState) {
+&nbsp;            file.write(this.data);
+&nbsp;        } else {
+&nbsp;            file.writeShort(this.tableLength);
+&nbsp;
+&nbsp;            for(int i = 0; i &lt; this.tableLength; ++i) {
+&nbsp;                this.table[i].dump(file);
+&nbsp;            }
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public final LineNumber[] getLineNumberTable() {
+&nbsp;        this.unpack();
+&nbsp;        return this.table;
+&nbsp;    }
+&nbsp;
+&nbsp;    public final void setLineNumberTable(LineNumber[] line_number_table) {
+&nbsp;        this.data = null;
+<b class="nc">&nbsp;        this.isInPackedState = false;</b>
+&nbsp;        this.table = line_number_table;
+&nbsp;        this.tableLength = line_number_table == null ? 0 : line_number_table.length;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public final String toString() {</b>
+<b class="fc">&nbsp;        this.unpack();</b>
+&nbsp;        StringBuilder buf = new StringBuilder();
+&nbsp;        StringBuilder line = new StringBuilder();
+&nbsp;
+&nbsp;        for(int i = 0; i &lt; this.tableLength; ++i) {
+&nbsp;            line.append(this.table[i].toString());
+&nbsp;            if (i &lt; this.tableLength - 1) {
+&nbsp;                line.append(&quot;, &quot;);
+&nbsp;            }
+&nbsp;
+&nbsp;            if (line.length() &gt; 72) {
+&nbsp;                line.append(&#39;\n&#39;);
+&nbsp;                buf.append(line);
+<b class="fc">&nbsp;                line.setLength(0);</b>
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;        buf.append(line);
+&nbsp;        return buf.toString();
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getSourceLine(int pos) {
+<b class="nc">&nbsp;        this.unpack();</b>
+&nbsp;        int l = 0;
+<b class="nc">&nbsp;        int r = this.tableLength - 1;</b>
+<b class="nc">&nbsp;        if (r &lt; 0) {</b>
+<b class="nc">&nbsp;            return -1;</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            int min_index = -1;</b>
+<b class="nc">&nbsp;            int min = -1;</b>
+&nbsp;
+&nbsp;            do {
+<b class="nc">&nbsp;                int i = (l + r) / 2;</b>
+&nbsp;                int j = this.table[i].getStartPC();
+<b class="nc">&nbsp;                if (j == pos) {</b>
+&nbsp;                    return this.table[i].getLineNumber();
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                if (pos &lt; j) {
+&nbsp;                    r = i - 1;
+&nbsp;                } else {
+&nbsp;                    l = i + 1;
+&nbsp;                }
+&nbsp;
+&nbsp;                if (j &lt; pos &amp;&amp; j &gt; min) {
+&nbsp;                    min = j;
+&nbsp;                    min_index = i;
+&nbsp;                }
+<b class="nc">&nbsp;            } while(l &lt;= r);</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            if (min_index &lt; 0) {
+&nbsp;                return -1;
+&nbsp;            } else {
+&nbsp;                return this.table[min_index].getLineNumber();
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public final int getTableLength() {
+&nbsp;        this.unpack();
+<b class="nc">&nbsp;        return this.tableLength;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
+</div>
+</body>
+</html>

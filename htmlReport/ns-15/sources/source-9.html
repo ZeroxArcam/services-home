@@ -1,0 +1,357 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > TokenStream</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">ch.qos.logback.core.pattern.parser</a>
+</div>
+
+<h1>Coverage Summary for Class: TokenStream (ch.qos.logback.core.pattern.parser)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TokenStream</td>
+<td class="coverageStat">
+  <span class="percent">
+    72.7%
+  </span>
+  <span class="absValue">
+    (8/11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    63%
+  </span>
+  <span class="absValue">
+    (29/46)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    73.8%
+  </span>
+  <span class="absValue">
+    (62/84)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">TokenStream$TokenizerState</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/2)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    76.9%
+  </span>
+  <span class="absValue">
+    (10/13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    63%
+  </span>
+  <span class="absValue">
+    (29/46)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    74.4%
+  </span>
+  <span class="absValue">
+    (64/86)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package ch.qos.logback.core.pattern.parser;
+&nbsp;
+&nbsp;import ch.qos.logback.core.pattern.util.IEscapeUtil;
+&nbsp;import ch.qos.logback.core.pattern.util.RegularEscapeUtil;
+&nbsp;import ch.qos.logback.core.pattern.util.RestrictedEscapeUtil;
+&nbsp;import ch.qos.logback.core.spi.ScanException;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.List;
+&nbsp;
+&nbsp;class TokenStream {
+&nbsp;    final String pattern;
+&nbsp;    final int patternLength;
+&nbsp;    final IEscapeUtil escapeUtil;
+&nbsp;    final IEscapeUtil optionEscapeUtil;
+&nbsp;    TokenizerState state;
+&nbsp;    int pointer;
+&nbsp;
+&nbsp;    TokenStream(String pattern) {
+&nbsp;        this(pattern, new RegularEscapeUtil());
+&nbsp;    }
+&nbsp;
+&nbsp;    TokenStream(String pattern, IEscapeUtil escapeUtil) {
+&nbsp;        this.optionEscapeUtil = new RestrictedEscapeUtil();
+&nbsp;        this.state = TokenStream.TokenizerState.LITERAL_STATE;
+&nbsp;        this.pointer = 0;
+&nbsp;        if (pattern != null &amp;&amp; pattern.length() != 0) {
+&nbsp;            this.pattern = pattern;
+&nbsp;            this.patternLength = pattern.length();
+&nbsp;            this.escapeUtil = escapeUtil;
+&nbsp;        } else {
+&nbsp;            throw new IllegalArgumentException(&quot;null or empty pattern string not allowed&quot;);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    List&lt;Token&gt; tokenize() throws ScanException {
+&nbsp;        List&lt;Token&gt; tokenList = new ArrayList();
+&nbsp;        StringBuffer buf = new StringBuffer();
+&nbsp;
+&nbsp;        while(this.pointer &lt; this.patternLength) {
+&nbsp;            char c = this.pattern.charAt(this.pointer);
+&nbsp;            ++this.pointer;
+&nbsp;            switch (this.state.ordinal()) {
+&nbsp;                case 0:
+&nbsp;                    this.handleLiteralState(c, tokenList, buf);
+<b class="fc">&nbsp;                    break;</b>
+<b class="fc">&nbsp;                case 1:</b>
+&nbsp;                    this.handleFormatModifierState(c, tokenList, buf);
+&nbsp;                    break;
+&nbsp;                case 2:
+&nbsp;                    this.handleKeywordState(c, tokenList, buf);
+&nbsp;                    break;
+&nbsp;                case 3:
+<b class="fc">&nbsp;                    this.processOption(c, tokenList, buf);</b>
+&nbsp;                    break;
+<b class="fc">&nbsp;                case 4:</b>
+<b class="fc">&nbsp;                    this.handleRightParenthesisState(c, tokenList, buf);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        switch (this.state.ordinal()) {</b>
+&nbsp;            case 0:
+&nbsp;                this.addValuedToken(1000, buf, tokenList);
+<b class="fc">&nbsp;                break;</b>
+<b class="pc">&nbsp;            case 1:</b>
+<b class="nc">&nbsp;            case 3:</b>
+&nbsp;                throw new ScanException(&quot;Unexpected end of pattern string&quot;);
+<b class="fc">&nbsp;            case 2:</b>
+<b class="fc">&nbsp;                tokenList.add(new Token(1004, buf.toString()));</b>
+<b class="fc">&nbsp;                break;</b>
+&nbsp;            case 4:
+&nbsp;                tokenList.add(Token.RIGHT_PARENTHESIS_TOKEN);
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;        return tokenList;</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private void handleRightParenthesisState(char c, List&lt;Token&gt; tokenList, StringBuffer buf) {</b>
+<b class="fc">&nbsp;        tokenList.add(Token.RIGHT_PARENTHESIS_TOKEN);</b>
+&nbsp;        switch (c) {
+<b class="pc">&nbsp;            case &#39;)&#39;:</b>
+&nbsp;                break;
+<b class="fc">&nbsp;            case &#39;\\&#39;:</b>
+&nbsp;                this.escape(&quot;%{}&quot;, buf);
+&nbsp;                this.state = TokenStream.TokenizerState.LITERAL_STATE;
+<b class="fc">&nbsp;                break;</b>
+&nbsp;            case &#39;{&#39;:
+&nbsp;                this.state = TokenStream.TokenizerState.OPTION_STATE;
+<b class="fc">&nbsp;                break;</b>
+&nbsp;            default:
+&nbsp;                buf.append(c);
+<b class="fc">&nbsp;                this.state = TokenStream.TokenizerState.LITERAL_STATE;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private void processOption(char c, List&lt;Token&gt; tokenList, StringBuffer buf) throws ScanException {
+&nbsp;        OptionTokenizer ot = new OptionTokenizer(this);
+&nbsp;        ot.tokenize(c, tokenList);
+&nbsp;    }
+&nbsp;
+&nbsp;    private void handleFormatModifierState(char c, List&lt;Token&gt; tokenList, StringBuffer buf) {
+<b class="pc">&nbsp;        if (c == &#39;(&#39;) {</b>
+&nbsp;            this.addValuedToken(1002, buf, tokenList);
+<b class="nc">&nbsp;            tokenList.add(Token.BARE_COMPOSITE_KEYWORD_TOKEN);</b>
+&nbsp;            this.state = TokenStream.TokenizerState.LITERAL_STATE;
+&nbsp;        } else if (Character.isJavaIdentifierStart(c)) {
+<b class="fc">&nbsp;            this.addValuedToken(1002, buf, tokenList);</b>
+&nbsp;            this.state = TokenStream.TokenizerState.KEYWORD_STATE;
+&nbsp;            buf.append(c);
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            buf.append(c);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private void handleLiteralState(char c, List&lt;Token&gt; tokenList, StringBuffer buf) {
+&nbsp;        switch (c) {
+<b class="fc">&nbsp;            case &#39;%&#39;:</b>
+&nbsp;                this.addValuedToken(1000, buf, tokenList);
+&nbsp;                tokenList.add(Token.PERCENT_TOKEN);
+&nbsp;                this.state = TokenStream.TokenizerState.FORMAT_MODIFIER_STATE;
+<b class="fc">&nbsp;                break;</b>
+<b class="pc">&nbsp;            case &#39;)&#39;:</b>
+&nbsp;                this.addValuedToken(1000, buf, tokenList);
+&nbsp;                this.state = TokenStream.TokenizerState.RIGHT_PARENTHESIS_STATE;
+&nbsp;                break;
+<b class="fc">&nbsp;            case &#39;\\&#39;:</b>
+&nbsp;                this.escape(&quot;%()&quot;, buf);
+&nbsp;                break;
+<b class="nc">&nbsp;            default:</b>
+<b class="nc">&nbsp;                buf.append(c);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private void handleKeywordState(char c, List&lt;Token&gt; tokenList, StringBuffer buf) {
+&nbsp;        if (Character.isJavaIdentifierPart(c)) {
+&nbsp;            buf.append(c);
+&nbsp;        } else if (c == &#39;{&#39;) {
+<b class="fc">&nbsp;            this.addValuedToken(1004, buf, tokenList);</b>
+<b class="fc">&nbsp;            this.state = TokenStream.TokenizerState.OPTION_STATE;</b>
+&nbsp;        } else if (c == &#39;(&#39;) {
+&nbsp;            this.addValuedToken(1005, buf, tokenList);
+&nbsp;            this.state = TokenStream.TokenizerState.LITERAL_STATE;
+<b class="pc">&nbsp;        } else if (c == &#39;%&#39;) {</b>
+<b class="nc">&nbsp;            this.addValuedToken(1004, buf, tokenList);</b>
+<b class="nc">&nbsp;            tokenList.add(Token.PERCENT_TOKEN);</b>
+<b class="nc">&nbsp;            this.state = TokenStream.TokenizerState.FORMAT_MODIFIER_STATE;</b>
+<b class="fc">&nbsp;        } else if (c == &#39;)&#39;) {</b>
+<b class="fc">&nbsp;            this.addValuedToken(1004, buf, tokenList);</b>
+<b class="fc">&nbsp;            this.state = TokenStream.TokenizerState.RIGHT_PARENTHESIS_STATE;</b>
+<b class="fc">&nbsp;        } else {</b>
+&nbsp;            this.addValuedToken(1004, buf, tokenList);
+<b class="fc">&nbsp;            if (c == &#39;\\&#39;) {</b>
+&nbsp;                if (this.pointer &lt; this.patternLength) {
+&nbsp;                    char next = this.pattern.charAt(this.pointer++);
+&nbsp;                    this.escapeUtil.escape(&quot;%()&quot;, buf, next, this.pointer);
+&nbsp;                }
+<b class="pc">&nbsp;            } else {</b>
+&nbsp;                buf.append(c);
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            this.state = TokenStream.TokenizerState.LITERAL_STATE;
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    void escape(String escapeChars, StringBuffer buf) {
+&nbsp;        if (this.pointer &lt; this.patternLength) {
+&nbsp;            char next = this.pattern.charAt(this.pointer++);
+<b class="fc">&nbsp;            this.escapeUtil.escape(escapeChars, buf, next, this.pointer);</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    void optionEscape(String escapeChars, StringBuffer buf) {</b>
+&nbsp;        if (this.pointer &lt; this.patternLength) {
+&nbsp;            char next = this.pattern.charAt(this.pointer++);
+&nbsp;            this.optionEscapeUtil.escape(escapeChars, buf, next, this.pointer);
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private void addValuedToken(int type, StringBuffer buf, List&lt;Token&gt; tokenList) {</b>
+<b class="fc">&nbsp;        if (buf.length() &gt; 0) {</b>
+<b class="fc">&nbsp;            tokenList.add(new Token(type, buf.toString()));</b>
+<b class="fc">&nbsp;            buf.setLength(0);</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    static enum TokenizerState {</b>
+<b class="fc">&nbsp;        LITERAL_STATE,</b>
+<b class="fc">&nbsp;        FORMAT_MODIFIER_STATE,</b>
+<b class="fc">&nbsp;        KEYWORD_STATE,</b>
+<b class="fc">&nbsp;        OPTION_STATE,</b>
+&nbsp;        RIGHT_PARENTHESIS_STATE;
+<b class="fc">&nbsp;</b>
+<b class="pc">&nbsp;        private TokenizerState() {</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

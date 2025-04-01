@@ -1,0 +1,240 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > DefaultReplicateEventListener</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.event.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: DefaultReplicateEventListener (org.hibernate.event.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DefaultReplicateEventListener</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    22.2%
+  </span>
+  <span class="absValue">
+    (2/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/26)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    3.8%
+  </span>
+  <span class="absValue">
+    (2/52)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.event.internal;
+&nbsp;
+&nbsp;import org.hibernate.HibernateException;
+&nbsp;import org.hibernate.LockMode;
+&nbsp;import org.hibernate.ReplicationMode;
+&nbsp;import org.hibernate.TransientObjectException;
+&nbsp;import org.hibernate.engine.internal.Cascade;
+&nbsp;import org.hibernate.engine.internal.CascadePoint;
+&nbsp;import org.hibernate.engine.spi.CascadingAction;
+&nbsp;import org.hibernate.engine.spi.CascadingActions;
+&nbsp;import org.hibernate.engine.spi.EntityKey;
+&nbsp;import org.hibernate.engine.spi.PersistenceContext;
+&nbsp;import org.hibernate.engine.spi.SessionImplementor;
+&nbsp;import org.hibernate.engine.spi.Status;
+&nbsp;import org.hibernate.event.spi.EventSource;
+&nbsp;import org.hibernate.event.spi.ReplicateEvent;
+&nbsp;import org.hibernate.event.spi.ReplicateEventListener;
+&nbsp;import org.hibernate.internal.CoreLogging;
+&nbsp;import org.hibernate.internal.CoreMessageLogger;
+&nbsp;import org.hibernate.persister.entity.EntityPersister;
+&nbsp;import org.hibernate.pretty.MessageHelper;
+&nbsp;import org.hibernate.type.BasicType;
+&nbsp;import org.hibernate.type.Type;
+&nbsp;
+&nbsp;/** @deprecated */
+&nbsp;@Deprecated(
+&nbsp;    since = &quot;6&quot;
+&nbsp;)
+&nbsp;public class DefaultReplicateEventListener extends AbstractSaveEventListener&lt;ReplicationMode&gt; implements ReplicateEventListener {
+&nbsp;    private static final CoreMessageLogger LOG = CoreLogging.messageLogger(DefaultReplicateEventListener.class);
+&nbsp;
+&nbsp;    public DefaultReplicateEventListener() {
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public void onReplicate(ReplicateEvent event) {</b>
+&nbsp;        EventSource source = event.getSession();
+&nbsp;        PersistenceContext persistenceContext = source.getPersistenceContextInternal();
+<b class="fc">&nbsp;        if (persistenceContext.reassociateIfUninitializedProxy(event.getObject())) {</b>
+&nbsp;            LOG.trace(&quot;Uninitialized proxy passed to replicate()&quot;);
+&nbsp;        } else {
+&nbsp;            Object entity = persistenceContext.unproxyAndReassociate(event.getObject());
+&nbsp;            if (persistenceContext.isEntryFor(entity)) {
+&nbsp;                LOG.trace(&quot;Ignoring persistent instance passed to replicate()&quot;);
+&nbsp;            } else {
+&nbsp;                EntityPersister persister = source.getEntityPersister(event.getEntityName(), entity);
+&nbsp;                Object id = persister.getIdentifier(entity, source);
+&nbsp;                if (id == null) {
+&nbsp;                    throw new TransientObjectException(&quot;instance with null id passed to replicate()&quot;);
+<b class="nc">&nbsp;                } else {</b>
+<b class="nc">&nbsp;                    ReplicationMode replicationMode = event.getReplicationMode();</b>
+<b class="nc">&nbsp;                    Object oldVersion = replicationMode == ReplicationMode.EXCEPTION ? null : persister.getCurrentVersion(id, source);</b>
+<b class="nc">&nbsp;                    if (oldVersion != null) {</b>
+&nbsp;                        if (LOG.isTraceEnabled()) {
+&nbsp;                            LOG.tracev(&quot;Found existing row for {0}&quot;, MessageHelper.infoString(persister, id, event.getFactory()));
+&nbsp;                        }
+<b class="nc">&nbsp;</b>
+&nbsp;                        BasicType&lt;Object&gt; versionType = persister.getVersionType();
+<b class="nc">&nbsp;                        Object realOldVersion = persister.isVersioned() ? oldVersion : null;</b>
+<b class="nc">&nbsp;                        boolean canReplicate = replicationMode.shouldOverwriteCurrentVersion(entity, realOldVersion, persister.getVersion(entity), versionType);</b>
+&nbsp;                        if (canReplicate) {
+&nbsp;                            this.performReplication(entity, id, realOldVersion, persister, replicationMode, source);
+&nbsp;                        } else if (LOG.isTraceEnabled()) {
+&nbsp;                            LOG.trace(&quot;No need to replicate&quot;);
+<b class="nc">&nbsp;                        }</b>
+&nbsp;                    } else {
+&nbsp;                        if (LOG.isTraceEnabled()) {
+&nbsp;                            LOG.tracev(&quot;No existing row, replicating new instance {0}&quot;, MessageHelper.infoString(persister, id, event.getFactory()));
+&nbsp;                        }
+&nbsp;
+<b class="nc">&nbsp;                        boolean regenerate = persister.isIdentifierAssignedByInsert();</b>
+<b class="nc">&nbsp;                        EntityKey key = regenerate ? null : source.generateEntityKey(id, persister);</b>
+<b class="nc">&nbsp;                        this.performSaveOrReplicate(entity, key, persister, regenerate, replicationMode, source, false);</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    protected boolean visitCollectionsBeforeSave(Object entity, Object id, Object[] values, Type[] types, EventSource source) {
+<b class="nc">&nbsp;        OnReplicateVisitor visitor = new OnReplicateVisitor(source, id, entity, false);</b>
+<b class="nc">&nbsp;        visitor.processEntityPropertyValues(values, types);</b>
+<b class="nc">&nbsp;        return super.visitCollectionsBeforeSave(entity, id, values, types, source);</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected boolean substituteValuesIfNecessary(Object entity, Object id, Object[] values, EntityPersister persister, SessionImplementor source) {
+&nbsp;        return false;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected boolean isVersionIncrementDisabled() {</b>
+<b class="nc">&nbsp;        return true;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private void performReplication(Object entity, Object id, Object version, EntityPersister persister, ReplicationMode replicationMode, EventSource source) throws HibernateException {
+<b class="nc">&nbsp;        if (LOG.isTraceEnabled()) {</b>
+&nbsp;            LOG.tracev(&quot;Replicating changes to {0}&quot;, MessageHelper.infoString(persister, id, source.getFactory()));
+&nbsp;        }
+&nbsp;
+&nbsp;        (new OnReplicateVisitor(source, id, entity, true)).process(entity, persister);
+&nbsp;        source.getPersistenceContextInternal().addEntity(entity, persister.isMutable() ? Status.MANAGED : Status.READ_ONLY, (Object[])null, source.generateEntityKey(id, persister), version, LockMode.NONE, true, persister, true);
+<b class="nc">&nbsp;        this.cascadeAfterReplicate(entity, persister, replicationMode, source);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private void cascadeAfterReplicate(Object entity, EntityPersister persister, ReplicationMode replicationMode, EventSource source) {</b>
+<b class="nc">&nbsp;        PersistenceContext persistenceContext = source.getPersistenceContextInternal();</b>
+&nbsp;        persistenceContext.incrementCascadeLevel();
+&nbsp;
+&nbsp;        try {
+&nbsp;            Cascade.cascade(CascadingActions.REPLICATE, CascadePoint.AFTER_UPDATE, source, persister, entity, replicationMode);
+&nbsp;        } finally {
+&nbsp;            persistenceContext.decrementCascadeLevel();
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected CascadingAction&lt;ReplicationMode&gt; getCascadeAction() {
+&nbsp;        return CascadingActions.REPLICATE;
+&nbsp;    }
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:57</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,396 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > StandardTableExporter</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.tool.schema.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: StandardTableExporter (org.hibernate.tool.schema.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">StandardTableExporter</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    7.1%
+  </span>
+  <span class="absValue">
+    (1/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/89)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    1.4%
+  </span>
+  <span class="absValue">
+    (2/144)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.tool.schema.internal;
+&nbsp;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.List;
+&nbsp;import org.hibernate.MappingException;
+&nbsp;import org.hibernate.boot.Metadata;
+&nbsp;import org.hibernate.boot.model.naming.Identifier;
+&nbsp;import org.hibernate.boot.model.relational.InitCommand;
+&nbsp;import org.hibernate.boot.model.relational.QualifiedName;
+&nbsp;import org.hibernate.boot.model.relational.QualifiedNameParser;
+&nbsp;import org.hibernate.boot.model.relational.QualifiedTableName;
+&nbsp;import org.hibernate.boot.model.relational.SqlStringGenerationContext;
+&nbsp;import org.hibernate.dialect.Dialect;
+&nbsp;import org.hibernate.dialect.aggregate.AggregateSupport;
+&nbsp;import org.hibernate.internal.util.StringHelper;
+&nbsp;import org.hibernate.mapping.AggregateColumn;
+&nbsp;import org.hibernate.mapping.BasicValue;
+&nbsp;import org.hibernate.mapping.CheckConstraint;
+&nbsp;import org.hibernate.mapping.Column;
+&nbsp;import org.hibernate.mapping.Component;
+&nbsp;import org.hibernate.mapping.Property;
+&nbsp;import org.hibernate.mapping.Table;
+&nbsp;import org.hibernate.mapping.Value;
+&nbsp;import org.hibernate.tool.schema.spi.Exporter;
+&nbsp;
+&nbsp;public class StandardTableExporter implements Exporter&lt;Table&gt; {
+&nbsp;    protected final Dialect dialect;
+&nbsp;
+&nbsp;    public StandardTableExporter(Dialect dialect) {
+&nbsp;        this.dialect = dialect;
+&nbsp;    }
+&nbsp;
+&nbsp;    public String[] getSqlCreateStrings(Table table, Metadata metadata, SqlStringGenerationContext context) {
+&nbsp;        QualifiedName tableName = getTableName(table);
+&nbsp;
+&nbsp;        try {
+&nbsp;            String formattedTableName = context.format(tableName);
+&nbsp;            StringBuilder createTable = new StringBuilder();
+&nbsp;            String viewQuery = table.getViewQuery();
+&nbsp;            if (viewQuery != null) {
+<b class="fc">&nbsp;                createTable.append(&quot;create view &quot;).append(formattedTableName).append(&quot; as &quot;).append(viewQuery);</b>
+<b class="fc">&nbsp;            } else {</b>
+&nbsp;                StringBuilder extra = new StringBuilder();
+&nbsp;                createTable.append(this.tableCreateString(table.hasPrimaryKey())).append(&#39; &#39;).append(formattedTableName).append(&quot; (&quot;);
+&nbsp;                boolean isFirst = true;
+&nbsp;
+&nbsp;                for(Column column : table.getColumns()) {
+&nbsp;                    if (isFirst) {
+&nbsp;                        isFirst = false;
+<b class="nc">&nbsp;                    } else {</b>
+&nbsp;                        createTable.append(&quot;, &quot;);
+&nbsp;                    }
+<b class="nc">&nbsp;</b>
+&nbsp;                    ColumnDefinitions.appendColumn(createTable, column, table, metadata, this.dialect, context);
+<b class="nc">&nbsp;                    extra.append(column.getValue().getExtraCreateTableInfo());</b>
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                if (table.getRowId() != null) {</b>
+<b class="nc">&nbsp;                    String rowIdColumn = this.dialect.getRowIdColumnString(table.getRowId());</b>
+<b class="nc">&nbsp;                    if (rowIdColumn != null) {</b>
+<b class="nc">&nbsp;                        createTable.append(&quot;, &quot;).append(rowIdColumn);</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if (table.hasPrimaryKey()) {</b>
+&nbsp;                    createTable.append(&quot;, &quot;).append(table.getPrimaryKey().sqlConstraintString(this.dialect));
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                createTable.append(this.dialect.getUniqueDelegate().getTableCreationUniqueConstraintsFragment(table, context));</b>
+<b class="nc">&nbsp;                this.applyTableCheck(table, createTable);</b>
+&nbsp;                createTable.append(&#39;)&#39;);
+<b class="nc">&nbsp;                createTable.append(extra);</b>
+<b class="nc">&nbsp;                if (table.getComment() != null) {</b>
+<b class="nc">&nbsp;                    createTable.append(this.dialect.getTableComment(table.getComment()));</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                this.applyTableTypeString(createTable);
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            List&lt;String&gt; sqlStrings = new ArrayList();</b>
+&nbsp;            sqlStrings.add(createTable.toString());
+<b class="nc">&nbsp;            this.applyComments(table, formattedTableName, sqlStrings);</b>
+&nbsp;            this.applyInitCommands(table, sqlStrings, context);
+<b class="nc">&nbsp;            return (String[])sqlStrings.toArray(StringHelper.EMPTY_STRINGS);</b>
+<b class="nc">&nbsp;        } catch (Exception e) {</b>
+<b class="nc">&nbsp;            throw new MappingException(&quot;Error creating SQL &#39;create&#39; commands for table &#39;&quot; + table.getName() + &quot;&#39; [&quot; + e.getMessage() + &quot;]&quot;, e);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    /** @deprecated */</b>
+<b class="nc">&nbsp;    @Deprecated</b>
+&nbsp;    protected void applyComments(Table table, QualifiedTableName tableName, List&lt;String&gt; sqlStrings) {
+&nbsp;        this.applyComments(table, tableName.toString(), sqlStrings);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    protected void applyComments(Table table, String formattedTableName, List&lt;String&gt; sqlStrings) {</b>
+&nbsp;        if (this.dialect.supportsCommentOn()) {
+<b class="nc">&nbsp;            if (table.getComment() != null &amp;&amp; this.dialect.getTableComment(&quot;&quot;).isEmpty()) {</b>
+&nbsp;                sqlStrings.add(&quot;comment on table &quot; + formattedTableName + &quot; is &#39;&quot; + table.getComment() + &quot;&#39;&quot;);
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            if (this.dialect.getColumnComment(&quot;&quot;).isEmpty()) {</b>
+<b class="nc">&nbsp;                for(Column column : table.getColumns()) {</b>
+&nbsp;                    String columnComment = column.getComment();
+&nbsp;                    if (columnComment != null) {
+<b class="nc">&nbsp;                        sqlStrings.add(&quot;comment on column &quot; + formattedTableName + &quot;.&quot; + column.getQuotedName(this.dialect) + &quot; is &#39;&quot; + columnComment + &quot;&#39;&quot;);</b>
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    protected void applyInitCommands(Table table, List&lt;String&gt; sqlStrings, SqlStringGenerationContext context) {
+&nbsp;        for(InitCommand initCommand : table.getInitCommands(context)) {
+<b class="nc">&nbsp;            Collections.addAll(sqlStrings, initCommand.getInitCommands());</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void applyTableTypeString(StringBuilder buf) {
+&nbsp;        buf.append(this.dialect.getTableTypeString());
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void applyTableCheck(Table table, StringBuilder buf) {
+&nbsp;        if (this.dialect.supportsTableCheck()) {
+&nbsp;            for(CheckConstraint constraint : table.getChecks()) {
+&nbsp;                buf.append(&quot;,&quot;).append(constraint.constraintString());
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            AggregateSupport aggregateSupport = this.dialect.getAggregateSupport();
+&nbsp;            if (aggregateSupport != null &amp;&amp; aggregateSupport.supportsComponentCheckConstraints()) {
+&nbsp;                for(Column column : table.getColumns()) {
+&nbsp;                    if (column instanceof AggregateColumn) {
+&nbsp;                        AggregateColumn aggregateColumn = (AggregateColumn)column;
+&nbsp;                        if (!this.isArray(aggregateColumn)) {
+&nbsp;                            this.applyAggregateColumnCheck(buf, aggregateColumn);
+&nbsp;                        }
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private boolean isArray(AggregateColumn aggregateColumn) {</b>
+<b class="nc">&nbsp;        BasicValue value = (BasicValue)aggregateColumn.getValue();</b>
+<b class="nc">&nbsp;        switch (value.getResolution().getJdbcType().getDefaultSqlTypeCode()) {</b>
+&nbsp;            case 2003:
+&nbsp;            case 3016:
+&nbsp;            case 3017:
+&nbsp;            case 3018:
+&nbsp;            case 3019:
+&nbsp;                return true;
+&nbsp;            default:
+&nbsp;                return false;
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private void applyAggregateColumnCheck(StringBuilder buf, AggregateColumn aggregateColumn) {
+&nbsp;        AggregateSupport aggregateSupport = this.dialect.getAggregateSupport();
+&nbsp;        int checkStart = buf.length();
+&nbsp;        buf.append(&quot;, check (&quot;);
+<b class="nc">&nbsp;        int start = buf.length();</b>
+&nbsp;        this.applyAggregateColumnCheck(buf, &quot;&quot;, aggregateColumn, (String)null, aggregateSupport, aggregateColumn.getComponent());
+&nbsp;        if (buf.length() == start) {
+&nbsp;            buf.setLength(checkStart);
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            buf.append(&#39;)&#39;);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private String applyAggregateColumnCheck(StringBuilder buf, String separator, AggregateColumn aggregateColumn, String aggregatePath, AggregateSupport aggregateSupport, Value value) {</b>
+<b class="nc">&nbsp;        if (value instanceof Component) {</b>
+<b class="nc">&nbsp;            Component component = (Component)value;</b>
+<b class="nc">&nbsp;            AggregateColumn subAggregateColumn = component.getAggregateColumn();</b>
+<b class="nc">&nbsp;            if (subAggregateColumn != null &amp;&amp; !this.isArray(subAggregateColumn)) {</b>
+&nbsp;                String subAggregatePath = subAggregateColumn.getAggregateReadExpressionTemplate(this.dialect).replace(&quot;$PlaceHolder$.&quot;, &quot;&quot;);
+&nbsp;                int checkStart = buf.length();
+&nbsp;                if (subAggregateColumn.isNullable()) {
+&nbsp;                    buf.append(subAggregatePath);
+&nbsp;                    buf.append(&quot; is null or (&quot;);
+&nbsp;                }
+&nbsp;
+&nbsp;                int start = buf.length();
+<b class="nc">&nbsp;                separator = &quot;&quot;;</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                for(Property property : component.getProperties()) {
+&nbsp;                    separator = this.applyAggregateColumnCheck(buf, separator, subAggregateColumn, subAggregatePath, aggregateSupport, property.getValue());
+&nbsp;                }
+&nbsp;
+&nbsp;                if (buf.length() == start) {
+<b class="nc">&nbsp;                    buf.setLength(checkStart);</b>
+&nbsp;                } else if (aggregateColumn.isNullable()) {
+<b class="nc">&nbsp;                    buf.append(&#39;)&#39;);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        } else {
+<b class="nc">&nbsp;            for(Column subColumn : value.getColumns()) {</b>
+<b class="nc">&nbsp;                String checkConstraint = getCheckConstraint(subColumn);</b>
+<b class="nc">&nbsp;                if (!subColumn.isNullable() || checkConstraint != null) {</b>
+<b class="nc">&nbsp;                    String subColumnName = subColumn.getQuotedName(this.dialect);</b>
+&nbsp;                    String columnExpression = aggregateSupport.aggregateComponentCustomReadExpression(subColumnName, subColumnName, aggregatePath, subColumnName, aggregateColumn, subColumn);
+&nbsp;                    if (!subColumn.isNullable()) {
+<b class="nc">&nbsp;                        buf.append(separator);</b>
+&nbsp;                        buf.append(columnExpression);
+&nbsp;                        buf.append(&quot; is not null&quot;);
+&nbsp;                        separator = &quot; and &quot;;
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if (checkConstraint != null) {</b>
+&nbsp;                        if (subColumn.isNullable()) {
+&nbsp;                            buf.append(separator);
+<b class="nc">&nbsp;                            buf.append(&#39;(&#39;);</b>
+<b class="nc">&nbsp;                            buf.append(columnExpression);</b>
+&nbsp;                            buf.append(&quot; is null&quot;);
+&nbsp;                            separator = &quot; or &quot;;
+<b class="nc">&nbsp;                        }</b>
+&nbsp;
+&nbsp;                        buf.append(separator);
+&nbsp;                        buf.append(checkConstraint.replace(subColumnName, columnExpression));
+&nbsp;                        if (subColumn.isNullable()) {
+&nbsp;                            buf.append(&#39;)&#39;);
+&nbsp;                        }
+&nbsp;
+&nbsp;                        separator = &quot; and &quot;;
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return separator;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private static String getCheckConstraint(Column subColumn) {</b>
+<b class="nc">&nbsp;        List&lt;CheckConstraint&gt; checkConstraints = subColumn.getCheckConstraints();</b>
+<b class="nc">&nbsp;        if (checkConstraints.isEmpty()) {</b>
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        } else if (checkConstraints.size() &gt; 1) {
+<b class="nc">&nbsp;            throw new MappingException(&quot;Multiple check constraints not supported for aggregate columns&quot;);</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            return ((CheckConstraint)checkConstraints.get(0)).getConstraint();</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected String tableCreateString(boolean hasPrimaryKey) {
+&nbsp;        return hasPrimaryKey ? this.dialect.getCreateTableString() : this.dialect.getCreateMultisetTableString();
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public String[] getSqlDropStrings(Table table, Metadata metadata, SqlStringGenerationContext context) {
+&nbsp;        StringBuilder dropTable = new StringBuilder();
+&nbsp;        if (table.getViewQuery() == null) {
+<b class="nc">&nbsp;            dropTable.append(&quot;drop table &quot;);</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            dropTable.append(&quot;drop view &quot;);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        if (this.dialect.supportsIfExistsBeforeTableName()) {
+&nbsp;            dropTable.append(&quot;if exists &quot;);
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        dropTable.append(context.format(getTableName(table))).append(this.dialect.getCascadeConstraintsString());</b>
+<b class="nc">&nbsp;        if (this.dialect.supportsIfExistsAfterTableName()) {</b>
+<b class="nc">&nbsp;            dropTable.append(&quot; if exists&quot;);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return new String[]{dropTable.toString()};
+&nbsp;    }
+&nbsp;
+&nbsp;    private static QualifiedName getTableName(Table table) {
+&nbsp;        return new QualifiedNameParser.NameParts(Identifier.toIdentifier(table.getCatalog(), table.isCatalogQuoted()), Identifier.toIdentifier(table.getSchema(), table.isSchemaQuoted()), table.getNameIdentifier());
+&nbsp;    }
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 21:00</div>
+</div>
+</body>
+</html>

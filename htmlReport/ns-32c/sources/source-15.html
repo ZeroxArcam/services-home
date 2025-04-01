@@ -1,0 +1,274 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > SpringConfigurationPropertySources</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.boot.context.properties.source</a>
+</div>
+
+<h1>Coverage Summary for Class: SpringConfigurationPropertySources (org.springframework.boot.context.properties.source)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SpringConfigurationPropertySources</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    75%
+  </span>
+  <span class="absValue">
+    (6/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (14/14)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">SpringConfigurationPropertySources$SourcesIterator</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (6/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    93.8%
+  </span>
+  <span class="absValue">
+    (15/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    96.2%
+  </span>
+  <span class="absValue">
+    (25/26)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (10/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    87.5%
+  </span>
+  <span class="absValue">
+    (21/24)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    97.5%
+  </span>
+  <span class="absValue">
+    (39/40)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.boot.context.properties.source;
+&nbsp;
+&nbsp;import java.util.ArrayDeque;
+&nbsp;import java.util.Deque;
+&nbsp;import java.util.Iterator;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.NoSuchElementException;
+&nbsp;import java.util.function.Function;
+&nbsp;import org.springframework.boot.origin.OriginLookup;
+&nbsp;import org.springframework.core.env.ConfigurableEnvironment;
+&nbsp;import org.springframework.core.env.PropertySource;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.ConcurrentReferenceHashMap;
+&nbsp;import org.springframework.util.ConcurrentReferenceHashMap.ReferenceType;
+&nbsp;
+&nbsp;class SpringConfigurationPropertySources implements Iterable&lt;ConfigurationPropertySource&gt; {
+&nbsp;    private final Iterable&lt;PropertySource&lt;?&gt;&gt; sources;
+&nbsp;    private final Map&lt;PropertySource&lt;?&gt;, ConfigurationPropertySource&gt; cache;
+&nbsp;
+&nbsp;    SpringConfigurationPropertySources(Iterable&lt;PropertySource&lt;?&gt;&gt; sources) {
+&nbsp;        this.cache = new ConcurrentReferenceHashMap(16, ReferenceType.SOFT);
+&nbsp;        Assert.notNull(sources, &quot;Sources must not be null&quot;);
+&nbsp;        this.sources = sources;
+&nbsp;    }
+&nbsp;
+&nbsp;    boolean isUsingSources(Iterable&lt;PropertySource&lt;?&gt;&gt; sources) {
+&nbsp;        return this.sources == sources;
+&nbsp;    }
+&nbsp;
+&nbsp;    public Iterator&lt;ConfigurationPropertySource&gt; iterator() {
+&nbsp;        return new SourcesIterator(this.sources.iterator(), this::adapt);
+&nbsp;    }
+&nbsp;
+&nbsp;    private ConfigurationPropertySource adapt(PropertySource&lt;?&gt; source) {
+&nbsp;        ConfigurationPropertySource result = (ConfigurationPropertySource)this.cache.get(source);
+&nbsp;        if (result != null &amp;&amp; result.getUnderlyingSource() == source) {
+&nbsp;            return result;
+&nbsp;        } else {
+&nbsp;            result = SpringConfigurationPropertySource.from(source);
+<b class="fc">&nbsp;            if (source instanceof OriginLookup) {</b>
+&nbsp;                OriginLookup&lt;?&gt; originLookup = (OriginLookup)source;
+&nbsp;                result = result.withPrefix(originLookup.getPrefix());
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;            this.cache.put(source, result);</b>
+&nbsp;            return result;
+&nbsp;        }
+&nbsp;    }
+<b class="pc">&nbsp;</b>
+&nbsp;    private static class SourcesIterator implements Iterator&lt;ConfigurationPropertySource&gt; {
+&nbsp;        private final Deque&lt;Iterator&lt;PropertySource&lt;?&gt;&gt;&gt; iterators = new ArrayDeque(4);
+&nbsp;        private ConfigurationPropertySource next;
+&nbsp;        private final Function&lt;PropertySource&lt;?&gt;, ConfigurationPropertySource&gt; adapter;
+<b class="fc">&nbsp;</b>
+&nbsp;        SourcesIterator(Iterator&lt;PropertySource&lt;?&gt;&gt; iterator, Function&lt;PropertySource&lt;?&gt;, ConfigurationPropertySource&gt; adapter) {
+&nbsp;            this.iterators.push(iterator);
+&nbsp;            this.adapter = adapter;
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        public boolean hasNext() {
+<b class="pc">&nbsp;            return this.fetchNext() != null;</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+<b class="fc">&nbsp;        public ConfigurationPropertySource next() {</b>
+<b class="fc">&nbsp;            ConfigurationPropertySource next = this.fetchNext();</b>
+<b class="fc">&nbsp;            if (next == null) {</b>
+&nbsp;                throw new NoSuchElementException();
+<b class="fc">&nbsp;            } else {</b>
+<b class="fc">&nbsp;                this.next = null;</b>
+&nbsp;                return next;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        private ConfigurationPropertySource fetchNext() {
+&nbsp;            if (this.next == null) {
+&nbsp;                if (this.iterators.isEmpty()) {
+&nbsp;                    return null;
+&nbsp;                }
+&nbsp;
+&nbsp;                if (!((Iterator)this.iterators.peek()).hasNext()) {
+<b class="fc">&nbsp;                    this.iterators.pop();</b>
+<b class="fc">&nbsp;                    return this.fetchNext();</b>
+<b class="fc">&nbsp;                }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;                PropertySource&lt;?&gt; candidate = (PropertySource)((Iterator)this.iterators.peek()).next();
+&nbsp;                Object var3 = candidate.getSource();
+&nbsp;                if (var3 instanceof ConfigurableEnvironment) {
+&nbsp;                    ConfigurableEnvironment configurableEnvironment = (ConfigurableEnvironment)var3;
+<b class="fc">&nbsp;                    this.push(configurableEnvironment);</b>
+&nbsp;                    return this.fetchNext();
+&nbsp;                }
+&nbsp;
+&nbsp;                if (this.isIgnored(candidate)) {
+<b class="fc">&nbsp;                    return this.fetchNext();</b>
+<b class="pc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                this.next = (ConfigurationPropertySource)this.adapter.apply(candidate);
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;            return this.next;
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        private void push(ConfigurableEnvironment environment) {</b>
+<b class="fc">&nbsp;            this.iterators.push(environment.getPropertySources().iterator());</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+<b class="fc">&nbsp;        private boolean isIgnored(PropertySource&lt;?&gt; candidate) {</b>
+<b class="fc">&nbsp;            return candidate instanceof PropertySource.StubPropertySource || candidate instanceof ConfigurationPropertySourcesPropertySource;</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+<b class="fc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

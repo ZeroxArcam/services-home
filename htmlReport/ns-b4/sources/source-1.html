@@ -5,7 +5,7 @@
 <html id="htmlId">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
-  <title>Coverage Report > ObjenesisBase</title>
+  <title>Coverage Report > ExpressionFactoryImpl</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -19,10 +19,10 @@
 <div class="breadCrumbs">
 Current scope:     <a href="../../index.html">all classes</a>
     <span class="separator">|</span>
-    <a href="../index.html">org.objenesis</a>
+    <a href="../index.html">org.apache.el</a>
 </div>
 
-<h1>Coverage Summary for Class: ObjenesisBase (org.objenesis)</h1>
+<h1>Coverage Summary for Class: ExpressionFactoryImpl (org.apache.el)</h1>
 
 <table class="coverageStats">
 <tr>
@@ -45,7 +45,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 </th>
 </tr>
 <tr>
-  <td class="name">ObjenesisBase</td>
+  <td class="name">ExpressionFactoryImpl</td>
 <td class="coverageStat">
   <span class="percent">
     100%
@@ -56,26 +56,26 @@ Current scope:     <a href="../../index.html">all classes</a>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    20%
+    28.6%
   </span>
   <span class="absValue">
-    (1/5)
+    (2/7)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    14.3%
+    0%
   </span>
   <span class="absValue">
-    (2/14)
+    (0/4)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    21.1%
+    15.4%
   </span>
   <span class="absValue">
-    (4/19)
+    (2/13)
   </span>
 </td>
 </tr>
@@ -92,56 +92,59 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;// (powered by FernFlower decompiler)
 &nbsp;//
 &nbsp;
-&nbsp;package org.objenesis;
+&nbsp;package org.apache.el;
 &nbsp;
-&nbsp;import java.util.concurrent.ConcurrentHashMap;
-&nbsp;import org.objenesis.instantiator.ObjectInstantiator;
-&nbsp;import org.objenesis.strategy.InstantiatorStrategy;
+&nbsp;import aQute.bnd.annotation.spi.ServiceProvider;
+&nbsp;import jakarta.el.ELContext;
+&nbsp;import jakarta.el.ELResolver;
+&nbsp;import jakarta.el.ExpressionFactory;
+&nbsp;import jakarta.el.MethodExpression;
+&nbsp;import jakarta.el.ValueExpression;
+&nbsp;import org.apache.el.lang.ELSupport;
+&nbsp;import org.apache.el.lang.ExpressionBuilder;
+&nbsp;import org.apache.el.stream.StreamELResolverImpl;
+&nbsp;import org.apache.el.util.ExceptionUtils;
+&nbsp;import org.apache.el.util.MessageFactory;
 &nbsp;
-&nbsp;public class ObjenesisBase implements Objenesis {
-&nbsp;    protected final InstantiatorStrategy strategy;
-&nbsp;    protected ConcurrentHashMap&lt;String, ObjectInstantiator&lt;?&gt;&gt; cache;
-&nbsp;
-&nbsp;    public ObjenesisBase(InstantiatorStrategy strategy) {
-&nbsp;        this(strategy, true);
+&nbsp;@ServiceProvider(ExpressionFactory.class)
+&nbsp;public class ExpressionFactoryImpl extends ExpressionFactory {
+&nbsp;    public ExpressionFactoryImpl() {
 &nbsp;    }
 &nbsp;
-&nbsp;    public ObjenesisBase(InstantiatorStrategy strategy, boolean useCache) {
-&nbsp;        if (strategy == null) {
-&nbsp;            throw new IllegalArgumentException(&quot;A strategy can&#39;t be null&quot;);
+&nbsp;    public &lt;T&gt; T coerceToType(Object obj, Class&lt;T&gt; type) {
+&nbsp;        return (T)ELSupport.coerceToType((ELContext)null, obj, type);
+&nbsp;    }
+&nbsp;
+&nbsp;    public MethodExpression createMethodExpression(ELContext context, String expression, Class&lt;?&gt; expectedReturnType, Class&lt;?&gt;[] expectedParamTypes) {
+&nbsp;        ExpressionBuilder builder = new ExpressionBuilder(expression, context);
+&nbsp;        return builder.createMethodExpression(expectedReturnType, expectedParamTypes);
+&nbsp;    }
+&nbsp;
+&nbsp;    public ValueExpression createValueExpression(ELContext context, String expression, Class&lt;?&gt; expectedType) {
+&nbsp;        if (expectedType == null) {
+&nbsp;            throw new NullPointerException(MessageFactory.get(&quot;error.value.expectedType&quot;));
 &nbsp;        } else {
-&nbsp;            this.strategy = strategy;
-&nbsp;            this.cache = useCache ? new ConcurrentHashMap() : null;
+<b class="fc">&nbsp;            ExpressionBuilder builder = new ExpressionBuilder(expression, context);</b>
+&nbsp;            return builder.createValueExpression(expectedType);
+&nbsp;        }
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public ValueExpression createValueExpression(Object instance, Class&lt;?&gt; expectedType) {
+&nbsp;        if (expectedType == null) {
+&nbsp;            throw new NullPointerException(MessageFactory.get(&quot;error.value.expectedType&quot;));
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            return new ValueExpressionLiteral(instance, expectedType);
 &nbsp;        }
 &nbsp;    }
 &nbsp;
-&nbsp;    public String toString() {
-&nbsp;        return this.getClass().getName() + &quot; using &quot; + this.strategy.getClass().getName() + (this.cache == null ? &quot; without&quot; : &quot; with&quot;) + &quot; caching&quot;;
-&nbsp;    }
-&nbsp;
-&nbsp;    public &lt;T&gt; T newInstance(Class&lt;T&gt; clazz) {
-&nbsp;        return (T)this.getInstantiatorOf(clazz).newInstance();
-&nbsp;    }
-&nbsp;
-&nbsp;    public &lt;T&gt; ObjectInstantiator&lt;T&gt; getInstantiatorOf(Class&lt;T&gt; clazz) {
-&nbsp;        if (clazz.isPrimitive()) {
-&nbsp;            throw new IllegalArgumentException(&quot;Primitive types can&#39;t be instantiated in Java&quot;);
-&nbsp;        } else if (this.cache == null) {
-&nbsp;            return this.strategy.newInstantiatorOf(clazz);
-&nbsp;        } else {
-<b class="nc">&nbsp;            ObjectInstantiator&lt;?&gt; instantiator = (ObjectInstantiator)this.cache.get(clazz.getName());</b>
-&nbsp;            if (instantiator == null) {
-&nbsp;                ObjectInstantiator&lt;?&gt; newInstantiator = this.strategy.newInstantiatorOf(clazz);
-&nbsp;                instantiator = (ObjectInstantiator)this.cache.putIfAbsent(clazz.getName(), newInstantiator);
-&nbsp;                if (instantiator == null) {
-&nbsp;                    instantiator = newInstantiator;
-&nbsp;                }
-&nbsp;            }
-&nbsp;
-<b class="fc">&nbsp;            return instantiator;</b>
-<b class="pc">&nbsp;        }</b>
+&nbsp;    public ELResolver getStreamELResolver() {
+<b class="nc">&nbsp;        return new StreamELResolverImpl();</b>
 <b class="nc">&nbsp;    }</b>
-&nbsp;}
+&nbsp;
+&nbsp;    static {
+&nbsp;        ExceptionUtils.preload();
+&nbsp;    }
+<b class="nc">&nbsp;}</b>
 </code>
 </pre>
 </div>
@@ -165,7 +168,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2025-03-20 13:42</div>
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
 </div>
 </body>
 </html>

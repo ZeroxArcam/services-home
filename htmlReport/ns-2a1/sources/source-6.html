@@ -1,0 +1,336 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > BeanFactoryUtils</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.beans.factory</a>
+</div>
+
+<h1>Coverage Summary for Class: BeanFactoryUtils (org.springframework.beans.factory)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">BeanFactoryUtils</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    29.2%
+  </span>
+  <span class="absValue">
+    (7/24)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    17.2%
+  </span>
+  <span class="absValue">
+    (10/58)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    25.3%
+  </span>
+  <span class="absValue">
+    (24/95)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.beans.factory;
+&nbsp;
+&nbsp;import java.lang.annotation.Annotation;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Arrays;
+&nbsp;import java.util.LinkedHashMap;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import org.springframework.beans.BeansException;
+&nbsp;import org.springframework.core.ResolvableType;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.StringUtils;
+&nbsp;
+&nbsp;public abstract class BeanFactoryUtils {
+&nbsp;    public static final String GENERATED_BEAN_NAME_SEPARATOR = &quot;#&quot;;
+&nbsp;    private static final Map&lt;String, String&gt; transformedBeanNameCache = new ConcurrentHashMap();
+&nbsp;
+&nbsp;    public BeanFactoryUtils() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public static boolean isFactoryDereference(@Nullable String name) {
+&nbsp;        return name != null &amp;&amp; name.startsWith(&quot;&amp;&quot;);
+&nbsp;    }
+&nbsp;
+&nbsp;    public static String transformedBeanName(String name) {
+&nbsp;        Assert.notNull(name, &quot;&#39;name&#39; must not be null&quot;);
+&nbsp;        return !name.startsWith(&quot;&amp;&quot;) ? name : (String)transformedBeanNameCache.computeIfAbsent(name, (beanName) -&gt; {
+&nbsp;            do {
+&nbsp;                beanName = beanName.substring(&quot;&amp;&quot;.length());
+&nbsp;            } while(beanName.startsWith(&quot;&amp;&quot;));
+&nbsp;
+&nbsp;            return beanName;
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    public static boolean isGeneratedBeanName(@Nullable String name) {
+&nbsp;        return name != null &amp;&amp; name.contains(&quot;#&quot;);
+&nbsp;    }
+&nbsp;
+&nbsp;    public static String originalBeanName(String name) {
+&nbsp;        Assert.notNull(name, &quot;&#39;name&#39; must not be null&quot;);
+&nbsp;        int separatorIndex = name.indexOf(&quot;#&quot;);
+&nbsp;        return separatorIndex != -1 ? name.substring(0, separatorIndex) : name;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public static int countBeansIncludingAncestors(ListableBeanFactory lbf) {
+&nbsp;        return beanNamesIncludingAncestors(lbf).length;
+&nbsp;    }
+&nbsp;
+&nbsp;    public static String[] beanNamesIncludingAncestors(ListableBeanFactory lbf) {
+&nbsp;        return beanNamesForTypeIncludingAncestors(lbf, Object.class);
+&nbsp;    }
+&nbsp;
+&nbsp;    public static String[] beanNamesForTypeIncludingAncestors(ListableBeanFactory lbf, ResolvableType type) {
+&nbsp;        Assert.notNull(lbf, &quot;ListableBeanFactory must not be null&quot;);
+&nbsp;        String[] result = lbf.getBeanNamesForType(type);
+<b class="fc">&nbsp;        if (lbf instanceof HierarchicalBeanFactory hbf) {</b>
+&nbsp;            BeanFactory parentResult = hbf.getParentBeanFactory();
+&nbsp;            if (parentResult instanceof ListableBeanFactory pbf) {
+&nbsp;                String[] parentResult = beanNamesForTypeIncludingAncestors(pbf, type);
+&nbsp;                result = mergeNamesWithParent(result, parentResult, hbf);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return result;
+&nbsp;    }
+&nbsp;
+<b class="pc">&nbsp;    public static String[] beanNamesForTypeIncludingAncestors(ListableBeanFactory lbf, ResolvableType type, boolean includeNonSingletons, boolean allowEagerInit) {</b>
+&nbsp;        Assert.notNull(lbf, &quot;ListableBeanFactory must not be null&quot;);
+&nbsp;        String[] result = lbf.getBeanNamesForType(type, includeNonSingletons, allowEagerInit);
+&nbsp;        if (lbf instanceof HierarchicalBeanFactory hbf) {
+&nbsp;            BeanFactory parentResult = hbf.getParentBeanFactory();
+&nbsp;            if (parentResult instanceof ListableBeanFactory pbf) {
+&nbsp;                String[] parentResult = beanNamesForTypeIncludingAncestors(pbf, type, includeNonSingletons, allowEagerInit);
+&nbsp;                result = mergeNamesWithParent(result, parentResult, hbf);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        return result;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    public static String[] beanNamesForTypeIncludingAncestors(ListableBeanFactory lbf, Class&lt;?&gt; type) {
+<b class="fc">&nbsp;        Assert.notNull(lbf, &quot;ListableBeanFactory must not be null&quot;);</b>
+&nbsp;        String[] result = lbf.getBeanNamesForType(type);
+<b class="fc">&nbsp;        if (lbf instanceof HierarchicalBeanFactory hbf) {</b>
+&nbsp;            BeanFactory parentResult = hbf.getParentBeanFactory();
+<b class="pc">&nbsp;            if (parentResult instanceof ListableBeanFactory pbf) {</b>
+<b class="fc">&nbsp;                String[] parentResult = beanNamesForTypeIncludingAncestors(pbf, type);</b>
+&nbsp;                result = mergeNamesWithParent(result, parentResult, hbf);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return result;
+&nbsp;    }
+&nbsp;
+&nbsp;    public static String[] beanNamesForTypeIncludingAncestors(ListableBeanFactory lbf, Class&lt;?&gt; type, boolean includeNonSingletons, boolean allowEagerInit) {
+&nbsp;        Assert.notNull(lbf, &quot;ListableBeanFactory must not be null&quot;);
+&nbsp;        String[] result = lbf.getBeanNamesForType(type, includeNonSingletons, allowEagerInit);
+&nbsp;        if (lbf instanceof HierarchicalBeanFactory hbf) {
+&nbsp;            BeanFactory parentResult = hbf.getParentBeanFactory();
+&nbsp;            if (parentResult instanceof ListableBeanFactory pbf) {
+<b class="nc">&nbsp;                String[] parentResult = beanNamesForTypeIncludingAncestors(pbf, type, includeNonSingletons, allowEagerInit);</b>
+&nbsp;                result = mergeNamesWithParent(result, parentResult, hbf);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return result;
+&nbsp;    }
+&nbsp;
+&nbsp;    public static String[] beanNamesForAnnotationIncludingAncestors(ListableBeanFactory lbf, Class&lt;? extends Annotation&gt; annotationType) {
+&nbsp;        Assert.notNull(lbf, &quot;ListableBeanFactory must not be null&quot;);
+&nbsp;        String[] result = lbf.getBeanNamesForAnnotation(annotationType);
+<b class="nc">&nbsp;        if (lbf instanceof HierarchicalBeanFactory hbf) {</b>
+<b class="nc">&nbsp;            BeanFactory parentResult = hbf.getParentBeanFactory();</b>
+<b class="nc">&nbsp;            if (parentResult instanceof ListableBeanFactory pbf) {</b>
+&nbsp;                String[] parentResult = beanNamesForAnnotationIncludingAncestors(pbf, annotationType);
+&nbsp;                result = mergeNamesWithParent(result, parentResult, hbf);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return result;
+&nbsp;    }
+&nbsp;
+&nbsp;    public static &lt;T&gt; Map&lt;String, T&gt; beansOfTypeIncludingAncestors(ListableBeanFactory lbf, Class&lt;T&gt; type) throws BeansException {
+&nbsp;        Assert.notNull(lbf, &quot;ListableBeanFactory must not be null&quot;);
+&nbsp;        Map&lt;String, T&gt; result = new LinkedHashMap(4);
+&nbsp;        result.putAll(lbf.getBeansOfType(type));
+&nbsp;        if (lbf instanceof HierarchicalBeanFactory hbf) {
+&nbsp;            BeanFactory parentResult = hbf.getParentBeanFactory();
+&nbsp;            if (parentResult instanceof ListableBeanFactory pbf) {
+<b class="nc">&nbsp;                Map&lt;String, T&gt; parentResult = beansOfTypeIncludingAncestors(pbf, type);</b>
+&nbsp;                parentResult.forEach((beanName, beanInstance) -&gt; {
+&nbsp;                    if (!result.containsKey(beanName) &amp;&amp; !hbf.containsLocalBean(beanName)) {
+&nbsp;                        result.put(beanName, beanInstance);
+&nbsp;                    }
+&nbsp;
+&nbsp;                });
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static &lt;T&gt; Map&lt;String, T&gt; beansOfTypeIncludingAncestors(ListableBeanFactory lbf, Class&lt;T&gt; type, boolean includeNonSingletons, boolean allowEagerInit) throws BeansException {
+&nbsp;        Assert.notNull(lbf, &quot;ListableBeanFactory must not be null&quot;);
+&nbsp;        Map&lt;String, T&gt; result = new LinkedHashMap(4);
+&nbsp;        result.putAll(lbf.getBeansOfType(type, includeNonSingletons, allowEagerInit));
+&nbsp;        if (lbf instanceof HierarchicalBeanFactory hbf) {
+&nbsp;            BeanFactory parentResult = hbf.getParentBeanFactory();
+&nbsp;            if (parentResult instanceof ListableBeanFactory pbf) {
+&nbsp;                Map&lt;String, T&gt; parentResult = beansOfTypeIncludingAncestors(pbf, type, includeNonSingletons, allowEagerInit);
+&nbsp;                parentResult.forEach((beanName, beanInstance) -&gt; {
+&nbsp;                    if (!result.containsKey(beanName) &amp;&amp; !hbf.containsLocalBean(beanName)) {
+&nbsp;                        result.put(beanName, beanInstance);
+&nbsp;                    }
+&nbsp;
+&nbsp;                });
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return result;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public static &lt;T&gt; T beanOfTypeIncludingAncestors(ListableBeanFactory lbf, Class&lt;T&gt; type) throws BeansException {</b>
+&nbsp;        Map&lt;String, T&gt; beansOfType = beansOfTypeIncludingAncestors(lbf, type);
+&nbsp;        return (T)uniqueBean(type, beansOfType);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public static &lt;T&gt; T beanOfTypeIncludingAncestors(ListableBeanFactory lbf, Class&lt;T&gt; type, boolean includeNonSingletons, boolean allowEagerInit) throws BeansException {
+&nbsp;        Map&lt;String, T&gt; beansOfType = beansOfTypeIncludingAncestors(lbf, type, includeNonSingletons, allowEagerInit);
+&nbsp;        return (T)uniqueBean(type, beansOfType);
+&nbsp;    }
+&nbsp;
+&nbsp;    public static &lt;T&gt; T beanOfType(ListableBeanFactory lbf, Class&lt;T&gt; type) throws BeansException {
+&nbsp;        Assert.notNull(lbf, &quot;ListableBeanFactory must not be null&quot;);
+&nbsp;        Map&lt;String, T&gt; beansOfType = lbf.getBeansOfType(type);
+&nbsp;        return (T)uniqueBean(type, beansOfType);
+&nbsp;    }
+&nbsp;
+&nbsp;    public static &lt;T&gt; T beanOfType(ListableBeanFactory lbf, Class&lt;T&gt; type, boolean includeNonSingletons, boolean allowEagerInit) throws BeansException {
+&nbsp;        Assert.notNull(lbf, &quot;ListableBeanFactory must not be null&quot;);
+&nbsp;        Map&lt;String, T&gt; beansOfType = lbf.getBeansOfType(type, includeNonSingletons, allowEagerInit);
+&nbsp;        return (T)uniqueBean(type, beansOfType);
+&nbsp;    }
+&nbsp;
+&nbsp;    private static String[] mergeNamesWithParent(String[] result, String[] parentResult, HierarchicalBeanFactory hbf) {
+&nbsp;        if (parentResult.length == 0) {
+&nbsp;            return result;
+&nbsp;        } else {
+&nbsp;            List&lt;String&gt; merged = new ArrayList(result.length + parentResult.length);
+&nbsp;            merged.addAll(Arrays.asList(result));
+&nbsp;
+&nbsp;            for(String beanName : parentResult) {
+&nbsp;                if (!merged.contains(beanName) &amp;&amp; !hbf.containsLocalBean(beanName)) {
+<b class="fc">&nbsp;                    merged.add(beanName);</b>
+<b class="fc">&nbsp;                }</b>
+<b class="pc">&nbsp;            }</b>
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;            return StringUtils.toStringArray(merged);</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private static &lt;T&gt; T uniqueBean(Class&lt;T&gt; type, Map&lt;String, T&gt; matchingBeans) {
+<b class="fc">&nbsp;        int count = matchingBeans.size();</b>
+&nbsp;        if (count == 1) {
+&nbsp;            return (T)matchingBeans.values().iterator().next();
+&nbsp;        } else if (count &gt; 1) {
+&nbsp;            throw new NoUniqueBeanDefinitionException(type, matchingBeans.keySet());
+&nbsp;        } else {
+&nbsp;            throw new NoSuchBeanDefinitionException(type);
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:58</div>
+</div>
+</body>
+</html>

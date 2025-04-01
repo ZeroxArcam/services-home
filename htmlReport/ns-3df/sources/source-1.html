@@ -1,0 +1,247 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > AbstractContextLoader</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.test.context.support</a>
+</div>
+
+<h1>Coverage Summary for Class: AbstractContextLoader (org.springframework.test.context.support)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AbstractContextLoader</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (6/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    26.9%
+  </span>
+  <span class="absValue">
+    (7/26)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    35.8%
+  </span>
+  <span class="absValue">
+    (19/53)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.test.context.support;
+&nbsp;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Set;
+&nbsp;import org.apache.commons.logging.Log;
+&nbsp;import org.apache.commons.logging.LogFactory;
+&nbsp;import org.springframework.beans.BeanUtils;
+&nbsp;import org.springframework.context.ApplicationContextException;
+&nbsp;import org.springframework.context.ApplicationContextInitializer;
+&nbsp;import org.springframework.context.ConfigurableApplicationContext;
+&nbsp;import org.springframework.core.GenericTypeResolver;
+&nbsp;import org.springframework.core.annotation.AnnotationAwareOrderComparator;
+&nbsp;import org.springframework.core.io.ClassPathResource;
+&nbsp;import org.springframework.test.context.ContextConfigurationAttributes;
+&nbsp;import org.springframework.test.context.ContextCustomizer;
+&nbsp;import org.springframework.test.context.MergedContextConfiguration;
+&nbsp;import org.springframework.test.context.SmartContextLoader;
+&nbsp;import org.springframework.test.context.util.TestContextResourceUtils;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.ClassUtils;
+&nbsp;import org.springframework.util.ObjectUtils;
+&nbsp;
+&nbsp;public abstract class AbstractContextLoader implements SmartContextLoader {
+&nbsp;    private static final String SLASH = &quot;/&quot;;
+&nbsp;    private static final String[] EMPTY_STRING_ARRAY = new String[0];
+&nbsp;    private static final Log logger = LogFactory.getLog(AbstractContextLoader.class);
+&nbsp;
+&nbsp;    public AbstractContextLoader() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public void processContextConfiguration(ContextConfigurationAttributes configAttributes) {
+&nbsp;        String[] processedLocations = this.processLocationsInternal(configAttributes.getDeclaringClass(), configAttributes.getLocations());
+&nbsp;        configAttributes.setLocations(processedLocations);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void prepareContext(ConfigurableApplicationContext context, MergedContextConfiguration mergedConfig) {
+&nbsp;        context.getEnvironment().setActiveProfiles(mergedConfig.getActiveProfiles());
+&nbsp;        TestPropertySourceUtils.addPropertySourcesToEnvironment(context, mergedConfig.getPropertySourceDescriptors());
+&nbsp;        TestPropertySourceUtils.addInlinedPropertiesToEnvironment(context, mergedConfig.getPropertySourceProperties());
+&nbsp;        this.invokeApplicationContextInitializers(context, mergedConfig);
+&nbsp;    }
+&nbsp;
+&nbsp;    private void invokeApplicationContextInitializers(ConfigurableApplicationContext context, MergedContextConfiguration mergedConfig) {
+&nbsp;        Set&lt;Class&lt;? extends ApplicationContextInitializer&lt;?&gt;&gt;&gt; initializerClasses = mergedConfig.getContextInitializerClasses();
+&nbsp;        if (!initializerClasses.isEmpty()) {
+&nbsp;            List&lt;ApplicationContextInitializer&lt;ConfigurableApplicationContext&gt;&gt; initializerInstances = new ArrayList();
+&nbsp;            Class&lt;?&gt; contextClass = context.getClass();
+&nbsp;
+&nbsp;            for(Class&lt;? extends ApplicationContextInitializer&lt;?&gt;&gt; initializerClass : initializerClasses) {
+&nbsp;                Class&lt;?&gt; initializerContextClass = GenericTypeResolver.resolveTypeArgument(initializerClass, ApplicationContextInitializer.class);
+&nbsp;                if (initializerContextClass != null &amp;&amp; !initializerContextClass.isInstance(context)) {
+&nbsp;                    throw new ApplicationContextException(String.format(&quot;Could not apply context initializer [%s] since its generic parameter [%s] is not assignable from the type of application context used by this context loader: [%s]&quot;, initializerClass.getName(), initializerContextClass.getName(), contextClass.getName()));
+&nbsp;                }
+&nbsp;
+&nbsp;                initializerInstances.add((ApplicationContextInitializer)BeanUtils.instantiateClass(initializerClass));
+&nbsp;            }
+&nbsp;
+&nbsp;            AnnotationAwareOrderComparator.sort(initializerInstances);
+&nbsp;
+&nbsp;            for(ApplicationContextInitializer&lt;ConfigurableApplicationContext&gt; initializer : initializerInstances) {
+&nbsp;                initializer.initialize(context);
+<b class="fc">&nbsp;            }</b>
+&nbsp;
+&nbsp;        }
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    protected void customizeContext(ConfigurableApplicationContext context, MergedContextConfiguration mergedConfig) {
+<b class="fc">&nbsp;        for(ContextCustomizer contextCustomizer : mergedConfig.getContextCustomizers()) {</b>
+&nbsp;            contextCustomizer.customizeContext(context, mergedConfig);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public final String[] processLocations(Class&lt;?&gt; clazz, String... locations) {
+&nbsp;        return this.processLocationsInternal(clazz, locations);
+&nbsp;    }
+&nbsp;
+&nbsp;    private String[] processLocationsInternal(Class&lt;?&gt; clazz, String... locations) {
+&nbsp;        return ObjectUtils.isEmpty(locations) &amp;&amp; this.isGenerateDefaultLocations() ? this.generateDefaultLocations(clazz) : this.modifyLocations(clazz, locations);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected String[] generateDefaultLocations(Class&lt;?&gt; clazz) {
+&nbsp;        Assert.notNull(clazz, &quot;Class must not be null&quot;);
+&nbsp;        String[] suffixes = this.getResourceSuffixes();
+&nbsp;
+&nbsp;        for(String suffix : suffixes) {
+&nbsp;            Assert.hasText(suffix, &quot;Resource suffix must not be empty&quot;);
+&nbsp;            String var10000 = ClassUtils.convertClassNameToResourcePath(clazz.getName());
+&nbsp;            String resourcePath = var10000 + suffix;
+<b class="fc">&nbsp;            ClassPathResource classPathResource = new ClassPathResource(resourcePath);</b>
+<b class="fc">&nbsp;            if (classPathResource.exists()) {</b>
+<b class="fc">&nbsp;                String prefixedResourcePath = &quot;classpath:/&quot; + resourcePath;</b>
+&nbsp;                if (logger.isDebugEnabled()) {
+&nbsp;                    logger.debug(String.format(&quot;Detected default resource location \&quot;%s\&quot; for test class [%s]&quot;, prefixedResourcePath, clazz.getName()));
+&nbsp;                }
+&nbsp;
+&nbsp;                return new String[]{prefixedResourcePath};
+&nbsp;            }
+&nbsp;
+&nbsp;            if (logger.isTraceEnabled()) {
+&nbsp;                logger.trace(String.format(&quot;Did not detect default resource location for test class [%s]: %s does not exist&quot;, clazz.getName(), classPathResource));
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        if (logger.isDebugEnabled()) {
+&nbsp;            logger.debug(String.format(&quot;Could not detect default resource locations for test class [%s]: no resource found for suffixes %s.&quot;, clazz.getName(), ObjectUtils.nullSafeToString(suffixes)));
+&nbsp;        }
+&nbsp;
+&nbsp;        return EMPTY_STRING_ARRAY;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected String[] modifyLocations(Class&lt;?&gt; clazz, String... locations) {
+&nbsp;        return TestContextResourceUtils.convertToClasspathResourcePaths(clazz, locations);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected boolean isGenerateDefaultLocations() {
+&nbsp;        return true;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected String[] getResourceSuffixes() {
+&nbsp;        return new String[]{this.getResourceSuffix()};
+&nbsp;    }
+&nbsp;
+&nbsp;    protected abstract String getResourceSuffix();
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 21:00</div>
+</div>
+</body>
+</html>

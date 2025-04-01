@@ -1,0 +1,246 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > SimpleApplicationEventMulticaster</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.context.event</a>
+</div>
+
+<h1>Coverage Summary for Class: SimpleApplicationEventMulticaster (org.springframework.context.event)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SimpleApplicationEventMulticaster</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    81.8%
+  </span>
+  <span class="absValue">
+    (9/11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    20%
+  </span>
+  <span class="absValue">
+    (6/30)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    43.6%
+  </span>
+  <span class="absValue">
+    (17/39)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.context.event;
+&nbsp;
+&nbsp;import java.util.concurrent.Executor;
+&nbsp;import java.util.concurrent.RejectedExecutionException;
+&nbsp;import org.apache.commons.logging.Log;
+&nbsp;import org.apache.commons.logging.LogFactory;
+&nbsp;import org.springframework.beans.factory.BeanFactory;
+&nbsp;import org.springframework.context.ApplicationEvent;
+&nbsp;import org.springframework.context.ApplicationListener;
+&nbsp;import org.springframework.context.PayloadApplicationEvent;
+&nbsp;import org.springframework.core.ResolvableType;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.ErrorHandler;
+&nbsp;
+&nbsp;public class SimpleApplicationEventMulticaster extends AbstractApplicationEventMulticaster {
+&nbsp;    @Nullable
+&nbsp;    private Executor taskExecutor;
+&nbsp;    @Nullable
+&nbsp;    private ErrorHandler errorHandler;
+&nbsp;    @Nullable
+&nbsp;    private volatile Log lazyLogger;
+&nbsp;
+&nbsp;    public SimpleApplicationEventMulticaster() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public SimpleApplicationEventMulticaster(BeanFactory beanFactory) {
+&nbsp;        this.setBeanFactory(beanFactory);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setTaskExecutor(@Nullable Executor taskExecutor) {
+&nbsp;        this.taskExecutor = taskExecutor;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    protected Executor getTaskExecutor() {
+&nbsp;        return this.taskExecutor;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setErrorHandler(@Nullable ErrorHandler errorHandler) {
+&nbsp;        this.errorHandler = errorHandler;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    protected ErrorHandler getErrorHandler() {
+&nbsp;        return this.errorHandler;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void multicastEvent(ApplicationEvent event) {
+&nbsp;        this.multicastEvent(event, (ResolvableType)null);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void multicastEvent(ApplicationEvent event, @Nullable ResolvableType eventType) {
+&nbsp;        ResolvableType type = eventType != null ? eventType : ResolvableType.forInstance(event);
+&nbsp;        Executor executor = this.getTaskExecutor();
+&nbsp;
+&nbsp;        for(ApplicationListener&lt;?&gt; listener : this.getApplicationListeners(event, type)) {
+&nbsp;            if (executor != null &amp;&amp; listener.supportsAsyncExecution()) {
+&nbsp;                try {
+&nbsp;                    executor.execute(() -&gt; this.invokeListener(listener, event));
+&nbsp;                } catch (RejectedExecutionException var8) {
+&nbsp;                    this.invokeListener(listener, event);
+<b class="fc">&nbsp;                }</b>
+&nbsp;            } else {
+&nbsp;                this.invokeListener(listener, event);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    protected void invokeListener(ApplicationListener&lt;?&gt; listener, ApplicationEvent event) {
+&nbsp;        ErrorHandler errorHandler = this.getErrorHandler();
+&nbsp;        if (errorHandler != null) {
+&nbsp;            try {
+&nbsp;                this.doInvokeListener(listener, event);
+&nbsp;            } catch (Throwable err) {
+&nbsp;                errorHandler.handleError(err);
+&nbsp;            }
+&nbsp;        } else {
+&nbsp;            this.doInvokeListener(listener, event);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private void doInvokeListener(ApplicationListener listener, ApplicationEvent event) {
+&nbsp;        try {
+&nbsp;            listener.onApplicationEvent(event);
+&nbsp;        } catch (ClassCastException ex) {
+&nbsp;            String msg = ex.getMessage();
+&nbsp;            if (msg != null &amp;&amp; !this.matchesClassCastMessage(msg, event.getClass())) {
+&nbsp;                if (!(event instanceof PayloadApplicationEvent)) {
+<b class="nc">&nbsp;                    throw ex;</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                PayloadApplicationEvent payloadEvent = (PayloadApplicationEvent)event;
+&nbsp;                if (!this.matchesClassCastMessage(msg, payloadEvent.getPayload().getClass())) {
+&nbsp;                    throw ex;
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            Log loggerToUse = this.lazyLogger;</b>
+&nbsp;            if (loggerToUse == null) {
+&nbsp;                loggerToUse = LogFactory.getLog(this.getClass());
+&nbsp;                this.lazyLogger = loggerToUse;
+&nbsp;            }
+&nbsp;
+&nbsp;            if (loggerToUse.isTraceEnabled()) {
+&nbsp;                loggerToUse.trace(&quot;Non-matching event type for listener: &quot; + String.valueOf(listener), ex);
+&nbsp;            }
+&nbsp;
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean matchesClassCastMessage(String classCastMessage, Class&lt;?&gt; eventClass) {
+&nbsp;        if (classCastMessage.startsWith(eventClass.getName())) {
+&nbsp;            return true;
+&nbsp;        } else if (classCastMessage.startsWith(eventClass.toString())) {
+<b class="fc">&nbsp;            return true;</b>
+&nbsp;        } else {
+&nbsp;            int moduleSeparatorIndex = classCastMessage.indexOf(47);
+&nbsp;            return moduleSeparatorIndex != -1 &amp;&amp; classCastMessage.startsWith(eventClass.getName(), moduleSeparatorIndex + 1);
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,217 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > CustomCollectionEditor</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.beans.propertyeditors</a>
+</div>
+
+<h1>Coverage Summary for Class: CustomCollectionEditor (org.springframework.beans.propertyeditors)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">CustomCollectionEditor</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    25%
+  </span>
+  <span class="absValue">
+    (2/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    3.8%
+  </span>
+  <span class="absValue">
+    (1/26)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    15.4%
+  </span>
+  <span class="absValue">
+    (6/39)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.beans.propertyeditors;
+&nbsp;
+&nbsp;import java.beans.PropertyEditorSupport;
+&nbsp;import java.lang.reflect.Array;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.LinkedHashSet;
+&nbsp;import java.util.List;
+&nbsp;import java.util.SortedSet;
+&nbsp;import java.util.TreeSet;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.ReflectionUtils;
+&nbsp;
+&nbsp;public class CustomCollectionEditor extends PropertyEditorSupport {
+&nbsp;    private final Class&lt;? extends Collection&gt; collectionType;
+&nbsp;    private final boolean nullAsEmptyCollection;
+&nbsp;
+&nbsp;    public CustomCollectionEditor(Class&lt;? extends Collection&gt; collectionType) {
+&nbsp;        this(collectionType, false);
+&nbsp;    }
+&nbsp;
+&nbsp;    public CustomCollectionEditor(Class&lt;? extends Collection&gt; collectionType, boolean nullAsEmptyCollection) {
+&nbsp;        Assert.notNull(collectionType, &quot;Collection type is required&quot;);
+&nbsp;        if (!Collection.class.isAssignableFrom(collectionType)) {
+&nbsp;            throw new IllegalArgumentException(&quot;Collection type [&quot; + collectionType.getName() + &quot;] does not implement [java.util.Collection]&quot;);
+&nbsp;        } else {
+&nbsp;            this.collectionType = collectionType;
+&nbsp;            this.nullAsEmptyCollection = nullAsEmptyCollection;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setAsText(String text) throws IllegalArgumentException {
+&nbsp;        this.setValue(text);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setValue(@Nullable Object value) {
+&nbsp;        if (value == null &amp;&amp; this.nullAsEmptyCollection) {
+&nbsp;            super.setValue(this.createCollection(this.collectionType, 0));
+&nbsp;        } else if (value != null &amp;&amp; (!this.collectionType.isInstance(value) || this.alwaysCreateNewCollection())) {
+&nbsp;            if (value instanceof Collection) {
+&nbsp;                Collection&lt;?&gt; source = (Collection)value;
+&nbsp;                Collection&lt;Object&gt; target = this.createCollection(this.collectionType, source.size());
+&nbsp;
+&nbsp;                for(Object elem : source) {
+&nbsp;                    target.add(this.convertElement(elem));
+&nbsp;                }
+&nbsp;
+&nbsp;                super.setValue(target);
+&nbsp;            } else if (value.getClass().isArray()) {
+&nbsp;                int length = Array.getLength(value);
+&nbsp;                Collection&lt;Object&gt; target = this.createCollection(this.collectionType, length);
+&nbsp;
+&nbsp;                for(int i = 0; i &lt; length; ++i) {
+&nbsp;                    target.add(this.convertElement(Array.get(value, i)));
+&nbsp;                }
+&nbsp;
+&nbsp;                super.setValue(target);
+&nbsp;            } else {
+&nbsp;                Collection&lt;Object&gt; target = this.createCollection(this.collectionType, 1);
+&nbsp;                target.add(this.convertElement(value));
+<b class="fc">&nbsp;                super.setValue(target);</b>
+&nbsp;            }
+&nbsp;        } else {
+&nbsp;            super.setValue(value);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Collection&lt;Object&gt; createCollection(Class&lt;? extends Collection&gt; collectionType, int initialCapacity) {
+&nbsp;        if (!collectionType.isInterface()) {
+&nbsp;            try {
+&nbsp;                return (Collection)ReflectionUtils.accessibleConstructor(collectionType, new Class[0]).newInstance();
+&nbsp;            } catch (Throwable ex) {
+&nbsp;                throw new IllegalArgumentException(&quot;Could not instantiate collection class: &quot; + collectionType.getName(), ex);
+&nbsp;            }
+&nbsp;        } else if (List.class == collectionType) {
+&nbsp;            return new ArrayList(initialCapacity);
+&nbsp;        } else {
+&nbsp;            return (Collection&lt;Object&gt;)(SortedSet.class == collectionType ? new TreeSet() : new LinkedHashSet(initialCapacity));
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    protected boolean alwaysCreateNewCollection() {</b>
+<b class="fc">&nbsp;        return false;</b>
+<b class="pc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected Object convertElement(Object element) {</b>
+&nbsp;        return element;
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    @Nullable
+&nbsp;    public String getAsText() {
+&nbsp;        return null;
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 21:00</div>
+</div>
+</body>
+</html>

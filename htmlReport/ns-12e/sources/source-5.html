@@ -1,0 +1,313 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > EnhancementHelper</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.bytecode.enhance.spi.interceptor</a>
+</div>
+
+<h1>Coverage Summary for Class: EnhancementHelper (org.hibernate.bytecode.enhance.spi.interceptor)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">EnhancementHelper</td>
+<td class="coverageStat">
+  <span class="percent">
+    20%
+  </span>
+  <span class="absValue">
+    (1/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    6.2%
+  </span>
+  <span class="absValue">
+    (4/64)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    9.1%
+  </span>
+  <span class="absValue">
+    (8/88)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">EnhancementHelper$InheritanceChecker</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    20%
+  </span>
+  <span class="absValue">
+    (1/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    6.2%
+  </span>
+  <span class="absValue">
+    (4/64)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    9.1%
+  </span>
+  <span class="absValue">
+    (8/88)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.bytecode.enhance.spi.interceptor;
+&nbsp;
+&nbsp;import java.util.Locale;
+&nbsp;import java.util.function.BiFunction;
+&nbsp;import org.hibernate.FlushMode;
+&nbsp;import org.hibernate.LazyInitializationException;
+&nbsp;import org.hibernate.engine.spi.SessionFactoryImplementor;
+&nbsp;import org.hibernate.engine.spi.SharedSessionContractImplementor;
+&nbsp;import org.hibernate.internal.SessionFactoryRegistry;
+&nbsp;import org.hibernate.mapping.Collection;
+&nbsp;import org.hibernate.mapping.ManyToOne;
+&nbsp;import org.hibernate.mapping.Property;
+&nbsp;import org.hibernate.mapping.ToOne;
+&nbsp;import org.hibernate.mapping.Value;
+&nbsp;
+&nbsp;public class EnhancementHelper {
+&nbsp;    public EnhancementHelper() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public static boolean includeInBaseFetchGroup(Property bootMapping, boolean isEnhanced, InheritanceChecker inheritanceChecker, boolean collectionsInDefaultFetchGroupEnabled) {
+<b class="nc">&nbsp;        Value value = bootMapping.getValue();</b>
+&nbsp;        if (!isEnhanced) {
+&nbsp;            if (value instanceof ToOne &amp;&amp; ((ToOne)value).isUnwrapProxy()) {
+&nbsp;                BytecodeInterceptorLogging.MESSAGE_LOGGER.debugf(&quot;To-one property `%s#%s` was mapped with LAZY + NO_PROXY but the class was not enhanced&quot;, bootMapping.getPersistentClass().getEntityName(), bootMapping.getName());
+&nbsp;            }
+&nbsp;
+&nbsp;            return true;
+&nbsp;        } else if (value instanceof ToOne) {
+&nbsp;            ToOne toOne = (ToOne)value;
+&nbsp;            if (!toOne.isLazy()) {
+&nbsp;                return true;
+&nbsp;            } else {
+&nbsp;                if (bootMapping.getLazyGroup() != null) {
+&nbsp;                    BytecodeInterceptorLogging.MESSAGE_LOGGER.lazyGroupIgnoredForToOne(bootMapping.getPersistentClass().getEntityName(), bootMapping.getName(), bootMapping.getLazyGroup());
+&nbsp;                }
+<b class="fc">&nbsp;</b>
+&nbsp;                if (!toOne.isReferenceToPrimaryKey()) {
+<b class="pc">&nbsp;                    return false;</b>
+<b class="fc">&nbsp;                } else if (toOne.getColumnSpan() == 0) {</b>
+<b class="pc">&nbsp;                    return false;</b>
+<b class="fc">&nbsp;                } else {</b>
+&nbsp;                    boolean unwrapExplicitlyRequested = toOne.isUnwrapProxy() &amp;&amp; !toOne.isUnwrapProxyImplicit();
+<b class="fc">&nbsp;                    if (inheritanceChecker.hasSubclasses(toOne.getReferencedEntityName())) {</b>
+<b class="fc">&nbsp;                        if (unwrapExplicitlyRequested) {</b>
+&nbsp;                            BytecodeInterceptorLogging.LOGGER.debugf(&quot;`%s#%s` was mapped with LAZY and explicit NO_PROXY but the associated entity (`%s`) has subclasses&quot;, bootMapping.getPersistentClass().getEntityName(), bootMapping.getName(), toOne.getReferencedEntityName());
+&nbsp;                        }
+&nbsp;
+<b class="fc">&nbsp;                        return true;</b>
+&nbsp;                    } else if (toOne instanceof ManyToOne &amp;&amp; ((ManyToOne)toOne).isIgnoreNotFound() &amp;&amp; unwrapExplicitlyRequested) {
+&nbsp;                        BytecodeInterceptorLogging.LOGGER.debugf(&quot;%s#%s specified NotFoundAction.IGNORE &amp; LazyToOneOption.NO_PROXY; skipping FK selection to more efficiently handle NotFoundAction.IGNORE&quot;, bootMapping.getPersistentClass().getEntityName(), bootMapping.getName());
+&nbsp;                        return false;
+&nbsp;                    } else {
+&nbsp;                        return unwrapExplicitlyRequested ? true : true;
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            return collectionsInDefaultFetchGroupEnabled &amp;&amp; value instanceof Collection || !bootMapping.isLazy();
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public static &lt;T&gt; T performWork(BytecodeLazyAttributeInterceptor interceptor, BiFunction&lt;SharedSessionContractImplementor, Boolean, T&gt; work, String entityName, String attributeName) {
+&nbsp;        SharedSessionContractImplementor session = interceptor.getLinkedSession();
+&nbsp;        boolean isTempSession = false;
+&nbsp;        boolean isJta = false;
+<b class="nc">&nbsp;        if (session == null) {</b>
+&nbsp;            if (interceptor.allowLoadOutsideTransaction()) {
+&nbsp;                session = openTemporarySessionForLoading(interceptor, entityName, attributeName);
+&nbsp;                isTempSession = true;
+&nbsp;            } else {
+&nbsp;                throwLazyInitializationException(EnhancementHelper.Cause.NO_SESSION, entityName, attributeName);
+&nbsp;            }
+<b class="nc">&nbsp;        } else if (!session.isOpen()) {</b>
+<b class="nc">&nbsp;            if (interceptor.allowLoadOutsideTransaction()) {</b>
+<b class="nc">&nbsp;                session = openTemporarySessionForLoading(interceptor, entityName, attributeName);</b>
+<b class="nc">&nbsp;                isTempSession = true;</b>
+&nbsp;            } else {
+&nbsp;                throwLazyInitializationException(EnhancementHelper.Cause.CLOSED_SESSION, entityName, attributeName);
+&nbsp;            }
+&nbsp;        } else if (!session.isConnected()) {
+&nbsp;            if (interceptor.allowLoadOutsideTransaction()) {
+&nbsp;                session = openTemporarySessionForLoading(interceptor, entityName, attributeName);
+&nbsp;                isTempSession = true;
+&nbsp;            } else {
+&nbsp;                throwLazyInitializationException(EnhancementHelper.Cause.DISCONNECTED_SESSION, entityName, attributeName);
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        if (isTempSession) {
+&nbsp;            BytecodeInterceptorLogging.LOGGER.debug(&quot;Enhancement interception Helper#performWork started temporary Session&quot;);
+<b class="nc">&nbsp;            isJta = session.getTransactionCoordinator().getTransactionCoordinatorBuilder().isJta();</b>
+&nbsp;            if (!isJta) {
+&nbsp;                BytecodeInterceptorLogging.LOGGER.debug(&quot;Enhancement interception Helper#performWork starting transaction on temporary Session&quot;);
+&nbsp;                session.beginTransaction();
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        Object var7;
+&nbsp;        try {
+<b class="nc">&nbsp;            var7 = work.apply(session, isTempSession);</b>
+&nbsp;        } finally {
+<b class="nc">&nbsp;            if (isTempSession) {</b>
+&nbsp;                try {
+<b class="nc">&nbsp;                    if (!isJta) {</b>
+&nbsp;                        BytecodeInterceptorLogging.LOGGER.debug(&quot;Enhancement interception Helper#performWork committing transaction on temporary Session&quot;);
+<b class="nc">&nbsp;                        session.getTransaction().commit();</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                } catch (Exception var17) {</b>
+<b class="nc">&nbsp;                    BytecodeInterceptorLogging.LOGGER.warn(&quot;Unable to commit JDBC transaction on temporary session used to load lazy collection associated to no session&quot;);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                try {
+&nbsp;                    BytecodeInterceptorLogging.LOGGER.debug(&quot;Enhancement interception Helper#performWork closing temporary Session&quot;);
+<b class="nc">&nbsp;                    session.close();</b>
+&nbsp;                } catch (Exception var16) {
+&nbsp;                    BytecodeInterceptorLogging.LOGGER.warn(&quot;Unable to close temporary session used to load lazy collection associated to no session&quot;);
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return (T)var7;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private static void throwLazyInitializationException(Cause cause, String entityName, String attributeName) {</b>
+&nbsp;        String reason;
+&nbsp;        switch (cause) {
+&nbsp;            case NO_SESSION:
+<b class="nc">&nbsp;                reason = &quot;no session and settings disallow loading outside the Session&quot;;</b>
+&nbsp;                break;
+&nbsp;            case CLOSED_SESSION:
+&nbsp;                reason = &quot;session is closed and settings disallow loading outside the Session&quot;;
+<b class="nc">&nbsp;                break;</b>
+&nbsp;            case DISCONNECTED_SESSION:
+&nbsp;                reason = &quot;session is disconnected and settings disallow loading outside the Session&quot;;
+<b class="nc">&nbsp;                break;</b>
+&nbsp;            case NO_SF_UUID:
+&nbsp;                reason = &quot;could not determine SessionFactory UUId to create temporary Session for loading&quot;;
+<b class="nc">&nbsp;                break;</b>
+<b class="nc">&nbsp;            default:</b>
+&nbsp;                reason = &quot;&lt;should never get here&gt;&quot;;
+&nbsp;        }
+&nbsp;
+&nbsp;        String message = String.format(Locale.ROOT, &quot;Unable to perform requested lazy initialization [%s.%s] - %s&quot;, entityName, attributeName, reason);
+&nbsp;        throw new LazyInitializationException(message);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private static SharedSessionContractImplementor openTemporarySessionForLoading(BytecodeLazyAttributeInterceptor interceptor, String entityName, String attributeName) {</b>
+&nbsp;        if (interceptor.getSessionFactoryUuid() == null) {
+<b class="nc">&nbsp;            throwLazyInitializationException(EnhancementHelper.Cause.NO_SF_UUID, entityName, attributeName);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        SessionFactoryImplementor sf = SessionFactoryRegistry.INSTANCE.getSessionFactory(interceptor.getSessionFactoryUuid());
+<b class="nc">&nbsp;        SharedSessionContractImplementor session = sf.openSession();</b>
+<b class="nc">&nbsp;        session.getPersistenceContextInternal().setDefaultReadOnly(true);</b>
+<b class="nc">&nbsp;        session.setHibernateFlushMode(FlushMode.MANUAL);</b>
+<b class="nc">&nbsp;        return session;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    static enum Cause {</b>
+&nbsp;        NO_SESSION,
+&nbsp;        CLOSED_SESSION,
+<b class="nc">&nbsp;        DISCONNECTED_SESSION,</b>
+<b class="nc">&nbsp;        NO_SF_UUID;</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        private Cause() {</b>
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    @FunctionalInterface
+&nbsp;    public interface InheritanceChecker {
+<b class="nc">&nbsp;        boolean hasSubclasses(String var1);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
+</div>
+</body>
+</html>

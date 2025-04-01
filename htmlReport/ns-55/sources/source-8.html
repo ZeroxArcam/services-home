@@ -5,7 +5,7 @@
 <html id="htmlId">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
-  <title>Coverage Report > ProgressStartEvent</title>
+  <title>Coverage Report > HomeUseCaseTest</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -19,10 +19,10 @@
 <div class="breadCrumbs">
 Current scope:     <a href="../../index.html">all classes</a>
     <span class="separator">|</span>
-    <a href="../index.html">org.gradle.internal.logging.events</a>
+    <a href="../index.html">com.pragma.hogar360.serviceshome.domain.usecases</a>
 </div>
 
-<h1>Coverage Summary for Class: ProgressStartEvent (org.gradle.internal.logging.events)</h1>
+<h1>Coverage Summary for Class: HomeUseCaseTest (com.pragma.hogar360.serviceshome.domain.usecases)</h1>
 
 <table class="coverageStats">
 <tr>
@@ -37,45 +37,33 @@ Current scope:     <a href="../../index.html">all classes</a>
 </th>
 <th class="coverageStat 
 ">
-  Branch, %
-</th>
-<th class="coverageStat 
-">
   Line, %
 </th>
 </tr>
 <tr>
-  <td class="name">ProgressStartEvent</td>
+  <td class="name">HomeUseCaseTest</td>
 <td class="coverageStat">
   <span class="percent">
-    0%
+    100%
   </span>
   <span class="absValue">
-    (0/1)
+    (1/1)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    0%
+    100%
   </span>
   <span class="absValue">
-    (0/13)
+    (29/29)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    0%
+    100%
   </span>
   <span class="absValue">
-    (0/2)
-  </span>
-</td>
-<td class="coverageStat">
-  <span class="percent">
-    0%
-  </span>
-  <span class="absValue">
-    (0/22)
+    (157/157)
   </span>
 </td>
 </tr>
@@ -85,7 +73,426 @@ Current scope:     <a href="../../index.html">all classes</a>
 <br/>
 <br/>
 
-  <code class="sourceCode">Source code is not available<br /></code>
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.pragma.hogar360.serviceshome.domain.usecases;
+&nbsp;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.exceptions.*;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.model.*;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.ports.out.CategoryPersistencePort;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.ports.out.HomePersistencePort;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.ports.out.LocationPersistencePort;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.utils.constants.Pagination;
+&nbsp;import com.pragma.hogar360.serviceshome.factory.CategoryModelFactory;
+&nbsp;import com.pragma.hogar360.serviceshome.factory.HomeModelFactory;
+&nbsp;import com.pragma.hogar360.serviceshome.factory.HomeQueryModelFactory;
+&nbsp;import com.pragma.hogar360.serviceshome.factory.LocationModelFactory;
+&nbsp;import org.junit.jupiter.api.BeforeEach;
+&nbsp;import org.junit.jupiter.api.Test;
+&nbsp;import org.mockito.InjectMocks;
+&nbsp;import org.mockito.Mock;
+&nbsp;import org.mockito.MockitoAnnotations;
+&nbsp;
+&nbsp;import java.math.BigDecimal;
+&nbsp;import java.time.LocalDate;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.List;
+&nbsp;
+&nbsp;import static org.junit.jupiter.api.Assertions.*;
+&nbsp;import static org.mockito.Mockito.*;
+&nbsp;
+<b class="fc">&nbsp;class HomeUseCaseTest {</b>
+&nbsp;
+&nbsp;    @Mock
+&nbsp;    private HomePersistencePort homePersistencePort;
+&nbsp;
+&nbsp;    @Mock
+&nbsp;    private CategoryPersistencePort categoryPersistencePort;
+&nbsp;
+&nbsp;    @Mock
+&nbsp;    private LocationPersistencePort locationPersistencePort;
+&nbsp;
+&nbsp;    @InjectMocks
+&nbsp;    private HomeUseCase homeUseCase;
+&nbsp;
+&nbsp;    @BeforeEach
+&nbsp;    void setUp() {
+<b class="fc">&nbsp;        MockitoAnnotations.openMocks(this);</b>
+&nbsp;    }
+&nbsp;    @Test
+&nbsp;    void testSave_Success() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        HomeModel homeModel = HomeModelFactory.createDefaultHomeModel();</b>
+<b class="fc">&nbsp;        CategoryModel category = CategoryModelFactory.createDefaultCategoryModel();</b>
+<b class="fc">&nbsp;        LocationModel location = LocationModelFactory.createDefaultLocationModel();</b>
+&nbsp;
+<b class="fc">&nbsp;        when(categoryPersistencePort.getCategoryByName(homeModel.getPropertyDetails().getCategory().getName())).thenReturn(category);</b>
+<b class="fc">&nbsp;        when(locationPersistencePort.findById(homeModel.getBasicInfo().getLocation().getId())).thenReturn(java.util.Optional.of(location));</b>
+<b class="fc">&nbsp;        when(homePersistencePort.existsAddress(homeModel.getBasicInfo().getAddress())).thenReturn(false);</b>
+&nbsp;
+&nbsp;        // Act
+<b class="fc">&nbsp;        homeUseCase.save(homeModel);</b>
+&nbsp;
+&nbsp;        // Assert
+<b class="fc">&nbsp;        verify(homePersistencePort, times(1)).save(homeModel);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Test
+&nbsp;    void testSave_CategoryNotFound() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        HomeModel homeModel = HomeModelFactory.createDefaultHomeModel();</b>
+&nbsp;
+<b class="fc">&nbsp;        when(categoryPersistencePort.getCategoryByName(homeModel.getPropertyDetails().getCategory().getName())).thenReturn(null);</b>
+&nbsp;
+&nbsp;        // Act &amp; Assert
+<b class="fc">&nbsp;        assertThrows(CategoryNotFoundException.class, () -&gt; homeUseCase.save(homeModel));</b>
+<b class="fc">&nbsp;        verify(homePersistencePort, never()).save(homeModel);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Test
+&nbsp;    void testSave_LocationNotFound() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        HomeModel homeModel = HomeModelFactory.createDefaultHomeModel();</b>
+<b class="fc">&nbsp;        CategoryModel category = CategoryModelFactory.createDefaultCategoryModel();</b>
+&nbsp;
+<b class="fc">&nbsp;        when(categoryPersistencePort.getCategoryByName(homeModel.getPropertyDetails().getCategory().getName())).thenReturn(category);</b>
+<b class="fc">&nbsp;        when(locationPersistencePort.findById(homeModel.getBasicInfo().getLocation().getId())).thenReturn(java.util.Optional.empty());</b>
+&nbsp;
+&nbsp;        // Act &amp; Assert
+<b class="fc">&nbsp;        assertThrows(LocationNotFoundException.class, () -&gt; homeUseCase.save(homeModel));</b>
+<b class="fc">&nbsp;        verify(homePersistencePort, never()).save(homeModel);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Test
+&nbsp;    void testSave_DuplicateAddress() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        HomeModel homeModel = HomeModelFactory.createDefaultHomeModel();</b>
+<b class="fc">&nbsp;        CategoryModel category = CategoryModelFactory.createDefaultCategoryModel();</b>
+<b class="fc">&nbsp;        LocationModel location = LocationModelFactory.createDefaultLocationModel();</b>
+&nbsp;
+<b class="fc">&nbsp;        when(categoryPersistencePort.getCategoryByName(homeModel.getPropertyDetails().getCategory().getName())).thenReturn(category);</b>
+<b class="fc">&nbsp;        when(locationPersistencePort.findById(homeModel.getBasicInfo().getLocation().getId())).thenReturn(java.util.Optional.of(location));</b>
+<b class="fc">&nbsp;        when(homePersistencePort.existsAddress(homeModel.getBasicInfo().getAddress())).thenReturn(true);</b>
+&nbsp;
+&nbsp;        // Act &amp; Assert
+<b class="fc">&nbsp;        assertThrows(DuplicateAddressException.class, () -&gt; homeUseCase.save(homeModel));</b>
+<b class="fc">&nbsp;        verify(homePersistencePort, never()).save(homeModel);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Test
+&nbsp;    void testSave_InvalidPublicationDate() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        HomeModel homeModel = HomeModelFactory.createDefaultHomeModel();</b>
+<b class="fc">&nbsp;        homeModel.getPublicationInfo().setPublicationDate(LocalDate.now().minusDays(1)); // Fecha pasada</b>
+<b class="fc">&nbsp;        CategoryModel category = CategoryModelFactory.createDefaultCategoryModel();</b>
+<b class="fc">&nbsp;        LocationModel location = LocationModelFactory.createDefaultLocationModel();</b>
+&nbsp;
+<b class="fc">&nbsp;        when(categoryPersistencePort.getCategoryByName(homeModel.getPropertyDetails().getCategory().getName())).thenReturn(category);</b>
+<b class="fc">&nbsp;        when(locationPersistencePort.findById(homeModel.getBasicInfo().getLocation().getId())).thenReturn(java.util.Optional.of(location));</b>
+<b class="fc">&nbsp;        when(homePersistencePort.existsAddress(homeModel.getBasicInfo().getAddress())).thenReturn(false);</b>
+&nbsp;
+&nbsp;        // Act &amp; Assert
+<b class="fc">&nbsp;        assertThrows(InvalidPublicationDateException.class, () -&gt; homeUseCase.save(homeModel));</b>
+<b class="fc">&nbsp;        verify(homePersistencePort, never()).save(homeModel);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Test
+&nbsp;    void testSave_InvalidActivePublicationDate() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        HomeModel homeModel = HomeModelFactory.createDefaultHomeModel();</b>
+<b class="fc">&nbsp;        homeModel.getPublicationInfo().setActivePublicationDate(LocalDate.now().minusDays(2)); // Fecha activa antes de publicación</b>
+<b class="fc">&nbsp;        CategoryModel category = CategoryModelFactory.createDefaultCategoryModel();</b>
+<b class="fc">&nbsp;        LocationModel location = LocationModelFactory.createDefaultLocationModel();</b>
+&nbsp;
+<b class="fc">&nbsp;        when(categoryPersistencePort.getCategoryByName(homeModel.getPropertyDetails().getCategory().getName())).thenReturn(category);</b>
+<b class="fc">&nbsp;        when(locationPersistencePort.findById(homeModel.getBasicInfo().getLocation().getId())).thenReturn(java.util.Optional.of(location));</b>
+<b class="fc">&nbsp;        when(homePersistencePort.existsAddress(homeModel.getBasicInfo().getAddress())).thenReturn(false);</b>
+&nbsp;
+&nbsp;        // Act &amp; Assert
+<b class="fc">&nbsp;        assertThrows(InvalidPublicationDateException.class, () -&gt; homeUseCase.save(homeModel));</b>
+<b class="fc">&nbsp;        verify(homePersistencePort, never()).save(homeModel);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Test
+&nbsp;    void testSave_EmptyAddress() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        HomeModel homeModel = HomeModelFactory.createDefaultHomeModel();</b>
+<b class="fc">&nbsp;        homeModel.getBasicInfo().setAddress(&quot;&quot;);</b>
+<b class="fc">&nbsp;        CategoryModel category = CategoryModelFactory.createDefaultCategoryModel();</b>
+<b class="fc">&nbsp;        LocationModel location = LocationModelFactory.createDefaultLocationModel();</b>
+&nbsp;
+<b class="fc">&nbsp;        when(categoryPersistencePort.getCategoryByName(homeModel.getPropertyDetails().getCategory().getName())).thenReturn(category);</b>
+<b class="fc">&nbsp;        when(locationPersistencePort.findById(homeModel.getBasicInfo().getLocation().getId())).thenReturn(java.util.Optional.of(location));</b>
+&nbsp;
+&nbsp;        // Act &amp; Assert
+<b class="fc">&nbsp;        assertThrows(EmptyAddressException.class, () -&gt; homeUseCase.save(homeModel));</b>
+<b class="fc">&nbsp;        verify(homePersistencePort, never()).save(homeModel);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Test
+&nbsp;    void testSave_InvalidNumberRooms() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        HomeModel homeModel = HomeModelFactory.createDefaultHomeModel();</b>
+<b class="fc">&nbsp;        homeModel.getPropertyDetails().setNumberOfRooms(0);</b>
+<b class="fc">&nbsp;        CategoryModel category = CategoryModelFactory.createDefaultCategoryModel();</b>
+<b class="fc">&nbsp;        LocationModel location = LocationModelFactory.createDefaultLocationModel();</b>
+&nbsp;
+<b class="fc">&nbsp;        when(categoryPersistencePort.getCategoryByName(homeModel.getPropertyDetails().getCategory().getName())).thenReturn(category);</b>
+<b class="fc">&nbsp;        when(locationPersistencePort.findById(homeModel.getBasicInfo().getLocation().getId())).thenReturn(java.util.Optional.of(location));</b>
+<b class="fc">&nbsp;        when(homePersistencePort.existsAddress(homeModel.getBasicInfo().getAddress())).thenReturn(false);</b>
+&nbsp;
+&nbsp;        // Act &amp; Assert
+<b class="fc">&nbsp;        assertThrows(InvalidNumberException.class, () -&gt; homeUseCase.save(homeModel));</b>
+<b class="fc">&nbsp;        verify(homePersistencePort, never()).save(homeModel);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Test
+&nbsp;    void testSave_InvalidNumberBathrooms() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        HomeModel homeModel = HomeModelFactory.createDefaultHomeModel();</b>
+<b class="fc">&nbsp;        homeModel.getPropertyDetails().setNumberOfBathrooms(0);</b>
+<b class="fc">&nbsp;        CategoryModel category = CategoryModelFactory.createDefaultCategoryModel();</b>
+<b class="fc">&nbsp;        LocationModel location = LocationModelFactory.createDefaultLocationModel();</b>
+&nbsp;
+<b class="fc">&nbsp;        when(categoryPersistencePort.getCategoryByName(homeModel.getPropertyDetails().getCategory().getName())).thenReturn(category);</b>
+<b class="fc">&nbsp;        when(locationPersistencePort.findById(homeModel.getBasicInfo().getLocation().getId())).thenReturn(java.util.Optional.of(location));</b>
+<b class="fc">&nbsp;        when(homePersistencePort.existsAddress(homeModel.getBasicInfo().getAddress())).thenReturn(false);</b>
+&nbsp;
+&nbsp;        // Act &amp; Assert
+<b class="fc">&nbsp;        assertThrows(InvalidNumberException.class, () -&gt; homeUseCase.save(homeModel));</b>
+<b class="fc">&nbsp;        verify(homePersistencePort, never()).save(homeModel);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Test
+&nbsp;    void testSave_InvalidName() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        HomeModel homeModel = HomeModelFactory.createDefaultHomeModel();</b>
+<b class="fc">&nbsp;        homeModel.getBasicInfo().setName(&quot;&quot;);</b>
+<b class="fc">&nbsp;        CategoryModel category = CategoryModelFactory.createDefaultCategoryModel();</b>
+<b class="fc">&nbsp;        LocationModel location = LocationModelFactory.createDefaultLocationModel();</b>
+&nbsp;
+<b class="fc">&nbsp;        when(categoryPersistencePort.getCategoryByName(homeModel.getPropertyDetails().getCategory().getName())).thenReturn(category);</b>
+<b class="fc">&nbsp;        when(locationPersistencePort.findById(homeModel.getBasicInfo().getLocation().getId())).thenReturn(java.util.Optional.of(location));</b>
+&nbsp;
+&nbsp;        // Act &amp; Assert
+<b class="fc">&nbsp;        assertThrows(InvalidParameters.class, () -&gt; homeUseCase.save(homeModel));</b>
+<b class="fc">&nbsp;        verify(homePersistencePort, never()).save(homeModel);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Test
+&nbsp;    void testSave_InvalidPrice() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        HomeModel homeModel = HomeModelFactory.createDefaultHomeModel();</b>
+<b class="fc">&nbsp;        homeModel.getBasicInfo().setPrice(0.0);</b>
+<b class="fc">&nbsp;        CategoryModel category = CategoryModelFactory.createDefaultCategoryModel();</b>
+<b class="fc">&nbsp;        LocationModel location = LocationModelFactory.createDefaultLocationModel();</b>
+&nbsp;
+<b class="fc">&nbsp;        when(categoryPersistencePort.getCategoryByName(homeModel.getPropertyDetails().getCategory().getName())).thenReturn(category);</b>
+<b class="fc">&nbsp;        when(locationPersistencePort.findById(homeModel.getBasicInfo().getLocation().getId())).thenReturn(java.util.Optional.of(location));</b>
+&nbsp;
+&nbsp;        // Act &amp; Assert
+<b class="fc">&nbsp;        assertThrows(InvalidParameters.class, () -&gt; homeUseCase.save(homeModel));</b>
+<b class="fc">&nbsp;        verify(homePersistencePort, never()).save(homeModel);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Test
+&nbsp;    void testSave_InvalidDescription() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        HomeModel homeModel = HomeModelFactory.createDefaultHomeModel();</b>
+<b class="fc">&nbsp;        homeModel.getPropertyDetails().setDescription(&quot;&quot;);</b>
+<b class="fc">&nbsp;        CategoryModel category = CategoryModelFactory.createDefaultCategoryModel();</b>
+<b class="fc">&nbsp;        LocationModel location = LocationModelFactory.createDefaultLocationModel();</b>
+&nbsp;
+<b class="fc">&nbsp;        when(categoryPersistencePort.getCategoryByName(homeModel.getPropertyDetails().getCategory().getName())).thenReturn(category);</b>
+<b class="fc">&nbsp;        when(locationPersistencePort.findById(homeModel.getBasicInfo().getLocation().getId())).thenReturn(java.util.Optional.of(location));</b>
+&nbsp;
+&nbsp;        // Act &amp; Assert
+<b class="fc">&nbsp;        assertThrows(InvalidParameters.class, () -&gt; homeUseCase.save(homeModel));</b>
+<b class="fc">&nbsp;        verify(homePersistencePort, never()).save(homeModel);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Test
+&nbsp;    void testActivateScheduledPublications_Success() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        HomeModel homeModel = HomeModelFactory.createDefaultHomeModel();</b>
+<b class="fc">&nbsp;        homeModel.getPublicationInfo().setPublicationStatus(HomePublicationInfoModel.PublicationStatus.PUBLICATION_PAUSED);</b>
+<b class="fc">&nbsp;        List&lt;HomeModel&gt; homesToActivate = Collections.singletonList(homeModel);</b>
+&nbsp;
+<b class="fc">&nbsp;        when(homePersistencePort.findHomesToActivate(any(LocalDate.class), eq(HomePublicationInfoModel.PublicationStatus.PUBLICATION_PAUSED))).thenReturn(homesToActivate);</b>
+&nbsp;
+&nbsp;        // Act
+<b class="fc">&nbsp;        homeUseCase.activateScheduledPublications();</b>
+&nbsp;
+&nbsp;        // Assert
+<b class="fc">&nbsp;        assertEquals(HomePublicationInfoModel.PublicationStatus.PUBLISHED, homeModel.getPublicationInfo().getPublicationStatus());</b>
+<b class="fc">&nbsp;        verify(homePersistencePort, times(1)).saveAll(homesToActivate);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Test
+&nbsp;    void testSave_NullNumberOfRooms() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        HomeModel homeModel = HomeModelFactory.createDefaultHomeModel();</b>
+<b class="fc">&nbsp;        homeModel.getPropertyDetails().setNumberOfRooms(null);</b>
+<b class="fc">&nbsp;        CategoryModel category = CategoryModelFactory.createDefaultCategoryModel();</b>
+<b class="fc">&nbsp;        LocationModel location = LocationModelFactory.createDefaultLocationModel();</b>
+&nbsp;
+<b class="fc">&nbsp;        when(categoryPersistencePort.getCategoryByName(homeModel.getPropertyDetails().getCategory().getName())).thenReturn(category);</b>
+<b class="fc">&nbsp;        when(locationPersistencePort.findById(homeModel.getBasicInfo().getLocation().getId())).thenReturn(java.util.Optional.of(location));</b>
+<b class="fc">&nbsp;        when(homePersistencePort.existsAddress(homeModel.getBasicInfo().getAddress())).thenReturn(false);</b>
+&nbsp;
+&nbsp;        // Act &amp; Assert
+<b class="fc">&nbsp;        assertThrows(InvalidNumberException.class, () -&gt; homeUseCase.save(homeModel));</b>
+<b class="fc">&nbsp;        verify(homePersistencePort, never()).save(homeModel);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Test
+&nbsp;    void testSave_NullNumberOfBathrooms() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        HomeModel homeModel = HomeModelFactory.createDefaultHomeModel();</b>
+<b class="fc">&nbsp;        homeModel.getPropertyDetails().setNumberOfBathrooms(null);</b>
+<b class="fc">&nbsp;        CategoryModel category = CategoryModelFactory.createDefaultCategoryModel();</b>
+<b class="fc">&nbsp;        LocationModel location = LocationModelFactory.createDefaultLocationModel();</b>
+&nbsp;
+<b class="fc">&nbsp;        when(categoryPersistencePort.getCategoryByName(homeModel.getPropertyDetails().getCategory().getName())).thenReturn(category);</b>
+<b class="fc">&nbsp;        when(locationPersistencePort.findById(homeModel.getBasicInfo().getLocation().getId())).thenReturn(java.util.Optional.of(location));</b>
+<b class="fc">&nbsp;        when(homePersistencePort.existsAddress(homeModel.getBasicInfo().getAddress())).thenReturn(false);</b>
+&nbsp;
+&nbsp;        // Act &amp; Assert
+<b class="fc">&nbsp;        assertThrows(InvalidNumberException.class, () -&gt; homeUseCase.save(homeModel));</b>
+<b class="fc">&nbsp;        verify(homePersistencePort, never()).save(homeModel);</b>
+&nbsp;    }
+&nbsp;    @Test
+&nbsp;    void testValidateAndSetPublicationStatus_EqualDates() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        HomeModel homeModel = HomeModelFactory.createDefaultHomeModel();</b>
+<b class="fc">&nbsp;        LocalDate today = LocalDate.now();</b>
+<b class="fc">&nbsp;        homeModel.getPublicationInfo().setPublicationDate(today);</b>
+<b class="fc">&nbsp;        homeModel.getPublicationInfo().setActivePublicationDate(today);</b>
+&nbsp;
+&nbsp;        // Act
+<b class="fc">&nbsp;        homeUseCase.validateAndSetPublicationStatus(homeModel);</b>
+&nbsp;
+&nbsp;        // Assert
+<b class="fc">&nbsp;        assertEquals(HomePublicationInfoModel.PublicationStatus.PUBLISHED, homeModel.getPublicationInfo().getPublicationStatus());</b>
+&nbsp;    }
+&nbsp;    @Test
+&nbsp;    void testLocationExists_NullLocationModel() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        LocationModel locationModel = null;</b>
+&nbsp;
+&nbsp;        // Act &amp; Assert
+<b class="fc">&nbsp;        assertThrows(InvalidParameters.class, () -&gt; homeUseCase.locationExists(locationModel));</b>
+<b class="fc">&nbsp;        verify(locationPersistencePort, never()).findById(anyLong());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Test
+&nbsp;    void testLocationExists_NullLocationId() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        LocationModel locationModel = LocationModelFactory.createDefaultLocationModel();</b>
+<b class="fc">&nbsp;        locationModel.setId(null);</b>
+&nbsp;
+&nbsp;        // Act &amp; Assert
+<b class="fc">&nbsp;        assertThrows(InvalidParameters.class, () -&gt; homeUseCase.locationExists(locationModel));</b>
+<b class="fc">&nbsp;        verify(locationPersistencePort, never()).findById(anyLong());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Test
+&nbsp;    void testFindHomesByFilters_InvalidSortBy() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        HomeQueryModel queryModel = HomeQueryModelFactory.createDefaultHomeQueryModel();</b>
+<b class="fc">&nbsp;        String sortBy = &quot;invalidSortBy&quot;;</b>
+&nbsp;
+&nbsp;        // Act &amp; Assert
+<b class="fc">&nbsp;        assertThrows(InvalidSortByException.class, () -&gt; homeUseCase.findHomesByFilters(queryModel, 0, 10, sortBy, &quot;ASC&quot;));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Test
+&nbsp;    void testFindHomesByFilters_MinRoomsNegative() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        HomeQueryModel queryModel = HomeQueryModelFactory.createHomeQueryModelWithMinRooms(-1);</b>
+&nbsp;
+&nbsp;        // Act &amp; Assert
+<b class="fc">&nbsp;        assertThrows(InvalidParameters.class, () -&gt; homeUseCase.findHomesByFilters(queryModel, 0, 10, &quot;price&quot;, &quot;ASC&quot;));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Test
+&nbsp;    void testFindHomesByFilters_MaxRoomsNegative() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        HomeQueryModel queryModel = HomeQueryModelFactory.createHomeQueryModelWithMaxRooms(-1);</b>
+&nbsp;
+&nbsp;        // Act &amp; Assert
+<b class="fc">&nbsp;        assertThrows(InvalidParameters.class, () -&gt; homeUseCase.findHomesByFilters(queryModel, 0, 10, &quot;price&quot;, &quot;ASC&quot;));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Test
+&nbsp;    void testFindHomesByFilters_MinBathroomsNegative() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        HomeQueryModel queryModel = HomeQueryModelFactory.createHomeQueryModelWithMinBathrooms(-1);</b>
+&nbsp;
+&nbsp;        // Act &amp; Assert
+<b class="fc">&nbsp;        assertThrows(InvalidParameters.class, () -&gt; homeUseCase.findHomesByFilters(queryModel, 0, 10, &quot;price&quot;, &quot;ASC&quot;));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Test
+&nbsp;    void testFindHomesByFilters_MaxBathroomsNegative() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        HomeQueryModel queryModel = HomeQueryModelFactory.createHomeQueryModelWithMaxBathrooms(-1);</b>
+&nbsp;
+&nbsp;        // Act &amp; Assert
+<b class="fc">&nbsp;        assertThrows(InvalidParameters.class, () -&gt; homeUseCase.findHomesByFilters(queryModel, 0, 10, &quot;price&quot;, &quot;ASC&quot;));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Test
+&nbsp;    void testFindHomesByFilters_MinPriceNegative() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        HomeQueryModel queryModel = HomeQueryModelFactory.createHomeQueryModelWithMinPrice(BigDecimal.valueOf(-1));</b>
+&nbsp;
+&nbsp;        // Act &amp; Assert
+<b class="fc">&nbsp;        assertThrows(InvalidParameters.class, () -&gt; homeUseCase.findHomesByFilters(queryModel, 0, 10, &quot;price&quot;, &quot;ASC&quot;));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Test
+&nbsp;    void testFindHomesByFilters_MaxPriceNegative() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        HomeQueryModel queryModel = HomeQueryModelFactory.createHomeQueryModelWithMaxPrice(BigDecimal.valueOf(-1));</b>
+&nbsp;
+&nbsp;        // Act &amp; Assert
+<b class="fc">&nbsp;        assertThrows(InvalidParameters.class, () -&gt; homeUseCase.findHomesByFilters(queryModel, 0, 10, &quot;price&quot;, &quot;ASC&quot;));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Test
+&nbsp;    void testFindHomesByFilters_InvalidSortDirection() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        HomeQueryModel queryModel = HomeQueryModelFactory.createDefaultHomeQueryModel();</b>
+<b class="fc">&nbsp;        String sortDirection = &quot;INVALID&quot;;</b>
+&nbsp;
+&nbsp;        // Act &amp; Assert
+<b class="fc">&nbsp;        assertThrows(InvalidParameters.class, () -&gt; homeUseCase.findHomesByFilters(queryModel, 0, 10, &quot;price&quot;, sortDirection));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Test
+&nbsp;    void testFindHomesByFilters_Success() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        HomeQueryModel queryModel = HomeQueryModelFactory.createDefaultHomeQueryModel();</b>
+<b class="fc">&nbsp;        Pagination&lt;HomeModel&gt; expectedPagination = new Pagination&lt;&gt;(); // Puedes ajustar esto según tus necesidades</b>
+<b class="fc">&nbsp;        when(homePersistencePort.findHomesByFilters(queryModel, 0, 10, &quot;price&quot;, &quot;ASC&quot;)).thenReturn(expectedPagination);</b>
+&nbsp;
+&nbsp;        // Act
+<b class="fc">&nbsp;        Pagination&lt;HomeModel&gt; result = homeUseCase.findHomesByFilters(queryModel, 0, 10, &quot;price&quot;, &quot;ASC&quot;);</b>
+&nbsp;
+&nbsp;        // Assert
+<b class="fc">&nbsp;        assertEquals(expectedPagination, result);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;}
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+</code>
+</pre>
 </div>
 
 <script type="text/javascript">
@@ -107,7 +514,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2025-03-20 13:41</div>
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
 </div>
 </body>
 </html>

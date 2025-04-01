@@ -1,0 +1,806 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > CommonAnnotationBeanPostProcessor</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.context.annotation</a>
+</div>
+
+<h1>Coverage Summary for Class: CommonAnnotationBeanPostProcessor (org.springframework.context.annotation)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">CommonAnnotationBeanPostProcessor</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    48%
+  </span>
+  <span class="absValue">
+    (12/25)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    20.8%
+  </span>
+  <span class="absValue">
+    (25/120)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    38.6%
+  </span>
+  <span class="absValue">
+    (68/176)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.context.annotation;
+&nbsp;
+&nbsp;import jakarta.annotation.Resource;
+&nbsp;import jakarta.ejb.EJB;
+&nbsp;import java.beans.PropertyDescriptor;
+&nbsp;import java.io.Serializable;
+&nbsp;import java.lang.annotation.Annotation;
+&nbsp;import java.lang.reflect.AnnotatedElement;
+&nbsp;import java.lang.reflect.Field;
+&nbsp;import java.lang.reflect.Member;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;import java.lang.reflect.Modifier;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.HashSet;
+&nbsp;import java.util.LinkedHashSet;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import org.springframework.aop.TargetSource;
+&nbsp;import org.springframework.aop.framework.ProxyFactory;
+&nbsp;import org.springframework.aot.generate.AccessControl;
+&nbsp;import org.springframework.aot.generate.GeneratedClass;
+&nbsp;import org.springframework.aot.generate.GeneratedMethod;
+&nbsp;import org.springframework.aot.generate.GenerationContext;
+&nbsp;import org.springframework.aot.hint.ExecutableMode;
+&nbsp;import org.springframework.aot.hint.RuntimeHints;
+&nbsp;import org.springframework.aot.hint.support.ClassHintUtils;
+&nbsp;import org.springframework.beans.BeanUtils;
+&nbsp;import org.springframework.beans.PropertyValues;
+&nbsp;import org.springframework.beans.TypeConverter;
+&nbsp;import org.springframework.beans.factory.BeanCreationException;
+&nbsp;import org.springframework.beans.factory.BeanFactory;
+&nbsp;import org.springframework.beans.factory.BeanFactoryAware;
+&nbsp;import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+&nbsp;import org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor;
+&nbsp;import org.springframework.beans.factory.annotation.InjectionMetadata;
+&nbsp;import org.springframework.beans.factory.aot.BeanRegistrationAotContribution;
+&nbsp;import org.springframework.beans.factory.aot.BeanRegistrationCode;
+&nbsp;import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+&nbsp;import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+&nbsp;import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+&nbsp;import org.springframework.beans.factory.config.DependencyDescriptor;
+&nbsp;import org.springframework.beans.factory.config.EmbeddedValueResolver;
+&nbsp;import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessor;
+&nbsp;import org.springframework.beans.factory.support.AutowireCandidateResolver;
+&nbsp;import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+&nbsp;import org.springframework.beans.factory.support.RegisteredBean;
+&nbsp;import org.springframework.beans.factory.support.RootBeanDefinition;
+&nbsp;import org.springframework.core.BridgeMethodResolver;
+&nbsp;import org.springframework.core.annotation.AnnotationUtils;
+&nbsp;import org.springframework.javapoet.ClassName;
+&nbsp;import org.springframework.javapoet.CodeBlock;
+&nbsp;import org.springframework.jndi.support.SimpleJndiBeanFactory;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.ClassUtils;
+&nbsp;import org.springframework.util.CollectionUtils;
+&nbsp;import org.springframework.util.ObjectUtils;
+&nbsp;import org.springframework.util.ReflectionUtils;
+&nbsp;import org.springframework.util.StringUtils;
+&nbsp;import org.springframework.util.StringValueResolver;
+&nbsp;
+&nbsp;public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBeanPostProcessor implements InstantiationAwareBeanPostProcessor, BeanFactoryAware, Serializable {
+&nbsp;    private static final boolean jndiPresent = ClassUtils.isPresent(&quot;javax.naming.InitialContext&quot;, CommonAnnotationBeanPostProcessor.class.getClassLoader());
+&nbsp;    private static final Set&lt;Class&lt;? extends Annotation&gt;&gt; resourceAnnotationTypes = CollectionUtils.newLinkedHashSet(3);
+&nbsp;    @Nullable
+&nbsp;    private static final Class&lt;? extends Annotation&gt; jakartaResourceType = loadAnnotationType(&quot;jakarta.annotation.Resource&quot;);
+&nbsp;    @Nullable
+&nbsp;    private static final Class&lt;? extends Annotation&gt; javaxResourceType;
+&nbsp;    @Nullable
+&nbsp;    private static final Class&lt;? extends Annotation&gt; ejbAnnotationType;
+&nbsp;    private final Set&lt;String&gt; ignoredResourceTypes = new HashSet(1);
+&nbsp;    private boolean fallbackToDefaultTypeMatch = true;
+&nbsp;    private boolean alwaysUseJndiLookup = false;
+&nbsp;    @Nullable
+&nbsp;    private transient BeanFactory jndiFactory;
+&nbsp;    @Nullable
+&nbsp;    private transient BeanFactory resourceFactory;
+&nbsp;    @Nullable
+&nbsp;    private transient BeanFactory beanFactory;
+&nbsp;    @Nullable
+&nbsp;    private transient StringValueResolver embeddedValueResolver;
+&nbsp;    private final transient Map&lt;String, InjectionMetadata&gt; injectionMetadataCache = new ConcurrentHashMap(256);
+&nbsp;
+&nbsp;    public CommonAnnotationBeanPostProcessor() {
+&nbsp;        this.setOrder(2147483644);
+&nbsp;        this.addInitAnnotationType(loadAnnotationType(&quot;jakarta.annotation.PostConstruct&quot;));
+&nbsp;        this.addDestroyAnnotationType(loadAnnotationType(&quot;jakarta.annotation.PreDestroy&quot;));
+&nbsp;        this.addInitAnnotationType(loadAnnotationType(&quot;javax.annotation.PostConstruct&quot;));
+&nbsp;        this.addDestroyAnnotationType(loadAnnotationType(&quot;javax.annotation.PreDestroy&quot;));
+&nbsp;        if (jndiPresent) {
+&nbsp;            this.jndiFactory = new SimpleJndiBeanFactory();
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void ignoreResourceType(String resourceType) {
+&nbsp;        Assert.notNull(resourceType, &quot;Ignored resource type must not be null&quot;);
+&nbsp;        this.ignoredResourceTypes.add(resourceType);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setFallbackToDefaultTypeMatch(boolean fallbackToDefaultTypeMatch) {
+&nbsp;        this.fallbackToDefaultTypeMatch = fallbackToDefaultTypeMatch;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setAlwaysUseJndiLookup(boolean alwaysUseJndiLookup) {
+&nbsp;        this.alwaysUseJndiLookup = alwaysUseJndiLookup;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setJndiFactory(BeanFactory jndiFactory) {
+&nbsp;        Assert.notNull(jndiFactory, &quot;BeanFactory must not be null&quot;);
+&nbsp;        this.jndiFactory = jndiFactory;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setResourceFactory(BeanFactory resourceFactory) {
+&nbsp;        Assert.notNull(resourceFactory, &quot;BeanFactory must not be null&quot;);
+&nbsp;        this.resourceFactory = resourceFactory;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setBeanFactory(BeanFactory beanFactory) {
+&nbsp;        Assert.notNull(beanFactory, &quot;BeanFactory must not be null&quot;);
+&nbsp;        this.beanFactory = beanFactory;
+&nbsp;        if (this.resourceFactory == null) {
+&nbsp;            this.resourceFactory = beanFactory;
+&nbsp;        }
+&nbsp;
+&nbsp;        if (beanFactory instanceof ConfigurableBeanFactory configurableBeanFactory) {
+&nbsp;            this.embeddedValueResolver = new EmbeddedValueResolver(configurableBeanFactory);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class&lt;?&gt; beanType, String beanName) {
+&nbsp;        super.postProcessMergedBeanDefinition(beanDefinition, beanType, beanName);
+&nbsp;        InjectionMetadata metadata = this.findResourceMetadata(beanName, beanType, (PropertyValues)null);
+&nbsp;        metadata.checkConfigMembers(beanDefinition);
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public BeanRegistrationAotContribution processAheadOfTime(RegisteredBean registeredBean) {
+<b class="fc">&nbsp;        BeanRegistrationAotContribution parentAotContribution = super.processAheadOfTime(registeredBean);</b>
+<b class="fc">&nbsp;        Class&lt;?&gt; beanClass = registeredBean.getBeanClass();</b>
+&nbsp;        String beanName = registeredBean.getBeanName();
+<b class="fc">&nbsp;        RootBeanDefinition beanDefinition = registeredBean.getMergedBeanDefinition();</b>
+&nbsp;        InjectionMetadata metadata = this.findResourceMetadata(beanName, beanClass, beanDefinition.getPropertyValues());
+&nbsp;        Collection&lt;LookupElement&gt; injectedElements = this.getInjectedElements(metadata, beanDefinition.getPropertyValues());
+&nbsp;        if (!ObjectUtils.isEmpty(injectedElements)) {
+&nbsp;            AotContribution aotContribution = new AotContribution(beanClass, injectedElements, this.getAutowireCandidateResolver(registeredBean));
+&nbsp;            return BeanRegistrationAotContribution.concat(parentAotContribution, aotContribution);
+&nbsp;        } else {
+&nbsp;            return parentAotContribution;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+<b class="fc">&nbsp;    private AutowireCandidateResolver getAutowireCandidateResolver(RegisteredBean registeredBean) {</b>
+<b class="pc">&nbsp;        ConfigurableListableBeanFactory var3 = registeredBean.getBeanFactory();</b>
+<b class="fc">&nbsp;        if (var3 instanceof DefaultListableBeanFactory lbf) {</b>
+&nbsp;            return lbf.getAutowireCandidateResolver();
+&nbsp;        } else {
+<b class="fc">&nbsp;            return null;</b>
+<b class="pc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private Collection&lt;LookupElement&gt; getInjectedElements(InjectionMetadata metadata, PropertyValues propertyValues) {
+<b class="fc">&nbsp;        return metadata.getInjectedElements(propertyValues);</b>
+<b class="pc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public void resetBeanDefinition(String beanName) {
+&nbsp;        this.injectionMetadataCache.remove(beanName);
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    @Nullable</b>
+&nbsp;    public Object postProcessBeforeInstantiation(Class&lt;?&gt; beanClass, String beanName) {
+<b class="fc">&nbsp;        return null;</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public boolean postProcessAfterInstantiation(Object bean, String beanName) {
+&nbsp;        return true;
+&nbsp;    }
+&nbsp;
+&nbsp;    public PropertyValues postProcessProperties(PropertyValues pvs, Object bean, String beanName) {
+&nbsp;        InjectionMetadata metadata = this.findResourceMetadata(beanName, bean.getClass(), pvs);
+&nbsp;
+&nbsp;        try {
+&nbsp;            metadata.inject(bean, beanName, pvs);
+&nbsp;            return pvs;
+&nbsp;        } catch (Throwable ex) {
+&nbsp;            throw new BeanCreationException(beanName, &quot;Injection of resource dependencies failed&quot;, ex);
+&nbsp;        }
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void processInjection(Object bean) throws BeanCreationException {
+&nbsp;        Class&lt;?&gt; clazz = bean.getClass();
+&nbsp;        InjectionMetadata metadata = this.findResourceMetadata(clazz.getName(), clazz, (PropertyValues)null);
+&nbsp;
+&nbsp;        try {
+&nbsp;            metadata.inject(bean, (String)null, (PropertyValues)null);
+&nbsp;        } catch (BeanCreationException ex) {
+<b class="fc">&nbsp;            throw ex;</b>
+<b class="fc">&nbsp;        } catch (Throwable ex) {</b>
+&nbsp;            throw new BeanCreationException(&quot;Injection of resource dependencies failed for class [&quot; + String.valueOf(clazz) + &quot;]&quot;, ex);
+&nbsp;        }
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    private InjectionMetadata findResourceMetadata(String beanName, Class&lt;?&gt; clazz, @Nullable PropertyValues pvs) {
+&nbsp;        String cacheKey = StringUtils.hasLength(beanName) ? beanName : clazz.getName();
+<b class="fc">&nbsp;        InjectionMetadata metadata = (InjectionMetadata)this.injectionMetadataCache.get(cacheKey);</b>
+<b class="fc">&nbsp;        if (InjectionMetadata.needsRefresh(metadata, clazz)) {</b>
+&nbsp;            synchronized(this.injectionMetadataCache) {
+&nbsp;                metadata = (InjectionMetadata)this.injectionMetadataCache.get(cacheKey);
+<b class="pc">&nbsp;                if (InjectionMetadata.needsRefresh(metadata, clazz)) {</b>
+<b class="fc">&nbsp;                    if (metadata != null) {</b>
+&nbsp;                        metadata.clear(pvs);
+&nbsp;                    }
+&nbsp;
+&nbsp;                    metadata = this.buildResourceMetadata(clazz);
+&nbsp;                    this.injectionMetadataCache.put(cacheKey, metadata);
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return metadata;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private InjectionMetadata buildResourceMetadata(Class&lt;?&gt; clazz) {
+&nbsp;        if (!AnnotationUtils.isCandidateClass(clazz, resourceAnnotationTypes)) {
+&nbsp;            return InjectionMetadata.EMPTY;
+&nbsp;        } else {
+&nbsp;            List&lt;InjectionMetadata.InjectedElement&gt; elements = new ArrayList();
+&nbsp;            Class&lt;?&gt; targetClass = clazz;
+&nbsp;
+&nbsp;            do {
+&nbsp;                List&lt;InjectionMetadata.InjectedElement&gt; currElements = new ArrayList();
+&nbsp;                ReflectionUtils.doWithLocalFields(targetClass, (field) -&gt; {
+&nbsp;                    if (ejbAnnotationType != null &amp;&amp; field.isAnnotationPresent(ejbAnnotationType)) {
+&nbsp;                        if (Modifier.isStatic(field.getModifiers())) {
+<b class="nc">&nbsp;                            throw new IllegalStateException(&quot;@EJB annotation is not supported on static fields&quot;);</b>
+&nbsp;                        }
+&nbsp;
+&nbsp;                        currElements.add(new EjbRefElement(field, field, (PropertyDescriptor)null));
+&nbsp;                    } else if (jakartaResourceType != null &amp;&amp; field.isAnnotationPresent(jakartaResourceType)) {
+&nbsp;                        if (Modifier.isStatic(field.getModifiers())) {
+&nbsp;                            throw new IllegalStateException(&quot;@Resource annotation is not supported on static fields&quot;);
+&nbsp;                        }
+&nbsp;
+&nbsp;                        if (!this.ignoredResourceTypes.contains(field.getType().getName())) {
+&nbsp;                            currElements.add(new ResourceElement(field, field, (PropertyDescriptor)null));
+&nbsp;                        }
+&nbsp;                    } else if (javaxResourceType != null &amp;&amp; field.isAnnotationPresent(javaxResourceType)) {
+&nbsp;                        if (Modifier.isStatic(field.getModifiers())) {
+<b class="nc">&nbsp;                            throw new IllegalStateException(&quot;@Resource annotation is not supported on static fields&quot;);</b>
+&nbsp;                        }
+&nbsp;
+&nbsp;                        if (!this.ignoredResourceTypes.contains(field.getType().getName())) {
+&nbsp;                            currElements.add(new LegacyResourceElement(field, field, (PropertyDescriptor)null));
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+&nbsp;                });
+&nbsp;                ReflectionUtils.doWithLocalMethods(targetClass, (method) -&gt; {
+&nbsp;                    Method bridgedMethod = BridgeMethodResolver.findBridgedMethod(method);
+&nbsp;                    if (BridgeMethodResolver.isVisibilityBridgeMethodPair(method, bridgedMethod)) {
+&nbsp;                        if (ejbAnnotationType != null &amp;&amp; bridgedMethod.isAnnotationPresent(ejbAnnotationType)) {
+&nbsp;                            if (method.equals(ClassUtils.getMostSpecificMethod(method, clazz))) {
+&nbsp;                                if (Modifier.isStatic(method.getModifiers())) {
+<b class="nc">&nbsp;                                    throw new IllegalStateException(&quot;@EJB annotation is not supported on static methods&quot;);</b>
+<b class="nc">&nbsp;                                }</b>
+&nbsp;
+&nbsp;                                if (method.getParameterCount() != 1) {
+&nbsp;                                    throw new IllegalStateException(&quot;@EJB annotation requires a single-arg method: &quot; + String.valueOf(method));
+&nbsp;                                }
+&nbsp;
+&nbsp;                                PropertyDescriptor pd = BeanUtils.findPropertyForMethod(bridgedMethod, clazz);
+&nbsp;                                currElements.add(new EjbRefElement(method, bridgedMethod, pd));
+&nbsp;                            }
+&nbsp;                        } else if (jakartaResourceType != null &amp;&amp; bridgedMethod.isAnnotationPresent(jakartaResourceType)) {
+&nbsp;                            if (method.equals(ClassUtils.getMostSpecificMethod(method, clazz))) {
+&nbsp;                                if (Modifier.isStatic(method.getModifiers())) {
+&nbsp;                                    throw new IllegalStateException(&quot;@Resource annotation is not supported on static methods&quot;);
+&nbsp;                                }
+&nbsp;
+&nbsp;                                Class&lt;?&gt;[] paramTypes = method.getParameterTypes();
+&nbsp;                                if (paramTypes.length != 1) {
+<b class="nc">&nbsp;                                    throw new IllegalStateException(&quot;@Resource annotation requires a single-arg method: &quot; + String.valueOf(method));</b>
+<b class="nc">&nbsp;                                }</b>
+&nbsp;
+&nbsp;                                if (!this.ignoredResourceTypes.contains(paramTypes[0].getName())) {
+&nbsp;                                    PropertyDescriptor pd = BeanUtils.findPropertyForMethod(bridgedMethod, clazz);
+&nbsp;                                    currElements.add(new ResourceElement(method, bridgedMethod, pd));
+<b class="fc">&nbsp;                                }</b>
+<b class="fc">&nbsp;                            }</b>
+<b class="pc">&nbsp;                        } else if (javaxResourceType != null &amp;&amp; bridgedMethod.isAnnotationPresent(javaxResourceType) &amp;&amp; method.equals(ClassUtils.getMostSpecificMethod(method, clazz))) {</b>
+<b class="fc">&nbsp;                            if (Modifier.isStatic(method.getModifiers())) {</b>
+&nbsp;                                throw new IllegalStateException(&quot;@Resource annotation is not supported on static methods&quot;);
+<b class="pc">&nbsp;                            }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;                            Class&lt;?&gt;[] paramTypes = method.getParameterTypes();
+&nbsp;                            if (paramTypes.length != 1) {
+&nbsp;                                throw new IllegalStateException(&quot;@Resource annotation requires a single-arg method: &quot; + String.valueOf(method));
+&nbsp;                            }
+&nbsp;
+&nbsp;                            if (!this.ignoredResourceTypes.contains(paramTypes[0].getName())) {
+<b class="fc">&nbsp;                                PropertyDescriptor pd = BeanUtils.findPropertyForMethod(bridgedMethod, clazz);</b>
+<b class="fc">&nbsp;                                currElements.add(new LegacyResourceElement(method, bridgedMethod, pd));</b>
+<b class="fc">&nbsp;                            }</b>
+&nbsp;                        }
+&nbsp;
+&nbsp;                    }
+&nbsp;                });
+&nbsp;                elements.addAll(0, currElements);
+<b class="nc">&nbsp;                targetClass = targetClass.getSuperclass();</b>
+<b class="nc">&nbsp;            } while(targetClass != null &amp;&amp; targetClass != Object.class);</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            return InjectionMetadata.forElements(elements, clazz);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected Object buildLazyResourceProxy(final LookupElement element, @Nullable final String requestingBeanName) {</b>
+<b class="nc">&nbsp;        TargetSource ts = new TargetSource() {</b>
+<b class="nc">&nbsp;            public Class&lt;?&gt; getTargetClass() {</b>
+<b class="nc">&nbsp;                return element.lookupType;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            public Object getTarget() {</b>
+&nbsp;                return CommonAnnotationBeanPostProcessor.this.getResource(element, requestingBeanName);
+&nbsp;            }
+&nbsp;        };
+&nbsp;        ProxyFactory pf = new ProxyFactory();
+<b class="nc">&nbsp;        pf.setTargetSource(ts);</b>
+<b class="nc">&nbsp;        if (element.lookupType.isInterface()) {</b>
+&nbsp;            pf.addInterface(element.lookupType);
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        BeanFactory var7 = this.beanFactory;
+&nbsp;        ClassLoader var10000;
+&nbsp;        if (var7 instanceof ConfigurableBeanFactory configurableBeanFactory) {
+<b class="nc">&nbsp;            var10000 = configurableBeanFactory.getBeanClassLoader();</b>
+&nbsp;        } else {
+&nbsp;            var10000 = null;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        ClassLoader classLoader = var10000;</b>
+&nbsp;        return pf.getProxy(classLoader);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Object getResource(LookupElement element, @Nullable String requestingBeanName) throws NoSuchBeanDefinitionException {
+&nbsp;        String jndiName = null;
+<b class="fc">&nbsp;        if (StringUtils.hasLength(element.mappedName)) {</b>
+&nbsp;            jndiName = element.mappedName;
+&nbsp;        } else if (this.alwaysUseJndiLookup) {
+&nbsp;            jndiName = element.name;
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+&nbsp;        if (jndiName != null) {
+&nbsp;            if (this.jndiFactory == null) {
+&nbsp;                throw new NoSuchBeanDefinitionException(element.lookupType, &quot;No JNDI factory configured - specify the &#39;jndiFactory&#39; property&quot;);
+&nbsp;            } else {
+<b class="fc">&nbsp;                return this.jndiFactory.getBean(jndiName, element.lookupType);</b>
+&nbsp;            }
+<b class="fc">&nbsp;        } else if (this.resourceFactory == null) {</b>
+&nbsp;            throw new NoSuchBeanDefinitionException(element.lookupType, &quot;No resource factory configured - specify the &#39;resourceFactory&#39; property&quot;);
+&nbsp;        } else {
+<b class="nc">&nbsp;            return this.autowireResource(this.resourceFactory, element, requestingBeanName);</b>
+&nbsp;        }
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected Object autowireResource(BeanFactory factory, LookupElement element, @Nullable String requestingBeanName) throws NoSuchBeanDefinitionException {
+&nbsp;        String name = element.name;
+&nbsp;        Object resource;
+&nbsp;        Set&lt;String&gt; autowiredBeanNames;
+&nbsp;        if (factory instanceof AutowireCapableBeanFactory autowireCapableBeanFactory) {
+&nbsp;            if (this.fallbackToDefaultTypeMatch &amp;&amp; element.isDefaultName &amp;&amp; !factory.containsBean(name)) {
+&nbsp;                autowiredBeanNames = new LinkedHashSet();
+&nbsp;                resource = autowireCapableBeanFactory.resolveDependency(element.getDependencyDescriptor(), requestingBeanName, autowiredBeanNames, (TypeConverter)null);
+&nbsp;                if (resource == null) {
+&nbsp;                    throw new NoSuchBeanDefinitionException(element.getLookupType(), &quot;No resolvable resource object&quot;);
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                resource = autowireCapableBeanFactory.resolveBeanByName(name, element.getDependencyDescriptor());
+<b class="nc">&nbsp;                autowiredBeanNames = Collections.singleton(name);</b>
+&nbsp;            }
+&nbsp;        } else {
+&nbsp;            resource = factory.getBean(name, element.lookupType);
+&nbsp;            autowiredBeanNames = Collections.singleton(name);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        if (factory instanceof ConfigurableBeanFactory configurableBeanFactory) {
+&nbsp;            for(String autowiredBeanName : autowiredBeanNames) {
+&nbsp;                if (requestingBeanName != null &amp;&amp; configurableBeanFactory.containsBean(autowiredBeanName)) {
+&nbsp;                    configurableBeanFactory.registerDependentBean(autowiredBeanName, requestingBeanName);
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+<b class="pc">&nbsp;</b>
+&nbsp;        return resource;
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    @Nullable</b>
+<b class="fc">&nbsp;    private static Class&lt;? extends Annotation&gt; loadAnnotationType(String name) {</b>
+<b class="pc">&nbsp;        try {</b>
+<b class="pc">&nbsp;            return ClassUtils.forName(name, CommonAnnotationBeanPostProcessor.class.getClassLoader());</b>
+<b class="nc">&nbsp;        } catch (ClassNotFoundException var2) {</b>
+&nbsp;            return null;
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+<b class="fc">&nbsp;    static {</b>
+&nbsp;        if (jakartaResourceType != null) {
+<b class="fc">&nbsp;            resourceAnnotationTypes.add(jakartaResourceType);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        javaxResourceType = loadAnnotationType(&quot;javax.annotation.Resource&quot;);
+<b class="pc">&nbsp;        if (javaxResourceType != null) {</b>
+<b class="nc">&nbsp;            resourceAnnotationTypes.add(javaxResourceType);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        ejbAnnotationType = loadAnnotationType(&quot;jakarta.ejb.EJB&quot;);</b>
+<b class="fc">&nbsp;        if (ejbAnnotationType != null) {</b>
+&nbsp;            resourceAnnotationTypes.add(ejbAnnotationType);
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="pc">&nbsp;    protected abstract static class LookupElement extends InjectionMetadata.InjectedElement {</b>
+<b class="nc">&nbsp;        protected String name = &quot;&quot;;</b>
+<b class="nc">&nbsp;        protected boolean isDefaultName = false;</b>
+&nbsp;        protected Class&lt;?&gt; lookupType = Object.class;
+<b class="nc">&nbsp;        @Nullable</b>
+&nbsp;        protected String mappedName;
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;        public LookupElement(Member member, @Nullable PropertyDescriptor pd) {</b>
+<b class="nc">&nbsp;            super(member, pd);</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        public final String getName() {</b>
+&nbsp;            return this.name;
+&nbsp;        }
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;        public final Class&lt;?&gt; getLookupType() {</b>
+<b class="nc">&nbsp;            return this.lookupType;</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        public final DependencyDescriptor getDependencyDescriptor() {</b>
+&nbsp;            return this.isField ? new ResourceElementResolver.LookupDependencyDescriptor((Field)this.member, this.lookupType, this.isLazyLookup()) : new ResourceElementResolver.LookupDependencyDescriptor((Method)this.member, this.lookupType, this.isLazyLookup());
+&nbsp;        }
+&nbsp;
+&nbsp;        boolean isLazyLookup() {
+<b class="fc">&nbsp;            return false;</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private class ResourceElement extends LookupElement {
+<b class="pc">&nbsp;        private final boolean lazyLookup;</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        public ResourceElement(Member member, AnnotatedElement ae, @Nullable PropertyDescriptor pd) {</b>
+<b class="nc">&nbsp;            super(member, pd);</b>
+&nbsp;            Resource resource = (Resource)ae.getAnnotation(Resource.class);
+<b class="nc">&nbsp;            String resourceName = resource.name();</b>
+<b class="nc">&nbsp;            Class&lt;?&gt; resourceType = resource.type();</b>
+&nbsp;            this.isDefaultName = !StringUtils.hasLength(resourceName);
+<b class="nc">&nbsp;            if (this.isDefaultName) {</b>
+<b class="nc">&nbsp;                resourceName = this.member.getName();</b>
+&nbsp;                if (this.member instanceof Method &amp;&amp; resourceName.startsWith(&quot;set&quot;) &amp;&amp; resourceName.length() &gt; 3) {
+&nbsp;                    resourceName = StringUtils.uncapitalizeAsProperty(resourceName.substring(3));
+<b class="pc">&nbsp;                }</b>
+<b class="nc">&nbsp;            } else if (CommonAnnotationBeanPostProcessor.this.embeddedValueResolver != null) {</b>
+<b class="nc">&nbsp;                resourceName = CommonAnnotationBeanPostProcessor.this.embeddedValueResolver.resolveStringValue(resourceName);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            if (Object.class != resourceType) {</b>
+<b class="nc">&nbsp;                this.checkResourceType(resourceType);</b>
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                resourceType = this.getResourceType();
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            this.name = resourceName != null ? resourceName : &quot;&quot;;</b>
+&nbsp;            this.lookupType = resourceType;
+&nbsp;            String lookupValue = resource.lookup();
+&nbsp;            this.mappedName = StringUtils.hasLength(lookupValue) ? lookupValue : resource.mappedName();
+<b class="pc">&nbsp;            Lazy lazy = (Lazy)ae.getAnnotation(Lazy.class);</b>
+<b class="nc">&nbsp;            this.lazyLookup = lazy != null &amp;&amp; lazy.value();</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        protected Object getResourceToInject(Object target, @Nullable String requestingBeanName) {
+<b class="nc">&nbsp;            return this.lazyLookup ? CommonAnnotationBeanPostProcessor.this.buildLazyResourceProxy(this, requestingBeanName) : CommonAnnotationBeanPostProcessor.this.getResource(this, requestingBeanName);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        boolean isLazyLookup() {
+<b class="nc">&nbsp;            return this.lazyLookup;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private class LegacyResourceElement extends LookupElement {
+&nbsp;        private final boolean lazyLookup;
+&nbsp;
+&nbsp;        public LegacyResourceElement(Member member, AnnotatedElement ae, @Nullable PropertyDescriptor pd) {
+<b class="fc">&nbsp;            super(member, pd);</b>
+<b class="fc">&nbsp;            javax.annotation.Resource resource = (javax.annotation.Resource)ae.getAnnotation(javax.annotation.Resource.class);</b>
+&nbsp;            String resourceName = resource.name();
+<b class="pc">&nbsp;            Class&lt;?&gt; resourceType = resource.type();</b>
+&nbsp;            this.isDefaultName = !StringUtils.hasLength(resourceName);
+<b class="fc">&nbsp;            if (this.isDefaultName) {</b>
+&nbsp;                resourceName = this.member.getName();
+&nbsp;                if (this.member instanceof Method &amp;&amp; resourceName.startsWith(&quot;set&quot;) &amp;&amp; resourceName.length() &gt; 3) {
+&nbsp;                    resourceName = StringUtils.uncapitalizeAsProperty(resourceName.substring(3));
+&nbsp;                }
+&nbsp;            } else if (CommonAnnotationBeanPostProcessor.this.embeddedValueResolver != null) {
+&nbsp;                resourceName = CommonAnnotationBeanPostProcessor.this.embeddedValueResolver.resolveStringValue(resourceName);
+&nbsp;            }
+&nbsp;
+&nbsp;            if (Object.class != resourceType) {
+&nbsp;                this.checkResourceType(resourceType);
+&nbsp;            } else {
+&nbsp;                resourceType = this.getResourceType();
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            this.name = resourceName != null ? resourceName : &quot;&quot;;
+&nbsp;            this.lookupType = resourceType;
+&nbsp;            String lookupValue = resource.lookup();
+&nbsp;            this.mappedName = StringUtils.hasLength(lookupValue) ? lookupValue : resource.mappedName();
+&nbsp;            Lazy lazy = (Lazy)ae.getAnnotation(Lazy.class);
+&nbsp;            this.lazyLookup = lazy != null &amp;&amp; lazy.value();
+&nbsp;        }
+&nbsp;
+&nbsp;        protected Object getResourceToInject(Object target, @Nullable String requestingBeanName) {
+&nbsp;            return this.lazyLookup ? CommonAnnotationBeanPostProcessor.this.buildLazyResourceProxy(this, requestingBeanName) : CommonAnnotationBeanPostProcessor.this.getResource(this, requestingBeanName);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        boolean isLazyLookup() {</b>
+<b class="nc">&nbsp;            return this.lazyLookup;</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private class EjbRefElement extends LookupElement {</b>
+&nbsp;        private final String beanName;
+&nbsp;
+&nbsp;        public EjbRefElement(Member member, AnnotatedElement ae, @Nullable PropertyDescriptor pd) {
+&nbsp;            super(member, pd);
+&nbsp;            EJB resource = (EJB)ae.getAnnotation(EJB.class);
+&nbsp;            String resourceBeanName = resource.beanName();
+&nbsp;            String resourceName = resource.name();
+&nbsp;            this.isDefaultName = !StringUtils.hasLength(resourceName);
+&nbsp;            if (this.isDefaultName) {
+&nbsp;                resourceName = this.member.getName();
+&nbsp;                if (this.member instanceof Method &amp;&amp; resourceName.startsWith(&quot;set&quot;) &amp;&amp; resourceName.length() &gt; 3) {
+&nbsp;                    resourceName = StringUtils.uncapitalizeAsProperty(resourceName.substring(3));
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            Class&lt;?&gt; resourceType = resource.beanInterface();</b>
+&nbsp;            if (Object.class != resourceType) {
+<b class="nc">&nbsp;                this.checkResourceType(resourceType);</b>
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                resourceType = this.getResourceType();
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            this.beanName = resourceBeanName;</b>
+&nbsp;            this.name = resourceName;
+&nbsp;            this.lookupType = resourceType;
+<b class="nc">&nbsp;            this.mappedName = resource.mappedName();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        protected Object getResourceToInject(Object target, @Nullable String requestingBeanName) {
+<b class="nc">&nbsp;            if (StringUtils.hasLength(this.beanName)) {</b>
+<b class="nc">&nbsp;                if (CommonAnnotationBeanPostProcessor.this.beanFactory != null &amp;&amp; CommonAnnotationBeanPostProcessor.this.beanFactory.containsBean(this.beanName)) {</b>
+&nbsp;                    Object bean = CommonAnnotationBeanPostProcessor.this.beanFactory.getBean(this.beanName, this.lookupType);
+&nbsp;                    if (requestingBeanName != null) {
+<b class="nc">&nbsp;                        BeanFactory var5 = CommonAnnotationBeanPostProcessor.this.beanFactory;</b>
+&nbsp;                        if (var5 instanceof ConfigurableBeanFactory) {
+&nbsp;                            ConfigurableBeanFactory configurableBeanFactory = (ConfigurableBeanFactory)var5;
+&nbsp;                            configurableBeanFactory.registerDependentBean(this.beanName, requestingBeanName);
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+&nbsp;                    return bean;
+&nbsp;                }
+&nbsp;
+&nbsp;                if (this.isDefaultName &amp;&amp; !StringUtils.hasLength(this.mappedName)) {
+&nbsp;                    throw new NoSuchBeanDefinitionException(this.beanName, &quot;Cannot resolve &#39;beanName&#39; in local BeanFactory. Consider specifying a general &#39;name&#39; value instead.&quot;);
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            return CommonAnnotationBeanPostProcessor.this.getResource(this, requestingBeanName);
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private static class AotContribution implements BeanRegistrationAotContribution {</b>
+<b class="nc">&nbsp;        private static final String REGISTERED_BEAN_PARAMETER = &quot;registeredBean&quot;;</b>
+<b class="nc">&nbsp;        private static final String INSTANCE_PARAMETER = &quot;instance&quot;;</b>
+<b class="nc">&nbsp;        private final Class&lt;?&gt; target;</b>
+<b class="nc">&nbsp;        private final Collection&lt;LookupElement&gt; lookupElements;</b>
+<b class="nc">&nbsp;        @Nullable</b>
+<b class="nc">&nbsp;        private final AutowireCandidateResolver candidateResolver;</b>
+&nbsp;
+&nbsp;        AotContribution(Class&lt;?&gt; target, Collection&lt;LookupElement&gt; lookupElements, @Nullable AutowireCandidateResolver candidateResolver) {
+&nbsp;            this.target = target;
+<b class="nc">&nbsp;            this.lookupElements = lookupElements;</b>
+<b class="nc">&nbsp;            this.candidateResolver = candidateResolver;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void applyTo(GenerationContext generationContext, BeanRegistrationCode beanRegistrationCode) {
+<b class="nc">&nbsp;            GeneratedClass generatedClass = generationContext.getGeneratedClasses().addForFeatureComponent(&quot;ResourceAutowiring&quot;, this.target, (type) -&gt; {</b>
+<b class="nc">&nbsp;                type.addJavadoc(&quot;Resource autowiring for {@link $T}.&quot;, new Object[]{this.target});</b>
+&nbsp;                type.addModifiers(new javax.lang.model.element.Modifier[]{javax.lang.model.element.Modifier.PUBLIC});
+&nbsp;            });
+<b class="nc">&nbsp;            GeneratedMethod generateMethod = generatedClass.getMethods().add(&quot;apply&quot;, (method) -&gt; {</b>
+<b class="nc">&nbsp;                method.addJavadoc(&quot;Apply resource autowiring.&quot;, new Object[0]);</b>
+<b class="nc">&nbsp;                method.addModifiers(new javax.lang.model.element.Modifier[]{javax.lang.model.element.Modifier.PUBLIC, javax.lang.model.element.Modifier.STATIC});</b>
+<b class="nc">&nbsp;                method.addParameter(RegisteredBean.class, &quot;registeredBean&quot;, new javax.lang.model.element.Modifier[0]);</b>
+&nbsp;                method.addParameter(this.target, &quot;instance&quot;, new javax.lang.model.element.Modifier[0]);
+&nbsp;                method.returns(this.target);
+&nbsp;                method.addCode(this.generateMethodCode(generatedClass.getName(), generationContext.getRuntimeHints()));
+&nbsp;            });
+<b class="nc">&nbsp;            beanRegistrationCode.addInstancePostProcessor(generateMethod.toMethodReference());</b>
+&nbsp;            this.registerHints(generationContext.getRuntimeHints());
+&nbsp;        }
+&nbsp;
+&nbsp;        private CodeBlock generateMethodCode(ClassName targetClassName, RuntimeHints hints) {
+&nbsp;            CodeBlock.Builder code = CodeBlock.builder();
+&nbsp;
+&nbsp;            for(LookupElement lookupElement : this.lookupElements) {
+<b class="fc">&nbsp;                code.addStatement(this.generateMethodStatementForElement(targetClassName, lookupElement, hints));</b>
+<b class="fc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            code.addStatement(&quot;return $L&quot;, new Object[]{&quot;instance&quot;});
+<b class="fc">&nbsp;            return code.build();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        private CodeBlock generateMethodStatementForElement(ClassName targetClassName, LookupElement lookupElement, RuntimeHints hints) {
+&nbsp;            Member member = lookupElement.getMember();
+&nbsp;            if (member instanceof Field field) {
+&nbsp;                return this.generateMethodStatementForField(targetClassName, field, lookupElement, hints);
+&nbsp;            } else if (member instanceof Method method) {
+&nbsp;                return this.generateMethodStatementForMethod(targetClassName, method, lookupElement, hints);
+&nbsp;            } else {
+&nbsp;                throw new IllegalStateException(&quot;Unsupported member type &quot; + member.getClass().getName());
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        private CodeBlock generateMethodStatementForField(ClassName targetClassName, Field field, LookupElement lookupElement, RuntimeHints hints) {
+&nbsp;            hints.reflection().registerField(field);
+&nbsp;            CodeBlock resolver = this.generateFieldResolverCode(field, lookupElement);
+&nbsp;            AccessControl accessControl = AccessControl.forMember(field);
+&nbsp;            return !accessControl.isAccessibleFrom(targetClassName) ? CodeBlock.of(&quot;$L.resolveAndSet($L, $L)&quot;, new Object[]{resolver, &quot;registeredBean&quot;, &quot;instance&quot;}) : CodeBlock.of(&quot;$L.$L = $L.resolve($L)&quot;, new Object[]{&quot;instance&quot;, field.getName(), resolver, &quot;registeredBean&quot;});
+&nbsp;        }
+&nbsp;
+&nbsp;        private CodeBlock generateFieldResolverCode(Field field, LookupElement lookupElement) {
+&nbsp;            return lookupElement.isDefaultName ? CodeBlock.of(&quot;$T.$L($S)&quot;, new Object[]{ResourceElementResolver.class, &quot;forField&quot;, field.getName()}) : CodeBlock.of(&quot;$T.$L($S, $S)&quot;, new Object[]{ResourceElementResolver.class, &quot;forField&quot;, field.getName(), lookupElement.getName()});
+&nbsp;        }
+&nbsp;
+&nbsp;        private CodeBlock generateMethodStatementForMethod(ClassName targetClassName, Method method, LookupElement lookupElement, RuntimeHints hints) {
+&nbsp;            CodeBlock resolver = this.generateMethodResolverCode(method, lookupElement);
+&nbsp;            AccessControl accessControl = AccessControl.forMember(method);
+&nbsp;            if (!accessControl.isAccessibleFrom(targetClassName)) {
+&nbsp;                hints.reflection().registerMethod(method, ExecutableMode.INVOKE);
+&nbsp;                return CodeBlock.of(&quot;$L.resolveAndSet($L, $L)&quot;, new Object[]{resolver, &quot;registeredBean&quot;, &quot;instance&quot;});
+&nbsp;            } else {
+&nbsp;                hints.reflection().registerMethod(method, ExecutableMode.INTROSPECT);
+&nbsp;                return CodeBlock.of(&quot;$L.$L($L.resolve($L))&quot;, new Object[]{&quot;instance&quot;, method.getName(), resolver, &quot;registeredBean&quot;});
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        private CodeBlock generateMethodResolverCode(Method method, LookupElement lookupElement) {
+&nbsp;            return lookupElement.isDefaultName ? CodeBlock.of(&quot;$T.$L($S, $T.class)&quot;, new Object[]{ResourceElementResolver.class, &quot;forMethod&quot;, method.getName(), lookupElement.getLookupType()}) : CodeBlock.of(&quot;$T.$L($S, $T.class, $S)&quot;, new Object[]{ResourceElementResolver.class, &quot;forMethod&quot;, method.getName(), lookupElement.getLookupType(), lookupElement.getName()});
+&nbsp;        }
+&nbsp;
+&nbsp;        private void registerHints(RuntimeHints runtimeHints) {
+&nbsp;            this.lookupElements.forEach((lookupElement) -&gt; this.registerProxyIfNecessary(runtimeHints, lookupElement.getDependencyDescriptor()));
+&nbsp;        }
+&nbsp;
+&nbsp;        private void registerProxyIfNecessary(RuntimeHints runtimeHints, DependencyDescriptor dependencyDescriptor) {
+&nbsp;            if (this.candidateResolver != null) {
+&nbsp;                Class&lt;?&gt; proxyClass = this.candidateResolver.getLazyResolutionProxyClass(dependencyDescriptor, (String)null);
+&nbsp;                if (proxyClass != null) {
+&nbsp;                    ClassHintUtils.registerProxyIfNecessary(proxyClass, runtimeHints);
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
+</div>
+</body>
+</html>

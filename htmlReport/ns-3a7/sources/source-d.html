@@ -1,0 +1,498 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > MethodReference</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.expression.spel.ast</a>
+</div>
+
+<h1>Coverage Summary for Class: MethodReference (org.springframework.expression.spel.ast)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MethodReference</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/17)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/100)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/133)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.expression.spel.ast;
+&nbsp;
+&nbsp;import java.lang.reflect.InvocationTargetException;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;import java.lang.reflect.Modifier;
+&nbsp;import java.lang.reflect.Proxy;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.List;
+&nbsp;import java.util.StringJoiner;
+&nbsp;import org.springframework.asm.Label;
+&nbsp;import org.springframework.asm.MethodVisitor;
+&nbsp;import org.springframework.core.convert.TypeDescriptor;
+&nbsp;import org.springframework.expression.AccessException;
+&nbsp;import org.springframework.expression.EvaluationContext;
+&nbsp;import org.springframework.expression.EvaluationException;
+&nbsp;import org.springframework.expression.ExpressionInvocationTargetException;
+&nbsp;import org.springframework.expression.MethodExecutor;
+&nbsp;import org.springframework.expression.MethodResolver;
+&nbsp;import org.springframework.expression.TypedValue;
+&nbsp;import org.springframework.expression.spel.CodeFlow;
+&nbsp;import org.springframework.expression.spel.ExpressionState;
+&nbsp;import org.springframework.expression.spel.SpelEvaluationException;
+&nbsp;import org.springframework.expression.spel.SpelMessage;
+&nbsp;import org.springframework.expression.spel.ast.ValueRef.NullValueRef;
+&nbsp;import org.springframework.expression.spel.support.ReflectiveMethodExecutor;
+&nbsp;import org.springframework.expression.spel.support.ReflectiveMethodResolver;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.ObjectUtils;
+&nbsp;
+&nbsp;public class MethodReference extends SpelNodeImpl {
+&nbsp;    private final boolean nullSafe;
+&nbsp;    private final String name;
+&nbsp;    @Nullable
+&nbsp;    private Character originalPrimitiveExitTypeDescriptor;
+&nbsp;    @Nullable
+&nbsp;    private volatile CachedMethodExecutor cachedExecutor;
+&nbsp;
+&nbsp;    public MethodReference(boolean nullSafe, String methodName, int startPos, int endPos, SpelNodeImpl... arguments) {
+&nbsp;        super(startPos, endPos, arguments);
+&nbsp;        this.name = methodName;
+&nbsp;        this.nullSafe = nullSafe;
+&nbsp;    }
+&nbsp;
+&nbsp;    public final boolean isNullSafe() {
+&nbsp;        return this.nullSafe;
+&nbsp;    }
+&nbsp;
+&nbsp;    public final String getName() {
+&nbsp;        return this.name;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected ValueRef getValueRef(ExpressionState state) throws EvaluationException {
+&nbsp;        Object[] arguments = this.getArguments(state);
+&nbsp;        if (state.getActiveContextObject().getValue() == null) {
+&nbsp;            this.throwIfNotNullSafe(this.getArgumentTypes(arguments));
+&nbsp;            return NullValueRef.INSTANCE;
+&nbsp;        } else {
+&nbsp;            return new MethodValueRef(state, arguments);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public TypedValue getValueInternal(ExpressionState state) throws EvaluationException {
+<b class="nc">&nbsp;        EvaluationContext evaluationContext = state.getEvaluationContext();</b>
+<b class="nc">&nbsp;        Object value = state.getActiveContextObject().getValue();</b>
+<b class="nc">&nbsp;        TypeDescriptor targetType = state.getActiveContextObject().getTypeDescriptor();</b>
+&nbsp;        Object[] arguments = this.getArguments(state);
+&nbsp;        TypedValue result = this.getValueInternal(evaluationContext, value, targetType, arguments);
+&nbsp;        this.updateExitTypeDescriptor();
+&nbsp;        return result;
+&nbsp;    }
+&nbsp;
+&nbsp;    private TypedValue getValueInternal(EvaluationContext evaluationContext, @Nullable Object value, @Nullable TypeDescriptor targetType, Object[] arguments) {
+&nbsp;        List&lt;TypeDescriptor&gt; argumentTypes = this.getArgumentTypes(arguments);
+&nbsp;        if (value == null) {
+<b class="nc">&nbsp;            this.throwIfNotNullSafe(argumentTypes);</b>
+&nbsp;            return TypedValue.NULL;
+&nbsp;        } else {
+&nbsp;            MethodExecutor executorToUse = this.getCachedExecutor(evaluationContext, value, targetType, argumentTypes);
+&nbsp;            if (executorToUse != null) {
+&nbsp;                try {
+&nbsp;                    return executorToUse.execute(evaluationContext, value, arguments);
+<b class="nc">&nbsp;                } catch (AccessException ex) {</b>
+&nbsp;                    this.throwSimpleExceptionIfPossible(value, ex);
+&nbsp;                    this.cachedExecutor = null;
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            executorToUse = this.findAccessorForMethod(argumentTypes, value, evaluationContext);</b>
+<b class="nc">&nbsp;            CachedMethodExecutor var10001 = new CachedMethodExecutor;</b>
+<b class="nc">&nbsp;            Class var10004;</b>
+&nbsp;            if (value instanceof Class) {
+<b class="nc">&nbsp;                Class&lt;?&gt; clazz = (Class)value;</b>
+&nbsp;                var10004 = clazz;
+&nbsp;            } else {
+&nbsp;                var10004 = null;
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            var10001.&lt;init&gt;(executorToUse, var10004, targetType, argumentTypes);</b>
+<b class="nc">&nbsp;            this.cachedExecutor = var10001;</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            try {</b>
+<b class="nc">&nbsp;                return executorToUse.execute(evaluationContext, value, arguments);</b>
+<b class="nc">&nbsp;            } catch (AccessException ex) {</b>
+&nbsp;                this.throwSimpleExceptionIfPossible(value, ex);
+&nbsp;                throw new SpelEvaluationException(this.getStartPosition(), ex, SpelMessage.EXCEPTION_DURING_METHOD_INVOCATION, new Object[]{this.name, value.getClass().getName(), ex.getMessage()});
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private void throwIfNotNullSafe(List&lt;TypeDescriptor&gt; argumentTypes) {</b>
+<b class="nc">&nbsp;        if (!this.nullSafe) {</b>
+<b class="nc">&nbsp;            throw new SpelEvaluationException(this.getStartPosition(), SpelMessage.METHOD_CALL_ON_NULL_OBJECT_NOT_ALLOWED, new Object[]{FormatHelper.formatMethodForMessage(this.name, argumentTypes)});</b>
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private Object[] getArguments(ExpressionState state) {</b>
+&nbsp;        Object[] arguments = new Object[this.getChildCount()];
+<b class="nc">&nbsp;</b>
+&nbsp;        for(int i = 0; i &lt; arguments.length; ++i) {
+&nbsp;            try {
+&nbsp;                state.pushActiveContextObject(state.getScopeRootContextObject());
+&nbsp;                arguments[i] = this.children[i].getValueInternal(state).getValue();
+&nbsp;            } finally {
+&nbsp;                state.popActiveContextObject();
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return arguments;
+&nbsp;    }
+&nbsp;
+&nbsp;    private List&lt;TypeDescriptor&gt; getArgumentTypes(Object... arguments) {
+<b class="nc">&nbsp;        List&lt;TypeDescriptor&gt; descriptors = new ArrayList(arguments.length);</b>
+&nbsp;
+&nbsp;        for(Object argument : arguments) {
+&nbsp;            descriptors.add(TypeDescriptor.forObject(argument));
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return Collections.unmodifiableList(descriptors);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    @Nullable</b>
+<b class="nc">&nbsp;    private MethodExecutor getCachedExecutor(EvaluationContext evaluationContext, Object value, @Nullable TypeDescriptor target, List&lt;TypeDescriptor&gt; argumentTypes) {</b>
+<b class="nc">&nbsp;        List&lt;MethodResolver&gt; methodResolvers = evaluationContext.getMethodResolvers();</b>
+&nbsp;        if (methodResolvers.size() == 1 &amp;&amp; methodResolvers.get(0) instanceof ReflectiveMethodResolver) {
+<b class="nc">&nbsp;            CachedMethodExecutor executorToCheck = this.cachedExecutor;</b>
+&nbsp;            if (executorToCheck != null &amp;&amp; executorToCheck.isSuitable(value, target, argumentTypes)) {
+&nbsp;                return executorToCheck.get();
+&nbsp;            } else {
+<b class="nc">&nbsp;                this.cachedExecutor = null;</b>
+<b class="nc">&nbsp;                return null;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            return null;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private MethodExecutor findAccessorForMethod(List&lt;TypeDescriptor&gt; argumentTypes, Object targetObject, EvaluationContext evaluationContext) throws SpelEvaluationException {</b>
+<b class="nc">&nbsp;        AccessException accessException = null;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(MethodResolver methodResolver : evaluationContext.getMethodResolvers()) {</b>
+&nbsp;            try {
+&nbsp;                MethodExecutor methodExecutor = methodResolver.resolve(evaluationContext, targetObject, this.name, argumentTypes);
+&nbsp;                if (methodExecutor != null) {
+&nbsp;                    return methodExecutor;
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            } catch (AccessException ex) {</b>
+&nbsp;                accessException = ex;
+&nbsp;                break;
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        String method = FormatHelper.formatMethodForMessage(this.name, argumentTypes);
+<b class="nc">&nbsp;        Class var10000;</b>
+&nbsp;        if (targetObject instanceof Class&lt;?&gt; clazz) {
+&nbsp;            var10000 = clazz;
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            var10000 = targetObject.getClass();
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        String className = FormatHelper.formatClassNameForMessage(var10000);</b>
+<b class="nc">&nbsp;        if (accessException != null) {</b>
+<b class="nc">&nbsp;            throw new SpelEvaluationException(this.getStartPosition(), accessException, SpelMessage.PROBLEM_LOCATING_METHOD, new Object[]{method, className});</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            throw new SpelEvaluationException(this.getStartPosition(), SpelMessage.METHOD_NOT_FOUND, new Object[]{method, className});</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void throwSimpleExceptionIfPossible(Object value, AccessException ex) {
+&nbsp;        Throwable rootCause = ex.getCause();
+&nbsp;        if (rootCause instanceof InvocationTargetException cause) {
+<b class="nc">&nbsp;            rootCause = cause.getCause();</b>
+<b class="nc">&nbsp;            if (rootCause instanceof RuntimeException runtimeException) {</b>
+&nbsp;                throw runtimeException;
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                throw new ExpressionInvocationTargetException(this.getStartPosition(), &quot;A problem occurred when trying to execute method &#39;&quot; + this.name + &quot;&#39; on object of type [&quot; + value.getClass().getName() + &quot;]&quot;, rootCause);
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private void updateExitTypeDescriptor() {
+<b class="nc">&nbsp;        CachedMethodExecutor executorToCheck = this.cachedExecutor;</b>
+<b class="nc">&nbsp;        if (executorToCheck != null) {</b>
+&nbsp;            MethodExecutor method = executorToCheck.get();
+&nbsp;            if (method instanceof ReflectiveMethodExecutor) {
+&nbsp;                ReflectiveMethodExecutor reflectiveMethodExecutor = (ReflectiveMethodExecutor)method;
+&nbsp;                Method method = reflectiveMethodExecutor.getMethod();
+&nbsp;                String descriptor = CodeFlow.toDescriptor(method.getReturnType());
+<b class="nc">&nbsp;                if (this.nullSafe &amp;&amp; CodeFlow.isPrimitive(descriptor) &amp;&amp; descriptor.charAt(0) != &#39;V&#39;) {</b>
+<b class="nc">&nbsp;                    this.originalPrimitiveExitTypeDescriptor = descriptor.charAt(0);</b>
+&nbsp;                    this.exitTypeDescriptor = CodeFlow.toBoxedDescriptor(descriptor);
+<b class="nc">&nbsp;                } else {</b>
+&nbsp;                    this.exitTypeDescriptor = descriptor;
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public String toStringAST() {
+&nbsp;        StringJoiner sj = new StringJoiner(&quot;,&quot;, &quot;(&quot;, &quot;)&quot;);
+&nbsp;
+&nbsp;        for(int i = 0; i &lt; this.getChildCount(); ++i) {
+<b class="nc">&nbsp;            sj.add(this.getChild(i).toStringAST());</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        String var10000 = this.name;</b>
+<b class="nc">&nbsp;        return var10000 + String.valueOf(sj);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public boolean isCompilable() {
+<b class="nc">&nbsp;        CachedMethodExecutor executorToCheck = this.cachedExecutor;</b>
+&nbsp;        if (executorToCheck != null &amp;&amp; !executorToCheck.hasProxyTarget()) {
+&nbsp;            MethodExecutor method = executorToCheck.get();
+&nbsp;            if (method instanceof ReflectiveMethodExecutor) {
+&nbsp;                ReflectiveMethodExecutor executor = (ReflectiveMethodExecutor)method;
+&nbsp;
+&nbsp;                for(SpelNodeImpl child : this.children) {
+&nbsp;                    if (!child.isCompilable()) {
+&nbsp;                        return false;
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                if (executor.didArgumentConversionOccur()) {
+&nbsp;                    return false;
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="nc">&nbsp;                Method method = executor.getMethod();</b>
+&nbsp;                return Modifier.isPublic(method.getModifiers()) &amp;&amp; executor.getPublicDeclaringClass() != null;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return false;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void generateCode(MethodVisitor mv, CodeFlow cf) {</b>
+<b class="nc">&nbsp;        CachedMethodExecutor executorToCheck = this.cachedExecutor;</b>
+<b class="nc">&nbsp;        if (executorToCheck != null) {</b>
+<b class="nc">&nbsp;            MethodExecutor method = executorToCheck.get();</b>
+&nbsp;            if (method instanceof ReflectiveMethodExecutor) {
+&nbsp;                ReflectiveMethodExecutor methodExecutor = (ReflectiveMethodExecutor)method;
+<b class="nc">&nbsp;                Method var13 = methodExecutor.getMethod();</b>
+&nbsp;                Class&lt;?&gt; publicDeclaringClass = methodExecutor.getPublicDeclaringClass();
+&nbsp;                Assert.state(publicDeclaringClass != null, () -&gt; &quot;Failed to find public declaring class for method: &quot; + String.valueOf(var13));
+&nbsp;                String classDesc = publicDeclaringClass.getName().replace(&#39;.&#39;, &#39;/&#39;);
+&nbsp;                boolean isStatic = Modifier.isStatic(var13.getModifiers());
+&nbsp;                String descriptor = cf.lastDescriptor();
+&nbsp;                if (descriptor == null &amp;&amp; !isStatic) {
+<b class="nc">&nbsp;                    cf.loadTarget(mv);</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                Label skipIfNull = null;
+<b class="nc">&nbsp;                if (this.nullSafe &amp;&amp; (descriptor != null || !isStatic)) {</b>
+&nbsp;                    skipIfNull = new Label();
+&nbsp;                    Label continueLabel = new Label();
+&nbsp;                    mv.visitInsn(89);
+&nbsp;                    mv.visitJumpInsn(199, continueLabel);
+&nbsp;                    CodeFlow.insertCheckCast(mv, this.exitTypeDescriptor);
+&nbsp;                    mv.visitJumpInsn(167, skipIfNull);
+&nbsp;                    mv.visitLabel(continueLabel);
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                if (descriptor != null &amp;&amp; isStatic) {</b>
+<b class="nc">&nbsp;                    mv.visitInsn(87);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                if (CodeFlow.isPrimitive(descriptor)) {
+<b class="nc">&nbsp;                    CodeFlow.insertBoxIfNecessary(mv, descriptor.charAt(0));</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                if (!isStatic &amp;&amp; (descriptor == null || !descriptor.substring(1).equals(classDesc))) {
+&nbsp;                    CodeFlow.insertCheckCast(mv, &quot;L&quot; + classDesc);
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                generateCodeForArguments(mv, cf, var13, this.children);
+&nbsp;                boolean isInterface = publicDeclaringClass.isInterface();
+<b class="nc">&nbsp;                int opcode = isStatic ? 184 : (isInterface ? 185 : 182);</b>
+<b class="nc">&nbsp;                mv.visitMethodInsn(opcode, classDesc, var13.getName(), CodeFlow.createSignatureDescriptor(var13), isInterface);</b>
+&nbsp;                cf.pushDescriptor(this.exitTypeDescriptor);
+&nbsp;                if (this.originalPrimitiveExitTypeDescriptor != null) {
+&nbsp;                    CodeFlow.insertBoxIfNecessary(mv, this.originalPrimitiveExitTypeDescriptor);
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                if (skipIfNull != null) {</b>
+<b class="nc">&nbsp;                    if (&quot;V&quot;.equals(this.exitTypeDescriptor)) {</b>
+&nbsp;                        mv.visitInsn(1);
+<b class="nc">&nbsp;                    }</b>
+&nbsp;
+<b class="nc">&nbsp;                    mv.visitLabel(skipIfNull);</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                return;
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        throw new IllegalStateException(&quot;No applicable cached executor found: &quot; + String.valueOf(executorToCheck));
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private class MethodValueRef implements ValueRef {</b>
+&nbsp;        private final EvaluationContext evaluationContext;
+&nbsp;        @Nullable
+<b class="nc">&nbsp;        private final Object value;</b>
+<b class="nc">&nbsp;        @Nullable</b>
+<b class="nc">&nbsp;        private final TypeDescriptor targetType;</b>
+<b class="nc">&nbsp;        private final Object[] arguments;</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        public MethodValueRef(ExpressionState state, Object[] arguments) {</b>
+<b class="nc">&nbsp;            this.evaluationContext = state.getEvaluationContext();</b>
+<b class="nc">&nbsp;            this.value = state.getActiveContextObject().getValue();</b>
+<b class="nc">&nbsp;            this.targetType = state.getActiveContextObject().getTypeDescriptor();</b>
+&nbsp;            this.arguments = arguments;
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        public TypedValue getValue() {
+&nbsp;            TypedValue result = MethodReference.this.getValueInternal(this.evaluationContext, this.value, this.targetType, this.arguments);
+<b class="nc">&nbsp;            MethodReference.this.updateExitTypeDescriptor();</b>
+&nbsp;            return result;
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        public void setValue(@Nullable Object newValue) {</b>
+&nbsp;            throw new IllegalAccessError();
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        public boolean isWritable() {</b>
+&nbsp;            return false;
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private static class CachedMethodExecutor {</b>
+<b class="nc">&nbsp;        private final MethodExecutor methodExecutor;</b>
+&nbsp;        @Nullable
+<b class="nc">&nbsp;        private final Class&lt;?&gt; staticClass;</b>
+&nbsp;        @Nullable
+<b class="nc">&nbsp;        private final TypeDescriptor target;</b>
+&nbsp;        private final List&lt;TypeDescriptor&gt; argumentTypes;
+&nbsp;
+<b class="nc">&nbsp;        public CachedMethodExecutor(MethodExecutor methodExecutor, @Nullable Class&lt;?&gt; staticClass, @Nullable TypeDescriptor target, List&lt;TypeDescriptor&gt; argumentTypes) {</b>
+&nbsp;            this.methodExecutor = methodExecutor;
+&nbsp;            this.staticClass = staticClass;
+<b class="nc">&nbsp;            this.target = target;</b>
+<b class="nc">&nbsp;            this.argumentTypes = argumentTypes;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        public boolean isSuitable(Object value, @Nullable TypeDescriptor target, List&lt;TypeDescriptor&gt; argumentTypes) {</b>
+&nbsp;            return (this.staticClass == null || this.staticClass == value) &amp;&amp; ObjectUtils.nullSafeEquals(this.target, target) &amp;&amp; this.argumentTypes.equals(argumentTypes);
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        public boolean hasProxyTarget() {
+&nbsp;            return this.target != null &amp;&amp; Proxy.isProxyClass(this.target.getType());
+&nbsp;        }
+&nbsp;
+&nbsp;        public MethodExecutor get() {
+&nbsp;            return this.methodExecutor;
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

@@ -22,5 +22,6 @@ public final class ExceptionConstants {
     public static final String INVALID_NUMBER_OF_ROOMS = "Invalid number of rooms";
     public static final String ADDRESS_NULL_OR_EMPTY = "Address cannot be null or empty.";
     public static final String ADDRESS_ALREADY_EXISTS = "Address already exists.";
+    public static final String INVALID_SORT_BY = "Invalid sort by";
 
 }

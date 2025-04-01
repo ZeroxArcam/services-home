@@ -1,0 +1,299 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > BridgeMethodResolver</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.core</a>
+</div>
+
+<h1>Coverage Summary for Class: BridgeMethodResolver (org.springframework.core)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">BridgeMethodResolver</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    83.3%
+  </span>
+  <span class="absValue">
+    (10/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    56%
+  </span>
+  <span class="absValue">
+    (47/84)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    68.2%
+  </span>
+  <span class="absValue">
+    (60/88)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.core;
+&nbsp;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;import java.lang.reflect.Proxy;
+&nbsp;import java.lang.reflect.Type;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Arrays;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Objects;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.ClassUtils;
+&nbsp;import org.springframework.util.ConcurrentReferenceHashMap;
+&nbsp;import org.springframework.util.ReflectionUtils;
+&nbsp;
+&nbsp;public final class BridgeMethodResolver {
+&nbsp;    private static final Map&lt;Object, Method&gt; cache = new ConcurrentReferenceHashMap();
+&nbsp;
+&nbsp;    private BridgeMethodResolver() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Method findBridgedMethod(Method bridgeMethod) {
+&nbsp;        return resolveBridgeMethod(bridgeMethod, bridgeMethod.getDeclaringClass());
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Method getMostSpecificMethod(Method bridgeMethod, @Nullable Class&lt;?&gt; targetClass) {
+&nbsp;        if (targetClass != null &amp;&amp; !ClassUtils.getUserClass(bridgeMethod.getDeclaringClass()).isAssignableFrom(targetClass) &amp;&amp; !Proxy.isProxyClass(bridgeMethod.getDeclaringClass())) {
+&nbsp;            return bridgeMethod;
+&nbsp;        } else {
+&nbsp;            Method specificMethod = ClassUtils.getMostSpecificMethod(bridgeMethod, targetClass);
+&nbsp;            return resolveBridgeMethod(specificMethod, targetClass != null ? targetClass : specificMethod.getDeclaringClass());
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static Method resolveBridgeMethod(Method bridgeMethod, Class&lt;?&gt; targetClass) {
+&nbsp;        boolean localBridge = targetClass == bridgeMethod.getDeclaringClass();
+&nbsp;        Class&lt;?&gt; userClass = targetClass;
+&nbsp;        if (!bridgeMethod.isBridge() &amp;&amp; localBridge) {
+&nbsp;            userClass = ClassUtils.getUserClass(targetClass);
+&nbsp;            if (userClass == targetClass) {
+&nbsp;                return bridgeMethod;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        Object cacheKey = localBridge ? bridgeMethod : new MethodClassKey(bridgeMethod, targetClass);
+&nbsp;        Method bridgedMethod = (Method)cache.get(cacheKey);
+&nbsp;        if (bridgedMethod == null) {
+&nbsp;            List&lt;Method&gt; candidateMethods = new ArrayList();
+<b class="fc">&nbsp;            ReflectionUtils.MethodFilter filter = (candidateMethod) -&gt; isBridgedCandidateFor(candidateMethod, bridgeMethod);</b>
+&nbsp;            Objects.requireNonNull(candidateMethods);
+&nbsp;            ReflectionUtils.doWithMethods(userClass, candidateMethods::add, filter);
+&nbsp;            if (!candidateMethods.isEmpty()) {
+&nbsp;                bridgedMethod = candidateMethods.size() == 1 ? (Method)candidateMethods.get(0) : searchCandidates(candidateMethods, bridgeMethod);
+&nbsp;            }
+&nbsp;
+&nbsp;            if (bridgedMethod == null) {
+&nbsp;                bridgedMethod = bridgeMethod;
+&nbsp;            }
+&nbsp;
+&nbsp;            cache.put(cacheKey, bridgedMethod);
+&nbsp;        }
+&nbsp;
+&nbsp;        return bridgedMethod;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    private static boolean isBridgedCandidateFor(Method candidateMethod, Method bridgeMethod) {</b>
+&nbsp;        return !candidateMethod.isBridge() &amp;&amp; candidateMethod.getName().equals(bridgeMethod.getName()) &amp;&amp; candidateMethod.getParameterCount() == bridgeMethod.getParameterCount();
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    private static Method searchCandidates(List&lt;Method&gt; candidateMethods, Method bridgeMethod) {
+&nbsp;        if (candidateMethods.isEmpty()) {
+&nbsp;            return null;
+&nbsp;        } else {
+&nbsp;            Method previousMethod = null;
+&nbsp;            boolean sameSig = true;
+&nbsp;
+&nbsp;            for(Method candidateMethod : candidateMethods) {
+&nbsp;                if (isBridgeMethodFor(bridgeMethod, candidateMethod, bridgeMethod.getDeclaringClass())) {
+&nbsp;                    return candidateMethod;
+&nbsp;                }
+&nbsp;
+&nbsp;                if (previousMethod != null) {
+&nbsp;                    sameSig = sameSig &amp;&amp; Arrays.equals(candidateMethod.getGenericParameterTypes(), previousMethod.getGenericParameterTypes());
+<b class="pc">&nbsp;                }</b>
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;                previousMethod = candidateMethod;</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            return sameSig ? (Method)candidateMethods.get(0) : null;
+&nbsp;        }
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="pc">&nbsp;    static boolean isBridgeMethodFor(Method bridgeMethod, Method candidateMethod, Class&lt;?&gt; declaringClass) {</b>
+&nbsp;        if (isResolvedTypeMatch(candidateMethod, bridgeMethod, declaringClass)) {
+&nbsp;            return true;
+&nbsp;        } else {
+<b class="fc">&nbsp;            Method method = findGenericDeclaration(bridgeMethod);</b>
+<b class="fc">&nbsp;            return method != null &amp;&amp; isResolvedTypeMatch(method, candidateMethod, declaringClass);</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;    }</b>
+<b class="pc">&nbsp;</b>
+<b class="fc">&nbsp;    private static boolean isResolvedTypeMatch(Method genericMethod, Method candidateMethod, Class&lt;?&gt; declaringClass) {</b>
+&nbsp;        Type[] genericParameters = genericMethod.getGenericParameterTypes();
+&nbsp;        if (genericParameters.length != candidateMethod.getParameterCount()) {
+&nbsp;            return false;
+<b class="fc">&nbsp;        } else {</b>
+<b class="fc">&nbsp;            Class&lt;?&gt;[] candidateParameters = candidateMethod.getParameterTypes();</b>
+<b class="fc">&nbsp;</b>
+&nbsp;            for(int i = 0; i &lt; candidateParameters.length; ++i) {
+<b class="fc">&nbsp;                ResolvableType genericParameter = ResolvableType.forMethodParameter(genericMethod, i, declaringClass);</b>
+<b class="fc">&nbsp;                Class&lt;?&gt; candidateParameter = candidateParameters[i];</b>
+<b class="fc">&nbsp;                if (candidateParameter.isArray() &amp;&amp; !candidateParameter.componentType().equals(genericParameter.getComponentType().toClass())) {</b>
+<b class="fc">&nbsp;                    return false;</b>
+<b class="fc">&nbsp;                }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;                if (!ClassUtils.resolvePrimitiveIfNecessary(candidateParameter).equals(ClassUtils.resolvePrimitiveIfNecessary(genericParameter.toClass()))) {
+<b class="fc">&nbsp;                    return false;</b>
+&nbsp;                }
+&nbsp;            }
+<b class="fc">&nbsp;</b>
+&nbsp;            return true;
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    @Nullable
+&nbsp;    private static Method findGenericDeclaration(Method bridgeMethod) {
+&nbsp;        if (!bridgeMethod.isBridge()) {
+&nbsp;            return bridgeMethod;
+&nbsp;        } else {
+&nbsp;            for(Class&lt;?&gt; superclass = bridgeMethod.getDeclaringClass().getSuperclass(); superclass != null &amp;&amp; Object.class != superclass; superclass = superclass.getSuperclass()) {
+&nbsp;                Method method = searchForMatch(superclass, bridgeMethod);
+&nbsp;                if (method != null &amp;&amp; !method.isBridge()) {
+&nbsp;                    return method;
+<b class="fc">&nbsp;                }</b>
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;            Class&lt;?&gt;[] interfaces = ClassUtils.getAllInterfacesForClass(bridgeMethod.getDeclaringClass());
+&nbsp;            return searchInterfaces(interfaces, bridgeMethod);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    private static Method searchInterfaces(Class&lt;?&gt;[] interfaces, Method bridgeMethod) {
+&nbsp;        for(Class&lt;?&gt; ifc : interfaces) {
+&nbsp;            Method method = searchForMatch(ifc, bridgeMethod);
+&nbsp;            if (method != null &amp;&amp; !method.isBridge()) {
+<b class="pc">&nbsp;                return method;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="fc">&nbsp;            method = searchInterfaces(ifc.getInterfaces(), bridgeMethod);</b>
+<b class="fc">&nbsp;            if (method != null) {</b>
+<b class="pc">&nbsp;                return method;</b>
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+<b class="pc">&nbsp;        return null;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    @Nullable
+<b class="fc">&nbsp;    private static Method searchForMatch(Class&lt;?&gt; type, Method bridgeMethod) {</b>
+&nbsp;        try {
+<b class="nc">&nbsp;            return type.getDeclaredMethod(bridgeMethod.getName(), bridgeMethod.getParameterTypes());</b>
+&nbsp;        } catch (NoSuchMethodException var3) {
+&nbsp;            return null;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static boolean isVisibilityBridgeMethodPair(Method bridgeMethod, Method bridgedMethod) {
+&nbsp;        if (bridgeMethod == bridgedMethod) {
+<b class="fc">&nbsp;            return true;</b>
+<b class="fc">&nbsp;        } else if (ClassUtils.getUserClass(bridgeMethod.getDeclaringClass()) != bridgeMethod.getDeclaringClass()) {</b>
+&nbsp;            return false;
+<b class="fc">&nbsp;        } else {</b>
+<b class="pc">&nbsp;            return bridgeMethod.getReturnType().equals(bridgedMethod.getReturnType()) &amp;&amp; bridgeMethod.getParameterCount() == bridgedMethod.getParameterCount() &amp;&amp; Arrays.equals(bridgeMethod.getParameterTypes(), bridgedMethod.getParameterTypes());</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
+</div>
+</body>
+</html>

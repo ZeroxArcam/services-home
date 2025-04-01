@@ -1,0 +1,475 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > AbstractSchemaMigrator</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.tool.schema.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: AbstractSchemaMigrator (org.hibernate.tool.schema.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AbstractSchemaMigrator</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    30%
+  </span>
+  <span class="absValue">
+    (6/20)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    9.8%
+  </span>
+  <span class="absValue">
+    (13/132)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    25.3%
+  </span>
+  <span class="absValue">
+    (41/162)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.tool.schema.internal;
+&nbsp;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.HashSet;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.stream.StreamSupport;
+&nbsp;import org.hibernate.boot.Metadata;
+&nbsp;import org.hibernate.boot.model.naming.Identifier;
+&nbsp;import org.hibernate.boot.model.relational.AuxiliaryDatabaseObject;
+&nbsp;import org.hibernate.boot.model.relational.Database;
+&nbsp;import org.hibernate.boot.model.relational.Exportable;
+&nbsp;import org.hibernate.boot.model.relational.Namespace;
+&nbsp;import org.hibernate.boot.model.relational.Sequence;
+&nbsp;import org.hibernate.boot.model.relational.SqlStringGenerationContext;
+&nbsp;import org.hibernate.boot.model.relational.internal.SqlStringGenerationContextImpl;
+&nbsp;import org.hibernate.dialect.Dialect;
+&nbsp;import org.hibernate.engine.config.spi.ConfigurationService;
+&nbsp;import org.hibernate.engine.config.spi.StandardConverters;
+&nbsp;import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
+&nbsp;import org.hibernate.engine.jdbc.internal.FormatStyle;
+&nbsp;import org.hibernate.engine.jdbc.internal.Formatter;
+&nbsp;import org.hibernate.internal.util.StringHelper;
+&nbsp;import org.hibernate.internal.util.collections.CollectionHelper;
+&nbsp;import org.hibernate.mapping.Constraint;
+&nbsp;import org.hibernate.mapping.ForeignKey;
+&nbsp;import org.hibernate.mapping.Index;
+&nbsp;import org.hibernate.mapping.Table;
+&nbsp;import org.hibernate.mapping.UniqueKey;
+&nbsp;import org.hibernate.resource.transaction.spi.DdlTransactionIsolator;
+&nbsp;import org.hibernate.tool.schema.UniqueConstraintSchemaUpdateStrategy;
+&nbsp;import org.hibernate.tool.schema.extract.spi.ColumnInformation;
+&nbsp;import org.hibernate.tool.schema.extract.spi.DatabaseInformation;
+&nbsp;import org.hibernate.tool.schema.extract.spi.IndexInformation;
+&nbsp;import org.hibernate.tool.schema.extract.spi.NameSpaceTablesInformation;
+&nbsp;import org.hibernate.tool.schema.extract.spi.SequenceInformation;
+&nbsp;import org.hibernate.tool.schema.extract.spi.TableInformation;
+&nbsp;import org.hibernate.tool.schema.internal.exec.GenerationTarget;
+&nbsp;import org.hibernate.tool.schema.internal.exec.JdbcContext;
+&nbsp;import org.hibernate.tool.schema.spi.CommandAcceptanceException;
+&nbsp;import org.hibernate.tool.schema.spi.ContributableMatcher;
+&nbsp;import org.hibernate.tool.schema.spi.ExecutionOptions;
+&nbsp;import org.hibernate.tool.schema.spi.Exporter;
+&nbsp;import org.hibernate.tool.schema.spi.SchemaFilter;
+&nbsp;import org.hibernate.tool.schema.spi.SchemaManagementException;
+&nbsp;import org.hibernate.tool.schema.spi.SchemaMigrator;
+&nbsp;import org.hibernate.tool.schema.spi.TargetDescriptor;
+&nbsp;import org.jboss.logging.Logger;
+&nbsp;
+&nbsp;public abstract class AbstractSchemaMigrator implements SchemaMigrator {
+&nbsp;    private static final Logger log = Logger.getLogger(IndividuallySchemaMigratorImpl.class);
+&nbsp;    protected HibernateSchemaManagementTool tool;
+&nbsp;    protected SchemaFilter schemaFilter;
+&nbsp;    private UniqueConstraintSchemaUpdateStrategy uniqueConstraintStrategy;
+&nbsp;
+&nbsp;    public AbstractSchemaMigrator(HibernateSchemaManagementTool tool, SchemaFilter schemaFilter) {
+&nbsp;        this.tool = tool;
+&nbsp;        this.schemaFilter = (SchemaFilter)(schemaFilter == null ? DefaultSchemaFilter.INSTANCE : schemaFilter);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void doMigration(Metadata metadata, ExecutionOptions options, ContributableMatcher contributableInclusionFilter, TargetDescriptor targetDescriptor) {
+&nbsp;        SqlStringGenerationContext sqlGenerationContext = this.sqlGenerationContext(metadata, options);
+&nbsp;        if (!targetDescriptor.getTargetTypes().isEmpty()) {
+&nbsp;            JdbcContext jdbcContext = this.tool.resolveJdbcContext(options.getConfigurationValues());
+&nbsp;            DdlTransactionIsolator ddlTransactionIsolator = this.tool.getDdlTransactionIsolator(jdbcContext);
+<b class="fc">&nbsp;</b>
+&nbsp;            try {
+&nbsp;                DatabaseInformation databaseInformation = Helper.buildDatabaseInformation(this.tool.getServiceRegistry(), ddlTransactionIsolator, sqlGenerationContext, this.tool);
+&nbsp;                GenerationTarget[] targets = this.tool.buildGenerationTargets(targetDescriptor, ddlTransactionIsolator, options.getConfigurationValues());
+&nbsp;
+&nbsp;                try {
+<b class="fc">&nbsp;                    for(GenerationTarget target : targets) {</b>
+<b class="fc">&nbsp;                        target.prepare();</b>
+<b class="pc">&nbsp;                    }</b>
+&nbsp;
+&nbsp;                    boolean var44 = false;
+&nbsp;
+&nbsp;                    try {
+&nbsp;                        var44 = true;
+&nbsp;                        this.performMigration(metadata, databaseInformation, options, contributableInclusionFilter, jdbcContext.getDialect(), sqlGenerationContext, targets);
+&nbsp;                        var44 = false;
+&nbsp;                    } finally {
+<b class="fc">&nbsp;                        if (var44) {</b>
+<b class="pc">&nbsp;                            for(GenerationTarget target : targets) {</b>
+<b class="fc">&nbsp;                                try {</b>
+<b class="fc">&nbsp;                                    target.release();</b>
+&nbsp;                                } catch (Exception e) {
+<b class="fc">&nbsp;                                    log.debugf(&quot;Problem releasing GenerationTarget [%s] : %s&quot;, target, e.getMessage());</b>
+<b class="fc">&nbsp;                                }</b>
+&nbsp;                            }
+&nbsp;
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+<b class="fc">&nbsp;                    for(GenerationTarget target : targets) {</b>
+&nbsp;                        try {
+&nbsp;                            target.release();
+<b class="fc">&nbsp;                        } catch (Exception e) {</b>
+&nbsp;                            log.debugf(&quot;Problem releasing GenerationTarget [%s] : %s&quot;, target, e.getMessage());
+&nbsp;                        }
+&nbsp;                    }
+<b class="fc">&nbsp;                } finally {</b>
+<b class="fc">&nbsp;                    try {</b>
+&nbsp;                        databaseInformation.cleanup();
+&nbsp;                    } catch (Exception e) {
+&nbsp;                        log.debug(&quot;Problem releasing DatabaseInformation : &quot; + e.getMessage());
+<b class="fc">&nbsp;                    }</b>
+&nbsp;
+&nbsp;                }
+&nbsp;            } finally {
+&nbsp;                ddlTransactionIsolator.release();
+<b class="fc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private SqlStringGenerationContext sqlGenerationContext(Metadata metadata, ExecutionOptions options) {
+<b class="pc">&nbsp;        return SqlStringGenerationContextImpl.fromConfigurationMapForMigration((JdbcEnvironment)this.tool.getServiceRegistry().requireService(JdbcEnvironment.class), metadata.getDatabase(), options.getConfigurationValues());</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    protected abstract NameSpaceTablesInformation performTablesMigration(Metadata var1, DatabaseInformation var2, ExecutionOptions var3, ContributableMatcher var4, Dialect var5, Formatter var6, Set&lt;String&gt; var7, boolean var8, boolean var9, Set&lt;Identifier&gt; var10, Namespace var11, SqlStringGenerationContext var12, GenerationTarget[] var13);
+&nbsp;
+<b class="nc">&nbsp;    private void performMigration(Metadata metadata, DatabaseInformation existingDatabase, ExecutionOptions options, ContributableMatcher contributableInclusionFilter, Dialect dialect, SqlStringGenerationContext sqlGenerationContext, GenerationTarget... targets) {</b>
+&nbsp;        boolean format = Helper.interpretFormattingEnabled(options.getConfigurationValues());
+&nbsp;        Formatter formatter = format ? FormatStyle.DDL.getFormatter() : FormatStyle.NONE.getFormatter();
+&nbsp;        Set&lt;String&gt; exportIdentifiers = CollectionHelper.setOfSize(50);
+&nbsp;        Database database = metadata.getDatabase();
+&nbsp;        Exporter&lt;AuxiliaryDatabaseObject&gt; auxiliaryExporter = dialect.getAuxiliaryDatabaseObjectExporter();
+&nbsp;
+<b class="fc">&nbsp;        for(AuxiliaryDatabaseObject auxiliaryDatabaseObject : database.getAuxiliaryDatabaseObjects()) {</b>
+&nbsp;            if (auxiliaryDatabaseObject.appliesToDialect(dialect)) {
+&nbsp;                applySqlStrings(true, auxiliaryExporter.getSqlDropStrings(auxiliaryDatabaseObject, metadata, sqlGenerationContext), formatter, options, targets);
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        SchemaDropperImpl.dropUserDefinedTypes(metadata, options, this.schemaFilter, dialect, formatter, sqlGenerationContext, targets);
+&nbsp;
+<b class="fc">&nbsp;        for(AuxiliaryDatabaseObject auxiliaryDatabaseObject : database.getAuxiliaryDatabaseObjects()) {</b>
+&nbsp;            if (auxiliaryDatabaseObject.beforeTablesOnCreation() &amp;&amp; auxiliaryDatabaseObject.appliesToDialect(dialect)) {
+&nbsp;                applySqlStrings(true, auxiliaryExporter.getSqlCreateStrings(auxiliaryDatabaseObject, metadata, sqlGenerationContext), formatter, options, targets);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        SchemaCreatorImpl.createUserDefinedTypes(metadata, options, this.schemaFilter, dialect, formatter, sqlGenerationContext, targets);</b>
+<b class="fc">&nbsp;        boolean tryToCreateCatalogs = false;</b>
+<b class="fc">&nbsp;        boolean tryToCreateSchemas = false;</b>
+<b class="fc">&nbsp;        if (options.shouldManageNamespaces()) {</b>
+&nbsp;            if (dialect.canCreateSchema()) {
+&nbsp;                tryToCreateSchemas = true;
+&nbsp;            }
+&nbsp;
+&nbsp;            if (dialect.canCreateCatalog()) {
+&nbsp;                tryToCreateCatalogs = true;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        Map&lt;Namespace, NameSpaceTablesInformation&gt; tablesInformation = new HashMap();
+&nbsp;        Set&lt;Identifier&gt; exportedCatalogs = new HashSet();
+&nbsp;
+&nbsp;        for(Namespace namespace : database.getNamespaces()) {
+&nbsp;            NameSpaceTablesInformation nameSpaceTablesInformation = this.performTablesMigration(metadata, existingDatabase, options, contributableInclusionFilter, dialect, formatter, exportIdentifiers, tryToCreateCatalogs, tryToCreateSchemas, exportedCatalogs, namespace, sqlGenerationContext, targets);
+&nbsp;            tablesInformation.put(namespace, nameSpaceTablesInformation);
+&nbsp;            if (this.schemaFilter.includeNamespace(namespace)) {
+&nbsp;                for(Sequence sequence : namespace.getSequences()) {
+&nbsp;                    if (contributableInclusionFilter.matches(sequence)) {
+&nbsp;                        this.checkExportIdentifier(sequence, exportIdentifiers);
+&nbsp;                        SequenceInformation sequenceInformation = existingDatabase.getSequenceInformation(sequence.getName());
+&nbsp;                        if (sequenceInformation == null) {
+&nbsp;                            applySequence(sequence, dialect, metadata, formatter, options, sqlGenerationContext, targets);
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+<b class="fc">&nbsp;        }</b>
+<b class="pc">&nbsp;</b>
+&nbsp;        for(Namespace namespace : database.getNamespaces()) {
+<b class="fc">&nbsp;            if (this.schemaFilter.includeNamespace(namespace)) {</b>
+&nbsp;                NameSpaceTablesInformation nameSpaceTablesInformation = (NameSpaceTablesInformation)tablesInformation.get(namespace);
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;                for(Table table : namespace.getTables()) {</b>
+&nbsp;                    if (this.schemaFilter.includeTable(table) &amp;&amp; contributableInclusionFilter.matches(table)) {
+&nbsp;                        TableInformation tableInformation = nameSpaceTablesInformation.getTableInformation(table);
+<b class="pc">&nbsp;                        if (tableInformation == null || tableInformation.isPhysicalTable()) {</b>
+<b class="nc">&nbsp;                            this.applyForeignKeys(table, tableInformation, dialect, metadata, formatter, options, sqlGenerationContext, targets);</b>
+<b class="nc">&nbsp;                        }</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        for(AuxiliaryDatabaseObject auxiliaryDatabaseObject : database.getAuxiliaryDatabaseObjects()) {
+&nbsp;            if (!auxiliaryDatabaseObject.beforeTablesOnCreation() &amp;&amp; auxiliaryDatabaseObject.appliesToDialect(dialect)) {
+&nbsp;                applySqlStrings(true, auxiliaryExporter.getSqlCreateStrings(auxiliaryDatabaseObject, metadata, sqlGenerationContext), formatter, options, targets);
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+&nbsp;    }
+&nbsp;
+<b class="pc">&nbsp;    private static void applySequence(Sequence sequence, Dialect dialect, Metadata metadata, Formatter formatter, ExecutionOptions options, SqlStringGenerationContext sqlGenerationContext, GenerationTarget... targets) {</b>
+<b class="nc">&nbsp;        applySqlStrings(false, dialect.getSequenceExporter().getSqlCreateStrings(sequence, metadata, sqlGenerationContext), formatter, options, targets);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    protected void createTable(Table table, Dialect dialect, Metadata metadata, Formatter formatter, ExecutionOptions options, SqlStringGenerationContext sqlGenerationContext, GenerationTarget... targets) {
+<b class="nc">&nbsp;        applySqlStrings(false, dialect.getTableExporter().getSqlCreateStrings(table, metadata, sqlGenerationContext), formatter, options, targets);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void migrateTable(Table table, TableInformation tableInformation, Dialect dialect, Metadata metadata, Formatter formatter, ExecutionOptions options, SqlStringGenerationContext sqlGenerationContext, GenerationTarget... targets) {
+&nbsp;        applySqlStrings(false, dialect.getTableMigrator().getSqlAlterStrings(table, metadata, tableInformation, sqlGenerationContext), formatter, options, targets);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void applyIndexes(Table table, TableInformation tableInformation, Dialect dialect, Metadata metadata, Formatter formatter, ExecutionOptions options, SqlStringGenerationContext sqlGenerationContext, GenerationTarget... targets) {
+&nbsp;        Exporter&lt;Index&gt; exporter = dialect.getIndexExporter();
+<b class="fc">&nbsp;</b>
+&nbsp;        for(Index index : table.getIndexes().values()) {
+<b class="fc">&nbsp;            if (!StringHelper.isEmpty(index.getName())) {</b>
+<b class="fc">&nbsp;                IndexInformation existingIndex = null;</b>
+<b class="pc">&nbsp;                if (tableInformation != null) {</b>
+<b class="nc">&nbsp;                    existingIndex = this.findMatchingIndex(index, tableInformation);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="nc">&nbsp;                if (existingIndex == null) {</b>
+<b class="nc">&nbsp;                    applySqlStrings(false, exporter.getSqlCreateStrings(index, metadata, sqlGenerationContext), formatter, options, targets);</b>
+&nbsp;                }
+&nbsp;            }
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+<b class="pc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    private IndexInformation findMatchingIndex(Index index, TableInformation tableInformation) {
+&nbsp;        return tableInformation.getIndex(Identifier.toIdentifier(index.getName()));
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void applyUniqueKeys(Table table, TableInformation tableInfo, Dialect dialect, Metadata metadata, Formatter formatter, ExecutionOptions options, SqlStringGenerationContext sqlGenerationContext, GenerationTarget... targets) {
+&nbsp;        if (this.uniqueConstraintStrategy == null) {
+&nbsp;            this.uniqueConstraintStrategy = this.determineUniqueConstraintSchemaUpdateStrategy();
+&nbsp;        }
+&nbsp;
+&nbsp;        if (this.uniqueConstraintStrategy != UniqueConstraintSchemaUpdateStrategy.SKIP) {
+&nbsp;            Exporter&lt;Constraint&gt; exporter = dialect.getUniqueKeyExporter();
+&nbsp;
+&nbsp;            for(UniqueKey uniqueKey : table.getUniqueKeys().values()) {
+<b class="nc">&nbsp;                IndexInformation indexInfo = null;</b>
+<b class="nc">&nbsp;                if (tableInfo != null &amp;&amp; StringHelper.isNotEmpty(uniqueKey.getName())) {</b>
+<b class="nc">&nbsp;                    indexInfo = tableInfo.getIndex(Identifier.toIdentifier(uniqueKey.getName()));</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                if (indexInfo == null) {</b>
+<b class="nc">&nbsp;                    if (this.uniqueConstraintStrategy == UniqueConstraintSchemaUpdateStrategy.DROP_RECREATE_QUIETLY) {</b>
+<b class="nc">&nbsp;                        applySqlStrings(true, exporter.getSqlDropStrings(uniqueKey, metadata, sqlGenerationContext), formatter, options, targets);</b>
+&nbsp;                    }
+&nbsp;
+&nbsp;                    applySqlStrings(true, exporter.getSqlCreateStrings(uniqueKey, metadata, sqlGenerationContext), formatter, options, targets);
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private UniqueConstraintSchemaUpdateStrategy determineUniqueConstraintSchemaUpdateStrategy() {</b>
+<b class="nc">&nbsp;        String updateStrategy = (String)((ConfigurationService)this.tool.getServiceRegistry().requireService(ConfigurationService.class)).getSetting(&quot;hibernate.schema_update.unique_constraint_strategy&quot;, StandardConverters.STRING);</b>
+<b class="nc">&nbsp;        return UniqueConstraintSchemaUpdateStrategy.interpret(updateStrategy);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected void applyForeignKeys(Table table, TableInformation tableInformation, Dialect dialect, Metadata metadata, Formatter formatter, ExecutionOptions options, SqlStringGenerationContext sqlGenerationContext, GenerationTarget... targets) {</b>
+&nbsp;        if (dialect.hasAlterTable()) {
+&nbsp;            Exporter&lt;ForeignKey&gt; exporter = dialect.getForeignKeyExporter();
+&nbsp;
+&nbsp;            for(ForeignKey foreignKey : table.getForeignKeys().values()) {
+&nbsp;                if (foreignKey.isPhysicalConstraint() &amp;&amp; foreignKey.isCreationEnabled() &amp;&amp; (tableInformation == null || !this.checkForExistingForeignKey(foreignKey, tableInformation))) {
+&nbsp;                    applySqlStrings(false, exporter.getSqlCreateStrings(foreignKey, metadata, sqlGenerationContext), formatter, options, targets);
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private boolean checkForExistingForeignKey(ForeignKey foreignKey, TableInformation tableInformation) {</b>
+&nbsp;        if (foreignKey.getName() != null &amp;&amp; tableInformation != null) {
+&nbsp;            String referencingColumn = foreignKey.getColumn(0).getName();
+&nbsp;            String referencedTable = foreignKey.getReferencedTable().getName();
+&nbsp;            return this.equivalentForeignKeyExistsInDatabase(tableInformation, referencingColumn, referencedTable) || tableInformation.getForeignKey(Identifier.toIdentifier(foreignKey.getName())) != null;
+&nbsp;        } else {
+&nbsp;            return false;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    boolean equivalentForeignKeyExistsInDatabase(TableInformation tableInformation, String referencingColumn, String referencedTable) {
+&nbsp;        return StreamSupport.stream(tableInformation.getForeignKeys().spliterator(), false).flatMap((foreignKeyInformation) -&gt; StreamSupport.stream(foreignKeyInformation.getColumnReferenceMappings().spliterator(), false)).anyMatch((columnReferenceMapping) -&gt; {
+&nbsp;            ColumnInformation referencingColumnMetadata = columnReferenceMapping.getReferencingColumnMetadata();
+&nbsp;            ColumnInformation referencedColumnMetadata = columnReferenceMapping.getReferencedColumnMetadata();
+&nbsp;            String existingReferencingColumn = referencingColumnMetadata.getColumnIdentifier().getText();
+&nbsp;            String existingReferencedTable = referencedColumnMetadata.getContainingTableInformation().getName().getTableName().getCanonicalName();
+&nbsp;            return referencingColumn.equalsIgnoreCase(existingReferencingColumn) &amp;&amp; referencedTable.equalsIgnoreCase(existingReferencedTable);
+<b class="nc">&nbsp;        });</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected void checkExportIdentifier(Exportable exportable, Set&lt;String&gt; exportIdentifiers) {
+&nbsp;        String exportIdentifier = exportable.getExportIdentifier();
+&nbsp;        if (exportIdentifiers.contains(exportIdentifier)) {
+&nbsp;            throw new SchemaManagementException(String.format(&quot;Export identifier [%s] encountered more than once&quot;, exportIdentifier));
+&nbsp;        } else {
+&nbsp;            exportIdentifiers.add(exportIdentifier);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected static void applySqlStrings(boolean quiet, String[] sqlStrings, Formatter formatter, ExecutionOptions options, GenerationTarget... targets) {
+&nbsp;        if (sqlStrings != null) {
+&nbsp;            for(String sql : sqlStrings) {
+&nbsp;                applySqlString(quiet, sql, formatter, options, targets);
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected void createSchemaAndCatalog(DatabaseInformation existingDatabase, ExecutionOptions options, Dialect dialect, Formatter formatter, boolean tryToCreateCatalogs, boolean tryToCreateSchemas, Set&lt;Identifier&gt; exportedCatalogs, Namespace namespace, SqlStringGenerationContext context, GenerationTarget[] targets) {
+&nbsp;        if (tryToCreateCatalogs || tryToCreateSchemas) {
+&nbsp;            Namespace.Name logicalName = namespace.getName();
+&nbsp;            Namespace.Name physicalName = namespace.getPhysicalName();
+&nbsp;            if (tryToCreateCatalogs) {
+&nbsp;                Identifier catalogLogicalName = logicalName.getCatalog();
+&nbsp;                Identifier catalogPhysicalName = context.catalogWithDefault(physicalName.getCatalog());
+&nbsp;                if (catalogPhysicalName != null &amp;&amp; !exportedCatalogs.contains(catalogLogicalName) &amp;&amp; !existingDatabase.catalogExists(catalogPhysicalName)) {
+&nbsp;                    applySqlStrings(false, dialect.getCreateCatalogCommand(catalogPhysicalName.render(dialect)), formatter, options, targets);
+&nbsp;                    exportedCatalogs.add(catalogLogicalName);
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            if (tryToCreateSchemas) {
+<b class="nc">&nbsp;                Identifier schemaPhysicalName = context.schemaWithDefault(physicalName.getSchema());</b>
+&nbsp;                if (schemaPhysicalName != null &amp;&amp; !existingDatabase.schemaExists(physicalName)) {
+<b class="nc">&nbsp;                    applySqlStrings(false, dialect.getCreateSchemaCommand(schemaPhysicalName.render(dialect)), formatter, options, targets);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private static void applySqlString(boolean quiet, String sql, Formatter formatter, ExecutionOptions options, GenerationTarget... targets) {
+&nbsp;        if (!StringHelper.isEmpty(sql)) {
+&nbsp;            String formattedSql = formatter.format(sql);
+&nbsp;
+&nbsp;            for(GenerationTarget target : targets) {
+&nbsp;                try {
+&nbsp;                    target.accept(formattedSql);
+&nbsp;                } catch (CommandAcceptanceException e) {
+&nbsp;                    if (!quiet) {
+&nbsp;                        options.getExceptionHandler().handleException(e);
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 21:00</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,290 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > BootstrapServiceRegistryImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.boot.registry.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: BootstrapServiceRegistryImpl (org.hibernate.boot.registry.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">BootstrapServiceRegistryImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (10/20)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    60.7%
+  </span>
+  <span class="absValue">
+    (17/28)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    60.7%
+  </span>
+  <span class="absValue">
+    (37/61)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.boot.registry.internal;
+&nbsp;
+&nbsp;import java.util.HashSet;
+&nbsp;import java.util.LinkedHashSet;
+&nbsp;import java.util.Set;
+&nbsp;import org.checkerframework.checker.nullness.qual.Nullable;
+&nbsp;import org.hibernate.boot.registry.BootstrapServiceRegistry;
+&nbsp;import org.hibernate.boot.registry.classloading.internal.ClassLoaderServiceImpl;
+&nbsp;import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
+&nbsp;import org.hibernate.boot.registry.selector.internal.StrategySelectorImpl;
+&nbsp;import org.hibernate.boot.registry.selector.spi.StrategySelector;
+&nbsp;import org.hibernate.integrator.internal.IntegratorServiceImpl;
+&nbsp;import org.hibernate.integrator.spi.Integrator;
+&nbsp;import org.hibernate.integrator.spi.IntegratorService;
+&nbsp;import org.hibernate.internal.CoreLogging;
+&nbsp;import org.hibernate.internal.CoreMessageLogger;
+&nbsp;import org.hibernate.service.Service;
+&nbsp;import org.hibernate.service.ServiceRegistry;
+&nbsp;import org.hibernate.service.internal.AbstractServiceRegistryImpl;
+&nbsp;import org.hibernate.service.spi.ServiceBinding;
+&nbsp;import org.hibernate.service.spi.ServiceException;
+&nbsp;import org.hibernate.service.spi.ServiceInitiator;
+&nbsp;import org.hibernate.service.spi.ServiceRegistryImplementor;
+&nbsp;import org.hibernate.service.spi.Stoppable;
+&nbsp;
+&nbsp;public class BootstrapServiceRegistryImpl implements ServiceRegistryImplementor, BootstrapServiceRegistry, ServiceBinding.ServiceLifecycleOwner {
+&nbsp;    private static final CoreMessageLogger LOG = CoreLogging.messageLogger(BootstrapServiceRegistryImpl.class);
+&nbsp;    private final boolean autoCloseRegistry;
+&nbsp;    private boolean active;
+&nbsp;    private static final LinkedHashSet&lt;Integrator&gt; NO_INTEGRATORS = new LinkedHashSet();
+&nbsp;    private final ServiceBinding&lt;ClassLoaderService&gt; classLoaderServiceBinding;
+&nbsp;    private final ServiceBinding&lt;StrategySelector&gt; strategySelectorBinding;
+&nbsp;    private final ServiceBinding&lt;IntegratorService&gt; integratorServiceBinding;
+&nbsp;    private Set&lt;ServiceRegistryImplementor&gt; childRegistries;
+&nbsp;
+&nbsp;    public BootstrapServiceRegistryImpl() {
+&nbsp;        this(new ClassLoaderServiceImpl(), NO_INTEGRATORS);
+&nbsp;    }
+&nbsp;
+&nbsp;    public BootstrapServiceRegistryImpl(ClassLoaderService classLoaderService, LinkedHashSet&lt;Integrator&gt; providedIntegrators) {
+<b class="fc">&nbsp;        this(true, classLoaderService, providedIntegrators);</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public BootstrapServiceRegistryImpl(boolean autoCloseRegistry, ClassLoaderService classLoaderService, LinkedHashSet&lt;Integrator&gt; providedIntegrators) {</b>
+&nbsp;        this.active = true;
+<b class="fc">&nbsp;        this.autoCloseRegistry = autoCloseRegistry;</b>
+&nbsp;        this.classLoaderServiceBinding = new ServiceBinding(this, ClassLoaderService.class, classLoaderService);
+&nbsp;        StrategySelectorImpl strategySelector = new StrategySelectorImpl(classLoaderService);
+&nbsp;        this.strategySelectorBinding = new ServiceBinding(this, StrategySelector.class, strategySelector);
+&nbsp;        this.integratorServiceBinding = new ServiceBinding(this, IntegratorService.class, IntegratorServiceImpl.create(providedIntegrators, classLoaderService));
+&nbsp;    }
+&nbsp;
+&nbsp;    public BootstrapServiceRegistryImpl(ClassLoaderService classLoaderService, StrategySelector strategySelector, IntegratorService integratorService) {
+&nbsp;        this(true, classLoaderService, strategySelector, integratorService);
+&nbsp;    }
+&nbsp;
+&nbsp;    public BootstrapServiceRegistryImpl(boolean autoCloseRegistry, ClassLoaderService classLoaderService, StrategySelector strategySelector, IntegratorService integratorService) {
+&nbsp;        this.active = true;
+&nbsp;        this.autoCloseRegistry = autoCloseRegistry;
+&nbsp;        this.classLoaderServiceBinding = new ServiceBinding(this, ClassLoaderService.class, classLoaderService);
+&nbsp;        this.strategySelectorBinding = new ServiceBinding(this, StrategySelector.class, strategySelector);
+&nbsp;        this.integratorServiceBinding = new ServiceBinding(this, IntegratorService.class, integratorService);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public &lt;R extends Service&gt; @Nullable R getService(Class&lt;R&gt; serviceRole) {
+&nbsp;        ServiceBinding&lt;R&gt; binding = this.&lt;R&gt;locateServiceBinding(serviceRole);
+&nbsp;        return (R)(binding == null ? null : binding.getService());
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;R extends Service&gt; ServiceBinding&lt;R&gt; locateServiceBinding(Class&lt;R&gt; serviceRole) {
+&nbsp;        if (ClassLoaderService.class.equals(serviceRole)) {
+&nbsp;            return this.classLoaderServiceBinding;
+&nbsp;        } else if (StrategySelector.class.equals(serviceRole)) {
+&nbsp;            return this.strategySelectorBinding;
+&nbsp;        } else {
+&nbsp;            return IntegratorService.class.equals(serviceRole) ? this.integratorServiceBinding : null;
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public synchronized void destroy() {
+&nbsp;        if (this.active) {
+&nbsp;            this.active = false;
+&nbsp;            this.destroy(this.classLoaderServiceBinding);
+&nbsp;            this.destroy(this.strategySelectorBinding);
+&nbsp;            this.destroy(this.integratorServiceBinding);
+&nbsp;            if (this.childRegistries != null) {
+&nbsp;                for(ServiceRegistry serviceRegistry : this.childRegistries) {
+&nbsp;                    if (serviceRegistry instanceof ServiceRegistryImplementor) {
+&nbsp;                        ServiceRegistryImplementor serviceRegistryImplementor = (ServiceRegistryImplementor)serviceRegistry;
+&nbsp;                        serviceRegistryImplementor.destroy();
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private synchronized void destroy(ServiceBinding serviceBinding) {</b>
+<b class="nc">&nbsp;        serviceBinding.getLifecycleOwner().stopService(serviceBinding);</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public boolean isActive() {
+&nbsp;        return this.active;
+&nbsp;    }
+&nbsp;
+&nbsp;    public @Nullable ServiceRegistry getParentServiceRegistry() {
+<b class="nc">&nbsp;        return null;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public &lt;R extends Service&gt; R initiateService(ServiceInitiator&lt;R&gt; serviceInitiator) {
+&nbsp;        throw new ServiceException(&quot;Boot-strap registry should only contain provided services&quot;);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public &lt;R extends Service&gt; void configureService(ServiceBinding&lt;R&gt; binding) {</b>
+&nbsp;        throw new ServiceException(&quot;Boot-strap registry should only contain provided services&quot;);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public &lt;R extends Service&gt; void injectDependencies(ServiceBinding&lt;R&gt; binding) {
+&nbsp;        throw new ServiceException(&quot;Boot-strap registry should only contain provided services&quot;);
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;R extends Service&gt; void startService(ServiceBinding&lt;R&gt; binding) {
+&nbsp;        throw new ServiceException(&quot;Boot-strap registry should only contain provided services&quot;);
+&nbsp;    }
+&nbsp;
+&nbsp;    public synchronized &lt;R extends Service&gt; void stopService(ServiceBinding&lt;R&gt; binding) {
+&nbsp;        Service service = binding.getService();
+&nbsp;        if (service instanceof Stoppable) {
+&nbsp;            try {
+&nbsp;                ((Stoppable)service).stop();
+&nbsp;            } catch (Exception e) {
+&nbsp;                LOG.unableToStopService(service.getClass(), e);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public synchronized void registerChild(ServiceRegistryImplementor child) {</b>
+&nbsp;        if (this.childRegistries == null) {
+&nbsp;            this.childRegistries = new HashSet();
+&nbsp;        }
+&nbsp;
+&nbsp;        if (!this.childRegistries.add(child)) {
+&nbsp;            LOG.warnf(&quot;Child ServiceRegistry [%s] was already registered; this will end badly later...&quot;, child);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public synchronized void deRegisterChild(ServiceRegistryImplementor child) {
+&nbsp;        if (this.childRegistries == null) {
+&nbsp;            throw new IllegalStateException(&quot;No child ServiceRegistry registrations found&quot;);
+&nbsp;        } else {
+&nbsp;            this.childRegistries.remove(child);
+&nbsp;            if (this.childRegistries.isEmpty()) {
+&nbsp;                if (this.autoCloseRegistry) {
+&nbsp;                    LOG.debug(&quot;Implicitly destroying Boot-strap registry on de-registration of all child ServiceRegistries&quot;);
+&nbsp;                    this.destroy();
+&nbsp;                } else {
+&nbsp;                    LOG.debug(&quot;Skipping implicitly destroying Boot-strap registry on de-registration of all child ServiceRegistries&quot;);
+<b class="fc">&nbsp;                }</b>
+<b class="fc">&nbsp;            }</b>
+&nbsp;
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;T extends Service&gt; T fromRegistryOrChildren(Class&lt;T&gt; serviceRole) {
+&nbsp;        return (T)AbstractServiceRegistryImpl.fromRegistryOrChildren(serviceRole, this, this.childRegistries);
+&nbsp;    }
+<b class="fc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:58</div>
+</div>
+</body>
+</html>

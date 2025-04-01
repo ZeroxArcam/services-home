@@ -1,0 +1,226 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > DefaultErrorViewResolver</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.boot.autoconfigure.web.servlet.error</a>
+</div>
+
+<h1>Coverage Summary for Class: DefaultErrorViewResolver (org.springframework.boot.autoconfigure.web.servlet.error)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DefaultErrorViewResolver</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/34)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.boot.autoconfigure.web.servlet.error;
+&nbsp;
+&nbsp;import jakarta.servlet.http.HttpServletRequest;
+&nbsp;import jakarta.servlet.http.HttpServletResponse;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.EnumMap;
+&nbsp;import java.util.Map;
+&nbsp;import org.springframework.boot.autoconfigure.template.TemplateAvailabilityProvider;
+&nbsp;import org.springframework.boot.autoconfigure.template.TemplateAvailabilityProviders;
+&nbsp;import org.springframework.boot.autoconfigure.web.WebProperties;
+&nbsp;import org.springframework.context.ApplicationContext;
+&nbsp;import org.springframework.core.Ordered;
+&nbsp;import org.springframework.core.io.Resource;
+&nbsp;import org.springframework.http.HttpStatus;
+&nbsp;import org.springframework.http.HttpStatus.Series;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.FileCopyUtils;
+&nbsp;import org.springframework.web.servlet.ModelAndView;
+&nbsp;import org.springframework.web.servlet.View;
+&nbsp;
+&nbsp;public class DefaultErrorViewResolver implements ErrorViewResolver, Ordered {
+&nbsp;    private static final Map&lt;HttpStatus.Series, String&gt; SERIES_VIEWS;
+&nbsp;    private final ApplicationContext applicationContext;
+&nbsp;    private final WebProperties.Resources resources;
+&nbsp;    private final TemplateAvailabilityProviders templateAvailabilityProviders;
+&nbsp;    private int order = Integer.MAX_VALUE;
+&nbsp;
+&nbsp;    public DefaultErrorViewResolver(ApplicationContext applicationContext, WebProperties.Resources resources) {
+&nbsp;        Assert.notNull(applicationContext, &quot;ApplicationContext must not be null&quot;);
+&nbsp;        Assert.notNull(resources, &quot;Resources must not be null&quot;);
+&nbsp;        this.applicationContext = applicationContext;
+&nbsp;        this.resources = resources;
+&nbsp;        this.templateAvailabilityProviders = new TemplateAvailabilityProviders(applicationContext);
+&nbsp;    }
+&nbsp;
+&nbsp;    DefaultErrorViewResolver(ApplicationContext applicationContext, WebProperties.Resources resourceProperties, TemplateAvailabilityProviders templateAvailabilityProviders) {
+&nbsp;        Assert.notNull(applicationContext, &quot;ApplicationContext must not be null&quot;);
+&nbsp;        Assert.notNull(resourceProperties, &quot;Resources must not be null&quot;);
+&nbsp;        this.applicationContext = applicationContext;
+&nbsp;        this.resources = resourceProperties;
+&nbsp;        this.templateAvailabilityProviders = templateAvailabilityProviders;
+&nbsp;    }
+&nbsp;
+&nbsp;    public ModelAndView resolveErrorView(HttpServletRequest request, HttpStatus status, Map&lt;String, Object&gt; model) {
+&nbsp;        ModelAndView modelAndView = this.resolve(String.valueOf(status.value()), model);
+&nbsp;        if (modelAndView == null &amp;&amp; SERIES_VIEWS.containsKey(status.series())) {
+&nbsp;            modelAndView = this.resolve((String)SERIES_VIEWS.get(status.series()), model);
+&nbsp;        }
+&nbsp;
+&nbsp;        return modelAndView;
+&nbsp;    }
+&nbsp;
+&nbsp;    private ModelAndView resolve(String viewName, Map&lt;String, Object&gt; model) {
+&nbsp;        String errorViewName = &quot;error/&quot; + viewName;
+&nbsp;        TemplateAvailabilityProvider provider = this.templateAvailabilityProviders.getProvider(errorViewName, this.applicationContext);
+&nbsp;        return provider != null ? new ModelAndView(errorViewName, model) : this.resolveResource(errorViewName, model);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private ModelAndView resolveResource(String viewName, Map&lt;String, Object&gt; model) {</b>
+<b class="nc">&nbsp;        for(String location : this.resources.getStaticLocations()) {</b>
+<b class="nc">&nbsp;            try {</b>
+&nbsp;                Resource resource = this.applicationContext.getResource(location);
+&nbsp;                resource = resource.createRelative(viewName + &quot;.html&quot;);
+&nbsp;                if (resource.exists()) {
+&nbsp;                    return new ModelAndView(new HtmlResourceView(resource), model);
+&nbsp;                }
+&nbsp;            } catch (Exception var8) {
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        return null;
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getOrder() {
+&nbsp;        return this.order;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void setOrder(int order) {</b>
+<b class="nc">&nbsp;        this.order = order;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    static {</b>
+<b class="nc">&nbsp;        Map&lt;HttpStatus.Series, String&gt; views = new EnumMap(HttpStatus.Series.class);</b>
+&nbsp;        views.put(Series.CLIENT_ERROR, &quot;4xx&quot;);
+&nbsp;        views.put(Series.SERVER_ERROR, &quot;5xx&quot;);
+&nbsp;        SERIES_VIEWS = Collections.unmodifiableMap(views);
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private static class HtmlResourceView implements View {</b>
+<b class="nc">&nbsp;        private final Resource resource;</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        HtmlResourceView(Resource resource) {</b>
+&nbsp;            this.resource = resource;
+&nbsp;        }
+&nbsp;
+&nbsp;        public String getContentType() {
+<b class="nc">&nbsp;            return &quot;text/html&quot;;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        public void render(Map&lt;String, ?&gt; model, HttpServletRequest request, HttpServletResponse response) throws Exception {
+<b class="nc">&nbsp;            response.setContentType(this.getContentType());</b>
+&nbsp;            FileCopyUtils.copy(this.resource.getInputStream(), response.getOutputStream());
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
+</div>
+</body>
+</html>

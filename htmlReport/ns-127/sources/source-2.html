@@ -1,0 +1,232 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > StandardServiceRegistryImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.boot.registry.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: StandardServiceRegistryImpl (org.hibernate.boot.registry.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">StandardServiceRegistryImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    77.8%
+  </span>
+  <span class="absValue">
+    (7/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    55%
+  </span>
+  <span class="absValue">
+    (11/20)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (28/42)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.boot.registry.internal;
+&nbsp;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import org.hibernate.boot.registry.BootstrapServiceRegistry;
+&nbsp;import org.hibernate.boot.registry.StandardServiceInitiator;
+&nbsp;import org.hibernate.boot.registry.StandardServiceRegistry;
+&nbsp;import org.hibernate.service.Service;
+&nbsp;import org.hibernate.service.internal.AbstractServiceRegistryImpl;
+&nbsp;import org.hibernate.service.internal.ProvidedService;
+&nbsp;import org.hibernate.service.spi.Configurable;
+&nbsp;import org.hibernate.service.spi.ServiceBinding;
+&nbsp;import org.hibernate.service.spi.ServiceInitiator;
+&nbsp;
+&nbsp;public class StandardServiceRegistryImpl extends AbstractServiceRegistryImpl implements StandardServiceRegistry {
+&nbsp;    private Map&lt;String, Object&gt; configurationValues;
+&nbsp;
+&nbsp;    protected StandardServiceRegistryImpl(boolean autoCloseRegistry, BootstrapServiceRegistry bootstrapServiceRegistry, Map&lt;String, Object&gt; configurationValues) {
+&nbsp;        super(bootstrapServiceRegistry, autoCloseRegistry);
+&nbsp;        this.configurationValues = normalize(configurationValues);
+&nbsp;    }
+&nbsp;
+&nbsp;    public static StandardServiceRegistryImpl create(BootstrapServiceRegistry bootstrapServiceRegistry, List&lt;StandardServiceInitiator&lt;?&gt;&gt; serviceInitiators, List&lt;ProvidedService&lt;?&gt;&gt; providedServices, Map&lt;String, Object&gt; configurationValues) {
+&nbsp;        return create(true, bootstrapServiceRegistry, serviceInitiators, providedServices, configurationValues);
+&nbsp;    }
+&nbsp;
+&nbsp;    public static StandardServiceRegistryImpl create(boolean autoCloseRegistry, BootstrapServiceRegistry bootstrapServiceRegistry, List&lt;StandardServiceInitiator&lt;?&gt;&gt; serviceInitiators, List&lt;ProvidedService&lt;?&gt;&gt; providedServices, Map&lt;String, Object&gt; configurationValues) {
+&nbsp;        StandardServiceRegistryImpl instance = new StandardServiceRegistryImpl(autoCloseRegistry, bootstrapServiceRegistry, configurationValues);
+&nbsp;        instance.initialize();
+&nbsp;        instance.applyServiceRegistrations(serviceInitiators, providedServices);
+&nbsp;        return instance;
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    protected void applyServiceRegistrations(List&lt;StandardServiceInitiator&lt;?&gt;&gt; serviceInitiators, List&lt;ProvidedService&lt;?&gt;&gt; providedServices) {
+&nbsp;        try {
+&nbsp;            for(ServiceInitiator&lt;?&gt; initiator : serviceInitiators) {
+&nbsp;                this.createServiceBinding(initiator);
+&nbsp;            }
+&nbsp;
+&nbsp;            for(ProvidedService providedService : providedServices) {
+&nbsp;                this.createServiceBinding(providedService);
+&nbsp;            }
+&nbsp;
+&nbsp;        } catch (RuntimeException e) {
+&nbsp;            this.visitServiceBindings((binding) -&gt; binding.getLifecycleOwner().stopService(binding));
+&nbsp;            throw e;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public synchronized void resetAndReactivate(BootstrapServiceRegistry bootstrapServiceRegistry, List&lt;StandardServiceInitiator&lt;?&gt;&gt; serviceInitiators, List&lt;ProvidedService&lt;?&gt;&gt; providedServices, Map&lt;?, ?&gt; configurationValues) {
+&nbsp;        if (super.isActive()) {
+&nbsp;            throw new IllegalStateException(&quot;Can&#39;t reactivate an active registry&quot;);
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            super.resetParent(bootstrapServiceRegistry);
+&nbsp;            this.configurationValues = new HashMap(configurationValues);
+&nbsp;            super.reactivate();
+&nbsp;            this.applyServiceRegistrations(serviceInitiators, providedServices);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public synchronized &lt;R extends Service&gt; R initiateService(ServiceInitiator&lt;R&gt; serviceInitiator) {
+&nbsp;        return (R)((StandardServiceInitiator)serviceInitiator).initiateService(this.configurationValues, this);
+&nbsp;    }
+&nbsp;
+&nbsp;    public synchronized &lt;R extends Service&gt; void configureService(ServiceBinding&lt;R&gt; serviceBinding) {
+&nbsp;        if (serviceBinding.getService() instanceof Configurable) {
+&nbsp;            ((Configurable)serviceBinding.getService()).configure(this.configurationValues);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public synchronized void destroy() {
+&nbsp;        super.destroy();
+&nbsp;        this.configurationValues = null;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private static Map&lt;String, Object&gt; normalize(Map&lt;String, Object&gt; configurationValues) {</b>
+<b class="fc">&nbsp;        Object jdbcUrl = configurationValues.get(&quot;jakarta.persistence.jdbc.url&quot;);</b>
+&nbsp;        if (jdbcUrl != null) {
+<b class="fc">&nbsp;            configurationValues.putIfAbsent(&quot;hibernate.connection.url&quot;, jdbcUrl);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        Object username = configurationValues.get(&quot;jakarta.persistence.jdbc.user&quot;);
+&nbsp;        if (username != null) {
+&nbsp;            configurationValues.putIfAbsent(&quot;hibernate.connection.username&quot;, username);
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;        Object password = configurationValues.get(&quot;jakarta.persistence.jdbc.password&quot;);
+&nbsp;        if (password != null) {
+&nbsp;            configurationValues.putIfAbsent(&quot;hibernate.connection.password&quot;, password);
+&nbsp;        }
+<b class="pc">&nbsp;</b>
+&nbsp;        Object driver = configurationValues.get(&quot;jakarta.persistence.jdbc.driver&quot;);
+<b class="nc">&nbsp;        if (driver != null) {</b>
+&nbsp;            configurationValues.putIfAbsent(&quot;hibernate.connection.driver_class&quot;, driver);
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Object nonJtaDatasource = configurationValues.get(&quot;jakarta.persistence.nonJtaDataSource&quot;);</b>
+&nbsp;        if (nonJtaDatasource != null) {
+&nbsp;            configurationValues.putIfAbsent(&quot;hibernate.connection.datasource&quot;, nonJtaDatasource);
+&nbsp;        }
+&nbsp;
+&nbsp;        Object jtaDatasource = configurationValues.get(&quot;jakarta.persistence.jtaDataSource&quot;);
+&nbsp;        if (jtaDatasource != null) {
+&nbsp;            configurationValues.putIfAbsent(&quot;hibernate.connection.datasource&quot;, jtaDatasource);
+&nbsp;        }
+&nbsp;
+&nbsp;        return configurationValues;
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:58</div>
+</div>
+</body>
+</html>

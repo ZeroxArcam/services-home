@@ -1,0 +1,202 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > EmbeddableDiscriminatorConverter</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.metamodel.mapping</a>
+</div>
+
+<h1>Coverage Summary for Class: EmbeddableDiscriminatorConverter (org.hibernate.metamodel.mapping)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">EmbeddableDiscriminatorConverter</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/32)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.metamodel.mapping;
+&nbsp;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.function.Consumer;
+&nbsp;import java.util.function.Function;
+&nbsp;import org.hibernate.AssertionFailure;
+&nbsp;import org.hibernate.HibernateException;
+&nbsp;import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
+&nbsp;import org.hibernate.metamodel.mapping.internal.EmbeddableDiscriminatorValueDetailsImpl;
+&nbsp;import org.hibernate.service.ServiceRegistry;
+&nbsp;import org.hibernate.type.BasicType;
+&nbsp;import org.hibernate.type.descriptor.java.JavaType;
+&nbsp;
+&nbsp;public class EmbeddableDiscriminatorConverter&lt;O, R&gt; extends DiscriminatorConverter&lt;O, R&gt; {
+&nbsp;    private final Map&lt;Object, EmbeddableDiscriminatorValueDetailsImpl&gt; discriminatorValueToDetailsMap;
+&nbsp;    private final Map&lt;String, EmbeddableDiscriminatorValueDetailsImpl&gt; embeddableClassNameToDetailsMap;
+&nbsp;
+&nbsp;    public static &lt;O, R&gt; EmbeddableDiscriminatorConverter&lt;O, R&gt; fromValueMappings(String discriminatedType, JavaType&lt;O&gt; domainJavaType, BasicType&lt;R&gt; underlyingJdbcMapping, Map&lt;Object, String&gt; valueMappings, ServiceRegistry serviceRegistry) {
+&nbsp;        List&lt;EmbeddableDiscriminatorValueDetailsImpl&gt; valueDetailsList = new ArrayList(valueMappings.size());
+&nbsp;        ClassLoaderService cls = (ClassLoaderService)serviceRegistry.requireService(ClassLoaderService.class);
+&nbsp;        valueMappings.forEach((value, embeddableClassName) -&gt; valueDetailsList.add(new EmbeddableDiscriminatorValueDetailsImpl(value, cls.classForName(embeddableClassName))));
+&nbsp;        return new EmbeddableDiscriminatorConverter&lt;O, R&gt;(discriminatedType, domainJavaType, underlyingJdbcMapping.getJavaTypeDescriptor(), valueDetailsList);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public EmbeddableDiscriminatorConverter(String discriminatorName, JavaType&lt;O&gt; domainJavaType, JavaType&lt;R&gt; relationalJavaType, List&lt;EmbeddableDiscriminatorValueDetailsImpl&gt; valueMappings) {
+&nbsp;        super(discriminatorName, domainJavaType, relationalJavaType);
+&nbsp;        this.discriminatorValueToDetailsMap = new HashMap(valueMappings.size());
+&nbsp;        this.embeddableClassNameToDetailsMap = new HashMap(valueMappings.size());
+&nbsp;        valueMappings.forEach((valueDetails) -&gt; {
+<b class="nc">&nbsp;            this.discriminatorValueToDetailsMap.put(valueDetails.getValue(), valueDetails);</b>
+<b class="nc">&nbsp;            this.embeddableClassNameToDetailsMap.put(valueDetails.getIndicatedEntityName(), valueDetails);</b>
+<b class="nc">&nbsp;        });</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public O toDomainValue(R relationalForm) {
+<b class="nc">&nbsp;        assert relationalForm == null || this.getRelationalJavaType().isInstance(relationalForm);</b>
+&nbsp;
+&nbsp;        EmbeddableDiscriminatorValueDetailsImpl matchingValueDetails = this.getDetailsForDiscriminatorValue(relationalForm);
+<b class="nc">&nbsp;        if (matchingValueDetails == null) {</b>
+&nbsp;            throw new IllegalStateException(&quot;Could not resolve discriminator value&quot;);
+&nbsp;        } else {
+&nbsp;            return (O)matchingValueDetails.getEmbeddableClass();
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public EmbeddableDiscriminatorValueDetailsImpl getDetailsForDiscriminatorValue(Object value) {
+&nbsp;        EmbeddableDiscriminatorValueDetailsImpl valueMatch = (EmbeddableDiscriminatorValueDetailsImpl)this.discriminatorValueToDetailsMap.get(value);
+&nbsp;        if (valueMatch != null) {
+&nbsp;            return valueMatch;
+&nbsp;        } else {
+&nbsp;            throw new HibernateException(&quot;Unrecognized discriminator value: &quot; + value);
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public DiscriminatorValueDetails getDetailsForEntityName(String embeddableClassName) {</b>
+<b class="nc">&nbsp;        DiscriminatorValueDetails valueDetails = (DiscriminatorValueDetails)this.embeddableClassNameToDetailsMap.get(embeddableClassName);</b>
+<b class="nc">&nbsp;        if (valueDetails != null) {</b>
+<b class="nc">&nbsp;            return valueDetails;</b>
+&nbsp;        } else {
+&nbsp;            throw new AssertionFailure(&quot;Unrecognized embeddable class: &quot; + embeddableClassName);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void forEachValueDetail(Consumer&lt;DiscriminatorValueDetails&gt; consumer) {</b>
+&nbsp;        this.discriminatorValueToDetailsMap.forEach((value, detail) -&gt; consumer.accept(detail));
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public &lt;X&gt; X fromValueDetails(Function&lt;DiscriminatorValueDetails, X&gt; handler) {</b>
+&nbsp;        for(DiscriminatorValueDetails detail : this.discriminatorValueToDetailsMap.values()) {
+&nbsp;            X result = (X)handler.apply(detail);
+&nbsp;            if (result != null) {
+<b class="nc">&nbsp;                return result;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return null;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

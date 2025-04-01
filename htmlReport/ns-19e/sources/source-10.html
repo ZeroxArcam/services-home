@@ -1,0 +1,295 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > TemporalUnit</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.query.sqm</a>
+</div>
+
+<h1>Coverage Summary for Class: TemporalUnit (org.hibernate.query.sqm)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TemporalUnit</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    11.1%
+  </span>
+  <span class="absValue">
+    (1/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/80)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    30.6%
+  </span>
+  <span class="absValue">
+    (22/72)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.query.sqm;
+&nbsp;
+&nbsp;import org.hibernate.dialect.Dialect;
+&nbsp;import org.hibernate.query.SemanticException;
+&nbsp;
+&nbsp;public enum TemporalUnit {
+&nbsp;    YEAR,
+&nbsp;    QUARTER,
+&nbsp;    MONTH,
+&nbsp;    WEEK,
+&nbsp;    DAY,
+&nbsp;    HOUR,
+&nbsp;    MINUTE,
+&nbsp;    SECOND,
+&nbsp;    NANOSECOND,
+&nbsp;    DAY_OF_WEEK,
+&nbsp;    DAY_OF_YEAR,
+&nbsp;    DAY_OF_MONTH,
+&nbsp;    WEEK_OF_MONTH,
+&nbsp;    WEEK_OF_YEAR,
+&nbsp;    OFFSET,
+&nbsp;    TIMEZONE_HOUR,
+&nbsp;    TIMEZONE_MINUTE,
+&nbsp;    DATE,
+&nbsp;    TIME,
+&nbsp;    EPOCH,
+&nbsp;    NATIVE;
+&nbsp;
+&nbsp;    private TemporalUnit() {
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public String conversionFactor(TemporalUnit unit, Dialect dialect) {
+&nbsp;        if (unit == this) {
+&nbsp;            return &quot;&quot;;
+<b class="fc">&nbsp;        } else if (unit.normalized() != this.normalized()) {</b>
+&nbsp;            throw new SemanticException(&quot;Illegal unit conversion &quot; + this + &quot; to &quot; + unit);
+&nbsp;        } else {
+&nbsp;            long from = this.normalizationFactor(dialect);
+<b class="fc">&nbsp;            long to = unit.normalizationFactor(dialect);</b>
+&nbsp;            return from == to ? &quot;&quot; : (from &lt; to ? &quot;/&quot; : &quot;*&quot;) + factorAsString(from &lt; to ? to / from : from / to);
+&nbsp;        }
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public String conversionFactorFull(TemporalUnit unit, Dialect dialect) {
+&nbsp;        if (unit == this) {
+&nbsp;            return &quot;&quot;;
+&nbsp;        } else if (unit.normalized() != this.normalized()) {
+&nbsp;            throw new SemanticException(&quot;Illegal unit conversion &quot; + this + &quot; to &quot; + unit);
+&nbsp;        } else {
+<b class="fc">&nbsp;            long from = this.normalizationFactor(dialect);</b>
+&nbsp;            long to = unit.normalizationFactor(dialect);
+&nbsp;            return from == to ? &quot;&quot; : (from &lt; to ? &quot;/&quot; : &quot;*&quot;) + (from &lt; to ? to / from : from / to);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    private long normalizationFactor(Dialect dialect) {</b>
+&nbsp;        long factor = 1L;
+&nbsp;        switch (this) {
+&nbsp;            case YEAR:
+&nbsp;                factor *= 4L;
+&nbsp;            case QUARTER:
+&nbsp;                factor *= 3L;
+<b class="fc">&nbsp;            case MONTH:</b>
+&nbsp;            case NANOSECOND:
+&nbsp;                break;
+&nbsp;            case WEEK:
+&nbsp;                factor *= 7L;
+&nbsp;            case DAY:
+<b class="fc">&nbsp;                factor *= 24L;</b>
+&nbsp;            case HOUR:
+&nbsp;                factor *= 60L;
+&nbsp;            case MINUTE:
+&nbsp;                factor *= 60L;
+&nbsp;            case EPOCH:
+&nbsp;            case SECOND:
+&nbsp;                factor *= 1000000000L;
+<b class="fc">&nbsp;                break;</b>
+&nbsp;            case NATIVE:
+&nbsp;                factor *= dialect.getFractionalSecondPrecisionInNanos();
+&nbsp;                break;
+&nbsp;            default:
+&nbsp;                throw new SemanticException(&quot;Inconvertible unit &quot; + this);
+&nbsp;        }
+&nbsp;
+&nbsp;        return factor;
+&nbsp;    }
+&nbsp;
+&nbsp;    private static String factorAsString(long factor) {
+&nbsp;        String string = String.valueOf(factor);
+&nbsp;        int len = string.length();
+<b class="fc">&nbsp;</b>
+&nbsp;        int chop;
+&nbsp;        for(chop = len; chop &gt; 0 &amp;&amp; string.charAt(chop - 1) == &#39;0&#39;; --chop) {
+&nbsp;        }
+&nbsp;
+&nbsp;        int e = len - chop;
+<b class="fc">&nbsp;        if (chop &gt; 0 &amp;&amp; e &gt; 2) {</b>
+&nbsp;            String var10000 = string.substring(0, chop);
+&nbsp;            string = var10000 + &quot;e&quot; + e;
+&nbsp;        }
+&nbsp;
+&nbsp;        return string;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public boolean isDateUnit() {
+&nbsp;        switch (this) {
+<b class="fc">&nbsp;            case YEAR:</b>
+&nbsp;            case QUARTER:
+&nbsp;            case MONTH:
+&nbsp;            case WEEK:
+&nbsp;            case DAY:
+&nbsp;            case DAY_OF_WEEK:
+&nbsp;            case DAY_OF_MONTH:
+&nbsp;            case DAY_OF_YEAR:
+<b class="fc">&nbsp;            case WEEK_OF_MONTH:</b>
+&nbsp;            case WEEK_OF_YEAR:
+&nbsp;                return true;
+&nbsp;            case HOUR:
+&nbsp;            case MINUTE:
+&nbsp;            case EPOCH:
+&nbsp;            case SECOND:
+&nbsp;            case NANOSECOND:
+&nbsp;            case NATIVE:
+<b class="fc">&nbsp;            default:</b>
+&nbsp;                return false;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public boolean isTimeUnit() {</b>
+&nbsp;        switch (this) {
+&nbsp;            case HOUR:
+&nbsp;            case MINUTE:
+&nbsp;            case SECOND:
+<b class="fc">&nbsp;            case NANOSECOND:</b>
+&nbsp;            case NATIVE:
+&nbsp;            case TIMEZONE_HOUR:
+&nbsp;            case TIMEZONE_MINUTE:
+&nbsp;            case OFFSET:
+<b class="fc">&nbsp;                return true;</b>
+&nbsp;            case EPOCH:
+&nbsp;            case DAY_OF_WEEK:
+&nbsp;            case DAY_OF_MONTH:
+&nbsp;            case DAY_OF_YEAR:
+<b class="fc">&nbsp;            case WEEK_OF_MONTH:</b>
+&nbsp;            case WEEK_OF_YEAR:
+&nbsp;            default:
+&nbsp;                return false;
+&nbsp;        }
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public TemporalUnit normalized() {
+&nbsp;        switch (this) {
+&nbsp;            case YEAR:
+<b class="fc">&nbsp;            case QUARTER:</b>
+&nbsp;            case MONTH:
+&nbsp;                return MONTH;
+&nbsp;            case WEEK:
+&nbsp;            case DAY:
+&nbsp;            case HOUR:
+&nbsp;            case MINUTE:
+&nbsp;            case EPOCH:
+&nbsp;            case SECOND:
+&nbsp;            case NANOSECOND:
+&nbsp;            case NATIVE:
+&nbsp;                return NANOSECOND;
+<b class="fc">&nbsp;            default:</b>
+&nbsp;                throw new SemanticException(&quot;Illegal unit &quot; + this);
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public String toString() {
+<b class="nc">&nbsp;        return super.toString().toLowerCase();</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
+</div>
+</body>
+</html>

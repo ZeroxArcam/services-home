@@ -1,0 +1,222 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > InstrumentationLoadTimeWeaver</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.instrument.classloading</a>
+</div>
+
+<h1>Coverage Summary for Class: InstrumentationLoadTimeWeaver (org.springframework.instrument.classloading)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">InstrumentationLoadTimeWeaver</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (3/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    14.3%
+  </span>
+  <span class="absValue">
+    (2/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    18.5%
+  </span>
+  <span class="absValue">
+    (5/27)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.instrument.classloading;
+&nbsp;
+&nbsp;import java.lang.instrument.ClassFileTransformer;
+&nbsp;import java.lang.instrument.IllegalClassFormatException;
+&nbsp;import java.lang.instrument.Instrumentation;
+&nbsp;import java.security.ProtectionDomain;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.List;
+&nbsp;import org.springframework.instrument.InstrumentationSavingAgent;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.ClassUtils;
+&nbsp;
+&nbsp;public class InstrumentationLoadTimeWeaver implements LoadTimeWeaver {
+&nbsp;    private static final boolean AGENT_CLASS_PRESENT = ClassUtils.isPresent(&quot;org.springframework.instrument.InstrumentationSavingAgent&quot;, InstrumentationLoadTimeWeaver.class.getClassLoader());
+&nbsp;    @Nullable
+&nbsp;    private final ClassLoader classLoader;
+&nbsp;    @Nullable
+&nbsp;    private final Instrumentation instrumentation;
+&nbsp;    private final List&lt;ClassFileTransformer&gt; transformers;
+&nbsp;
+&nbsp;    public InstrumentationLoadTimeWeaver() {
+&nbsp;        this(ClassUtils.getDefaultClassLoader());
+&nbsp;    }
+&nbsp;
+&nbsp;    public InstrumentationLoadTimeWeaver(@Nullable ClassLoader classLoader) {
+&nbsp;        this.transformers = new ArrayList(4);
+&nbsp;        this.classLoader = classLoader;
+&nbsp;        this.instrumentation = getInstrumentation();
+&nbsp;    }
+&nbsp;
+&nbsp;    public void addTransformer(ClassFileTransformer transformer) {
+&nbsp;        Assert.notNull(transformer, &quot;Transformer must not be null&quot;);
+&nbsp;        FilteringClassFileTransformer actualTransformer = new FilteringClassFileTransformer(transformer, this.classLoader);
+&nbsp;        synchronized(this.transformers) {
+&nbsp;            Assert.state(this.instrumentation != null, &quot;Must start with Java agent to use InstrumentationLoadTimeWeaver. See Spring documentation.&quot;);
+&nbsp;            this.instrumentation.addTransformer(actualTransformer);
+&nbsp;            this.transformers.add(actualTransformer);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public ClassLoader getInstrumentableClassLoader() {
+&nbsp;        Assert.state(this.classLoader != null, &quot;No ClassLoader available&quot;);
+&nbsp;        return this.classLoader;
+&nbsp;    }
+&nbsp;
+&nbsp;    public ClassLoader getThrowawayClassLoader() {
+&nbsp;        return new SimpleThrowawayClassLoader(this.getInstrumentableClassLoader());
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+<b class="fc">&nbsp;    public void removeTransformers() {</b>
+&nbsp;        synchronized(this.transformers) {
+&nbsp;            if (this.instrumentation != null &amp;&amp; !this.transformers.isEmpty()) {
+&nbsp;                for(int i = this.transformers.size() - 1; i &gt;= 0; --i) {
+&nbsp;                    this.instrumentation.removeTransformer((ClassFileTransformer)this.transformers.get(i));
+&nbsp;                }
+&nbsp;
+&nbsp;                this.transformers.clear();
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static boolean isInstrumentationAvailable() {
+&nbsp;        return getInstrumentation() != null;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    @Nullable
+&nbsp;    private static Instrumentation getInstrumentation() {
+&nbsp;        return AGENT_CLASS_PRESENT ? InstrumentationLoadTimeWeaver.InstrumentationAccessor.getInstrumentation() : null;
+&nbsp;    }
+&nbsp;
+&nbsp;    private static class InstrumentationAccessor {
+<b class="nc">&nbsp;        private InstrumentationAccessor() {</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        public static Instrumentation getInstrumentation() {
+&nbsp;            return InstrumentationSavingAgent.getInstrumentation();
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private static class FilteringClassFileTransformer implements ClassFileTransformer {</b>
+<b class="nc">&nbsp;        private final ClassFileTransformer targetTransformer;</b>
+&nbsp;        @Nullable
+<b class="nc">&nbsp;        private final ClassLoader targetClassLoader;</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        public FilteringClassFileTransformer(ClassFileTransformer targetTransformer, @Nullable ClassLoader targetClassLoader) {
+<b class="nc">&nbsp;            this.targetTransformer = targetTransformer;</b>
+<b class="nc">&nbsp;            this.targetClassLoader = targetClassLoader;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        @Nullable
+&nbsp;        public byte[] transform(ClassLoader loader, String className, Class&lt;?&gt; classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
+&nbsp;            return this.targetClassLoader != loader ? null : this.targetTransformer.transform(loader, className, classBeingRedefined, protectionDomain, classfileBuffer);
+&nbsp;        }
+&nbsp;
+&nbsp;        public String toString() {
+&nbsp;            return &quot;FilteringClassFileTransformer for: &quot; + this.targetTransformer.toString();
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
+</div>
+</body>
+</html>

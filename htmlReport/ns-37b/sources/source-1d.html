@@ -1,0 +1,204 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > StreamConverter</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.core.convert.support</a>
+</div>
+
+<h1>Coverage Summary for Class: StreamConverter (org.springframework.core.convert.support)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">StreamConverter</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    40%
+  </span>
+  <span class="absValue">
+    (4/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (11/33)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.core.convert.support;
+&nbsp;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.HashSet;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.stream.Collectors;
+&nbsp;import java.util.stream.Stream;
+&nbsp;import org.springframework.core.convert.ConversionService;
+&nbsp;import org.springframework.core.convert.TypeDescriptor;
+&nbsp;import org.springframework.core.convert.converter.ConditionalGenericConverter;
+&nbsp;import org.springframework.core.convert.converter.GenericConverter;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;
+&nbsp;class StreamConverter implements ConditionalGenericConverter {
+&nbsp;    private static final TypeDescriptor STREAM_TYPE = TypeDescriptor.valueOf(Stream.class);
+&nbsp;    private static final Set&lt;GenericConverter.ConvertiblePair&gt; CONVERTIBLE_TYPES = createConvertibleTypes();
+&nbsp;    private final ConversionService conversionService;
+&nbsp;
+&nbsp;    public StreamConverter(ConversionService conversionService) {
+&nbsp;        this.conversionService = conversionService;
+&nbsp;    }
+&nbsp;
+&nbsp;    public Set&lt;GenericConverter.ConvertiblePair&gt; getConvertibleTypes() {
+&nbsp;        return CONVERTIBLE_TYPES;
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
+&nbsp;        if (sourceType.isAssignableTo(STREAM_TYPE)) {
+&nbsp;            return this.matchesFromStream(sourceType.getElementTypeDescriptor(), targetType);
+&nbsp;        } else {
+&nbsp;            return targetType.isAssignableTo(STREAM_TYPE) ? this.matchesToStream(targetType.getElementTypeDescriptor(), sourceType) : false;
+&nbsp;        }
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public boolean matchesFromStream(@Nullable TypeDescriptor elementType, TypeDescriptor targetType) {
+<b class="fc">&nbsp;        TypeDescriptor collectionOfElement = TypeDescriptor.collection(Collection.class, elementType);</b>
+&nbsp;        return this.conversionService.canConvert(collectionOfElement, targetType);
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean matchesToStream(@Nullable TypeDescriptor elementType, TypeDescriptor sourceType) {
+<b class="fc">&nbsp;        TypeDescriptor collectionOfElement = TypeDescriptor.collection(Collection.class, elementType);</b>
+<b class="fc">&nbsp;        return this.conversionService.canConvert(sourceType, collectionOfElement);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public Object convert(@Nullable Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
+&nbsp;        if (sourceType.isAssignableTo(STREAM_TYPE)) {
+<b class="fc">&nbsp;            return this.convertFromStream((Stream)source, sourceType, targetType);</b>
+&nbsp;        } else if (targetType.isAssignableTo(STREAM_TYPE)) {
+&nbsp;            return this.convertToStream(source, sourceType, targetType);
+&nbsp;        } else {
+&nbsp;            throw new IllegalStateException(&quot;Unexpected source/target types&quot;);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    @Nullable</b>
+<b class="nc">&nbsp;    private Object convertFromStream(@Nullable Stream&lt;?&gt; source, TypeDescriptor streamType, TypeDescriptor targetType) {</b>
+&nbsp;        List&lt;Object&gt; content = source != null ? (List)source.collect(Collectors.toList()) : Collections.emptyList();
+<b class="nc">&nbsp;        TypeDescriptor listType = TypeDescriptor.collection(List.class, streamType.getElementTypeDescriptor());</b>
+&nbsp;        return this.conversionService.convert(content, listType, targetType);
+&nbsp;    }
+&nbsp;
+&nbsp;    private Object convertToStream(@Nullable Object source, TypeDescriptor sourceType, TypeDescriptor streamType) {
+&nbsp;        TypeDescriptor targetCollection = TypeDescriptor.collection(List.class, streamType.getElementTypeDescriptor());
+&nbsp;        List&lt;?&gt; target = (List)this.conversionService.convert(source, sourceType, targetCollection);
+&nbsp;        if (target == null) {
+&nbsp;            target = Collections.emptyList();
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return target.stream();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static Set&lt;GenericConverter.ConvertiblePair&gt; createConvertibleTypes() {
+&nbsp;        Set&lt;GenericConverter.ConvertiblePair&gt; convertiblePairs = new HashSet();
+&nbsp;        convertiblePairs.add(new GenericConverter.ConvertiblePair(Stream.class, Collection.class));
+&nbsp;        convertiblePairs.add(new GenericConverter.ConvertiblePair(Stream.class, Object[].class));
+&nbsp;        convertiblePairs.add(new GenericConverter.ConvertiblePair(Collection.class, Stream.class));
+&nbsp;        convertiblePairs.add(new GenericConverter.ConvertiblePair(Object[].class, Stream.class));
+&nbsp;        return convertiblePairs;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

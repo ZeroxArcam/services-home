@@ -1,0 +1,191 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > LoadingCache</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.cglib.core.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: LoadingCache (org.springframework.cglib.core.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LoadingCache</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    80%
+  </span>
+  <span class="absValue">
+    (4/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    42.9%
+  </span>
+  <span class="absValue">
+    (6/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    70%
+  </span>
+  <span class="absValue">
+    (21/30)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.cglib.core.internal;
+&nbsp;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import java.util.concurrent.ConcurrentMap;
+&nbsp;import java.util.concurrent.ExecutionException;
+&nbsp;import java.util.concurrent.FutureTask;
+&nbsp;
+&nbsp;public class LoadingCache&lt;K, KK, V&gt; {
+<b class="fc">&nbsp;    protected final ConcurrentMap&lt;KK, Object&gt; map;</b>
+&nbsp;    protected final Function&lt;K, V&gt; loader;
+<b class="fc">&nbsp;    protected final Function&lt;K, KK&gt; keyMapper;</b>
+<b class="fc">&nbsp;    public static final Function IDENTITY = (key) -&gt; key;</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public LoadingCache(Function&lt;K, KK&gt; keyMapper, Function&lt;K, V&gt; loader) {</b>
+&nbsp;        this.keyMapper = keyMapper;
+&nbsp;        this.loader = loader;
+&nbsp;        this.map = new ConcurrentHashMap();
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public static &lt;K&gt; Function&lt;K, K&gt; identity() {
+&nbsp;        return IDENTITY;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public V get(K key) {</b>
+<b class="pc">&nbsp;        KK cacheKey = (KK)this.keyMapper.apply(key);</b>
+<b class="fc">&nbsp;        Object v = this.map.get(cacheKey);</b>
+&nbsp;        return (V)(v != null &amp;&amp; !(v instanceof FutureTask) ? v : this.createEntry(key, cacheKey, v));
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    protected V createEntry(final K key, KK cacheKey, Object v) {
+&nbsp;        boolean creator = false;
+&nbsp;        FutureTask&lt;V&gt; task;
+&nbsp;        if (v != null) {
+&nbsp;            task = (FutureTask)v;
+&nbsp;        } else {
+&nbsp;            task = new FutureTask(() -&gt; this.loader.apply(key));
+&nbsp;            Object prevTask = this.map.putIfAbsent(cacheKey, task);
+&nbsp;            if (prevTask == null) {
+&nbsp;                creator = true;
+&nbsp;                task.run();
+&nbsp;            } else {
+<b class="fc">&nbsp;                if (!(prevTask instanceof FutureTask)) {</b>
+<b class="pc">&nbsp;                    return (V)prevTask;</b>
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+&nbsp;                task = (FutureTask)prevTask;
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;        }</b>
+<b class="pc">&nbsp;</b>
+&nbsp;        V result;
+<b class="fc">&nbsp;        try {</b>
+<b class="fc">&nbsp;            result = (V)task.get();</b>
+<b class="nc">&nbsp;        } catch (InterruptedException e) {</b>
+<b class="nc">&nbsp;            throw new IllegalStateException(&quot;Interrupted while loading cache item&quot;, e);</b>
+&nbsp;        } catch (ExecutionException e) {
+<b class="nc">&nbsp;            Throwable cause = e.getCause();</b>
+&nbsp;            if (cause instanceof RuntimeException runtimeException) {
+&nbsp;                throw runtimeException;
+&nbsp;            }
+&nbsp;
+&nbsp;            throw new IllegalStateException(&quot;Unable to load cache item&quot;, cause);
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        if (creator) {</b>
+&nbsp;            this.map.put(cacheKey, result);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return result;
+&nbsp;    }
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:57</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,410 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > BeanDefinitionLoader</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.boot</a>
+</div>
+
+<h1>Coverage Summary for Class: BeanDefinitionLoader (org.springframework.boot)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">BeanDefinitionLoader</td>
+<td class="coverageStat">
+  <span class="percent">
+    47.4%
+  </span>
+  <span class="absValue">
+    (9/19)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    15.4%
+  </span>
+  <span class="absValue">
+    (8/52)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    27.4%
+  </span>
+  <span class="absValue">
+    (23/84)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">BeanDefinitionLoader$ClassExcludeFilter</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    75%
+  </span>
+  <span class="absValue">
+    (3/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    83.3%
+  </span>
+  <span class="absValue">
+    (5/6)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    47.6%
+  </span>
+  <span class="absValue">
+    (10/21)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    19.6%
+  </span>
+  <span class="absValue">
+    (11/56)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    31.1%
+  </span>
+  <span class="absValue">
+    (28/90)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.boot;
+&nbsp;
+&nbsp;import groovy.lang.Closure;
+&nbsp;import java.io.IOException;
+&nbsp;import java.lang.reflect.Constructor;
+&nbsp;import java.util.HashSet;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.regex.Pattern;
+&nbsp;import org.springframework.beans.BeanUtils;
+&nbsp;import org.springframework.beans.factory.BeanDefinitionStoreException;
+&nbsp;import org.springframework.beans.factory.groovy.GroovyBeanDefinitionReader;
+&nbsp;import org.springframework.beans.factory.support.AbstractBeanDefinitionReader;
+&nbsp;import org.springframework.beans.factory.support.BeanDefinitionReader;
+&nbsp;import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+&nbsp;import org.springframework.beans.factory.support.BeanNameGenerator;
+&nbsp;import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
+&nbsp;import org.springframework.context.annotation.AnnotatedBeanDefinitionReader;
+&nbsp;import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
+&nbsp;import org.springframework.core.env.ConfigurableEnvironment;
+&nbsp;import org.springframework.core.io.ClassPathResource;
+&nbsp;import org.springframework.core.io.Resource;
+&nbsp;import org.springframework.core.io.ResourceLoader;
+&nbsp;import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+&nbsp;import org.springframework.core.io.support.ResourcePatternResolver;
+&nbsp;import org.springframework.core.type.filter.AbstractTypeHierarchyTraversingFilter;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.ClassUtils;
+&nbsp;import org.springframework.util.ObjectUtils;
+&nbsp;import org.springframework.util.StringUtils;
+&nbsp;
+&nbsp;class BeanDefinitionLoader {
+&nbsp;    private static final Pattern GROOVY_CLOSURE_PATTERN = Pattern.compile(&quot;.*\\$_.*closure.*&quot;);
+&nbsp;    private final Object[] sources;
+&nbsp;    private final AnnotatedBeanDefinitionReader annotatedReader;
+&nbsp;    private final AbstractBeanDefinitionReader xmlReader;
+&nbsp;    private final BeanDefinitionReader groovyReader;
+&nbsp;    private final ClassPathBeanDefinitionScanner scanner;
+&nbsp;    private ResourceLoader resourceLoader;
+&nbsp;
+&nbsp;    BeanDefinitionLoader(BeanDefinitionRegistry registry, Object... sources) {
+&nbsp;        Assert.notNull(registry, &quot;Registry must not be null&quot;);
+&nbsp;        Assert.notEmpty(sources, &quot;Sources must not be empty&quot;);
+&nbsp;        this.sources = sources;
+&nbsp;        this.annotatedReader = new AnnotatedBeanDefinitionReader(registry);
+&nbsp;        this.xmlReader = new XmlBeanDefinitionReader(registry);
+&nbsp;        this.groovyReader = this.isGroovyPresent() ? new GroovyBeanDefinitionReader(registry) : null;
+&nbsp;        this.scanner = new ClassPathBeanDefinitionScanner(registry);
+&nbsp;        this.scanner.addExcludeFilter(new ClassExcludeFilter(sources));
+&nbsp;    }
+&nbsp;
+&nbsp;    void setBeanNameGenerator(BeanNameGenerator beanNameGenerator) {
+&nbsp;        this.annotatedReader.setBeanNameGenerator(beanNameGenerator);
+&nbsp;        this.scanner.setBeanNameGenerator(beanNameGenerator);
+&nbsp;        this.xmlReader.setBeanNameGenerator(beanNameGenerator);
+&nbsp;    }
+&nbsp;
+&nbsp;    void setResourceLoader(ResourceLoader resourceLoader) {
+<b class="fc">&nbsp;        this.resourceLoader = resourceLoader;</b>
+&nbsp;        this.scanner.setResourceLoader(resourceLoader);
+&nbsp;        this.xmlReader.setResourceLoader(resourceLoader);
+&nbsp;    }
+&nbsp;
+&nbsp;    void setEnvironment(ConfigurableEnvironment environment) {
+&nbsp;        this.annotatedReader.setEnvironment(environment);
+&nbsp;        this.scanner.setEnvironment(environment);
+&nbsp;        this.xmlReader.setEnvironment(environment);
+&nbsp;    }
+&nbsp;
+&nbsp;    void load() {
+&nbsp;        for(Object source : this.sources) {
+&nbsp;            this.load(source);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private void load(Object source) {
+&nbsp;        Assert.notNull(source, &quot;Source must not be null&quot;);
+<b class="fc">&nbsp;        if (source instanceof Class&lt;?&gt; type) {</b>
+<b class="fc">&nbsp;            this.load(type);</b>
+<b class="fc">&nbsp;        } else if (source instanceof Resource resource) {</b>
+<b class="fc">&nbsp;            this.load(resource);</b>
+<b class="fc">&nbsp;        } else if (source instanceof Package pack) {</b>
+<b class="fc">&nbsp;            this.load(pack);</b>
+<b class="pc">&nbsp;        } else if (source instanceof CharSequence sequence) {</b>
+<b class="fc">&nbsp;            this.load(sequence);</b>
+<b class="fc">&nbsp;        } else {</b>
+&nbsp;            throw new IllegalArgumentException(&quot;Invalid source type &quot; + String.valueOf(source.getClass()));
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void load(Class&lt;?&gt; source) {
+&nbsp;        if (this.isGroovyPresent() &amp;&amp; GroovyBeanDefinitionSource.class.isAssignableFrom(source)) {
+&nbsp;            GroovyBeanDefinitionSource loader = (GroovyBeanDefinitionSource)BeanUtils.instantiateClass(source, GroovyBeanDefinitionSource.class);
+<b class="nc">&nbsp;            ((GroovyBeanDefinitionReader)this.groovyReader).beans(loader.getBeans());</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        if (this.isEligible(source)) {
+&nbsp;            this.annotatedReader.register(new Class[]{source});
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private void load(Resource source) {
+<b class="nc">&nbsp;        if (source.getFilename().endsWith(&quot;.groovy&quot;)) {</b>
+<b class="nc">&nbsp;            if (this.groovyReader == null) {</b>
+<b class="nc">&nbsp;                throw new BeanDefinitionStoreException(&quot;Cannot load Groovy beans without Groovy on classpath&quot;);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            this.groovyReader.loadBeanDefinitions(source);
+&nbsp;        } else {
+&nbsp;            this.xmlReader.loadBeanDefinitions(source);
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private void load(Package source) {</b>
+&nbsp;        this.scanner.scan(new String[]{source.getName()});
+&nbsp;    }
+&nbsp;
+&nbsp;    private void load(CharSequence source) {
+&nbsp;        String resolvedSource = this.scanner.getEnvironment().resolvePlaceholders(source.toString());
+&nbsp;
+<b class="fc">&nbsp;        try {</b>
+<b class="fc">&nbsp;            this.load(ClassUtils.forName(resolvedSource, (ClassLoader)null));</b>
+&nbsp;        } catch (ClassNotFoundException | IllegalArgumentException var4) {
+&nbsp;            if (!this.loadAsResources(resolvedSource)) {
+&nbsp;                Package packageResource = this.findPackage(resolvedSource);
+&nbsp;                if (packageResource != null) {
+<b class="fc">&nbsp;                    this.load(packageResource);</b>
+<b class="pc">&nbsp;                } else {</b>
+<b class="fc">&nbsp;                    throw new IllegalArgumentException(&quot;Invalid source &#39;&quot; + resolvedSource + &quot;&#39;&quot;);</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private boolean loadAsResources(String resolvedSource) {
+<b class="nc">&nbsp;        boolean foundCandidate = false;</b>
+<b class="nc">&nbsp;        Resource[] resources = this.findResources(resolvedSource);</b>
+&nbsp;
+&nbsp;        for(Resource resource : resources) {
+<b class="nc">&nbsp;            if (this.isLoadCandidate(resource)) {</b>
+<b class="nc">&nbsp;                foundCandidate = true;</b>
+&nbsp;                this.load(resource);
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return foundCandidate;
+&nbsp;    }
+<b class="pc">&nbsp;</b>
+&nbsp;    private boolean isGroovyPresent() {
+<b class="nc">&nbsp;        return ClassUtils.isPresent(&quot;groovy.lang.MetaClass&quot;, (ClassLoader)null);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="pc">&nbsp;    private Resource[] findResources(String source) {</b>
+<b class="fc">&nbsp;        ResourceLoader loader = (ResourceLoader)(this.resourceLoader != null ? this.resourceLoader : new PathMatchingResourcePatternResolver());</b>
+&nbsp;
+&nbsp;        try {
+&nbsp;            if (loader instanceof ResourcePatternResolver resolver) {
+&nbsp;                return resolver.getResources(source);
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                return new Resource[]{loader.getResource(source)};</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        } catch (IOException var4) {
+<b class="nc">&nbsp;            throw new IllegalStateException(&quot;Error reading source &#39;&quot; + source + &quot;&#39;&quot;);</b>
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private boolean isLoadCandidate(Resource resource) {
+&nbsp;        if (resource != null &amp;&amp; resource.exists()) {
+&nbsp;            if (resource instanceof ClassPathResource) {
+&nbsp;                ClassPathResource classPathResource = (ClassPathResource)resource;
+<b class="nc">&nbsp;                String path = classPathResource.getPath();</b>
+&nbsp;                if (path.indexOf(46) == -1) {
+&nbsp;                    try {
+&nbsp;                        return this.getClass().getClassLoader().getDefinedPackage(path) == null;
+<b class="nc">&nbsp;                    } catch (Exception var5) {</b>
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            return true;
+&nbsp;        } else {
+&nbsp;            return false;
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private Package findPackage(CharSequence source) {
+&nbsp;        Package pkg = this.getClass().getClassLoader().getDefinedPackage(source.toString());
+&nbsp;        if (pkg != null) {
+<b class="nc">&nbsp;            return pkg;</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            try {</b>
+&nbsp;                ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver(this.getClass().getClassLoader());
+&nbsp;                Resource[] resources = resolver.getResources(ClassUtils.convertClassNameToResourcePath(source.toString()) + &quot;/*.class&quot;);
+<b class="nc">&nbsp;                int var6 = resources.length;</b>
+&nbsp;                byte var7 = 0;
+&nbsp;                if (var7 &lt; var6) {
+&nbsp;                    Resource resource = resources[var7];
+<b class="nc">&nbsp;                    String className = StringUtils.stripFilenameExtension(resource.getFilename());</b>
+<b class="nc">&nbsp;                    String var10001 = String.valueOf(source);</b>
+<b class="nc">&nbsp;                    this.load(Class.forName(var10001 + &quot;.&quot; + className));</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            } catch (Exception var10) {</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            return this.getClass().getClassLoader().getDefinedPackage(source.toString());
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean isEligible(Class&lt;?&gt; type) {
+<b class="fc">&nbsp;        return !type.isAnonymousClass() &amp;&amp; !this.isGroovyClosure(type) &amp;&amp; !this.hasNoConstructors(type);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean isGroovyClosure(Class&lt;?&gt; type) {
+<b class="nc">&nbsp;        return GROOVY_CLOSURE_PATTERN.matcher(type.getName()).matches();</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private boolean hasNoConstructors(Class&lt;?&gt; type) {</b>
+<b class="nc">&nbsp;        Constructor&lt;?&gt;[] constructors = type.getDeclaredConstructors();</b>
+&nbsp;        return ObjectUtils.isEmpty(constructors);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private static class ClassExcludeFilter extends AbstractTypeHierarchyTraversingFilter {
+<b class="nc">&nbsp;        private final Set&lt;String&gt; classNames = new HashSet();</b>
+&nbsp;
+&nbsp;        ClassExcludeFilter(Object... sources) {
+&nbsp;            super(false, false);
+&nbsp;
+<b class="nc">&nbsp;            for(Object source : sources) {</b>
+<b class="nc">&nbsp;                if (source instanceof Class&lt;?&gt; classSource) {</b>
+&nbsp;                    this.classNames.add(classSource.getName());
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        protected boolean matchClassName(String className) {</b>
+<b class="nc">&nbsp;            return this.classNames.contains(className);</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    @FunctionalInterface
+&nbsp;    protected interface GroovyBeanDefinitionSource {
+&nbsp;        Closure&lt;?&gt; getBeans();
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:58</div>
+</div>
+</body>
+</html>

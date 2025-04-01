@@ -1,0 +1,232 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > TransactionTemplate</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.transaction.support</a>
+</div>
+
+<h1>Coverage Summary for Class: TransactionTemplate (org.springframework.transaction.support)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TransactionTemplate</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/28)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.transaction.support;
+&nbsp;
+&nbsp;import java.lang.reflect.UndeclaredThrowableException;
+&nbsp;import org.apache.commons.logging.Log;
+&nbsp;import org.apache.commons.logging.LogFactory;
+&nbsp;import org.springframework.beans.factory.InitializingBean;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.transaction.PlatformTransactionManager;
+&nbsp;import org.springframework.transaction.TransactionDefinition;
+&nbsp;import org.springframework.transaction.TransactionException;
+&nbsp;import org.springframework.transaction.TransactionStatus;
+&nbsp;import org.springframework.transaction.TransactionSystemException;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;
+&nbsp;public class TransactionTemplate extends DefaultTransactionDefinition implements TransactionOperations, InitializingBean {
+&nbsp;    protected final Log logger = LogFactory.getLog(this.getClass());
+&nbsp;    @Nullable
+&nbsp;    private PlatformTransactionManager transactionManager;
+&nbsp;
+&nbsp;    public TransactionTemplate() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public TransactionTemplate(PlatformTransactionManager transactionManager) {
+&nbsp;        this.transactionManager = transactionManager;
+&nbsp;    }
+&nbsp;
+&nbsp;    public TransactionTemplate(PlatformTransactionManager transactionManager, TransactionDefinition transactionDefinition) {
+&nbsp;        super(transactionDefinition);
+&nbsp;        this.transactionManager = transactionManager;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setTransactionManager(@Nullable PlatformTransactionManager transactionManager) {
+&nbsp;        this.transactionManager = transactionManager;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public PlatformTransactionManager getTransactionManager() {
+&nbsp;        return this.transactionManager;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void afterPropertiesSet() {
+&nbsp;        if (this.transactionManager == null) {
+&nbsp;            throw new IllegalArgumentException(&quot;Property &#39;transactionManager&#39; is required&quot;);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public &lt;T&gt; T execute(TransactionCallback&lt;T&gt; action) throws TransactionException {
+&nbsp;        Assert.state(this.transactionManager != null, &quot;No PlatformTransactionManager set&quot;);
+&nbsp;        PlatformTransactionManager status = this.transactionManager;
+&nbsp;        if (status instanceof CallbackPreferringPlatformTransactionManager cpptm) {
+&nbsp;            return (T)cpptm.execute(this, action);
+&nbsp;        } else {
+&nbsp;            TransactionStatus status = this.transactionManager.getTransaction(this);
+&nbsp;
+&nbsp;            T result;
+&nbsp;            try {
+&nbsp;                result = (T)action.doInTransaction(status);
+&nbsp;            } catch (Error | RuntimeException ex) {
+&nbsp;                this.rollbackOnException(status, ex);
+&nbsp;                throw ex;
+&nbsp;            } catch (Throwable ex) {
+&nbsp;                this.rollbackOnException(status, ex);
+<b class="nc">&nbsp;                throw new UndeclaredThrowableException(ex, &quot;TransactionCallback threw undeclared checked exception&quot;);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            this.transactionManager.commit(status);
+&nbsp;            return result;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void rollbackOnException(TransactionStatus status, Throwable ex) throws TransactionException {
+&nbsp;        Assert.state(this.transactionManager != null, &quot;No PlatformTransactionManager set&quot;);
+&nbsp;        this.logger.debug(&quot;Initiating transaction rollback on application exception&quot;, ex);
+&nbsp;
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            this.transactionManager.rollback(status);
+&nbsp;        } catch (TransactionSystemException ex2) {
+&nbsp;            this.logger.error(&quot;Application exception overridden by rollback exception&quot;, ex);
+&nbsp;            ex2.initApplicationException(ex);
+&nbsp;            throw ex2;
+&nbsp;        } catch (Error | RuntimeException ex2) {
+<b class="nc">&nbsp;            this.logger.error(&quot;Application exception overridden by rollback exception&quot;, ex);</b>
+<b class="nc">&nbsp;            throw ex2;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean equals(@Nullable Object other) {
+&nbsp;        boolean var10000;
+&nbsp;        if (this != other) {
+&nbsp;            label29: {
+&nbsp;                if (super.equals(other)) {
+&nbsp;                    if (!(other instanceof TransactionTemplate)) {
+&nbsp;                        break label29;
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                    TransactionTemplate template = (TransactionTemplate)other;
+&nbsp;                    if (this.getTransactionManager() == template.getTransactionManager()) {
+&nbsp;                        break label29;
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                var10000 = false;
+<b class="nc">&nbsp;                return var10000;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        var10000 = true;
+&nbsp;        return var10000;
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,467 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > TypeFactory</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.aspectj.weaver</a>
+</div>
+
+<h1>Coverage Summary for Class: TypeFactory (org.aspectj.weaver)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TypeFactory</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    11.1%
+  </span>
+  <span class="absValue">
+    (1/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    9.6%
+  </span>
+  <span class="absValue">
+    (13/136)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    9.3%
+  </span>
+  <span class="absValue">
+    (18/194)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.aspectj.weaver;
+&nbsp;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.List;
+&nbsp;
+&nbsp;public class TypeFactory {
+&nbsp;    public TypeFactory() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public static ReferenceType createParameterizedType(ResolvedType aBaseType, UnresolvedType[] someTypeParameters, World inAWorld) {
+&nbsp;        ResolvedType baseType = aBaseType;
+&nbsp;        if (!aBaseType.isGenericType() &amp;&amp; someTypeParameters != null &amp;&amp; someTypeParameters.length &gt; 0) {
+<b class="nc">&nbsp;            if (!aBaseType.isRawType()) {</b>
+&nbsp;                throw new IllegalStateException(&quot;Expecting raw type, but &quot; + aBaseType + &quot; is of type &quot; + aBaseType.getTypekind());
+&nbsp;            }
+&nbsp;
+&nbsp;            baseType = aBaseType.getGenericType();
+&nbsp;            if (baseType == null) {
+&nbsp;                throw new IllegalStateException(&quot;Raw type does not have generic type set&quot;);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        ResolvedType[] resolvedParameters = inAWorld.resolve(someTypeParameters);
+<b class="nc">&nbsp;        ReferenceType existingType = ((ReferenceType)baseType).findDerivativeType(resolvedParameters);</b>
+<b class="nc">&nbsp;        ReferenceType pType = null;</b>
+<b class="nc">&nbsp;        if (existingType != null) {</b>
+<b class="nc">&nbsp;            pType = existingType;</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            pType = new ReferenceType(baseType, resolvedParameters, inAWorld);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return (ReferenceType)pType.resolve(inAWorld);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static UnresolvedType createUnresolvedParameterizedType(String sig, String erasuresig, UnresolvedType[] arguments) {
+<b class="nc">&nbsp;        return new UnresolvedType(sig, erasuresig, arguments);</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    static UnresolvedType convertSigToType(String aSignature) {
+<b class="nc">&nbsp;        UnresolvedType bound = null;</b>
+&nbsp;        int startOfParams = aSignature.indexOf(60);
+<b class="nc">&nbsp;        if (startOfParams == -1) {</b>
+<b class="nc">&nbsp;            bound = UnresolvedType.forSignature(aSignature);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            int endOfParams = aSignature.lastIndexOf(62);</b>
+&nbsp;            String signatureErasure = &quot;L&quot; + aSignature.substring(1, startOfParams) + &quot;;&quot;;
+&nbsp;            UnresolvedType[] typeParams = createTypeParams(aSignature.substring(startOfParams + 1, endOfParams));
+<b class="nc">&nbsp;            bound = new UnresolvedType(&quot;P&quot; + aSignature.substring(1), signatureErasure, typeParams);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        return bound;
+&nbsp;    }
+&nbsp;
+&nbsp;    public static UnresolvedType createTypeFromSignature(String signature) {
+<b class="nc">&nbsp;        char firstChar = signature.charAt(0);</b>
+&nbsp;        if (firstChar == &#39;P&#39;) {
+&nbsp;            int startOfParams = signature.indexOf(60);
+&nbsp;            if (startOfParams == -1) {
+&nbsp;                String signatureErasure = &quot;L&quot; + signature.substring(1);
+&nbsp;                return new UnresolvedType(signature, signatureErasure, UnresolvedType.NONE);
+&nbsp;            } else {
+&nbsp;                int endOfParams = locateMatchingEndAngleBracket(signature, startOfParams);
+&nbsp;                StringBuilder erasureSig = new StringBuilder(signature);
+&nbsp;                erasureSig.setCharAt(0, &#39;L&#39;);
+&nbsp;
+&nbsp;                while(startOfParams != -1) {
+&nbsp;                    erasureSig.delete(startOfParams, endOfParams + 1);
+&nbsp;                    startOfParams = locateFirstBracket(erasureSig);
+&nbsp;                    if (startOfParams != -1) {
+&nbsp;                        endOfParams = locateMatchingEndAngleBracket(erasureSig, startOfParams);
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                String signatureErasure = erasureSig.toString();
+&nbsp;                String lastType = null;
+<b class="nc">&nbsp;                int nestedTypePosition = signature.indexOf(&quot;$&quot;, endOfParams);</b>
+<b class="nc">&nbsp;                if (nestedTypePosition != -1) {</b>
+<b class="nc">&nbsp;                    lastType = signature.substring(nestedTypePosition + 1);</b>
+<b class="nc">&nbsp;                } else {</b>
+&nbsp;                    lastType = new String(signature);
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                startOfParams = lastType.indexOf(&quot;&lt;&quot;);</b>
+<b class="nc">&nbsp;                UnresolvedType[] typeParams = UnresolvedType.NONE;</b>
+&nbsp;                if (startOfParams != -1) {
+<b class="nc">&nbsp;                    endOfParams = locateMatchingEndAngleBracket(lastType, startOfParams);</b>
+&nbsp;                    typeParams = createTypeParams(lastType.substring(startOfParams + 1, endOfParams));
+&nbsp;                }
+&nbsp;
+&nbsp;                StringBuilder s = new StringBuilder();
+&nbsp;                int firstAngleBracket = signature.indexOf(60);
+&nbsp;                s.append(&quot;P&quot;).append(signature.substring(1, firstAngleBracket));
+&nbsp;                s.append(&#39;&lt;&#39;);
+&nbsp;
+&nbsp;                for(UnresolvedType typeParameter : typeParams) {
+&nbsp;                    s.append(typeParameter.getSignature());
+<b class="fc">&nbsp;                }</b>
+<b class="pc">&nbsp;</b>
+&nbsp;                s.append(&quot;&gt;;&quot;);
+&nbsp;                signature = s.toString();
+&nbsp;                return new UnresolvedType(signature, signatureErasure, typeParams);
+&nbsp;            }
+<b class="nc">&nbsp;        } else if (firstChar == &#39;*&#39; &amp;&amp; signature.length() == 1) {</b>
+&nbsp;            return WildcardedUnresolvedType.QUESTIONMARK;
+<b class="nc">&nbsp;        } else if (firstChar == &#39;+&#39;) {</b>
+&nbsp;            UnresolvedType upperBound = convertSigToType(signature.substring(1));
+<b class="nc">&nbsp;            WildcardedUnresolvedType wildcardedUT = new WildcardedUnresolvedType(signature, upperBound, (UnresolvedType)null);</b>
+<b class="nc">&nbsp;            return wildcardedUT;</b>
+&nbsp;        } else if (firstChar == &#39;-&#39;) {
+<b class="nc">&nbsp;            UnresolvedType lowerBound = convertSigToType(signature.substring(1));</b>
+<b class="nc">&nbsp;            WildcardedUnresolvedType wildcardedUT = new WildcardedUnresolvedType(signature, (UnresolvedType)null, lowerBound);</b>
+<b class="nc">&nbsp;            return wildcardedUT;</b>
+<b class="nc">&nbsp;        } else if (firstChar == &#39;T&#39;) {</b>
+<b class="nc">&nbsp;            String typeVariableName = signature.substring(1);</b>
+<b class="nc">&nbsp;            if (typeVariableName.endsWith(&quot;;&quot;)) {</b>
+<b class="nc">&nbsp;                typeVariableName = typeVariableName.substring(0, typeVariableName.length() - 1);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            return new UnresolvedTypeVariableReferenceType(new TypeVariable(typeVariableName));
+&nbsp;        } else if (firstChar == &#39;[&#39;) {
+<b class="nc">&nbsp;            int dims;</b>
+&nbsp;            for(dims = 0; signature.charAt(dims) == &#39;[&#39;; ++dims) {
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            UnresolvedType componentType = createTypeFromSignature(signature.substring(dims));</b>
+<b class="nc">&nbsp;            return new UnresolvedType(signature, signature.substring(0, dims) + componentType.getErasureSignature());</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            if (signature.length() == 1) {</b>
+&nbsp;                switch (firstChar) {
+<b class="nc">&nbsp;                    case &#39;B&#39;:</b>
+&nbsp;                        return UnresolvedType.BYTE;
+<b class="nc">&nbsp;                    case &#39;C&#39;:</b>
+<b class="nc">&nbsp;                        return UnresolvedType.CHAR;</b>
+<b class="nc">&nbsp;                    case &#39;D&#39;:</b>
+<b class="nc">&nbsp;                        return UnresolvedType.DOUBLE;</b>
+<b class="nc">&nbsp;                    case &#39;E&#39;:</b>
+&nbsp;                    case &#39;G&#39;:
+<b class="nc">&nbsp;                    case &#39;H&#39;:</b>
+<b class="nc">&nbsp;                    case &#39;K&#39;:</b>
+<b class="nc">&nbsp;                    case &#39;L&#39;:</b>
+<b class="nc">&nbsp;                    case &#39;M&#39;:</b>
+<b class="nc">&nbsp;                    case &#39;N&#39;:</b>
+<b class="nc">&nbsp;                    case &#39;O&#39;:</b>
+&nbsp;                    case &#39;P&#39;:
+<b class="nc">&nbsp;                    case &#39;Q&#39;:</b>
+<b class="nc">&nbsp;                    case &#39;R&#39;:</b>
+<b class="nc">&nbsp;                    case &#39;T&#39;:</b>
+&nbsp;                    case &#39;U&#39;:
+&nbsp;                    case &#39;W&#39;:
+<b class="pc">&nbsp;                    case &#39;X&#39;:</b>
+<b class="nc">&nbsp;                    case &#39;Y&#39;:</b>
+<b class="pc">&nbsp;                    default:</b>
+&nbsp;                        break;
+<b class="nc">&nbsp;                    case &#39;F&#39;:</b>
+<b class="nc">&nbsp;                        return UnresolvedType.FLOAT;</b>
+<b class="nc">&nbsp;                    case &#39;I&#39;:</b>
+<b class="pc">&nbsp;                        return UnresolvedType.INT;</b>
+&nbsp;                    case &#39;J&#39;:
+<b class="nc">&nbsp;                        return UnresolvedType.LONG;</b>
+<b class="nc">&nbsp;                    case &#39;S&#39;:</b>
+<b class="nc">&nbsp;                        return UnresolvedType.SHORT;</b>
+<b class="pc">&nbsp;                    case &#39;V&#39;:</b>
+<b class="nc">&nbsp;                        return UnresolvedType.VOID;</b>
+<b class="nc">&nbsp;                    case &#39;Z&#39;:</b>
+<b class="nc">&nbsp;                        return UnresolvedType.BOOLEAN;</b>
+&nbsp;                }
+<b class="nc">&nbsp;            } else {</b>
+<b class="fc">&nbsp;                if (firstChar == &#39;@&#39;) {</b>
+<b class="fc">&nbsp;                    return ResolvedType.MISSING;</b>
+<b class="fc">&nbsp;                }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;                if (firstChar == &#39;L&#39;) {
+<b class="fc">&nbsp;                    int leftAngleBracket = signature.indexOf(60);</b>
+<b class="fc">&nbsp;                    if (leftAngleBracket == -1) {</b>
+<b class="pc">&nbsp;                        return new UnresolvedType(signature);</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;
+&nbsp;                    int endOfParams = locateMatchingEndAngleBracket(signature, leftAngleBracket);
+<b class="nc">&nbsp;                    StringBuilder erasureSig = new StringBuilder(signature);</b>
+&nbsp;                    erasureSig.setCharAt(0, &#39;L&#39;);
+<b class="nc">&nbsp;</b>
+&nbsp;                    while(leftAngleBracket != -1) {
+<b class="nc">&nbsp;                        erasureSig.delete(leftAngleBracket, endOfParams + 1);</b>
+&nbsp;                        leftAngleBracket = locateFirstBracket(erasureSig);
+<b class="nc">&nbsp;                        if (leftAngleBracket != -1) {</b>
+&nbsp;                            endOfParams = locateMatchingEndAngleBracket(erasureSig, leftAngleBracket);
+<b class="nc">&nbsp;                        }</b>
+&nbsp;                    }
+<b class="nc">&nbsp;</b>
+&nbsp;                    String signatureErasure = erasureSig.toString();
+<b class="nc">&nbsp;                    String lastType = null;</b>
+&nbsp;                    int nestedTypePosition = signature.indexOf(&quot;$&quot;, endOfParams);
+<b class="nc">&nbsp;                    if (nestedTypePosition != -1) {</b>
+&nbsp;                        lastType = signature.substring(nestedTypePosition + 1);
+<b class="nc">&nbsp;                    } else {</b>
+&nbsp;                        lastType = new String(signature);
+<b class="pc">&nbsp;                    }</b>
+&nbsp;
+<b class="nc">&nbsp;                    leftAngleBracket = lastType.indexOf(&quot;&lt;&quot;);</b>
+<b class="pc">&nbsp;                    UnresolvedType[] typeParams = UnresolvedType.NONE;</b>
+&nbsp;                    if (leftAngleBracket != -1) {
+<b class="fc">&nbsp;                        endOfParams = locateMatchingEndAngleBracket(lastType, leftAngleBracket);</b>
+&nbsp;                        typeParams = createTypeParams(lastType.substring(leftAngleBracket + 1, endOfParams));
+<b class="pc">&nbsp;                    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;                    StringBuilder s = new StringBuilder();
+<b class="nc">&nbsp;                    int firstAngleBracket = signature.indexOf(60);</b>
+<b class="nc">&nbsp;                    s.append(&quot;P&quot;).append(signature.substring(1, firstAngleBracket));</b>
+<b class="nc">&nbsp;                    s.append(&#39;&lt;&#39;);</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                    for(UnresolvedType typeParameter : typeParams) {</b>
+<b class="nc">&nbsp;                        s.append(typeParameter.getSignature());</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                    s.append(&quot;&gt;;&quot;);
+&nbsp;                    signature = s.toString();
+&nbsp;                    return new UnresolvedType(signature, signatureErasure, typeParams);
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            return new UnresolvedType(signature);
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private static int locateMatchingEndAngleBracket(CharSequence signature, int startOfParams) {</b>
+<b class="nc">&nbsp;        if (startOfParams == -1) {</b>
+&nbsp;            return -1;
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            int count = 1;
+<b class="nc">&nbsp;            int idx = startOfParams;</b>
+<b class="nc">&nbsp;            int max = signature.length();</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            while(idx &lt; max) {</b>
+<b class="nc">&nbsp;                ++idx;</b>
+&nbsp;                char ch = signature.charAt(idx);
+<b class="nc">&nbsp;                if (ch == &#39;&lt;&#39;) {</b>
+<b class="nc">&nbsp;                    ++count;</b>
+<b class="nc">&nbsp;                } else if (ch == &#39;&gt;&#39;) {</b>
+<b class="nc">&nbsp;                    if (count == 1) {</b>
+<b class="nc">&nbsp;                        break;</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;
+<b class="nc">&nbsp;                    --count;</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            return idx;
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private static int locateFirstBracket(StringBuilder signature) {
+&nbsp;        int idx = 0;
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        for(int max = signature.length(); idx &lt; max; ++idx) {</b>
+&nbsp;            if (signature.charAt(idx) == &#39;&lt;&#39;) {
+<b class="nc">&nbsp;                return idx;</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return -1;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private static UnresolvedType[] createTypeParams(String typeParameterSpecification) {</b>
+<b class="nc">&nbsp;        String remainingToProcess = typeParameterSpecification;</b>
+&nbsp;
+&nbsp;        List&lt;UnresolvedType&gt; types;
+<b class="nc">&nbsp;        int endOfSig;</b>
+&nbsp;        for(types = new ArrayList(); remainingToProcess.length() != 0; remainingToProcess = remainingToProcess.substring(endOfSig)) {
+&nbsp;            endOfSig = 0;
+<b class="nc">&nbsp;            int anglies = 0;</b>
+&nbsp;            boolean hadAnglies = false;
+&nbsp;            boolean sigFound = false;
+&nbsp;
+<b class="nc">&nbsp;            for(endOfSig = 0; endOfSig &lt; remainingToProcess.length() &amp;&amp; !sigFound; ++endOfSig) {</b>
+<b class="nc">&nbsp;                char thisChar = remainingToProcess.charAt(endOfSig);</b>
+<b class="nc">&nbsp;                switch (thisChar) {</b>
+<b class="nc">&nbsp;                    case &#39;*&#39;:</b>
+<b class="nc">&nbsp;                        if (anglies == 0) {</b>
+&nbsp;                            int nextCharPos = endOfSig + 1;
+<b class="nc">&nbsp;                            if (nextCharPos &gt;= remainingToProcess.length()) {</b>
+&nbsp;                                sigFound = true;
+<b class="nc">&nbsp;                            } else {</b>
+&nbsp;                                char nextChar = remainingToProcess.charAt(nextCharPos);
+&nbsp;                                if (nextChar != &#39;+&#39; &amp;&amp; nextChar != &#39;-&#39;) {
+&nbsp;                                    sigFound = true;
+<b class="nc">&nbsp;                                }</b>
+<b class="nc">&nbsp;                            }</b>
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;                        break;</b>
+<b class="nc">&nbsp;                    case &#39;;&#39;:</b>
+<b class="nc">&nbsp;                        if (anglies == 0) {</b>
+<b class="nc">&nbsp;                            sigFound = true;</b>
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;                        break;</b>
+<b class="nc">&nbsp;                    case &#39;&lt;&#39;:</b>
+&nbsp;                        ++anglies;
+<b class="nc">&nbsp;                        hadAnglies = true;</b>
+<b class="nc">&nbsp;                        break;</b>
+&nbsp;                    case &#39;&gt;&#39;:
+&nbsp;                        --anglies;
+<b class="nc">&nbsp;                        break;</b>
+&nbsp;                    case &#39;[&#39;:
+&nbsp;                        if (anglies == 0) {
+<b class="nc">&nbsp;                            int nextChar;</b>
+<b class="nc">&nbsp;                            for(nextChar = endOfSig + 1; remainingToProcess.charAt(nextChar) == &#39;[&#39;; ++nextChar) {</b>
+<b class="nc">&nbsp;                            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                            if (&quot;BCDFIJSZ&quot;.indexOf(remainingToProcess.charAt(nextChar)) != -1) {
+<b class="nc">&nbsp;                                sigFound = true;</b>
+<b class="nc">&nbsp;                                endOfSig = nextChar;</b>
+&nbsp;                            }
+&nbsp;                        }
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            String forProcessing = remainingToProcess.substring(0, endOfSig);
+&nbsp;            if (hadAnglies &amp;&amp; forProcessing.charAt(0) == &#39;L&#39;) {
+&nbsp;                forProcessing = &quot;P&quot; + forProcessing.substring(1);
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            types.add(createTypeFromSignature(forProcessing));</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        UnresolvedType[] typeParams = new UnresolvedType[types.size()];
+<b class="nc">&nbsp;        types.toArray(typeParams);</b>
+&nbsp;        return typeParams;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public static UnresolvedType createUnresolvedParameterizedType(String baseTypeSignature, UnresolvedType[] arguments) {
+&nbsp;        StringBuilder parameterizedSig = new StringBuilder();
+&nbsp;        parameterizedSig.append(&quot;P&quot;);
+&nbsp;        parameterizedSig.append(baseTypeSignature.substring(1, baseTypeSignature.length() - 1));
+&nbsp;        if (arguments.length &gt; 0) {
+<b class="nc">&nbsp;            parameterizedSig.append(&quot;&lt;&quot;);</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            for(UnresolvedType argument : arguments) {
+&nbsp;                parameterizedSig.append(argument.getSignature());
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            parameterizedSig.append(&quot;&gt;&quot;);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        parameterizedSig.append(&quot;;&quot;);
+<b class="nc">&nbsp;        return createUnresolvedParameterizedType(parameterizedSig.toString(), baseTypeSignature, arguments);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

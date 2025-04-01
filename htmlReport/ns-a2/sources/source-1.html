@@ -5,7 +5,7 @@
 <html id="htmlId">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
-  <title>Coverage Report > ArgumentsProcessor</title>
+  <title>Coverage Report > SignatureReader</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -19,10 +19,10 @@
 <div class="breadCrumbs">
 Current scope:     <a href="../../index.html">all classes</a>
     <span class="separator">|</span>
-    <a href="../index.html">org.mockito.internal.invocation</a>
+    <a href="../index.html">net.bytebuddy.jar.asm.signature</a>
 </div>
 
-<h1>Coverage Summary for Class: ArgumentsProcessor (org.mockito.internal.invocation)</h1>
+<h1>Coverage Summary for Class: SignatureReader (net.bytebuddy.jar.asm.signature)</h1>
 
 <table class="coverageStats">
 <tr>
@@ -45,7 +45,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 </th>
 </tr>
 <tr>
-  <td class="name">ArgumentsProcessor</td>
+  <td class="name">SignatureReader</td>
 <td class="coverageStat">
   <span class="percent">
     100%
@@ -64,18 +64,18 @@ Current scope:     <a href="../../index.html">all classes</a>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    33.3%
+    48.5%
   </span>
   <span class="absValue">
-    (8/24)
+    (32/66)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    41.7%
+    82.4%
   </span>
   <span class="absValue">
-    (10/24)
+    (56/68)
   </span>
 </td>
 </tr>
@@ -92,66 +92,154 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;// (powered by FernFlower decompiler)
 &nbsp;//
 &nbsp;
-&nbsp;package org.mockito.internal.invocation;
+&nbsp;package net.bytebuddy.jar.asm.signature;
 &nbsp;
-&nbsp;import java.util.ArrayList;
-&nbsp;import java.util.Arrays;
-&nbsp;import java.util.List;
-&nbsp;import org.mockito.ArgumentMatcher;
-&nbsp;import org.mockito.internal.matchers.ArrayEquals;
-&nbsp;import org.mockito.internal.matchers.Equals;
+&nbsp;public class SignatureReader {
+&nbsp;    private final String signatureValue;
 &nbsp;
-&nbsp;public final class ArgumentsProcessor {
-&nbsp;    public static Object[] expandArgs(MockitoMethod method, Object[] args) {
-&nbsp;        int nParams = method.getParameterTypes().length;
-&nbsp;        if (args != null &amp;&amp; args.length &gt; nParams) {
-&nbsp;            args = Arrays.copyOf(args, nParams);
-&nbsp;        }
-<b class="fc">&nbsp;</b>
-<b class="pc">&nbsp;        return expandVarArgs(method.isVarArgs(), args);</b>
-<b class="nc">&nbsp;    }</b>
+&nbsp;    public SignatureReader(String signature) {
+&nbsp;        this.signatureValue = signature;
+&nbsp;    }
 &nbsp;
-&nbsp;    private static Object[] expandVarArgs(boolean isVarArgs, Object[] args) {
-<b class="fc">&nbsp;        if (!isVarArgs || isNullOrEmpty(args) || args[args.length - 1] != null &amp;&amp; !args[args.length - 1].getClass().isArray()) {</b>
-&nbsp;            return args == null ? new Object[0] : args;
+&nbsp;    public void accept(SignatureVisitor signatureVistor) {
+&nbsp;        String signature = this.signatureValue;
+&nbsp;        int length = signature.length();
+&nbsp;        int offset;
+&nbsp;        if (signature.charAt(0) == &#39;&lt;&#39;) {
+&nbsp;            offset = 2;
+&nbsp;
+&nbsp;            char currentChar;
+&nbsp;            do {
+&nbsp;                int classBoundStartOffset = signature.indexOf(58, offset);
+&nbsp;                signatureVistor.visitFormalTypeParameter(signature.substring(offset - 1, classBoundStartOffset));
+&nbsp;                offset = classBoundStartOffset + 1;
+&nbsp;                currentChar = signature.charAt(offset);
+&nbsp;                if (currentChar == &#39;L&#39; || currentChar == &#39;[&#39; || currentChar == &#39;T&#39;) {
+&nbsp;                    offset = parseType(signature, offset, signatureVistor.visitClassBound());
+&nbsp;                }
+&nbsp;
+&nbsp;                while((currentChar = signature.charAt(offset++)) == &#39;:&#39;) {
+&nbsp;                    offset = parseType(signature, offset, signatureVistor.visitInterfaceBound());
+&nbsp;                }
+&nbsp;            } while(currentChar != &#39;&gt;&#39;);
 &nbsp;        } else {
-&nbsp;            int nonVarArgsCount = args.length - 1;
-&nbsp;            Object[] varArgs;
-&nbsp;            if (args[nonVarArgsCount] == null) {
-<b class="pc">&nbsp;                varArgs = new Object[]{null};</b>
-<b class="nc">&nbsp;            } else {</b>
-<b class="nc">&nbsp;                varArgs = ArrayEquals.createObjectArray(args[nonVarArgsCount]);</b>
-<b class="pc">&nbsp;            }</b>
+&nbsp;            offset = 0;
+&nbsp;        }
 &nbsp;
-&nbsp;            int varArgsCount = varArgs.length;
-<b class="nc">&nbsp;            Object[] newArgs = new Object[nonVarArgsCount + varArgsCount];</b>
-&nbsp;            System.arraycopy(args, 0, newArgs, 0, nonVarArgsCount);
-<b class="nc">&nbsp;            System.arraycopy(varArgs, 0, newArgs, nonVarArgsCount, varArgsCount);</b>
-&nbsp;            return newArgs;
-<b class="nc">&nbsp;        }</b>
-&nbsp;    }
-<b class="nc">&nbsp;</b>
-&nbsp;    private static &lt;T&gt; boolean isNullOrEmpty(T[] array) {
-<b class="nc">&nbsp;        return array == null || array.length == 0;</b>
-<b class="nc">&nbsp;    }</b>
-<b class="nc">&nbsp;</b>
-<b class="nc">&nbsp;    public static List&lt;ArgumentMatcher&gt; argumentsToMatchers(Object[] arguments) {</b>
-<b class="nc">&nbsp;        List&lt;ArgumentMatcher&gt; matchers = new ArrayList(arguments.length);</b>
+&nbsp;        if (signature.charAt(offset) == &#39;(&#39;) {
+&nbsp;            ++offset;
 &nbsp;
-&nbsp;        for(Object arg : arguments) {
-&nbsp;            if (arg != null &amp;&amp; arg.getClass().isArray()) {
-<b class="nc">&nbsp;                matchers.add(new ArrayEquals(arg));</b>
-&nbsp;            } else {
-&nbsp;                matchers.add(new Equals(arg));
+&nbsp;            while(signature.charAt(offset) != &#39;)&#39;) {
+&nbsp;                offset = parseType(signature, offset, signatureVistor.visitParameterType());
 &nbsp;            }
-<b class="fc">&nbsp;        }</b>
-<b class="fc">&nbsp;</b>
-<b class="pc">&nbsp;        return matchers;</b>
-<b class="nc">&nbsp;    }</b>
 &nbsp;
-<b class="fc">&nbsp;    private ArgumentsProcessor() {</b>
+&nbsp;            for(int var9 = parseType(signature, offset + 1, signatureVistor.visitReturnType()); var9 &lt; length; var9 = parseType(signature, var9 + 1, signatureVistor.visitExceptionType())) {
+&nbsp;            }
+<b class="fc">&nbsp;        } else {</b>
+<b class="fc">&nbsp;            for(int var10 = parseType(signature, offset, signatureVistor.visitSuperclass()); var10 &lt; length; var10 = parseType(signature, var10, signatureVistor.visitInterface())) {</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
 &nbsp;    }
-&nbsp;}
+&nbsp;
+&nbsp;    public void acceptType(SignatureVisitor signatureVisitor) {
+&nbsp;        parseType(this.signatureValue, 0, signatureVisitor);
+&nbsp;    }
+&nbsp;
+&nbsp;    private static int parseType(String signature, int startOffset, SignatureVisitor signatureVisitor) {
+&nbsp;        int offset = startOffset + 1;
+&nbsp;        char currentChar = signature.charAt(startOffset);
+&nbsp;        switch (currentChar) {
+<b class="fc">&nbsp;            case &#39;B&#39;:</b>
+<b class="fc">&nbsp;            case &#39;C&#39;:</b>
+&nbsp;            case &#39;D&#39;:
+&nbsp;            case &#39;F&#39;:
+&nbsp;            case &#39;I&#39;:
+&nbsp;            case &#39;J&#39;:
+&nbsp;            case &#39;S&#39;:
+&nbsp;            case &#39;V&#39;:
+<b class="fc">&nbsp;            case &#39;Z&#39;:</b>
+&nbsp;                signatureVisitor.visitBaseType(currentChar);
+&nbsp;                return offset;
+<b class="fc">&nbsp;            case &#39;E&#39;:</b>
+&nbsp;            case &#39;G&#39;:
+&nbsp;            case &#39;H&#39;:
+<b class="fc">&nbsp;            case &#39;K&#39;:</b>
+<b class="fc">&nbsp;            case &#39;M&#39;:</b>
+<b class="fc">&nbsp;            case &#39;N&#39;:</b>
+&nbsp;            case &#39;O&#39;:
+&nbsp;            case &#39;P&#39;:
+&nbsp;            case &#39;Q&#39;:
+<b class="fc">&nbsp;            case &#39;R&#39;:</b>
+<b class="fc">&nbsp;            case &#39;U&#39;:</b>
+<b class="pc">&nbsp;            case &#39;W&#39;:</b>
+<b class="nc">&nbsp;            case &#39;X&#39;:</b>
+&nbsp;            case &#39;Y&#39;:
+&nbsp;            default:
+&nbsp;                throw new IllegalArgumentException();
+&nbsp;            case &#39;L&#39;:
+<b class="fc">&nbsp;                int start = offset;</b>
+<b class="fc">&nbsp;                boolean visited = false;</b>
+&nbsp;                boolean inner = false;
+&nbsp;
+&nbsp;                while(true) {
+&nbsp;                    currentChar = signature.charAt(offset++);
+&nbsp;                    if (currentChar != &#39;.&#39; &amp;&amp; currentChar != &#39;;&#39;) {
+&nbsp;                        if (currentChar == &#39;&lt;&#39;) {
+<b class="pc">&nbsp;                            String name = signature.substring(start, offset - 1);</b>
+&nbsp;                            if (inner) {
+<b class="fc">&nbsp;                                signatureVisitor.visitInnerClassType(name);</b>
+&nbsp;                            } else {
+&nbsp;                                signatureVisitor.visitClassType(name);
+&nbsp;                            }
+&nbsp;
+&nbsp;                            visited = true;
+<b class="pc">&nbsp;</b>
+<b class="fc">&nbsp;                            while((currentChar = signature.charAt(offset)) != &#39;&gt;&#39;) {</b>
+<b class="fc">&nbsp;                                switch (currentChar) {</b>
+<b class="fc">&nbsp;                                    case &#39;*&#39;:</b>
+&nbsp;                                        ++offset;
+&nbsp;                                        signatureVisitor.visitTypeArgument();
+<b class="fc">&nbsp;                                        break;</b>
+<b class="pc">&nbsp;                                    case &#39;+&#39;:</b>
+&nbsp;                                    case &#39;-&#39;:
+<b class="nc">&nbsp;                                        offset = parseType(signature, offset + 1, signatureVisitor.visitTypeArgument(currentChar));</b>
+&nbsp;                                        break;
+&nbsp;                                    case &#39;,&#39;:
+&nbsp;                                    default:
+&nbsp;                                        offset = parseType(signature, offset, signatureVisitor.visitTypeArgument(&#39;=&#39;));
+<b class="nc">&nbsp;                                }</b>
+<b class="nc">&nbsp;                            }</b>
+<b class="nc">&nbsp;                        }</b>
+&nbsp;                    } else {
+&nbsp;                        if (!visited) {
+&nbsp;                            String name = signature.substring(start, offset - 1);
+&nbsp;                            if (inner) {
+&nbsp;                                signatureVisitor.visitInnerClassType(name);
+&nbsp;                            } else {
+&nbsp;                                signatureVisitor.visitClassType(name);
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;
+&nbsp;                        if (currentChar == &#39;;&#39;) {
+&nbsp;                            signatureVisitor.visitEnd();
+&nbsp;                            return offset;
+&nbsp;                        }
+&nbsp;
+<b class="nc">&nbsp;                        start = offset;</b>
+&nbsp;                        visited = false;
+&nbsp;                        inner = true;
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            case &#39;T&#39;:
+&nbsp;                int endOffset = signature.indexOf(59, offset);
+&nbsp;                signatureVisitor.visitTypeVariable(signature.substring(offset, endOffset));
+&nbsp;                return endOffset + 1;
+&nbsp;            case &#39;[&#39;:
+&nbsp;                return parseType(signature, offset, signatureVisitor.visitArrayType());
+&nbsp;        }
+&nbsp;    }
+<b class="fc">&nbsp;}</b>
 </code>
 </pre>
 </div>
@@ -175,7 +263,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2025-03-20 13:42</div>
+    <div style="float:right;">generated on 2025-03-31 21:00</div>
 </div>
 </body>
 </html>

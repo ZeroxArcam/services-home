@@ -1,0 +1,217 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > StandardForeignKeyExporter</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.tool.schema.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: StandardForeignKeyExporter (org.hibernate.tool.schema.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">StandardForeignKeyExporter</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    20%
+  </span>
+  <span class="absValue">
+    (1/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/34)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    3%
+  </span>
+  <span class="absValue">
+    (2/67)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.tool.schema.internal;
+&nbsp;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Locale;
+&nbsp;import org.hibernate.AssertionFailure;
+&nbsp;import org.hibernate.annotations.OnDeleteAction;
+&nbsp;import org.hibernate.boot.Metadata;
+&nbsp;import org.hibernate.boot.model.relational.SqlStringGenerationContext;
+&nbsp;import org.hibernate.dialect.Dialect;
+&nbsp;import org.hibernate.mapping.Column;
+&nbsp;import org.hibernate.mapping.ForeignKey;
+&nbsp;import org.hibernate.tool.schema.spi.Exporter;
+&nbsp;
+&nbsp;public class StandardForeignKeyExporter implements Exporter&lt;ForeignKey&gt; {
+&nbsp;    private static final String COLUMN_MISMATCH_MSG = &quot;Number of referencing columns [%s] did not match number of referenced columns [%s] in foreign-key [%s] from [%s] to [%s]&quot;;
+&nbsp;    private final Dialect dialect;
+&nbsp;
+&nbsp;    public StandardForeignKeyExporter(Dialect dialect) {
+&nbsp;        this.dialect = dialect;
+&nbsp;    }
+&nbsp;
+&nbsp;    public String[] getSqlCreateStrings(ForeignKey foreignKey, Metadata metadata, SqlStringGenerationContext context) {
+&nbsp;        if (!this.dialect.hasAlterTable()) {
+&nbsp;            return NO_COMMANDS;
+&nbsp;        } else if (!foreignKey.isCreationEnabled()) {
+&nbsp;            return NO_COMMANDS;
+<b class="fc">&nbsp;        } else if (!foreignKey.isPhysicalConstraint()) {</b>
+<b class="fc">&nbsp;            return NO_COMMANDS;</b>
+&nbsp;        } else {
+&nbsp;            int numberOfColumns = foreignKey.getColumnSpan();
+&nbsp;            String[] columnNames = new String[numberOfColumns];
+&nbsp;            String[] targetColumnNames = new String[numberOfColumns];
+<b class="nc">&nbsp;            List&lt;Column&gt; targetColumns = getTargetColumns(foreignKey, numberOfColumns);</b>
+<b class="nc">&nbsp;            List&lt;Column&gt; columns = foreignKey.getColumns();</b>
+&nbsp;
+&nbsp;            for(int i = 0; i &lt; columns.size() &amp;&amp; i &lt; targetColumns.size(); ++i) {
+<b class="nc">&nbsp;                columnNames[i] = ((Column)columns.get(i)).getQuotedName(this.dialect);</b>
+<b class="nc">&nbsp;                targetColumnNames[i] = ((Column)targetColumns.get(i)).getQuotedName(this.dialect);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            String sourceTableName = context.format(foreignKey.getTable().getQualifiedTableName());</b>
+<b class="nc">&nbsp;            String targetTableName = context.format(foreignKey.getReferencedTable().getQualifiedTableName());</b>
+&nbsp;            StringBuilder buffer = (new StringBuilder(this.dialect.getAlterTableString(sourceTableName))).append(foreignKey.getKeyDefinition() != null ? this.dialect.getAddForeignKeyConstraintString(foreignKey.getName(), foreignKey.getKeyDefinition()) : this.dialect.getAddForeignKeyConstraintString(foreignKey.getName(), columnNames, targetTableName, targetColumnNames, foreignKey.isReferenceToPrimaryKey()));
+&nbsp;            if (this.dialect.supportsCascadeDelete()) {
+<b class="nc">&nbsp;                OnDeleteAction onDeleteAction = foreignKey.getOnDeleteAction();</b>
+<b class="nc">&nbsp;                if (onDeleteAction != null &amp;&amp; onDeleteAction != OnDeleteAction.NO_ACTION) {</b>
+<b class="nc">&nbsp;                    buffer.append(&quot; on delete &quot;).append(onDeleteAction.toSqlString());</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            return new String[]{buffer.toString()};</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private static List&lt;Column&gt; getTargetColumns(ForeignKey foreignKey, int numberOfColumns) {
+<b class="nc">&nbsp;        if (foreignKey.isReferenceToPrimaryKey()) {</b>
+<b class="nc">&nbsp;            if (numberOfColumns != foreignKey.getReferencedTable().getPrimaryKey().getColumnSpan()) {</b>
+&nbsp;                throw new AssertionFailure(String.format(Locale.ENGLISH, &quot;Number of referencing columns [%s] did not match number of referenced columns [%s] in foreign-key [%s] from [%s] to [%s]&quot;, numberOfColumns, foreignKey.getReferencedTable().getPrimaryKey().getColumnSpan(), foreignKey.getName(), foreignKey.getTable().getName(), foreignKey.getReferencedTable().getName()));
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                return foreignKey.getReferencedTable().getPrimaryKey().getColumns();</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        } else if (numberOfColumns != foreignKey.getReferencedColumns().size()) {</b>
+<b class="nc">&nbsp;            throw new AssertionFailure(String.format(Locale.ENGLISH, &quot;Number of referencing columns [%s] did not match number of referenced columns [%s] in foreign-key [%s] from [%s] to [%s]&quot;, numberOfColumns, foreignKey.getReferencedColumns().size(), foreignKey.getName(), foreignKey.getTable().getName(), foreignKey.getReferencedTable().getName()));</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            return foreignKey.getReferencedColumns();
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public String[] getSqlDropStrings(ForeignKey foreignKey, Metadata metadata, SqlStringGenerationContext context) {
+&nbsp;        if (!this.dialect.hasAlterTable()) {
+<b class="nc">&nbsp;            return NO_COMMANDS;</b>
+&nbsp;        } else if (!foreignKey.isCreationEnabled()) {
+&nbsp;            return NO_COMMANDS;
+&nbsp;        } else if (!foreignKey.isPhysicalConstraint()) {
+<b class="nc">&nbsp;            return NO_COMMANDS;</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            String sourceTableName = context.format(foreignKey.getTable().getQualifiedTableName());</b>
+<b class="nc">&nbsp;            return new String[]{this.getSqlDropStrings(sourceTableName, foreignKey, this.dialect)};</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private String getSqlDropStrings(String tableName, ForeignKey foreignKey, Dialect dialect) {</b>
+&nbsp;        StringBuilder buf = new StringBuilder(dialect.getAlterTableString(tableName));
+&nbsp;        buf.append(&quot; &quot;).append(dialect.getDropForeignKeyString()).append(&quot; &quot;);
+&nbsp;        if (dialect.supportsIfExistsBeforeConstraintName()) {
+<b class="nc">&nbsp;            buf.append(&quot;if exists &quot;);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        buf.append(dialect.quote(foreignKey.getName()));</b>
+&nbsp;        if (dialect.supportsIfExistsAfterConstraintName()) {
+&nbsp;            buf.append(&quot; if exists&quot;);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return buf.toString();</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 21:00</div>
+</div>
+</body>
+</html>

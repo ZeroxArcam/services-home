@@ -1,0 +1,476 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > LoggingEvent</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">ch.qos.logback.classic.spi</a>
+</div>
+
+<h1>Coverage Summary for Class: LoggingEvent (ch.qos.logback.classic.spi)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LoggingEvent</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    34.1%
+  </span>
+  <span class="absValue">
+    (15/44)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    38.3%
+  </span>
+  <span class="absValue">
+    (23/60)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    46.5%
+  </span>
+  <span class="absValue">
+    (59/127)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package ch.qos.logback.classic.spi;
+&nbsp;
+&nbsp;import ch.qos.logback.classic.Level;
+&nbsp;import ch.qos.logback.classic.Logger;
+&nbsp;import ch.qos.logback.classic.LoggerContext;
+&nbsp;import ch.qos.logback.classic.util.LogbackMDCAdapter;
+&nbsp;import ch.qos.logback.core.spi.SequenceNumberGenerator;
+&nbsp;import ch.qos.logback.core.util.EnvUtil;
+&nbsp;import ch.qos.logback.core.util.StringUtil;
+&nbsp;import java.io.IOException;
+&nbsp;import java.io.ObjectOutputStream;
+&nbsp;import java.lang.reflect.InvocationTargetException;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;import java.time.Clock;
+&nbsp;import java.time.Instant;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import org.slf4j.Marker;
+&nbsp;import org.slf4j.event.KeyValuePair;
+&nbsp;import org.slf4j.helpers.MessageFormatter;
+&nbsp;import org.slf4j.spi.MDCAdapter;
+&nbsp;
+&nbsp;public class LoggingEvent implements ILoggingEvent {
+&nbsp;    public static final String VIRTUAL_THREAD_NAME_PREFIX = &quot;virtual-&quot;;
+&nbsp;    public static final String REGULAR_UNNAMED_THREAD_PREFIX = &quot;unnamed-&quot;;
+&nbsp;    transient String fqnOfLoggerClass;
+&nbsp;    private String threadName;
+&nbsp;    private String loggerName;
+&nbsp;    private LoggerContext loggerContext;
+&nbsp;    private LoggerContextVO loggerContextVO;
+&nbsp;    private transient Level level;
+&nbsp;    private String message;
+&nbsp;    transient String formattedMessage;
+&nbsp;    private transient Object[] argumentArray;
+&nbsp;    private ThrowableProxy throwableProxy;
+&nbsp;    private StackTraceElement[] callerDataArray;
+&nbsp;    private List&lt;Marker&gt; markerList;
+&nbsp;    private Map&lt;String, String&gt; mdcPropertyMap;
+&nbsp;    List&lt;KeyValuePair&gt; keyValuePairs;
+&nbsp;    private Instant instant;
+&nbsp;    private long timeStamp;
+&nbsp;    private int nanoseconds;
+&nbsp;    private long sequenceNumber;
+&nbsp;
+&nbsp;    public LoggingEvent() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public LoggingEvent(String fqcn, Logger logger, Level level, String message, Throwable throwable, Object[] argArray) {
+&nbsp;        this.fqnOfLoggerClass = fqcn;
+&nbsp;        this.loggerName = logger.getName();
+&nbsp;        this.loggerContext = logger.getLoggerContext();
+&nbsp;        this.loggerContextVO = this.loggerContext.getLoggerContextRemoteView();
+&nbsp;        this.level = level;
+&nbsp;        this.message = message;
+&nbsp;        this.argumentArray = argArray;
+&nbsp;        Instant instant = Clock.systemUTC().instant();
+&nbsp;        this.initTmestampFields(instant);
+&nbsp;        if (this.loggerContext != null) {
+&nbsp;            SequenceNumberGenerator sequenceNumberGenerator = this.loggerContext.getSequenceNumberGenerator();
+&nbsp;            if (sequenceNumberGenerator != null) {
+&nbsp;                this.sequenceNumber = sequenceNumberGenerator.nextSequenceNumber();
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        if (throwable == null) {
+&nbsp;            throwable = this.extractThrowableAnRearrangeArguments(argArray);
+&nbsp;        }
+&nbsp;
+&nbsp;        if (throwable != null) {
+&nbsp;            this.throwableProxy = new ThrowableProxy(throwable);
+&nbsp;            if (this.loggerContext != null &amp;&amp; this.loggerContext.isPackagingDataEnabled()) {
+&nbsp;                this.throwableProxy.calculatePackagingData();
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    void initTmestampFields(Instant instant) {
+&nbsp;        this.instant = instant;
+&nbsp;        long epochSecond = instant.getEpochSecond();
+&nbsp;        this.nanoseconds = instant.getNano();
+&nbsp;        long milliseconds = (long)(this.nanoseconds / 1000000);
+&nbsp;        this.timeStamp = epochSecond * 1000L + milliseconds;
+&nbsp;    }
+&nbsp;
+&nbsp;    private Throwable extractThrowableAnRearrangeArguments(Object[] argArray) {
+&nbsp;        Throwable extractedThrowable = EventArgUtil.extractThrowable(argArray);
+&nbsp;        if (EventArgUtil.successfulExtraction(extractedThrowable)) {
+&nbsp;            this.argumentArray = EventArgUtil.trimmedCopy(argArray);
+&nbsp;        }
+&nbsp;
+&nbsp;        return extractedThrowable;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setArgumentArray(Object[] argArray) {
+&nbsp;        if (this.argumentArray != null) {
+&nbsp;            throw new IllegalStateException(&quot;argArray has been already set&quot;);
+&nbsp;        } else {
+&nbsp;            this.argumentArray = argArray;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public Object[] getArgumentArray() {
+&nbsp;        return this.argumentArray;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void addKeyValuePair(KeyValuePair kvp) {
+&nbsp;        if (this.keyValuePairs == null) {
+&nbsp;            this.keyValuePairs = new ArrayList(4);
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        this.keyValuePairs.add(kvp);
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public void setKeyValuePairs(List&lt;KeyValuePair&gt; kvpList) {</b>
+<b class="fc">&nbsp;        this.keyValuePairs = kvpList;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public List&lt;KeyValuePair&gt; getKeyValuePairs() {</b>
+&nbsp;        return this.keyValuePairs;
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    public Level getLevel() {
+<b class="fc">&nbsp;        return this.level;</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+<b class="pc">&nbsp;    public String getLoggerName() {</b>
+<b class="fc">&nbsp;        return this.loggerName;</b>
+<b class="pc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public void setLoggerName(String loggerName) {
+&nbsp;        this.loggerName = loggerName;
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    public String getThreadName() {
+&nbsp;        if (this.threadName == null) {
+<b class="fc">&nbsp;            this.threadName = this.extractThreadName(Thread.currentThread());</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+<b class="pc">&nbsp;        return this.threadName;</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private String extractThreadName(Thread aThread) {
+&nbsp;        if (aThread == null) {
+&nbsp;            return &quot;?&quot;;
+&nbsp;        } else {
+<b class="fc">&nbsp;            String threadName = aThread.getName();</b>
+<b class="fc">&nbsp;            if (StringUtil.notNullNorEmpty(threadName)) {</b>
+<b class="fc">&nbsp;                return threadName;</b>
+<b class="fc">&nbsp;            } else {</b>
+<b class="fc">&nbsp;                Long virtualThreadId = this.getVirtualThreadId(aThread);</b>
+&nbsp;                return virtualThreadId != null ? &quot;virtual-&quot; + virtualThreadId : &quot;unnamed-&quot; + aThread.getId();
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;    }</b>
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;    Long getVirtualThreadId(Thread aThread) {</b>
+&nbsp;        if (EnvUtil.isJDK21OrHigher()) {
+<b class="fc">&nbsp;            try {</b>
+&nbsp;                Method isVirtualMethod = Thread.class.getMethod(&quot;isVirtual&quot;);
+&nbsp;                boolean isVirtual = (Boolean)isVirtualMethod.invoke(aThread);
+&nbsp;                if (isVirtual) {
+<b class="nc">&nbsp;                    return aThread.getId();</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException var4) {
+<b class="nc">&nbsp;                return null;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setThreadName(String threadName) throws IllegalStateException {
+<b class="nc">&nbsp;        if (this.threadName != null) {</b>
+<b class="nc">&nbsp;            throw new IllegalStateException(&quot;threadName has been already set&quot;);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            this.threadName = threadName;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public IThrowableProxy getThrowableProxy() {</b>
+&nbsp;        return this.throwableProxy;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setThrowableProxy(ThrowableProxy tp) {
+<b class="fc">&nbsp;        if (this.throwableProxy != null) {</b>
+&nbsp;            throw new IllegalStateException(&quot;ThrowableProxy has been already set.&quot;);
+&nbsp;        } else {
+&nbsp;            this.throwableProxy = tp;
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void prepareForDeferredProcessing() {
+<b class="fc">&nbsp;        this.getFormattedMessage();</b>
+&nbsp;        this.getThreadName();
+&nbsp;        this.getMDCPropertyMap();
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void setLoggerContext(LoggerContext lc) {
+&nbsp;        this.loggerContext = lc;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public LoggerContextVO getLoggerContextVO() {</b>
+&nbsp;        return this.loggerContextVO;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void setLoggerContextRemoteView(LoggerContextVO loggerContextVO) {
+&nbsp;        this.loggerContextVO = loggerContextVO;
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getMessage() {
+&nbsp;        return this.message;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setMessage(String message) {
+&nbsp;        if (this.message != null) {
+&nbsp;            throw new IllegalStateException(&quot;The message for this event has been set already.&quot;);
+<b class="pc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            this.message = message;</b>
+&nbsp;        }
+<b class="fc">&nbsp;    }</b>
+<b class="pc">&nbsp;</b>
+<b class="fc">&nbsp;    public Instant getInstant() {</b>
+<b class="nc">&nbsp;        return this.instant;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public void setInstant(Instant instant) {
+<b class="nc">&nbsp;        this.initTmestampFields(instant);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public long getTimeStamp() {
+&nbsp;        return this.timeStamp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getNanoseconds() {
+&nbsp;        return this.nanoseconds;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setTimeStamp(long timeStamp) {
+<b class="nc">&nbsp;        Instant instant = Instant.ofEpochMilli(timeStamp);</b>
+&nbsp;        this.setInstant(instant);
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public long getSequenceNumber() {</b>
+<b class="nc">&nbsp;        return this.sequenceNumber;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void setSequenceNumber(long sn) {
+&nbsp;        this.sequenceNumber = sn;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void setLevel(Level level) {
+&nbsp;        if (this.level != null) {
+&nbsp;            throw new IllegalStateException(&quot;The level has been already set for this event.&quot;);
+&nbsp;        } else {
+&nbsp;            this.level = level;
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public StackTraceElement[] getCallerData() {
+<b class="nc">&nbsp;        if (this.callerDataArray == null) {</b>
+&nbsp;            this.callerDataArray = CallerData.extract(new Throwable(), this.fqnOfLoggerClass, this.loggerContext.getMaxCallerDataDepth(), this.loggerContext.getFrameworkPackages());
+&nbsp;        }
+&nbsp;
+&nbsp;        return this.callerDataArray;
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean hasCallerData() {
+<b class="fc">&nbsp;        return this.callerDataArray != null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setCallerData(StackTraceElement[] callerDataArray) {
+&nbsp;        this.callerDataArray = callerDataArray;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public List&lt;Marker&gt; getMarkerList() {</b>
+<b class="nc">&nbsp;        return this.markerList;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void addMarker(Marker marker) {
+&nbsp;        if (marker != null) {
+&nbsp;            if (this.markerList == null) {
+&nbsp;                this.markerList = new ArrayList(4);
+&nbsp;            }
+&nbsp;
+&nbsp;            this.markerList.add(marker);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public long getContextBirthTime() {
+&nbsp;        return this.loggerContextVO.getBirthTime();
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    public String getFormattedMessage() {
+<b class="fc">&nbsp;        if (this.formattedMessage != null) {</b>
+&nbsp;            return this.formattedMessage;
+&nbsp;        } else {
+&nbsp;            if (this.argumentArray != null) {
+<b class="nc">&nbsp;                if (this.throwableProxy == null) {</b>
+&nbsp;                    this.formattedMessage = MessageFormatter.arrayFormat(this.message, this.argumentArray).getMessage();
+&nbsp;                } else {
+&nbsp;                    this.formattedMessage = MessageFormatter.arrayFormat(this.message, this.argumentArray, (Throwable)null).getMessage();
+<b class="fc">&nbsp;                }</b>
+&nbsp;            } else {
+&nbsp;                this.formattedMessage = this.message;
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            return this.formattedMessage;
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public Map&lt;String, String&gt; getMDCPropertyMap() {
+&nbsp;        if (this.mdcPropertyMap == null) {
+&nbsp;            MDCAdapter mdcAdapter = this.loggerContext.getMDCAdapter();
+<b class="nc">&nbsp;            if (mdcAdapter instanceof LogbackMDCAdapter) {</b>
+<b class="nc">&nbsp;                this.mdcPropertyMap = ((LogbackMDCAdapter)mdcAdapter).getPropertyMap();</b>
+&nbsp;            } else {
+<b class="nc">&nbsp;                this.mdcPropertyMap = mdcAdapter.getCopyOfContextMap();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        if (this.mdcPropertyMap == null) {
+&nbsp;            this.mdcPropertyMap = Collections.emptyMap();
+&nbsp;        }
+&nbsp;
+&nbsp;        return this.mdcPropertyMap;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void setMDCPropertyMap(Map&lt;String, String&gt; map) {
+&nbsp;        if (this.mdcPropertyMap != null) {
+&nbsp;            throw new IllegalStateException(&quot;The MDCPropertyMap has been already set for this event.&quot;);
+&nbsp;        } else {
+&nbsp;            this.mdcPropertyMap = map;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    /** @deprecated */</b>
+&nbsp;    public Map&lt;String, String&gt; getMdc() {
+&nbsp;        return this.getMDCPropertyMap();
+&nbsp;    }
+&nbsp;
+&nbsp;    public String toString() {
+&nbsp;        StringBuilder sb = new StringBuilder();
+<b class="fc">&nbsp;        sb.append(&#39;[&#39;);</b>
+&nbsp;        sb.append(this.level).append(&quot;] &quot;);
+&nbsp;        sb.append(this.getFormattedMessage());
+&nbsp;        return sb.toString();
+&nbsp;    }
+&nbsp;
+&nbsp;    private void writeObject(ObjectOutputStream out) throws IOException {
+&nbsp;        throw new UnsupportedOperationException(String.valueOf(this.getClass()) + &quot; does not support serialization. Use LoggerEventVO instance instead. See also LoggerEventVO.build method.&quot;);
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:54</div>
+</div>
+</body>
+</html>

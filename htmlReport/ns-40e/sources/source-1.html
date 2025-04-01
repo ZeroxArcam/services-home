@@ -1,0 +1,557 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > UrlPathHelper</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.web.util</a>
+</div>
+
+<h1>Coverage Summary for Class: UrlPathHelper (org.springframework.web.util)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">UrlPathHelper</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/39)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/120)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/202)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.web.util;
+&nbsp;
+&nbsp;import jakarta.servlet.ServletRequest;
+&nbsp;import jakarta.servlet.http.HttpServletMapping;
+&nbsp;import jakarta.servlet.http.HttpServletRequest;
+&nbsp;import jakarta.servlet.http.MappingMatch;
+&nbsp;import java.net.URLDecoder;
+&nbsp;import java.nio.charset.UnsupportedCharsetException;
+&nbsp;import java.util.Locale;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Properties;
+&nbsp;import org.apache.commons.logging.Log;
+&nbsp;import org.apache.commons.logging.LogFactory;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.CollectionUtils;
+&nbsp;import org.springframework.util.LinkedMultiValueMap;
+&nbsp;import org.springframework.util.MultiValueMap;
+&nbsp;import org.springframework.util.StringUtils;
+&nbsp;
+&nbsp;public class UrlPathHelper {
+&nbsp;    public static final String PATH_ATTRIBUTE = UrlPathHelper.class.getName() + &quot;.PATH&quot;;
+&nbsp;    private static final String WEBSPHERE_URI_ATTRIBUTE = &quot;com.ibm.websphere.servlet.uri_non_decoded&quot;;
+&nbsp;    private static final Log logger = LogFactory.getLog(UrlPathHelper.class);
+&nbsp;    @Nullable
+&nbsp;    static volatile Boolean websphereComplianceFlag;
+&nbsp;    private boolean alwaysUseFullPath = false;
+&nbsp;    private boolean urlDecode = true;
+&nbsp;    private boolean removeSemicolonContent = true;
+&nbsp;    private String defaultEncoding = &quot;ISO-8859-1&quot;;
+&nbsp;    private boolean readOnly = false;
+&nbsp;    public static final UrlPathHelper defaultInstance = new UrlPathHelper();
+&nbsp;    public static final UrlPathHelper rawPathInstance;
+&nbsp;
+&nbsp;    public UrlPathHelper() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setAlwaysUseFullPath(boolean alwaysUseFullPath) {
+&nbsp;        this.checkReadOnly();
+&nbsp;        this.alwaysUseFullPath = alwaysUseFullPath;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setUrlDecode(boolean urlDecode) {
+&nbsp;        this.checkReadOnly();
+&nbsp;        this.urlDecode = urlDecode;
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isUrlDecode() {
+&nbsp;        return this.urlDecode;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void setRemoveSemicolonContent(boolean removeSemicolonContent) {
+&nbsp;        this.checkReadOnly();
+&nbsp;        this.removeSemicolonContent = removeSemicolonContent;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public boolean shouldRemoveSemicolonContent() {</b>
+&nbsp;        return this.removeSemicolonContent;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setDefaultEncoding(String defaultEncoding) {
+&nbsp;        this.checkReadOnly();
+&nbsp;        this.defaultEncoding = defaultEncoding;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected String getDefaultEncoding() {</b>
+&nbsp;        return this.defaultEncoding;
+&nbsp;    }
+&nbsp;
+&nbsp;    private void setReadOnly() {
+&nbsp;        this.readOnly = true;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private void checkReadOnly() {</b>
+&nbsp;        Assert.isTrue(!this.readOnly, &quot;This instance cannot be modified&quot;);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public String resolveAndCacheLookupPath(HttpServletRequest request) {</b>
+&nbsp;        String lookupPath = this.getLookupPathForRequest(request);
+<b class="nc">&nbsp;        request.setAttribute(PATH_ATTRIBUTE, lookupPath);</b>
+&nbsp;        return lookupPath;
+&nbsp;    }
+&nbsp;
+&nbsp;    public static String getResolvedLookupPath(ServletRequest request) {
+&nbsp;        String lookupPath = (String)request.getAttribute(PATH_ATTRIBUTE);
+&nbsp;        Assert.notNull(lookupPath, () -&gt; &quot;Expected lookupPath in request attribute \&quot;&quot; + PATH_ATTRIBUTE + &quot;\&quot;.&quot;);
+&nbsp;        return lookupPath;
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @deprecated */
+&nbsp;    @Deprecated
+&nbsp;    public String getLookupPathForRequest(HttpServletRequest request, @Nullable String name) {
+<b class="nc">&nbsp;        String result = null;</b>
+<b class="nc">&nbsp;        if (name != null) {</b>
+&nbsp;            result = (String)request.getAttribute(name);
+&nbsp;        }
+&nbsp;
+&nbsp;        return result != null ? result : this.getLookupPathForRequest(request);
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getLookupPathForRequest(HttpServletRequest request) {
+&nbsp;        String pathWithinApp = this.getPathWithinApplication(request);
+&nbsp;        if (!this.alwaysUseFullPath &amp;&amp; !this.ignoreServletPath(request)) {
+&nbsp;            String rest = this.getPathWithinServletMapping(request, pathWithinApp);
+&nbsp;            return StringUtils.hasLength(rest) ? rest : pathWithinApp;
+&nbsp;        } else {
+&nbsp;            return pathWithinApp;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean ignoreServletPath(HttpServletRequest request) {
+&nbsp;        HttpServletMapping mapping = (HttpServletMapping)request.getAttribute(&quot;jakarta.servlet.include.mapping&quot;);
+&nbsp;        mapping = mapping == null ? request.getHttpServletMapping() : mapping;
+&nbsp;        MappingMatch match = mapping.getMappingMatch();
+&nbsp;        return match != null &amp;&amp; (!match.equals(MappingMatch.PATH) || mapping.getPattern().equals(&quot;/*&quot;));
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public String getPathWithinServletMapping(HttpServletRequest request) {
+&nbsp;        return this.getPathWithinServletMapping(request, this.getPathWithinApplication(request));
+&nbsp;    }
+&nbsp;
+&nbsp;    protected String getPathWithinServletMapping(HttpServletRequest request, String pathWithinApp) {
+&nbsp;        String servletPath = this.getServletPath(request);
+&nbsp;        String sanitizedPathWithinApp = getSanitizedPath(pathWithinApp);
+<b class="nc">&nbsp;        String path;</b>
+&nbsp;        if (servletPath.contains(sanitizedPathWithinApp)) {
+&nbsp;            path = this.getRemainingPath(sanitizedPathWithinApp, servletPath, false);
+&nbsp;        } else {
+&nbsp;            path = this.getRemainingPath(pathWithinApp, servletPath, false);
+&nbsp;        }
+&nbsp;
+&nbsp;        if (path != null) {
+<b class="nc">&nbsp;            return path;</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            String pathInfo = request.getPathInfo();
+&nbsp;            if (pathInfo != null) {
+&nbsp;                return pathInfo;
+&nbsp;            } else {
+&nbsp;                if (!this.urlDecode) {
+&nbsp;                    path = this.getRemainingPath(this.decodeInternal(request, pathWithinApp), servletPath, false);
+<b class="nc">&nbsp;                    if (path != null) {</b>
+&nbsp;                        return pathWithinApp;
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                return servletPath;
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getPathWithinApplication(HttpServletRequest request) {
+&nbsp;        String contextPath = this.getContextPath(request);
+&nbsp;        String requestUri = this.getRequestUri(request);
+&nbsp;        String path = this.getRemainingPath(requestUri, contextPath, true);
+&nbsp;        if (path != null) {
+&nbsp;            return StringUtils.hasText(path) ? path : &quot;/&quot;;
+&nbsp;        } else {
+<b class="nc">&nbsp;            return requestUri;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    private String getRemainingPath(String requestUri, String mapping, boolean ignoreCase) {
+&nbsp;        int index1 = 0;
+&nbsp;        int index2 = 0;
+<b class="nc">&nbsp;</b>
+&nbsp;        while(true) {
+&nbsp;            if (index1 &lt; requestUri.length() &amp;&amp; index2 &lt; mapping.length()) {
+&nbsp;                char c1 = requestUri.charAt(index1);
+&nbsp;                char c2 = mapping.charAt(index2);
+&nbsp;                if (c1 == &#39;;&#39;) {
+&nbsp;                    index1 = requestUri.indexOf(47, index1);
+<b class="nc">&nbsp;                    if (index1 == -1) {</b>
+&nbsp;                        return null;
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    c1 = requestUri.charAt(index1);</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                if (c1 == c2 || ignoreCase &amp;&amp; Character.toLowerCase(c1) == Character.toLowerCase(c2)) {
+&nbsp;                    ++index1;
+&nbsp;                    ++index2;
+&nbsp;                    continue;
+&nbsp;                }
+&nbsp;
+&nbsp;                return null;
+&nbsp;            }
+&nbsp;
+&nbsp;            if (index2 != mapping.length()) {
+<b class="nc">&nbsp;                return null;</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            if (index1 == requestUri.length()) {
+&nbsp;                return &quot;&quot;;
+&nbsp;            }
+&nbsp;
+&nbsp;            if (requestUri.charAt(index1) == &#39;;&#39;) {
+&nbsp;                index1 = requestUri.indexOf(47, index1);
+&nbsp;            }
+&nbsp;
+&nbsp;            return index1 != -1 ? requestUri.substring(index1) : &quot;&quot;;
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private static String getSanitizedPath(final String path) {</b>
+&nbsp;        int start = path.indexOf(&quot;//&quot;);
+&nbsp;        if (start == -1) {
+&nbsp;            return path;
+&nbsp;        } else {
+&nbsp;            char[] content = path.toCharArray();
+&nbsp;            int slowIndex = start;
+&nbsp;
+&nbsp;            for(int fastIndex = start + 1; fastIndex &lt; content.length; ++fastIndex) {
+&nbsp;                if (content[fastIndex] != &#39;/&#39; || content[slowIndex] != &#39;/&#39;) {
+&nbsp;                    ++slowIndex;
+&nbsp;                    content[slowIndex] = content[fastIndex];
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            return new String(content, 0, slowIndex + 1);
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public String getRequestUri(HttpServletRequest request) {</b>
+&nbsp;        String uri = (String)request.getAttribute(&quot;jakarta.servlet.include.request_uri&quot;);
+<b class="nc">&nbsp;        if (uri == null) {</b>
+&nbsp;            uri = request.getRequestURI();
+&nbsp;        }
+&nbsp;
+&nbsp;        return this.decodeAndCleanUriString(request, uri);
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getContextPath(HttpServletRequest request) {
+&nbsp;        String contextPath = (String)request.getAttribute(&quot;jakarta.servlet.include.context_path&quot;);
+&nbsp;        if (contextPath == null) {
+&nbsp;            contextPath = request.getContextPath();
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if (StringUtils.matchesCharacter(contextPath, &#39;/&#39;)) {</b>
+&nbsp;            contextPath = &quot;&quot;;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return this.decodeRequestString(request, contextPath);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public String getServletPath(HttpServletRequest request) {</b>
+<b class="nc">&nbsp;        String servletPath = (String)request.getAttribute(&quot;jakarta.servlet.include.servlet_path&quot;);</b>
+&nbsp;        if (servletPath == null) {
+&nbsp;            servletPath = request.getServletPath();
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        if (servletPath.length() &gt; 1 &amp;&amp; servletPath.endsWith(&quot;/&quot;) &amp;&amp; this.shouldRemoveTrailingServletPathSlash(request)) {
+&nbsp;            servletPath = servletPath.substring(0, servletPath.length() - 1);
+&nbsp;        }
+&nbsp;
+&nbsp;        return servletPath;
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getOriginatingRequestUri(HttpServletRequest request) {
+<b class="nc">&nbsp;        String uri = (String)request.getAttribute(&quot;com.ibm.websphere.servlet.uri_non_decoded&quot;);</b>
+<b class="nc">&nbsp;        if (uri == null) {</b>
+<b class="nc">&nbsp;            uri = (String)request.getAttribute(&quot;jakarta.servlet.forward.request_uri&quot;);</b>
+<b class="nc">&nbsp;            if (uri == null) {</b>
+&nbsp;                uri = request.getRequestURI();
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return this.decodeAndCleanUriString(request, uri);
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getOriginatingContextPath(HttpServletRequest request) {
+&nbsp;        String contextPath = (String)request.getAttribute(&quot;jakarta.servlet.forward.context_path&quot;);
+&nbsp;        if (contextPath == null) {
+&nbsp;            contextPath = request.getContextPath();
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return this.decodeRequestString(request, contextPath);
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getOriginatingServletPath(HttpServletRequest request) {
+&nbsp;        String servletPath = (String)request.getAttribute(&quot;jakarta.servlet.forward.servlet_path&quot;);
+&nbsp;        if (servletPath == null) {
+&nbsp;            servletPath = request.getServletPath();
+&nbsp;        }
+&nbsp;
+&nbsp;        return servletPath;
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getOriginatingQueryString(HttpServletRequest request) {
+&nbsp;        return request.getAttribute(&quot;jakarta.servlet.forward.request_uri&quot;) == null &amp;&amp; request.getAttribute(&quot;jakarta.servlet.error.request_uri&quot;) == null ? request.getQueryString() : (String)request.getAttribute(&quot;jakarta.servlet.forward.query_string&quot;);
+&nbsp;    }
+&nbsp;
+&nbsp;    private String decodeAndCleanUriString(HttpServletRequest request, String uri) {
+&nbsp;        uri = this.removeSemicolonContent(uri);
+<b class="nc">&nbsp;        uri = this.decodeRequestString(request, uri);</b>
+<b class="nc">&nbsp;        uri = getSanitizedPath(uri);</b>
+&nbsp;        return uri;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public String decodeRequestString(HttpServletRequest request, String source) {</b>
+<b class="nc">&nbsp;        return this.urlDecode ? this.decodeInternal(request, source) : source;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private String decodeInternal(HttpServletRequest request, String source) {</b>
+&nbsp;        String enc = this.determineEncoding(request);
+&nbsp;
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            return UriUtils.decode(source, enc);
+<b class="nc">&nbsp;        } catch (UnsupportedCharsetException ex) {</b>
+&nbsp;            if (logger.isDebugEnabled()) {
+&nbsp;                logger.debug(&quot;Could not decode request string [&quot; + source + &quot;] with encoding &#39;&quot; + enc + &quot;&#39;: falling back to platform default encoding; exception message: &quot; + ex.getMessage());
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            return URLDecoder.decode(source);</b>
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected String determineEncoding(HttpServletRequest request) {
+<b class="nc">&nbsp;        String enc = request.getCharacterEncoding();</b>
+&nbsp;        if (enc == null) {
+&nbsp;            enc = this.getDefaultEncoding();
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return enc;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public String removeSemicolonContent(String requestUri) {
+&nbsp;        return this.removeSemicolonContent ? removeSemicolonContentInternal(requestUri) : this.removeJsessionid(requestUri);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private static String removeSemicolonContentInternal(String requestUri) {
+&nbsp;        int semicolonIndex = requestUri.indexOf(59);
+&nbsp;        if (semicolonIndex == -1) {
+&nbsp;            return requestUri;
+&nbsp;        } else {
+&nbsp;            StringBuilder sb;
+&nbsp;            for(sb = new StringBuilder(requestUri); semicolonIndex != -1; semicolonIndex = sb.indexOf(&quot;;&quot;, semicolonIndex)) {
+&nbsp;                int slashIndex = sb.indexOf(&quot;/&quot;, semicolonIndex + 1);
+&nbsp;                if (slashIndex == -1) {
+&nbsp;                    return sb.substring(0, semicolonIndex);
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                sb.delete(semicolonIndex, slashIndex);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            return sb.toString();
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private String removeJsessionid(String requestUri) {</b>
+&nbsp;        String key = &quot;;jsessionid=&quot;;
+&nbsp;        int index = requestUri.toLowerCase(Locale.ROOT).indexOf(key);
+&nbsp;        if (index == -1) {
+&nbsp;            return requestUri;
+&nbsp;        } else {
+&nbsp;            String start = requestUri.substring(0, index);
+&nbsp;
+&nbsp;            for(int i = index + key.length(); i &lt; requestUri.length(); ++i) {
+&nbsp;                char c = requestUri.charAt(i);
+&nbsp;                if (c == &#39;;&#39; || c == &#39;/&#39;) {
+&nbsp;                    return start + requestUri.substring(i);
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            return start;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public Map&lt;String, String&gt; decodePathVariables(HttpServletRequest request, Map&lt;String, String&gt; vars) {</b>
+<b class="nc">&nbsp;        if (this.urlDecode) {</b>
+&nbsp;            return vars;
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            Map&lt;String, String&gt; decodedVars = CollectionUtils.newLinkedHashMap(vars.size());
+<b class="nc">&nbsp;            vars.forEach((key, value) -&gt; decodedVars.put(key, this.decodeInternal(request, value)));</b>
+&nbsp;            return decodedVars;
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public MultiValueMap&lt;String, String&gt; decodeMatrixVariables(HttpServletRequest request, MultiValueMap&lt;String, String&gt; vars) {</b>
+<b class="nc">&nbsp;        if (this.urlDecode) {</b>
+&nbsp;            return vars;
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            MultiValueMap&lt;String, String&gt; decodedVars = new LinkedMultiValueMap(vars.size());</b>
+&nbsp;            vars.forEach((key, values) -&gt; {
+<b class="nc">&nbsp;                for(String value : values) {</b>
+<b class="nc">&nbsp;                    decodedVars.add(key, this.decodeInternal(request, value));</b>
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+&nbsp;            });
+&nbsp;            return decodedVars;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean shouldRemoveTrailingServletPathSlash(HttpServletRequest request) {
+&nbsp;        if (request.getAttribute(&quot;com.ibm.websphere.servlet.uri_non_decoded&quot;) == null) {
+&nbsp;            return false;
+&nbsp;        } else {
+<b class="nc">&nbsp;            Boolean flagToUse = websphereComplianceFlag;</b>
+<b class="nc">&nbsp;            if (flagToUse == null) {</b>
+<b class="nc">&nbsp;                ClassLoader classLoader = UrlPathHelper.class.getClassLoader();</b>
+&nbsp;                String className = &quot;com.ibm.ws.webcontainer.WebContainer&quot;;
+<b class="nc">&nbsp;                String methodName = &quot;getWebContainerProperties&quot;;</b>
+<b class="nc">&nbsp;                String propName = &quot;com.ibm.ws.webcontainer.removetrailingservletpathslash&quot;;</b>
+<b class="nc">&nbsp;                boolean flag = false;</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                try {</b>
+&nbsp;                    Class&lt;?&gt; cl = classLoader.loadClass(className);
+&nbsp;                    Properties prop = (Properties)cl.getMethod(methodName).invoke((Object)null);
+<b class="nc">&nbsp;                    flag = Boolean.parseBoolean(prop.getProperty(propName));</b>
+&nbsp;                } catch (Throwable ex) {
+&nbsp;                    if (logger.isDebugEnabled()) {
+&nbsp;                        logger.debug(&quot;Could not introspect WebSphere web container properties: &quot; + String.valueOf(ex));
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                flagToUse = flag;
+&nbsp;                websphereComplianceFlag = flag;
+&nbsp;            }
+&nbsp;
+&nbsp;            return !flagToUse;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    static {</b>
+<b class="nc">&nbsp;        defaultInstance.setReadOnly();</b>
+<b class="nc">&nbsp;        rawPathInstance = new UrlPathHelper() {</b>
+&nbsp;            public String removeSemicolonContent(String requestUri) {
+<b class="nc">&nbsp;                return requestUri;</b>
+&nbsp;            }
+&nbsp;        };
+&nbsp;        rawPathInstance.setAlwaysUseFullPath(true);
+&nbsp;        rawPathInstance.setUrlDecode(false);
+&nbsp;        rawPathInstance.setRemoveSemicolonContent(false);
+&nbsp;        rawPathInstance.setReadOnly();
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:58</div>
+</div>
+</body>
+</html>

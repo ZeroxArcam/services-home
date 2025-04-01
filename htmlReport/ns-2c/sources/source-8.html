@@ -1,0 +1,1004 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > DeserializationContext</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.fasterxml.jackson.databind</a>
+</div>
+
+<h1>Coverage Summary for Class: DeserializationContext (com.fasterxml.jackson.databind)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DeserializationContext</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    2%
+  </span>
+  <span class="absValue">
+    (2/101)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0.6%
+  </span>
+  <span class="absValue">
+    (1/164)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    4.7%
+  </span>
+  <span class="absValue">
+    (20/422)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package com.fasterxml.jackson.databind;
+&nbsp;
+&nbsp;import com.fasterxml.jackson.annotation.JsonFormat;
+&nbsp;import com.fasterxml.jackson.annotation.ObjectIdGenerator;
+&nbsp;import com.fasterxml.jackson.annotation.ObjectIdResolver;
+&nbsp;import com.fasterxml.jackson.core.Base64Variant;
+&nbsp;import com.fasterxml.jackson.core.JsonParser;
+&nbsp;import com.fasterxml.jackson.core.JsonToken;
+&nbsp;import com.fasterxml.jackson.core.ObjectCodec;
+&nbsp;import com.fasterxml.jackson.core.StreamReadCapability;
+&nbsp;import com.fasterxml.jackson.core.util.JacksonFeatureSet;
+&nbsp;import com.fasterxml.jackson.databind.cfg.CoercionAction;
+&nbsp;import com.fasterxml.jackson.databind.cfg.CoercionInputShape;
+&nbsp;import com.fasterxml.jackson.databind.cfg.ContextAttributes;
+&nbsp;import com.fasterxml.jackson.databind.cfg.DatatypeFeature;
+&nbsp;import com.fasterxml.jackson.databind.cfg.DatatypeFeatures;
+&nbsp;import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
+&nbsp;import com.fasterxml.jackson.databind.deser.ContextualKeyDeserializer;
+&nbsp;import com.fasterxml.jackson.databind.deser.DeserializationProblemHandler;
+&nbsp;import com.fasterxml.jackson.databind.deser.DeserializerCache;
+&nbsp;import com.fasterxml.jackson.databind.deser.DeserializerFactory;
+&nbsp;import com.fasterxml.jackson.databind.deser.UnresolvedForwardReference;
+&nbsp;import com.fasterxml.jackson.databind.deser.ValueInstantiator;
+&nbsp;import com.fasterxml.jackson.databind.deser.impl.ObjectIdReader;
+&nbsp;import com.fasterxml.jackson.databind.deser.impl.ReadableObjectId;
+&nbsp;import com.fasterxml.jackson.databind.deser.impl.TypeWrappedDeserializer;
+&nbsp;import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
+&nbsp;import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+&nbsp;import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
+&nbsp;import com.fasterxml.jackson.databind.exc.MismatchedInputException;
+&nbsp;import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+&nbsp;import com.fasterxml.jackson.databind.exc.ValueInstantiationException;
+&nbsp;import com.fasterxml.jackson.databind.introspect.Annotated;
+&nbsp;import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
+&nbsp;import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
+&nbsp;import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
+&nbsp;import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
+&nbsp;import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+&nbsp;import com.fasterxml.jackson.databind.node.TreeTraversingParser;
+&nbsp;import com.fasterxml.jackson.databind.type.LogicalType;
+&nbsp;import com.fasterxml.jackson.databind.type.TypeFactory;
+&nbsp;import com.fasterxml.jackson.databind.util.ArrayBuilders;
+&nbsp;import com.fasterxml.jackson.databind.util.ClassUtil;
+&nbsp;import com.fasterxml.jackson.databind.util.LinkedNode;
+&nbsp;import com.fasterxml.jackson.databind.util.ObjectBuffer;
+&nbsp;import com.fasterxml.jackson.databind.util.TokenBuffer;
+&nbsp;import java.io.IOException;
+&nbsp;import java.io.Serializable;
+&nbsp;import java.text.DateFormat;
+&nbsp;import java.text.ParseException;
+&nbsp;import java.util.Calendar;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.Date;
+&nbsp;import java.util.Locale;
+&nbsp;import java.util.Objects;
+&nbsp;import java.util.TimeZone;
+&nbsp;import java.util.concurrent.atomic.AtomicReference;
+&nbsp;
+&nbsp;public abstract class DeserializationContext extends DatabindContext implements Serializable {
+&nbsp;    private static final long serialVersionUID = 1L;
+&nbsp;    protected final DeserializerCache _cache;
+&nbsp;    protected final DeserializerFactory _factory;
+&nbsp;    protected final DeserializationConfig _config;
+&nbsp;    protected final int _featureFlags;
+&nbsp;    protected final JacksonFeatureSet&lt;StreamReadCapability&gt; _readCapabilities;
+&nbsp;    protected final Class&lt;?&gt; _view;
+&nbsp;    protected transient JsonParser _parser;
+&nbsp;    protected final InjectableValues _injectableValues;
+&nbsp;    protected transient ArrayBuilders _arrayBuilders;
+&nbsp;    protected transient ObjectBuffer _objectBuffer;
+&nbsp;    protected transient DateFormat _dateFormat;
+&nbsp;    protected transient ContextAttributes _attributes;
+&nbsp;    protected LinkedNode&lt;JavaType&gt; _currentType;
+&nbsp;
+&nbsp;    protected DeserializationContext(DeserializerFactory df, DeserializerCache cache) {
+&nbsp;        this._factory = (DeserializerFactory)Objects.requireNonNull(df);
+&nbsp;        if (cache == null) {
+&nbsp;            cache = new DeserializerCache();
+&nbsp;        }
+&nbsp;
+&nbsp;        this._cache = cache;
+&nbsp;        this._featureFlags = 0;
+&nbsp;        this._readCapabilities = null;
+&nbsp;        this._config = null;
+&nbsp;        this._injectableValues = null;
+&nbsp;        this._view = null;
+&nbsp;        this._attributes = null;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected DeserializationContext(DeserializationContext src, DeserializerFactory factory) {
+&nbsp;        this._cache = src._cache;
+&nbsp;        this._factory = factory;
+&nbsp;        this._config = src._config;
+&nbsp;        this._featureFlags = src._featureFlags;
+&nbsp;        this._readCapabilities = src._readCapabilities;
+&nbsp;        this._view = src._view;
+&nbsp;        this._parser = src._parser;
+&nbsp;        this._injectableValues = src._injectableValues;
+&nbsp;        this._attributes = src._attributes;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected DeserializationContext(DeserializationContext src, DeserializerCache cache) {
+&nbsp;        this._cache = cache;
+&nbsp;        this._factory = src._factory;
+&nbsp;        this._config = src._config;
+&nbsp;        this._featureFlags = src._featureFlags;
+&nbsp;        this._readCapabilities = src._readCapabilities;
+&nbsp;        this._view = src._view;
+&nbsp;        this._parser = src._parser;
+&nbsp;        this._injectableValues = src._injectableValues;
+&nbsp;        this._attributes = src._attributes;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected DeserializationContext(DeserializationContext src, DeserializationConfig config, JsonParser p, InjectableValues injectableValues) {
+&nbsp;        this._cache = src._cache;
+&nbsp;        this._factory = src._factory;
+&nbsp;        this._readCapabilities = p == null ? null : p.getReadCapabilities();
+&nbsp;        this._config = config;
+&nbsp;        this._featureFlags = config.getDeserializationFeatures();
+&nbsp;        this._view = config.getActiveView();
+&nbsp;        this._parser = p;
+&nbsp;        this._injectableValues = injectableValues;
+&nbsp;        this._attributes = config.getAttributes();
+&nbsp;    }
+&nbsp;
+&nbsp;    protected DeserializationContext(DeserializationContext src, DeserializationConfig config) {
+&nbsp;        this._cache = src._cache;
+&nbsp;        this._factory = src._factory;
+&nbsp;        this._readCapabilities = null;
+&nbsp;        this._config = config;
+&nbsp;        this._featureFlags = config.getDeserializationFeatures();
+&nbsp;        this._view = null;
+&nbsp;        this._parser = null;
+&nbsp;        this._injectableValues = null;
+&nbsp;        this._attributes = null;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected DeserializationContext(DeserializationContext src) {
+&nbsp;        this._cache = src._cache.emptyCopy();
+&nbsp;        this._factory = src._factory;
+&nbsp;        this._config = src._config;
+&nbsp;        this._featureFlags = src._featureFlags;
+&nbsp;        this._readCapabilities = src._readCapabilities;
+&nbsp;        this._view = src._view;
+&nbsp;        this._injectableValues = src._injectableValues;
+&nbsp;        this._attributes = null;
+&nbsp;    }
+&nbsp;
+&nbsp;    public DeserializationConfig getConfig() {
+&nbsp;        return this._config;
+&nbsp;    }
+&nbsp;
+&nbsp;    public final Class&lt;?&gt; getActiveView() {
+&nbsp;        return this._view;
+&nbsp;    }
+&nbsp;
+&nbsp;    public final boolean canOverrideAccessModifiers() {
+&nbsp;        return this._config.canOverrideAccessModifiers();
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public final boolean isEnabled(MapperFeature feature) {</b>
+<b class="fc">&nbsp;        return this._config.isEnabled(feature);</b>
+&nbsp;    }
+&nbsp;
+<b class="pc">&nbsp;    public final boolean isEnabled(DatatypeFeature feature) {</b>
+<b class="nc">&nbsp;        return this._config.isEnabled(feature);</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public final DatatypeFeatures getDatatypeFeatures() {</b>
+<b class="fc">&nbsp;        return this._config.getDatatypeFeatures();</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public final JsonFormat.Value getDefaultPropertyFormat(Class&lt;?&gt; baseType) {</b>
+<b class="fc">&nbsp;        return this._config.getDefaultPropertyFormat(baseType);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public final AnnotationIntrospector getAnnotationIntrospector() {
+&nbsp;        return this._config.getAnnotationIntrospector();
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public final TypeFactory getTypeFactory() {</b>
+&nbsp;        return this._config.getTypeFactory();
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public JavaType constructSpecializedType(JavaType baseType, Class&lt;?&gt; subclass) throws IllegalArgumentException {</b>
+<b class="fc">&nbsp;        return baseType.hasRawClass(subclass) ? baseType : this.getConfig().getTypeFactory().constructSpecializedType(baseType, subclass, false);</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public Locale getLocale() {</b>
+&nbsp;        return this._config.getLocale();
+&nbsp;    }
+&nbsp;
+&nbsp;    public TimeZone getTimeZone() {
+&nbsp;        return this._config.getTimeZone();
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public Object getAttribute(Object key) {</b>
+<b class="nc">&nbsp;        return this._attributes.getAttribute(key);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public DeserializationContext setAttribute(Object key, Object value) {</b>
+<b class="nc">&nbsp;        this._attributes = this._attributes.withPerCallAttribute(key, value);</b>
+<b class="nc">&nbsp;        return this;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public JavaType getContextualType() {</b>
+<b class="nc">&nbsp;        return this._currentType == null ? null : (JavaType)this._currentType.value();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public DeserializerFactory getFactory() {
+&nbsp;        return this._factory;
+&nbsp;    }
+&nbsp;
+&nbsp;    public final boolean isEnabled(DeserializationFeature feat) {
+&nbsp;        return (this._featureFlags &amp; feat.getMask()) != 0;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public final boolean isEnabled(StreamReadCapability cap) {</b>
+&nbsp;        return this._readCapabilities.isEnabled(cap);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public final int getDeserializationFeatures() {</b>
+&nbsp;        return this._featureFlags;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public final boolean hasDeserializationFeatures(int featureMask) {</b>
+<b class="nc">&nbsp;        return (this._featureFlags &amp; featureMask) == featureMask;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public final boolean hasSomeOfFeatures(int featureMask) {
+&nbsp;        return (this._featureFlags &amp; featureMask) != 0;
+&nbsp;    }
+&nbsp;
+&nbsp;    public final JsonParser getParser() {
+&nbsp;        return this._parser;
+&nbsp;    }
+&nbsp;
+&nbsp;    public final Object findInjectableValue(Object valueId, BeanProperty forProperty, Object beanInstance) throws JsonMappingException {
+&nbsp;        return this._injectableValues == null ? this.reportBadDefinition(ClassUtil.classOf(valueId), String.format(&quot;No &#39;injectableValues&#39; configured, cannot inject value with id [%s]&quot;, valueId)) : this._injectableValues.findInjectableValue(valueId, this, forProperty, beanInstance);
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public final Base64Variant getBase64Variant() {</b>
+<b class="nc">&nbsp;        return this._config.getBase64Variant();</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public final JsonNodeFactory getNodeFactory() {</b>
+<b class="nc">&nbsp;        return this._config.getNodeFactory();</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public CoercionAction findCoercionAction(LogicalType targetType, Class&lt;?&gt; targetClass, CoercionInputShape inputShape) {</b>
+&nbsp;        return this._config.findCoercionAction(targetType, targetClass, inputShape);
+&nbsp;    }
+&nbsp;
+&nbsp;    public CoercionAction findCoercionFromBlankString(LogicalType targetType, Class&lt;?&gt; targetClass, CoercionAction actionIfBlankNotAllowed) {
+&nbsp;        return this._config.findCoercionFromBlankString(targetType, targetClass, actionIfBlankNotAllowed);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public TokenBuffer bufferForInputBuffering(JsonParser p) {</b>
+<b class="nc">&nbsp;        return new TokenBuffer(p, this);</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public final TokenBuffer bufferForInputBuffering() {</b>
+<b class="nc">&nbsp;        return this.bufferForInputBuffering(this.getParser());</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public TokenBuffer bufferAsCopyOfValue(JsonParser p) throws IOException {</b>
+&nbsp;        TokenBuffer buf = this.bufferForInputBuffering(p);
+&nbsp;        buf.copyCurrentStructure(p);
+&nbsp;        return buf;
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean hasValueDeserializerFor(JavaType type, AtomicReference&lt;Throwable&gt; cause) {
+&nbsp;        try {
+&nbsp;            return this._cache.hasValueDeserializerFor(this, this._factory, type);
+&nbsp;        } catch (DatabindException e) {
+<b class="nc">&nbsp;            if (cause != null) {</b>
+&nbsp;                cause.set(e);
+&nbsp;            }
+<b class="nc">&nbsp;        } catch (RuntimeException e) {</b>
+&nbsp;            if (cause == null) {
+&nbsp;                throw e;
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            cause.set(e);
+&nbsp;        }
+&nbsp;
+&nbsp;        return false;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public final JsonDeserializer&lt;Object&gt; findContextualValueDeserializer(JavaType type, BeanProperty prop) throws JsonMappingException {
+&nbsp;        JsonDeserializer&lt;Object&gt; deser = this._cache.findValueDeserializer(this, this._factory, type);
+&nbsp;        if (deser != null) {
+<b class="nc">&nbsp;            deser = this.handleSecondaryContextualization(deser, prop, type);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        return deser;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public final JsonDeserializer&lt;Object&gt; findNonContextualValueDeserializer(JavaType type) throws JsonMappingException {
+&nbsp;        return this._cache.findValueDeserializer(this, this._factory, type);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public final JsonDeserializer&lt;Object&gt; findRootValueDeserializer(JavaType type) throws JsonMappingException {</b>
+&nbsp;        JsonDeserializer&lt;Object&gt; deser = this._cache.findValueDeserializer(this, this._factory, type);
+&nbsp;        if (deser == null) {
+&nbsp;            return null;
+&nbsp;        } else {
+<b class="nc">&nbsp;            deser = this.handleSecondaryContextualization(deser, (BeanProperty)null, type);</b>
+&nbsp;            TypeDeserializer typeDeser = this._factory.findTypeDeserializer(this._config, type);
+&nbsp;            if (typeDeser != null) {
+&nbsp;                typeDeser = typeDeser.forProperty((BeanProperty)null);
+&nbsp;                return new TypeWrappedDeserializer(typeDeser, deser);
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                return deser;
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public final KeyDeserializer findKeyDeserializer(JavaType keyType, BeanProperty prop) throws JsonMappingException {
+<b class="nc">&nbsp;        KeyDeserializer kd;</b>
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            kd = this._cache.findKeyDeserializer(this, this._factory, keyType);
+&nbsp;        } catch (IllegalArgumentException iae) {
+&nbsp;            this.reportBadDefinition(keyType, ClassUtil.exceptionMessage(iae));
+<b class="nc">&nbsp;            kd = null;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        if (kd instanceof ContextualKeyDeserializer) {
+&nbsp;            kd = ((ContextualKeyDeserializer)kd).createContextual(this, prop);
+&nbsp;        }
+&nbsp;
+&nbsp;        return kd;
+&nbsp;    }
+&nbsp;
+&nbsp;    public abstract ReadableObjectId findObjectId(Object var1, ObjectIdGenerator&lt;?&gt; var2, ObjectIdResolver var3);
+<b class="nc">&nbsp;</b>
+&nbsp;    public abstract void checkUnresolvedObjectId() throws UnresolvedForwardReference;
+&nbsp;
+&nbsp;    public final JavaType constructType(Class&lt;?&gt; cls) {
+&nbsp;        return cls == null ? null : this._config.constructType(cls);
+&nbsp;    }
+&nbsp;
+&nbsp;    public Class&lt;?&gt; findClass(String className) throws ClassNotFoundException {
+&nbsp;        return this.getTypeFactory().findClass(className);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public final ObjectBuffer leaseObjectBuffer() {</b>
+&nbsp;        ObjectBuffer buf = this._objectBuffer;
+&nbsp;        if (buf == null) {
+&nbsp;            buf = new ObjectBuffer();
+&nbsp;        } else {
+&nbsp;            this._objectBuffer = null;
+&nbsp;        }
+&nbsp;
+&nbsp;        return buf;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public final void returnObjectBuffer(ObjectBuffer buf) {</b>
+&nbsp;        if (this._objectBuffer == null || buf.initialCapacity() &gt;= this._objectBuffer.initialCapacity()) {
+&nbsp;            this._objectBuffer = buf;
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public final ArrayBuilders getArrayBuilders() {</b>
+&nbsp;        if (this._arrayBuilders == null) {
+&nbsp;            this._arrayBuilders = new ArrayBuilders();
+&nbsp;        }
+&nbsp;
+&nbsp;        return this._arrayBuilders;
+&nbsp;    }
+&nbsp;
+&nbsp;    public abstract JsonDeserializer&lt;Object&gt; deserializerInstance(Annotated var1, Object var2) throws JsonMappingException;
+&nbsp;
+&nbsp;    public abstract KeyDeserializer keyDeserializerInstance(Annotated var1, Object var2) throws JsonMappingException;
+&nbsp;
+&nbsp;    public JsonDeserializer&lt;?&gt; handlePrimaryContextualization(JsonDeserializer&lt;?&gt; deser, BeanProperty prop, JavaType type) throws JsonMappingException {
+&nbsp;        if (deser instanceof ContextualDeserializer) {
+&nbsp;            this._currentType = new LinkedNode(type, this._currentType);
+&nbsp;
+&nbsp;            try {
+<b class="nc">&nbsp;                deser = ((ContextualDeserializer)deser).createContextual(this, prop);</b>
+&nbsp;            } finally {
+&nbsp;                this._currentType = this._currentType.next();
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return deser;
+&nbsp;    }
+&nbsp;
+&nbsp;    public JsonDeserializer&lt;?&gt; handleSecondaryContextualization(JsonDeserializer&lt;?&gt; deser, BeanProperty prop, JavaType type) throws JsonMappingException {
+&nbsp;        if (deser instanceof ContextualDeserializer) {
+&nbsp;            this._currentType = new LinkedNode(type, this._currentType);
+&nbsp;
+<b class="nc">&nbsp;            try {</b>
+&nbsp;                deser = ((ContextualDeserializer)deser).createContextual(this, prop);
+&nbsp;            } finally {
+&nbsp;                this._currentType = this._currentType.next();
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return deser;
+&nbsp;    }
+&nbsp;
+&nbsp;    public Date parseDate(String dateStr) throws IllegalArgumentException {
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            DateFormat df = this._getDateFormat();
+&nbsp;            return df.parse(dateStr);
+&nbsp;        } catch (ParseException e) {
+&nbsp;            throw new IllegalArgumentException(String.format(&quot;Failed to parse Date value &#39;%s&#39;: %s&quot;, dateStr, ClassUtil.exceptionMessage(e)));
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public Calendar constructCalendar(Date d) {
+&nbsp;        Calendar c = Calendar.getInstance(this.getTimeZone());
+&nbsp;        c.setTime(d);
+&nbsp;        return c;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public String extractScalarFromObject(JsonParser p, JsonDeserializer&lt;?&gt; deser, Class&lt;?&gt; scalarType) throws IOException {
+&nbsp;        return (String)this.handleUnexpectedToken(scalarType, p);
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;T&gt; T readValue(JsonParser p, Class&lt;T&gt; type) throws IOException {
+&nbsp;        return (T)this.readValue(p, this.getTypeFactory().constructType(type));
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public &lt;T&gt; T readValue(JsonParser p, JavaType type) throws IOException {</b>
+&nbsp;        JsonDeserializer&lt;Object&gt; deser = this.findRootValueDeserializer(type);
+&nbsp;        return (T)(deser == null ? this.reportBadDefinition(type, &quot;Could not find JsonDeserializer for type &quot; + ClassUtil.getTypeDescription(type)) : deser.deserialize(p, this));
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;T&gt; T readPropertyValue(JsonParser p, BeanProperty prop, Class&lt;T&gt; type) throws IOException {
+&nbsp;        return (T)this.readPropertyValue(p, prop, this.getTypeFactory().constructType(type));
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;T&gt; T readPropertyValue(JsonParser p, BeanProperty prop, JavaType type) throws IOException {
+<b class="nc">&nbsp;        JsonDeserializer&lt;Object&gt; deser = this.findContextualValueDeserializer(type, prop);</b>
+&nbsp;        return (T)(deser == null ? this.reportBadDefinition(type, String.format(&quot;Could not find JsonDeserializer for type %s (via property %s)&quot;, ClassUtil.getTypeDescription(type), ClassUtil.nameOf(prop))) : deser.deserialize(p, this));
+&nbsp;    }
+&nbsp;
+&nbsp;    public JsonNode readTree(JsonParser p) throws IOException {
+&nbsp;        JsonToken t = p.currentToken();
+&nbsp;        if (t == null) {
+&nbsp;            t = p.nextToken();
+&nbsp;            if (t == null) {
+&nbsp;                return this.getNodeFactory().missingNode();
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        return (JsonNode)(t == JsonToken.VALUE_NULL ? this.getNodeFactory().nullNode() : (JsonNode)this.findRootValueDeserializer(this._config.constructType(JsonNode.class)).deserialize(p, this));
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;T&gt; T readTreeAsValue(JsonNode n, Class&lt;T&gt; targetType) throws IOException {
+&nbsp;        if (n == null) {
+&nbsp;            return null;
+&nbsp;        } else {
+&nbsp;            Object var5;
+<b class="nc">&nbsp;            try (TreeTraversingParser p = this._treeAsTokens(n)) {</b>
+&nbsp;                var5 = this.readValue(p, targetType);
+&nbsp;            }
+&nbsp;
+&nbsp;            return (T)var5;
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public &lt;T&gt; T readTreeAsValue(JsonNode n, JavaType targetType) throws IOException {
+&nbsp;        if (n == null) {
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        } else {
+&nbsp;            Object var5;
+&nbsp;            try (TreeTraversingParser p = this._treeAsTokens(n)) {
+&nbsp;                var5 = this.readValue(p, targetType);
+&nbsp;            }
+&nbsp;
+&nbsp;            return (T)var5;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private TreeTraversingParser _treeAsTokens(JsonNode n) throws IOException {
+<b class="nc">&nbsp;        ObjectCodec codec = this._parser == null ? null : this._parser.getCodec();</b>
+&nbsp;        TreeTraversingParser p = new TreeTraversingParser(n, codec);
+&nbsp;        p.nextToken();
+&nbsp;        return p;
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean handleUnknownProperty(JsonParser p, JsonDeserializer&lt;?&gt; deser, Object instanceOrClass, String propName) throws IOException {
+&nbsp;        for(LinkedNode&lt;DeserializationProblemHandler&gt; h = this._config.getProblemHandlers(); h != null; h = h.next()) {
+&nbsp;            if (((DeserializationProblemHandler)h.value()).handleUnknownProperty(this, p, deser, instanceOrClass, propName)) {
+&nbsp;                return true;
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        if (!this.isEnabled(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)) {
+&nbsp;            p.skipChildren();
+&nbsp;            return true;
+&nbsp;        } else {
+&nbsp;            Collection&lt;Object&gt; propIds = deser == null ? null : deser.getKnownPropertyNames();
+&nbsp;            throw UnrecognizedPropertyException.from(this._parser, instanceOrClass, propName, propIds);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public Object handleWeirdKey(Class&lt;?&gt; keyClass, String keyValue, String msg, Object... msgArgs) throws IOException {
+&nbsp;        msg = this._format(msg, msgArgs);
+&nbsp;
+&nbsp;        for(LinkedNode&lt;DeserializationProblemHandler&gt; h = this._config.getProblemHandlers(); h != null; h = h.next()) {
+&nbsp;            Object key = ((DeserializationProblemHandler)h.value()).handleWeirdKey(this, keyClass, keyValue, msg);
+&nbsp;            if (key != DeserializationProblemHandler.NOT_HANDLED) {
+&nbsp;                if (key != null &amp;&amp; !keyClass.isInstance(key)) {
+&nbsp;                    throw this.weirdStringException(keyValue, keyClass, String.format(&quot;DeserializationProblemHandler.handleWeirdKey() for type %s returned value of type %s&quot;, ClassUtil.getClassDescription(keyClass), ClassUtil.getClassDescription(key)));
+&nbsp;                }
+&nbsp;
+&nbsp;                return key;
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        throw this.weirdKeyException(keyClass, keyValue, msg);
+&nbsp;    }
+&nbsp;
+&nbsp;    public Object handleWeirdStringValue(Class&lt;?&gt; targetClass, String value, String msg, Object... msgArgs) throws IOException {
+&nbsp;        msg = this._format(msg, msgArgs);
+&nbsp;
+&nbsp;        for(LinkedNode&lt;DeserializationProblemHandler&gt; h = this._config.getProblemHandlers(); h != null; h = h.next()) {
+&nbsp;            Object instance = ((DeserializationProblemHandler)h.value()).handleWeirdStringValue(this, targetClass, value, msg);
+&nbsp;            if (instance != DeserializationProblemHandler.NOT_HANDLED) {
+&nbsp;                if (this._isCompatible(targetClass, instance)) {
+&nbsp;                    return instance;
+&nbsp;                }
+&nbsp;
+&nbsp;                throw this.weirdStringException(value, targetClass, String.format(&quot;DeserializationProblemHandler.handleWeirdStringValue() for type %s returned value of type %s&quot;, ClassUtil.getClassDescription(targetClass), ClassUtil.getClassDescription(instance)));
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        throw this.weirdStringException(value, targetClass, msg);
+&nbsp;    }
+&nbsp;
+&nbsp;    public Object handleWeirdNumberValue(Class&lt;?&gt; targetClass, Number value, String msg, Object... msgArgs) throws IOException {
+<b class="nc">&nbsp;        msg = this._format(msg, msgArgs);</b>
+&nbsp;
+&nbsp;        for(LinkedNode&lt;DeserializationProblemHandler&gt; h = this._config.getProblemHandlers(); h != null; h = h.next()) {
+&nbsp;            Object key = ((DeserializationProblemHandler)h.value()).handleWeirdNumberValue(this, targetClass, value, msg);
+&nbsp;            if (key != DeserializationProblemHandler.NOT_HANDLED) {
+&nbsp;                if (this._isCompatible(targetClass, key)) {
+&nbsp;                    return key;
+&nbsp;                }
+&nbsp;
+&nbsp;                throw this.weirdNumberException(value, targetClass, this._format(&quot;DeserializationProblemHandler.handleWeirdNumberValue() for type %s returned value of type %s&quot;, new Object[]{ClassUtil.getClassDescription(targetClass), ClassUtil.getClassDescription(key)}));
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        throw this.weirdNumberException(value, targetClass, msg);
+&nbsp;    }
+&nbsp;
+&nbsp;    public Object handleWeirdNativeValue(JavaType targetType, Object badValue, JsonParser p) throws IOException {
+&nbsp;        LinkedNode&lt;DeserializationProblemHandler&gt; h = this._config.getProblemHandlers();
+&nbsp;
+<b class="nc">&nbsp;        Class&lt;?&gt; raw;</b>
+&nbsp;        for(raw = targetType.getRawClass(); h != null; h = h.next()) {
+&nbsp;            Object goodValue = ((DeserializationProblemHandler)h.value()).handleWeirdNativeValue(this, targetType, badValue, p);
+&nbsp;            if (goodValue != DeserializationProblemHandler.NOT_HANDLED) {
+&nbsp;                if (goodValue != null &amp;&amp; !raw.isInstance(goodValue)) {
+&nbsp;                    throw JsonMappingException.from(p, this._format(&quot;DeserializationProblemHandler.handleWeirdNativeValue() for type %s returned value of type %s&quot;, new Object[]{ClassUtil.getClassDescription(targetType), ClassUtil.getClassDescription(goodValue)}));
+&nbsp;                }
+&nbsp;
+&nbsp;                return goodValue;
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        throw this.weirdNativeValueException(badValue, raw);
+&nbsp;    }
+&nbsp;
+&nbsp;    public Object handleMissingInstantiator(Class&lt;?&gt; instClass, ValueInstantiator valueInst, JsonParser p, String msg, Object... msgArgs) throws IOException {
+&nbsp;        if (p == null) {
+&nbsp;            p = this.getParser();
+&nbsp;        }
+&nbsp;
+&nbsp;        msg = this._format(msg, msgArgs);
+&nbsp;
+&nbsp;        for(LinkedNode&lt;DeserializationProblemHandler&gt; h = this._config.getProblemHandlers(); h != null; h = h.next()) {
+&nbsp;            Object instance = ((DeserializationProblemHandler)h.value()).handleMissingInstantiator(this, instClass, valueInst, p, msg);
+&nbsp;            if (instance != DeserializationProblemHandler.NOT_HANDLED) {
+&nbsp;                if (this._isCompatible(instClass, instance)) {
+&nbsp;                    return instance;
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                this.reportBadDefinition(this.constructType(instClass), String.format(&quot;DeserializationProblemHandler.handleMissingInstantiator() for type %s returned value of type %s&quot;, ClassUtil.getClassDescription(instClass), ClassUtil.getClassDescription(instance)));</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        if (valueInst == null) {
+&nbsp;            msg = String.format(&quot;Cannot construct instance of %s: %s&quot;, ClassUtil.nameOf(instClass), msg);
+&nbsp;            return this.reportBadDefinition(instClass, msg);
+&nbsp;        } else if (!valueInst.canInstantiate()) {
+&nbsp;            msg = String.format(&quot;Cannot construct instance of %s (no Creators, like default constructor, exist): %s&quot;, ClassUtil.nameOf(instClass), msg);
+&nbsp;            return this.reportBadDefinition(instClass, msg);
+&nbsp;        } else {
+&nbsp;            msg = String.format(&quot;Cannot construct instance of %s (although at least one Creator exists): %s&quot;, ClassUtil.nameOf(instClass), msg);
+&nbsp;            return this.reportInputMismatch(instClass, msg);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public Object handleInstantiationProblem(Class&lt;?&gt; instClass, Object argument, Throwable t) throws IOException {
+&nbsp;        for(LinkedNode&lt;DeserializationProblemHandler&gt; h = this._config.getProblemHandlers(); h != null; h = h.next()) {
+&nbsp;            Object instance = ((DeserializationProblemHandler)h.value()).handleInstantiationProblem(this, instClass, argument, t);
+&nbsp;            if (instance != DeserializationProblemHandler.NOT_HANDLED) {
+&nbsp;                if (this._isCompatible(instClass, instance)) {
+&nbsp;                    return instance;
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+&nbsp;                this.reportBadDefinition(this.constructType(instClass), String.format(&quot;DeserializationProblemHandler.handleInstantiationProblem() for type %s returned value of type %s&quot;, ClassUtil.getClassDescription(instClass), ClassUtil.classNameOf(instance)));
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        ClassUtil.throwIfIOE(t);
+<b class="nc">&nbsp;        if (!this.isEnabled(DeserializationFeature.WRAP_EXCEPTIONS)) {</b>
+&nbsp;            ClassUtil.throwIfRTE(t);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        throw this.instantiationException(instClass, t);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public Object handleUnexpectedToken(Class&lt;?&gt; instClass, JsonParser p) throws IOException {
+&nbsp;        return this.handleUnexpectedToken(this.constructType(instClass), p.currentToken(), p, (String)null);
+&nbsp;    }
+&nbsp;
+&nbsp;    public Object handleUnexpectedToken(Class&lt;?&gt; instClass, JsonToken t, JsonParser p, String msg, Object... msgArgs) throws IOException {
+&nbsp;        return this.handleUnexpectedToken(this.constructType(instClass), t, p, msg, msgArgs);
+&nbsp;    }
+&nbsp;
+&nbsp;    public Object handleUnexpectedToken(JavaType targetType, JsonParser p) throws IOException {
+<b class="nc">&nbsp;        return this.handleUnexpectedToken(targetType, p.currentToken(), p, (String)null);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public Object handleUnexpectedToken(JavaType targetType, JsonToken t, JsonParser p, String msg, Object... msgArgs) throws IOException {
+<b class="nc">&nbsp;        msg = this._format(msg, msgArgs);</b>
+&nbsp;
+&nbsp;        for(LinkedNode&lt;DeserializationProblemHandler&gt; h = this._config.getProblemHandlers(); h != null; h = h.next()) {
+&nbsp;            Object instance = ((DeserializationProblemHandler)h.value()).handleUnexpectedToken(this, targetType, t, p, msg);
+&nbsp;            if (instance != DeserializationProblemHandler.NOT_HANDLED) {
+&nbsp;                if (this._isCompatible(targetType.getRawClass(), instance)) {
+&nbsp;                    return instance;
+&nbsp;                }
+&nbsp;
+&nbsp;                this.reportBadDefinition(targetType, String.format(&quot;DeserializationProblemHandler.handleUnexpectedToken() for type %s returned value of type %s&quot;, ClassUtil.getTypeDescription(targetType), ClassUtil.classNameOf(instance)));
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        if (msg == null) {
+&nbsp;            String targetDesc = ClassUtil.getTypeDescription(targetType);
+&nbsp;            if (t == null) {
+&nbsp;                msg = String.format(&quot;Unexpected end-of-input when trying read value of type %s&quot;, targetDesc);
+&nbsp;            } else {
+&nbsp;                msg = String.format(&quot;Cannot deserialize value of type %s from %s (token `JsonToken.%s`)&quot;, targetDesc, this._shapeForToken(t), t);
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        if (t != null &amp;&amp; t.isScalarValue()) {
+&nbsp;            p.getText();
+&nbsp;        }
+&nbsp;
+&nbsp;        this.reportInputMismatch(targetType, msg);
+&nbsp;        return null;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public JavaType handleUnknownTypeId(JavaType baseType, String id, TypeIdResolver idResolver, String extraDesc) throws IOException {
+<b class="nc">&nbsp;        for(LinkedNode&lt;DeserializationProblemHandler&gt; h = this._config.getProblemHandlers(); h != null; h = h.next()) {</b>
+<b class="nc">&nbsp;            JavaType type = ((DeserializationProblemHandler)h.value()).handleUnknownTypeId(this, baseType, id, idResolver, extraDesc);</b>
+&nbsp;            if (type != null) {
+<b class="nc">&nbsp;                if (type.hasRawClass(Void.class)) {</b>
+<b class="nc">&nbsp;                    return null;</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="nc">&nbsp;                if (type.isTypeOrSubTypeOf(baseType.getRawClass())) {</b>
+<b class="nc">&nbsp;                    return type;</b>
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+&nbsp;                throw this.invalidTypeIdException(baseType, id, &quot;problem handler tried to resolve into non-subtype: &quot; + ClassUtil.getTypeDescription(type));
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        if (!this.isEnabled(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE)) {
+&nbsp;            return null;
+&nbsp;        } else {
+&nbsp;            throw this.invalidTypeIdException(baseType, id, extraDesc);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public JavaType handleMissingTypeId(JavaType baseType, TypeIdResolver idResolver, String extraDesc) throws IOException {
+&nbsp;        for(LinkedNode&lt;DeserializationProblemHandler&gt; h = this._config.getProblemHandlers(); h != null; h = h.next()) {
+&nbsp;            JavaType type = ((DeserializationProblemHandler)h.value()).handleMissingTypeId(this, baseType, idResolver, extraDesc);
+<b class="nc">&nbsp;            if (type != null) {</b>
+&nbsp;                if (type.hasRawClass(Void.class)) {
+&nbsp;                    return null;
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                if (type.isTypeOrSubTypeOf(baseType.getRawClass())) {</b>
+&nbsp;                    return type;
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                throw this.invalidTypeIdException(baseType, (String)null, &quot;problem handler tried to resolve into non-subtype: &quot; + ClassUtil.getTypeDescription(type));</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        throw this.missingTypeIdException(baseType, extraDesc);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void handleBadMerge(JsonDeserializer&lt;?&gt; deser) throws JsonMappingException {
+&nbsp;        if (!this.isEnabled(MapperFeature.IGNORE_MERGE_FOR_UNMERGEABLE)) {
+&nbsp;            JavaType type = this.constructType(deser.handledType());
+&nbsp;            String msg = String.format(&quot;Invalid configuration: values of type %s cannot be merged&quot;, ClassUtil.getTypeDescription(type));
+&nbsp;            throw InvalidDefinitionException.from(this.getParser(), msg, type);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected boolean _isCompatible(Class&lt;?&gt; target, Object value) {
+&nbsp;        if (value != null &amp;&amp; !target.isInstance(value)) {
+&nbsp;            return target.isPrimitive() &amp;&amp; ClassUtil.wrapperType(target).isInstance(value);
+&nbsp;        } else {
+&nbsp;            return true;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void reportWrongTokenException(JsonDeserializer&lt;?&gt; deser, JsonToken expToken, String msg, Object... msgArgs) throws JsonMappingException {
+&nbsp;        msg = this._format(msg, msgArgs);
+&nbsp;        throw this.wrongTokenException(this.getParser(), deser.handledType(), expToken, msg);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void reportWrongTokenException(JavaType targetType, JsonToken expToken, String msg, Object... msgArgs) throws JsonMappingException {
+&nbsp;        msg = this._format(msg, msgArgs);
+&nbsp;        throw this.wrongTokenException(this.getParser(), targetType, expToken, msg);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void reportWrongTokenException(Class&lt;?&gt; targetType, JsonToken expToken, String msg, Object... msgArgs) throws JsonMappingException {
+&nbsp;        msg = this._format(msg, msgArgs);
+&nbsp;        throw this.wrongTokenException(this.getParser(), targetType, expToken, msg);
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;T&gt; T reportUnresolvedObjectId(ObjectIdReader oidReader, Object bean) throws JsonMappingException {
+<b class="nc">&nbsp;        String msg = String.format(&quot;No Object Id found for an instance of %s, to assign to property &#39;%s&#39;&quot;, ClassUtil.classNameOf(bean), oidReader.propertyName);</b>
+&nbsp;        return (T)this.reportInputMismatch(oidReader.idProperty, msg);
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;T&gt; T reportInputMismatch(JsonDeserializer&lt;?&gt; src, String msg, Object... msgArgs) throws JsonMappingException {
+&nbsp;        msg = this._format(msg, msgArgs);
+&nbsp;        throw MismatchedInputException.from(this.getParser(), src.handledType(), msg);
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;T&gt; T reportInputMismatch(Class&lt;?&gt; targetType, String msg, Object... msgArgs) throws JsonMappingException {
+&nbsp;        msg = this._format(msg, msgArgs);
+&nbsp;        throw MismatchedInputException.from(this.getParser(), targetType, msg);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public &lt;T&gt; T reportInputMismatch(JavaType targetType, String msg, Object... msgArgs) throws JsonMappingException {</b>
+&nbsp;        msg = this._format(msg, msgArgs);
+&nbsp;        throw MismatchedInputException.from(this.getParser(), targetType, msg);
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;T&gt; T reportInputMismatch(BeanProperty prop, String msg, Object... msgArgs) throws JsonMappingException {
+&nbsp;        msg = this._format(msg, msgArgs);
+&nbsp;        JavaType type = prop == null ? null : prop.getType();
+&nbsp;        MismatchedInputException e = MismatchedInputException.from(this.getParser(), type, msg);
+&nbsp;        if (prop != null) {
+&nbsp;            AnnotatedMember member = prop.getMember();
+&nbsp;            if (member != null) {
+&nbsp;                e.prependPath(member.getDeclaringClass(), prop.getName());
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        throw e;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public &lt;T&gt; T reportPropertyInputMismatch(Class&lt;?&gt; targetType, String propertyName, String msg, Object... msgArgs) throws JsonMappingException {</b>
+&nbsp;        msg = this._format(msg, msgArgs);
+<b class="nc">&nbsp;        MismatchedInputException e = MismatchedInputException.from(this.getParser(), targetType, msg);</b>
+&nbsp;        if (propertyName != null) {
+<b class="nc">&nbsp;            e.prependPath(targetType, propertyName);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        throw e;
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;T&gt; T reportPropertyInputMismatch(JavaType targetType, String propertyName, String msg, Object... msgArgs) throws JsonMappingException {
+&nbsp;        return (T)this.reportPropertyInputMismatch(targetType.getRawClass(), propertyName, msg, msgArgs);
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;T&gt; T reportBadCoercion(JsonDeserializer&lt;?&gt; src, Class&lt;?&gt; targetType, Object inputValue, String msg, Object... msgArgs) throws JsonMappingException {
+&nbsp;        msg = this._format(msg, msgArgs);
+&nbsp;        InvalidFormatException e = InvalidFormatException.from(this.getParser(), msg, inputValue, targetType);
+<b class="nc">&nbsp;        throw e;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public &lt;T&gt; T reportTrailingTokens(Class&lt;?&gt; targetType, JsonParser p, JsonToken trailingToken) throws JsonMappingException {
+&nbsp;        throw MismatchedInputException.from(p, targetType, String.format(&quot;Trailing token (of type %s) found after value (bound as %s): not allowed as per `DeserializationFeature.FAIL_ON_TRAILING_TOKENS`&quot;, trailingToken, ClassUtil.nameOf(targetType)));
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;T&gt; T reportBadTypeDefinition(BeanDescription bean, String msg, Object... msgArgs) throws JsonMappingException {
+&nbsp;        String beanDesc = ClassUtil.nameOf(bean.getBeanClass());
+&nbsp;        msg = String.format(&quot;Invalid type definition for type %s: %s&quot;, beanDesc, this._format(msg, msgArgs));
+&nbsp;        throw InvalidDefinitionException.from(this._parser, msg, bean, (BeanPropertyDefinition)null);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public &lt;T&gt; T reportBadPropertyDefinition(BeanDescription bean, BeanPropertyDefinition prop, String msg, Object... msgArgs) throws JsonMappingException {</b>
+&nbsp;        msg = this._format(msg, msgArgs);
+<b class="nc">&nbsp;        String propName = ClassUtil.nameOf(prop);</b>
+&nbsp;        String beanDesc = ClassUtil.nameOf(bean.getBeanClass());
+&nbsp;        msg = String.format(&quot;Invalid definition for property %s (of type %s): %s&quot;, propName, beanDesc, msg);
+&nbsp;        throw InvalidDefinitionException.from(this._parser, msg, bean, prop);
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;T&gt; T reportBadDefinition(JavaType type, String msg) throws JsonMappingException {
+&nbsp;        throw InvalidDefinitionException.from(this._parser, msg, type);
+&nbsp;    }
+&nbsp;
+&nbsp;    public JsonMappingException wrongTokenException(JsonParser p, JavaType targetType, JsonToken expToken, String extra) {
+&nbsp;        String msg = String.format(&quot;Unexpected token (%s), expected %s&quot;, p.currentToken(), expToken);
+&nbsp;        msg = this._colonConcat(msg, extra);
+&nbsp;        return MismatchedInputException.from(p, targetType, msg);
+&nbsp;    }
+&nbsp;
+&nbsp;    public JsonMappingException wrongTokenException(JsonParser p, Class&lt;?&gt; targetType, JsonToken expToken, String extra) {
+&nbsp;        String msg = String.format(&quot;Unexpected token (%s), expected %s&quot;, p.currentToken(), expToken);
+&nbsp;        msg = this._colonConcat(msg, extra);
+&nbsp;        return MismatchedInputException.from(p, targetType, msg);
+&nbsp;    }
+&nbsp;
+&nbsp;    public JsonMappingException weirdKeyException(Class&lt;?&gt; keyClass, String keyValue, String msg) {
+&nbsp;        return InvalidFormatException.from(this._parser, String.format(&quot;Cannot deserialize Map key of type %s from String %s: %s&quot;, ClassUtil.nameOf(keyClass), this._quotedString(keyValue), msg), keyValue, keyClass);
+&nbsp;    }
+&nbsp;
+&nbsp;    public JsonMappingException weirdStringException(String value, Class&lt;?&gt; instClass, String msgBase) {
+&nbsp;        String msg = String.format(&quot;Cannot deserialize value of type %s from String %s: %s&quot;, ClassUtil.nameOf(instClass), this._quotedString(value), msgBase);
+&nbsp;        return InvalidFormatException.from(this._parser, msg, value, instClass);
+&nbsp;    }
+&nbsp;
+&nbsp;    public JsonMappingException weirdNumberException(Number value, Class&lt;?&gt; instClass, String msg) {
+&nbsp;        return InvalidFormatException.from(this._parser, String.format(&quot;Cannot deserialize value of type %s from number %s: %s&quot;, ClassUtil.nameOf(instClass), String.valueOf(value), msg), value, instClass);
+&nbsp;    }
+&nbsp;
+&nbsp;    public JsonMappingException weirdNativeValueException(Object value, Class&lt;?&gt; instClass) {
+&nbsp;        return InvalidFormatException.from(this._parser, String.format(&quot;Cannot deserialize value of type %s from native value (`JsonToken.VALUE_EMBEDDED_OBJECT`) of type %s: incompatible types&quot;, ClassUtil.nameOf(instClass), ClassUtil.classNameOf(value)), value, instClass);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public JsonMappingException instantiationException(Class&lt;?&gt; instClass, Throwable cause) {</b>
+<b class="nc">&nbsp;        String excMsg;</b>
+&nbsp;        if (cause == null) {
+<b class="nc">&nbsp;            excMsg = &quot;N/A&quot;;</b>
+&nbsp;        } else if ((excMsg = ClassUtil.exceptionMessage(cause)) == null) {
+<b class="nc">&nbsp;            excMsg = ClassUtil.nameOf(cause.getClass());</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        String msg = String.format(&quot;Cannot construct instance of %s, problem: %s&quot;, ClassUtil.nameOf(instClass), excMsg);</b>
+&nbsp;        return ValueInstantiationException.from(this._parser, msg, this.constructType(instClass), cause);
+&nbsp;    }
+&nbsp;
+&nbsp;    public JsonMappingException instantiationException(Class&lt;?&gt; instClass, String msg0) {
+&nbsp;        return ValueInstantiationException.from(this._parser, String.format(&quot;Cannot construct instance of %s: %s&quot;, ClassUtil.nameOf(instClass), msg0), this.constructType(instClass));
+&nbsp;    }
+&nbsp;
+&nbsp;    public JsonMappingException invalidTypeIdException(JavaType baseType, String typeId, String extraDesc) {
+&nbsp;        String msg = String.format(&quot;Could not resolve type id &#39;%s&#39; as a subtype of %s&quot;, typeId, ClassUtil.getTypeDescription(baseType));
+&nbsp;        return InvalidTypeIdException.from(this._parser, this._colonConcat(msg, extraDesc), baseType, typeId);
+&nbsp;    }
+&nbsp;
+&nbsp;    public JsonMappingException missingTypeIdException(JavaType baseType, String extraDesc) {
+&nbsp;        String msg = String.format(&quot;Could not resolve subtype of %s&quot;, baseType);
+&nbsp;        return InvalidTypeIdException.from(this._parser, this._colonConcat(msg, extraDesc), baseType, (String)null);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected DateFormat _getDateFormat() {
+&nbsp;        if (this._dateFormat != null) {
+&nbsp;            return this._dateFormat;
+&nbsp;        } else {
+&nbsp;            DateFormat df = this._config.getDateFormat();
+<b class="nc">&nbsp;            DateFormat var2;</b>
+<b class="nc">&nbsp;            this._dateFormat = var2 = (DateFormat)df.clone();</b>
+&nbsp;            return var2;
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected String _shapeForToken(JsonToken t) {
+&nbsp;        return JsonToken.valueDescFor(t);
+<b class="nc">&nbsp;    }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
+</div>
+</body>
+</html>

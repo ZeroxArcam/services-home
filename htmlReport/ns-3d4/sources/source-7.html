@@ -1,0 +1,526 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ScheduledTaskRegistrar</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.scheduling.config</a>
+</div>
+
+<h1>Coverage Summary for Class: ScheduledTaskRegistrar (org.springframework.scheduling.config)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ScheduledTaskRegistrar</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    4.9%
+  </span>
+  <span class="absValue">
+    (2/41)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    2%
+  </span>
+  <span class="absValue">
+    (2/102)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    3.2%
+  </span>
+  <span class="absValue">
+    (5/158)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.scheduling.config;
+&nbsp;
+&nbsp;import io.micrometer.observation.ObservationRegistry;
+&nbsp;import java.time.Duration;
+&nbsp;import java.time.Instant;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.LinkedHashSet;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.concurrent.Executors;
+&nbsp;import java.util.concurrent.ScheduledExecutorService;
+&nbsp;import org.springframework.beans.factory.DisposableBean;
+&nbsp;import org.springframework.beans.factory.InitializingBean;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.scheduling.TaskScheduler;
+&nbsp;import org.springframework.scheduling.Trigger;
+&nbsp;import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.CollectionUtils;
+&nbsp;
+&nbsp;public class ScheduledTaskRegistrar implements ScheduledTaskHolder, InitializingBean, DisposableBean {
+&nbsp;    public static final String CRON_DISABLED = &quot;-&quot;;
+&nbsp;    @Nullable
+&nbsp;    private TaskScheduler taskScheduler;
+&nbsp;    @Nullable
+&nbsp;    private ScheduledExecutorService localExecutor;
+&nbsp;    @Nullable
+&nbsp;    private ObservationRegistry observationRegistry;
+&nbsp;    @Nullable
+&nbsp;    private List&lt;TriggerTask&gt; triggerTasks;
+&nbsp;    @Nullable
+&nbsp;    private List&lt;CronTask&gt; cronTasks;
+&nbsp;    @Nullable
+&nbsp;    private List&lt;IntervalTask&gt; fixedRateTasks;
+&nbsp;    @Nullable
+&nbsp;    private List&lt;IntervalTask&gt; fixedDelayTasks;
+&nbsp;    @Nullable
+&nbsp;    private List&lt;DelayedTask&gt; oneTimeTasks;
+&nbsp;    private final Map&lt;Task, ScheduledTask&gt; unresolvedTasks = new HashMap(16);
+&nbsp;    private final Set&lt;ScheduledTask&gt; scheduledTasks = new LinkedHashSet(16);
+&nbsp;
+&nbsp;    public ScheduledTaskRegistrar() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setTaskScheduler(TaskScheduler taskScheduler) {
+&nbsp;        Assert.notNull(taskScheduler, &quot;TaskScheduler must not be null&quot;);
+&nbsp;        this.taskScheduler = taskScheduler;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setScheduler(@Nullable Object scheduler) {
+&nbsp;        if (scheduler == null) {
+&nbsp;            this.taskScheduler = null;
+&nbsp;        } else if (scheduler instanceof TaskScheduler) {
+&nbsp;            TaskScheduler ts = (TaskScheduler)scheduler;
+<b class="fc">&nbsp;            this.taskScheduler = ts;</b>
+&nbsp;        } else {
+&nbsp;            if (!(scheduler instanceof ScheduledExecutorService)) {
+&nbsp;                throw new IllegalArgumentException(&quot;Unsupported scheduler type: &quot; + String.valueOf(scheduler.getClass()));
+&nbsp;            }
+&nbsp;
+&nbsp;            ScheduledExecutorService ses = (ScheduledExecutorService)scheduler;
+&nbsp;            this.taskScheduler = new ConcurrentTaskScheduler(ses);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public TaskScheduler getScheduler() {
+&nbsp;        return this.taskScheduler;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setObservationRegistry(@Nullable ObservationRegistry observationRegistry) {
+&nbsp;        this.observationRegistry = observationRegistry;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public ObservationRegistry getObservationRegistry() {
+&nbsp;        return this.observationRegistry;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setTriggerTasks(Map&lt;Runnable, Trigger&gt; triggerTasks) {
+&nbsp;        this.triggerTasks = new ArrayList();
+&nbsp;        triggerTasks.forEach((task, trigger) -&gt; this.addTriggerTask(new TriggerTask(task, trigger)));
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setTriggerTasksList(List&lt;TriggerTask&gt; triggerTasks) {
+&nbsp;        this.triggerTasks = triggerTasks;
+&nbsp;    }
+&nbsp;
+&nbsp;    public List&lt;TriggerTask&gt; getTriggerTaskList() {
+&nbsp;        return this.triggerTasks != null ? Collections.unmodifiableList(this.triggerTasks) : Collections.emptyList();
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public void setCronTasks(Map&lt;Runnable, String&gt; cronTasks) {
+<b class="fc">&nbsp;        this.cronTasks = new ArrayList();</b>
+&nbsp;        cronTasks.forEach(this::addCronTask);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setCronTasksList(List&lt;CronTask&gt; cronTasks) {
+&nbsp;        this.cronTasks = cronTasks;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public List&lt;CronTask&gt; getCronTaskList() {</b>
+&nbsp;        return this.cronTasks != null ? Collections.unmodifiableList(this.cronTasks) : Collections.emptyList();
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setFixedRateTasks(Map&lt;Runnable, Long&gt; fixedRateTasks) {
+&nbsp;        this.fixedRateTasks = new ArrayList();
+&nbsp;        fixedRateTasks.forEach((task, interval) -&gt; this.addFixedRateTask(task, Duration.ofMillis(interval)));
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void setFixedRateTasksList(List&lt;IntervalTask&gt; fixedRateTasks) {</b>
+<b class="nc">&nbsp;        this.fixedRateTasks = fixedRateTasks;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public List&lt;IntervalTask&gt; getFixedRateTaskList() {</b>
+&nbsp;        return this.fixedRateTasks != null ? Collections.unmodifiableList(this.fixedRateTasks) : Collections.emptyList();
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public void setFixedDelayTasks(Map&lt;Runnable, Long&gt; fixedDelayTasks) {
+&nbsp;        this.fixedDelayTasks = new ArrayList();
+<b class="nc">&nbsp;        fixedDelayTasks.forEach((task, delay) -&gt; this.addFixedDelayTask(task, Duration.ofMillis(delay)));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setFixedDelayTasksList(List&lt;IntervalTask&gt; fixedDelayTasks) {
+&nbsp;        this.fixedDelayTasks = fixedDelayTasks;
+&nbsp;    }
+&nbsp;
+&nbsp;    public List&lt;IntervalTask&gt; getFixedDelayTaskList() {
+&nbsp;        return this.fixedDelayTasks != null ? Collections.unmodifiableList(this.fixedDelayTasks) : Collections.emptyList();
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void addTriggerTask(Runnable task, Trigger trigger) {
+&nbsp;        this.addTriggerTask(new TriggerTask(task, trigger));
+&nbsp;    }
+&nbsp;
+&nbsp;    public void addTriggerTask(TriggerTask task) {
+&nbsp;        if (this.triggerTasks == null) {
+<b class="nc">&nbsp;            this.triggerTasks = new ArrayList();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        this.triggerTasks.add(task);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void addCronTask(Runnable task, String expression) {
+&nbsp;        if (!&quot;-&quot;.equals(expression)) {
+&nbsp;            this.addCronTask(new CronTask(task, expression));
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void addCronTask(CronTask task) {
+&nbsp;        if (this.cronTasks == null) {
+&nbsp;            this.cronTasks = new ArrayList();
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        this.cronTasks.add(task);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @deprecated */
+&nbsp;    @Deprecated(
+&nbsp;        since = &quot;6.0&quot;
+&nbsp;    )
+&nbsp;    public void addFixedRateTask(Runnable task, long interval) {
+&nbsp;        this.addFixedRateTask(new IntervalTask(task, interval));
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void addFixedRateTask(Runnable task, Duration interval) {
+&nbsp;        this.addFixedRateTask(new IntervalTask(task, interval));
+&nbsp;    }
+&nbsp;
+&nbsp;    public void addFixedRateTask(IntervalTask task) {
+&nbsp;        if (this.fixedRateTasks == null) {
+&nbsp;            this.fixedRateTasks = new ArrayList();
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        this.fixedRateTasks.add(task);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @deprecated */
+&nbsp;    @Deprecated(
+&nbsp;        since = &quot;6.0&quot;
+&nbsp;    )
+&nbsp;    public void addFixedDelayTask(Runnable task, long interval) {
+<b class="nc">&nbsp;        this.addFixedDelayTask(new IntervalTask(task, interval));</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void addFixedDelayTask(Runnable task, Duration interval) {
+&nbsp;        this.addFixedDelayTask(new IntervalTask(task, interval));
+&nbsp;    }
+&nbsp;
+&nbsp;    public void addFixedDelayTask(IntervalTask task) {
+&nbsp;        if (this.fixedDelayTasks == null) {
+&nbsp;            this.fixedDelayTasks = new ArrayList();
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        this.fixedDelayTasks.add(task);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void addOneTimeTask(Runnable task, Duration initialDelay) {
+&nbsp;        this.addOneTimeTask(new OneTimeTask(task, initialDelay));
+&nbsp;    }
+&nbsp;
+&nbsp;    public void addOneTimeTask(DelayedTask task) {
+<b class="nc">&nbsp;        if (this.oneTimeTasks == null) {</b>
+<b class="nc">&nbsp;            this.oneTimeTasks = new ArrayList();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        this.oneTimeTasks.add(task);
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean hasTasks() {
+&nbsp;        return !CollectionUtils.isEmpty(this.triggerTasks) || !CollectionUtils.isEmpty(this.cronTasks) || !CollectionUtils.isEmpty(this.fixedRateTasks) || !CollectionUtils.isEmpty(this.fixedDelayTasks) || !CollectionUtils.isEmpty(this.oneTimeTasks);
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public void afterPropertiesSet() {
+&nbsp;        this.scheduleTasks();
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void scheduleTasks() {
+&nbsp;        if (this.taskScheduler == null) {
+&nbsp;            this.localExecutor = Executors.newSingleThreadScheduledExecutor();
+&nbsp;            this.taskScheduler = new ConcurrentTaskScheduler(this.localExecutor);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        if (this.triggerTasks != null) {
+&nbsp;            for(TriggerTask task : this.triggerTasks) {
+&nbsp;                this.addScheduledTask(this.scheduleTriggerTask(task));
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        if (this.cronTasks != null) {
+&nbsp;            for(CronTask task : this.cronTasks) {
+<b class="nc">&nbsp;                this.addScheduledTask(this.scheduleCronTask(task));</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        if (this.fixedRateTasks != null) {
+&nbsp;            for(IntervalTask task : this.fixedRateTasks) {
+&nbsp;                if (task instanceof FixedRateTask) {
+&nbsp;                    FixedRateTask fixedRateTask = (FixedRateTask)task;
+&nbsp;                    this.addScheduledTask(this.scheduleFixedRateTask(fixedRateTask));
+<b class="nc">&nbsp;                } else {</b>
+<b class="nc">&nbsp;                    this.addScheduledTask(this.scheduleFixedRateTask(new FixedRateTask(task)));</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        if (this.fixedDelayTasks != null) {
+&nbsp;            for(IntervalTask task : this.fixedDelayTasks) {
+&nbsp;                if (task instanceof FixedDelayTask) {
+&nbsp;                    FixedDelayTask fixedDelayTask = (FixedDelayTask)task;
+&nbsp;                    this.addScheduledTask(this.scheduleFixedDelayTask(fixedDelayTask));
+<b class="nc">&nbsp;                } else {</b>
+&nbsp;                    this.addScheduledTask(this.scheduleFixedDelayTask(new FixedDelayTask(task)));
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        if (this.oneTimeTasks != null) {
+&nbsp;            for(DelayedTask task : this.oneTimeTasks) {
+&nbsp;                if (task instanceof OneTimeTask) {
+<b class="nc">&nbsp;                    OneTimeTask oneTimeTask = (OneTimeTask)task;</b>
+<b class="nc">&nbsp;                    this.addScheduledTask(this.scheduleOneTimeTask(oneTimeTask));</b>
+&nbsp;                } else {
+&nbsp;                    this.addScheduledTask(this.scheduleOneTimeTask(new OneTimeTask(task)));
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private void addScheduledTask(@Nullable ScheduledTask task) {</b>
+&nbsp;        if (task != null) {
+&nbsp;            this.scheduledTasks.add(task);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public ScheduledTask scheduleTriggerTask(TriggerTask task) {
+<b class="nc">&nbsp;        ScheduledTask scheduledTask = (ScheduledTask)this.unresolvedTasks.remove(task);</b>
+<b class="nc">&nbsp;        boolean newTask = false;</b>
+&nbsp;        if (scheduledTask == null) {
+<b class="nc">&nbsp;            scheduledTask = new ScheduledTask(task);</b>
+&nbsp;            newTask = true;
+&nbsp;        }
+&nbsp;
+&nbsp;        if (this.taskScheduler != null) {
+&nbsp;            scheduledTask.future = this.taskScheduler.schedule(task.getRunnable(), task.getTrigger());
+&nbsp;        } else {
+&nbsp;            this.addTriggerTask(task);
+&nbsp;            this.unresolvedTasks.put(task, scheduledTask);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return newTask ? scheduledTask : null;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public ScheduledTask scheduleCronTask(CronTask task) {
+&nbsp;        ScheduledTask scheduledTask = (ScheduledTask)this.unresolvedTasks.remove(task);
+&nbsp;        boolean newTask = false;
+&nbsp;        if (scheduledTask == null) {
+<b class="nc">&nbsp;            scheduledTask = new ScheduledTask(task);</b>
+<b class="nc">&nbsp;            newTask = true;</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        if (this.taskScheduler != null) {
+&nbsp;            scheduledTask.future = this.taskScheduler.schedule(task.getRunnable(), task.getTrigger());
+&nbsp;        } else {
+&nbsp;            this.addCronTask(task);
+&nbsp;            this.unresolvedTasks.put(task, scheduledTask);
+&nbsp;        }
+&nbsp;
+&nbsp;        return newTask ? scheduledTask : null;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public ScheduledTask scheduleFixedRateTask(FixedRateTask task) {
+&nbsp;        ScheduledTask scheduledTask = (ScheduledTask)this.unresolvedTasks.remove(task);
+&nbsp;        boolean newTask = false;
+&nbsp;        if (scheduledTask == null) {
+&nbsp;            scheduledTask = new ScheduledTask(task);
+&nbsp;            newTask = true;
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        if (this.taskScheduler != null) {
+&nbsp;            Duration initialDelay = task.getInitialDelayDuration();
+&nbsp;            if (initialDelay.toNanos() &gt; 0L) {
+&nbsp;                Instant startTime = this.taskScheduler.getClock().instant().plus(initialDelay);
+&nbsp;                scheduledTask.future = this.taskScheduler.scheduleAtFixedRate(task.getRunnable(), startTime, task.getIntervalDuration());
+&nbsp;            } else {
+&nbsp;                scheduledTask.future = this.taskScheduler.scheduleAtFixedRate(task.getRunnable(), task.getIntervalDuration());
+&nbsp;            }
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            this.addFixedRateTask(task);</b>
+&nbsp;            this.unresolvedTasks.put(task, scheduledTask);
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return newTask ? scheduledTask : null;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public ScheduledTask scheduleFixedDelayTask(FixedDelayTask task) {
+&nbsp;        ScheduledTask scheduledTask = (ScheduledTask)this.unresolvedTasks.remove(task);
+&nbsp;        boolean newTask = false;
+<b class="nc">&nbsp;        if (scheduledTask == null) {</b>
+&nbsp;            scheduledTask = new ScheduledTask(task);
+&nbsp;            newTask = true;
+&nbsp;        }
+&nbsp;
+&nbsp;        if (this.taskScheduler != null) {
+&nbsp;            Duration initialDelay = task.getInitialDelayDuration();
+&nbsp;            if (!initialDelay.isNegative()) {
+&nbsp;                Instant startTime = this.taskScheduler.getClock().instant().plus(task.getInitialDelayDuration());
+<b class="nc">&nbsp;                scheduledTask.future = this.taskScheduler.scheduleWithFixedDelay(task.getRunnable(), startTime, task.getIntervalDuration());</b>
+&nbsp;            } else {
+&nbsp;                scheduledTask.future = this.taskScheduler.scheduleWithFixedDelay(task.getRunnable(), task.getIntervalDuration());
+&nbsp;            }
+&nbsp;        } else {
+&nbsp;            this.addFixedDelayTask(task);
+&nbsp;            this.unresolvedTasks.put(task, scheduledTask);
+&nbsp;        }
+&nbsp;
+&nbsp;        return newTask ? scheduledTask : null;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    @Nullable
+<b class="nc">&nbsp;    public ScheduledTask scheduleOneTimeTask(OneTimeTask task) {</b>
+&nbsp;        ScheduledTask scheduledTask = (ScheduledTask)this.unresolvedTasks.remove(task);
+&nbsp;        boolean newTask = false;
+&nbsp;        if (scheduledTask == null) {
+&nbsp;            scheduledTask = new ScheduledTask(task);
+&nbsp;            newTask = true;
+&nbsp;        }
+&nbsp;
+&nbsp;        if (this.taskScheduler != null) {
+<b class="nc">&nbsp;            Instant startTime = this.taskScheduler.getClock().instant().plus(task.getInitialDelayDuration());</b>
+&nbsp;            scheduledTask.future = this.taskScheduler.schedule(task.getRunnable(), startTime);
+&nbsp;        } else {
+&nbsp;            this.addOneTimeTask(task);
+&nbsp;            this.unresolvedTasks.put(task, scheduledTask);
+&nbsp;        }
+&nbsp;
+&nbsp;        return newTask ? scheduledTask : null;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public Set&lt;ScheduledTask&gt; getScheduledTasks() {</b>
+<b class="nc">&nbsp;        return Collections.unmodifiableSet(this.scheduledTasks);</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void destroy() {
+&nbsp;        for(ScheduledTask task : this.scheduledTasks) {
+&nbsp;            task.cancel(false);
+&nbsp;        }
+&nbsp;
+&nbsp;        if (this.localExecutor != null) {
+&nbsp;            this.localExecutor.shutdownNow();
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:54</div>
+</div>
+</body>
+</html>

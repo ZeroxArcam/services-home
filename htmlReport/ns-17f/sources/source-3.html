@@ -1,0 +1,805 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > LoaderSelectBuilder</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.loader.ast.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: LoaderSelectBuilder (org.hibernate.loader.ast.internal)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LoaderSelectBuilder</td>
+<td class="coverageStat">
+  <span class="percent">
+    51.4%
+  </span>
+  <span class="absValue">
+    (19/37)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    27.2%
+  </span>
+  <span class="absValue">
+    (55/202)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    35.4%
+  </span>
+  <span class="absValue">
+    (122/345)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">LoaderSelectBuilder$FetchableConsumer</td>
+  </tr>
+  <tr>
+    <td class="name">LoaderSelectBuilder$RowCardinality</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/4)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    52.6%
+  </span>
+  <span class="absValue">
+    (20/38)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    27.2%
+  </span>
+  <span class="absValue">
+    (55/202)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    36.1%
+  </span>
+  <span class="absValue">
+    (126/349)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.loader.ast.internal;
+&nbsp;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Objects;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.function.Consumer;
+&nbsp;import org.hibernate.LockOptions;
+&nbsp;import org.hibernate.engine.FetchStyle;
+&nbsp;import org.hibernate.engine.FetchTiming;
+&nbsp;import org.hibernate.engine.profile.Fetch;
+&nbsp;import org.hibernate.engine.profile.FetchProfile;
+&nbsp;import org.hibernate.engine.spi.CascadeStyle;
+&nbsp;import org.hibernate.engine.spi.CascadingAction;
+&nbsp;import org.hibernate.engine.spi.EffectiveEntityGraph;
+&nbsp;import org.hibernate.engine.spi.LoadQueryInfluencers;
+&nbsp;import org.hibernate.engine.spi.SessionFactoryImplementor;
+&nbsp;import org.hibernate.engine.spi.SubselectFetch;
+&nbsp;import org.hibernate.graph.GraphSemantic;
+&nbsp;import org.hibernate.graph.spi.RootGraphImplementor;
+&nbsp;import org.hibernate.loader.ast.spi.Loadable;
+&nbsp;import org.hibernate.metamodel.CollectionClassification;
+&nbsp;import org.hibernate.metamodel.mapping.AttributeMapping;
+&nbsp;import org.hibernate.metamodel.mapping.CollectionPart;
+&nbsp;import org.hibernate.metamodel.mapping.EntityIdentifierMapping;
+&nbsp;import org.hibernate.metamodel.mapping.EntityValuedModelPart;
+&nbsp;import org.hibernate.metamodel.mapping.ForeignKeyDescriptor;
+&nbsp;import org.hibernate.metamodel.mapping.ModelPart;
+&nbsp;import org.hibernate.metamodel.mapping.NonAggregatedIdentifierMapping;
+&nbsp;import org.hibernate.metamodel.mapping.PluralAttributeMapping;
+&nbsp;import org.hibernate.metamodel.mapping.Restrictable;
+&nbsp;import org.hibernate.metamodel.mapping.SelectableMapping;
+&nbsp;import org.hibernate.metamodel.mapping.ValuedModelPart;
+&nbsp;import org.hibernate.metamodel.mapping.internal.EmbeddedAttributeMapping;
+&nbsp;import org.hibernate.metamodel.mapping.internal.SimpleForeignKeyDescriptor;
+&nbsp;import org.hibernate.metamodel.mapping.internal.ToOneAttributeMapping;
+&nbsp;import org.hibernate.metamodel.mapping.ordering.OrderByFragment;
+&nbsp;import org.hibernate.query.results.ResultsHelper;
+&nbsp;import org.hibernate.query.sqm.ComparisonOperator;
+&nbsp;import org.hibernate.spi.EntityIdentifierNavigablePath;
+&nbsp;import org.hibernate.spi.NavigablePath;
+&nbsp;import org.hibernate.sql.ast.SqlAstJoinType;
+&nbsp;import org.hibernate.sql.ast.spi.AliasCollector;
+&nbsp;import org.hibernate.sql.ast.spi.FromClauseAccess;
+&nbsp;import org.hibernate.sql.ast.spi.SimpleFromClauseAccessImpl;
+&nbsp;import org.hibernate.sql.ast.spi.SqlAliasBase;
+&nbsp;import org.hibernate.sql.ast.spi.SqlAliasBaseManager;
+&nbsp;import org.hibernate.sql.ast.spi.SqlAstCreationContext;
+&nbsp;import org.hibernate.sql.ast.spi.SqlAstCreationState;
+&nbsp;import org.hibernate.sql.ast.spi.SqlExpressionResolver;
+&nbsp;import org.hibernate.sql.ast.tree.expression.ColumnReference;
+&nbsp;import org.hibernate.sql.ast.tree.expression.Expression;
+&nbsp;import org.hibernate.sql.ast.tree.expression.JdbcParameter;
+&nbsp;import org.hibernate.sql.ast.tree.expression.SqlTuple;
+&nbsp;import org.hibernate.sql.ast.tree.from.FromClause;
+&nbsp;import org.hibernate.sql.ast.tree.from.PluralTableGroup;
+&nbsp;import org.hibernate.sql.ast.tree.from.TableGroup;
+&nbsp;import org.hibernate.sql.ast.tree.from.TableGroupJoin;
+&nbsp;import org.hibernate.sql.ast.tree.from.TableGroupJoinProducer;
+&nbsp;import org.hibernate.sql.ast.tree.from.TableReference;
+&nbsp;import org.hibernate.sql.ast.tree.predicate.ComparisonPredicate;
+&nbsp;import org.hibernate.sql.ast.tree.predicate.InArrayPredicate;
+&nbsp;import org.hibernate.sql.ast.tree.predicate.InListPredicate;
+&nbsp;import org.hibernate.sql.ast.tree.predicate.InSubQueryPredicate;
+&nbsp;import org.hibernate.sql.ast.tree.predicate.PredicateContainer;
+&nbsp;import org.hibernate.sql.ast.tree.select.QueryPart;
+&nbsp;import org.hibernate.sql.ast.tree.select.QuerySpec;
+&nbsp;import org.hibernate.sql.ast.tree.select.SelectStatement;
+&nbsp;import org.hibernate.sql.exec.internal.JdbcParameterImpl;
+&nbsp;import org.hibernate.sql.results.graph.BiDirectionalFetch;
+&nbsp;import org.hibernate.sql.results.graph.DomainResult;
+&nbsp;import org.hibernate.sql.results.graph.EntityGraphTraversalState;
+&nbsp;import org.hibernate.sql.results.graph.FetchParent;
+&nbsp;import org.hibernate.sql.results.graph.Fetchable;
+&nbsp;import org.hibernate.sql.results.graph.FetchableContainer;
+&nbsp;import org.hibernate.sql.results.graph.collection.internal.CollectionDomainResult;
+&nbsp;import org.hibernate.sql.results.graph.entity.EntityValuedFetchable;
+&nbsp;import org.hibernate.sql.results.graph.internal.ImmutableFetchList;
+&nbsp;import org.hibernate.sql.results.internal.SqlSelectionImpl;
+&nbsp;import org.hibernate.sql.results.internal.StandardEntityGraphTraversalStateImpl;
+&nbsp;import org.jboss.logging.Logger;
+&nbsp;
+&nbsp;public class LoaderSelectBuilder {
+&nbsp;    private static final Logger log = Logger.getLogger(LoaderSelectBuilder.class);
+&nbsp;    private final SqlAstCreationContext creationContext;
+&nbsp;    private final Loadable loadable;
+&nbsp;    private final List&lt;? extends ModelPart&gt; partsToSelect;
+&nbsp;    private final List&lt;ModelPart&gt; restrictedParts;
+&nbsp;    private final DomainResult&lt;?&gt; cachedDomainResult;
+&nbsp;    private final int numberOfKeysToLoad;
+&nbsp;    private final boolean forceIdentifierSelection;
+<b class="fc">&nbsp;    private final LoadQueryInfluencers loadQueryInfluencers;</b>
+<b class="fc">&nbsp;    private final LockOptions lockOptions;</b>
+&nbsp;    private final Consumer&lt;JdbcParameter&gt; jdbcParameterConsumer;
+&nbsp;    private final EntityGraphTraversalState entityGraphTraversalState;
+&nbsp;    private int fetchDepth;
+&nbsp;    private RowCardinality rowCardinality;
+&nbsp;
+&nbsp;    public static SelectStatement createSelectByUniqueKey(Loadable loadable, List&lt;? extends ModelPart&gt; partsToSelect, ModelPart restrictedPart, DomainResult&lt;?&gt; cachedDomainResult, LoadQueryInfluencers loadQueryInfluencers, LockOptions lockOptions, Consumer&lt;JdbcParameter&gt; jdbcParameterConsumer, SessionFactoryImplementor sessionFactory) {
+&nbsp;        LoaderSelectBuilder process = new LoaderSelectBuilder(sessionFactory, loadable, partsToSelect, Collections.singletonList(restrictedPart), cachedDomainResult, 1, loadQueryInfluencers, lockOptions, determineGraphTraversalState(loadQueryInfluencers, sessionFactory), true, jdbcParameterConsumer);
+&nbsp;        return process.generateSelect();
+&nbsp;    }
+&nbsp;
+&nbsp;    public static SelectStatement createSelectBySingleArrayParameter(Loadable loadable, ValuedModelPart restrictedPart, LoadQueryInfluencers influencers, LockOptions lockOptions, JdbcParameter jdbcArrayParameter, SessionFactoryImplementor sessionFactory) {
+&nbsp;        LoaderSelectBuilder builder = new LoaderSelectBuilder(sessionFactory, loadable, (List)null, Collections.singletonList(restrictedPart), (DomainResult)null, -1, influencers, lockOptions, determineGraphTraversalState(influencers, sessionFactory), true, (Consumer)null);
+&nbsp;        QuerySpec rootQuerySpec = new QuerySpec(true);
+&nbsp;        LoaderSqlAstCreationState sqlAstCreationState = builder.createSqlAstCreationState(rootQuerySpec);
+&nbsp;        NavigablePath rootNavigablePath = new NavigablePath(loadable.getRootPathName());
+&nbsp;        TableGroup rootTableGroup = builder.buildRootTableGroup(rootNavigablePath, rootQuerySpec, sqlAstCreationState);
+&nbsp;        DomainResult&lt;?&gt; domainResult = loadable.createDomainResult(rootNavigablePath, rootTableGroup, (String)null, sqlAstCreationState);
+&nbsp;        List&lt;DomainResult&lt;?&gt;&gt; domainResults = Collections.singletonList(domainResult);
+&nbsp;        applyArrayParamRestriction(rootQuerySpec, rootNavigablePath, rootTableGroup, restrictedPart, jdbcArrayParameter, sqlAstCreationState);
+&nbsp;        if (loadable instanceof PluralAttributeMapping) {
+&nbsp;            PluralAttributeMapping pluralAttributeMapping = (PluralAttributeMapping)loadable;
+&nbsp;            builder.applyFiltering((QuerySpec)rootQuerySpec, rootTableGroup, (PluralAttributeMapping)pluralAttributeMapping, sqlAstCreationState);
+<b class="nc">&nbsp;            builder.applyOrdering(rootQuerySpec, rootTableGroup, (PluralAttributeMapping)pluralAttributeMapping, sqlAstCreationState);</b>
+&nbsp;        } else {
+&nbsp;            builder.applyFiltering((PredicateContainer)rootQuerySpec, rootTableGroup, (Restrictable)((Restrictable)loadable), sqlAstCreationState);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        return new SelectStatement(rootQuerySpec, domainResults);
+&nbsp;    }
+&nbsp;
+&nbsp;    private static void applyArrayParamRestriction(QuerySpec rootQuerySpec, NavigablePath rootNavigablePath, TableGroup rootTableGroup, ValuedModelPart restrictedPart, JdbcParameter jdbcArrayParameter, LoaderSqlAstCreationState sqlAstCreationState) {
+<b class="nc">&nbsp;        assert restrictedPart.getJdbcTypeCount() == 1;</b>
+&nbsp;
+&nbsp;        SqlExpressionResolver sqlExpressionResolver = sqlAstCreationState.getSqlExpressionResolver();
+&nbsp;        SelectableMapping restrictedPartMapping = restrictedPart.getSelectable(0);
+&nbsp;        NavigablePath restrictionPath = rootNavigablePath.append(restrictedPart.getNavigableRole().getNavigableName());
+<b class="nc">&nbsp;        TableReference tableReference = rootTableGroup.resolveTableReference(restrictionPath, restrictedPartMapping.getContainingTableExpression());</b>
+&nbsp;        ColumnReference columnRef = (ColumnReference)sqlExpressionResolver.resolveSqlExpression(tableReference, restrictedPartMapping);
+&nbsp;        rootQuerySpec.applyPredicate(new InArrayPredicate(columnRef, jdbcArrayParameter));
+&nbsp;    }
+&nbsp;
+&nbsp;    public static SelectStatement createSelect(Loadable loadable, List&lt;? extends ModelPart&gt; partsToSelect, ModelPart restrictedPart, DomainResult&lt;?&gt; cachedDomainResult, int numberOfKeysToLoad, LoadQueryInfluencers loadQueryInfluencers, LockOptions lockOptions, Consumer&lt;JdbcParameter&gt; jdbcParameterConsumer, SessionFactoryImplementor sessionFactory) {
+&nbsp;        LoaderSelectBuilder process = new LoaderSelectBuilder(sessionFactory, loadable, partsToSelect, restrictedPart, cachedDomainResult, numberOfKeysToLoad, loadQueryInfluencers, lockOptions, jdbcParameterConsumer);
+&nbsp;        return process.generateSelect();
+&nbsp;    }
+&nbsp;
+&nbsp;    public static SelectStatement createSelect(Loadable loadable, List&lt;? extends ModelPart&gt; partsToSelect, List&lt;ModelPart&gt; restrictedParts, DomainResult&lt;?&gt; cachedDomainResult, int numberOfKeysToLoad, LoadQueryInfluencers loadQueryInfluencers, LockOptions lockOptions, Consumer&lt;JdbcParameter&gt; jdbcParameterConsumer, SessionFactoryImplementor sessionFactory) {
+&nbsp;        LoaderSelectBuilder process = new LoaderSelectBuilder(sessionFactory, loadable, partsToSelect, restrictedParts, cachedDomainResult, numberOfKeysToLoad, loadQueryInfluencers, lockOptions, jdbcParameterConsumer);
+&nbsp;        return process.generateSelect();
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    static SelectStatement createSelect(Loadable loadable, List&lt;ModelPart&gt; partsToSelect, boolean forceIdentifierSelection, List&lt;ModelPart&gt; restrictedParts, DomainResult&lt;?&gt; cachedDomainResult, int numberOfKeysToLoad, LoadQueryInfluencers loadQueryInfluencers, LockOptions lockOptions, Consumer&lt;JdbcParameter&gt; jdbcParameterConsumer, SessionFactoryImplementor sessionFactory) {
+&nbsp;        LoaderSelectBuilder process = new LoaderSelectBuilder(sessionFactory, loadable, partsToSelect, restrictedParts, cachedDomainResult, numberOfKeysToLoad, loadQueryInfluencers, lockOptions, determineGraphTraversalState(loadQueryInfluencers, sessionFactory), forceIdentifierSelection, jdbcParameterConsumer);
+<b class="nc">&nbsp;        return process.generateSelect();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static SelectStatement createSubSelectFetchSelect(PluralAttributeMapping attributeMapping, SubselectFetch subselect, DomainResult&lt;?&gt; cachedDomainResult, LoadQueryInfluencers loadQueryInfluencers, LockOptions lockOptions, Consumer&lt;JdbcParameter&gt; jdbcParameterConsumer, SessionFactoryImplementor sessionFactory) {
+&nbsp;        LoaderSelectBuilder process = new LoaderSelectBuilder(sessionFactory, attributeMapping, (List)null, attributeMapping.getKeyDescriptor(), cachedDomainResult, -1, loadQueryInfluencers, lockOptions, jdbcParameterConsumer);
+<b class="nc">&nbsp;        return process.generateSelect(subselect);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private LoaderSelectBuilder(SqlAstCreationContext creationContext, Loadable loadable, List&lt;? extends ModelPart&gt; partsToSelect, List&lt;ModelPart&gt; restrictedParts, DomainResult&lt;?&gt; cachedDomainResult, int numberOfKeysToLoad, LoadQueryInfluencers loadQueryInfluencers, LockOptions lockOptions, EntityGraphTraversalState entityGraphTraversalState, boolean forceIdentifierSelection, Consumer&lt;JdbcParameter&gt; jdbcParameterConsumer) {
+&nbsp;        this.rowCardinality = LoaderSelectBuilder.RowCardinality.SINGLE;
+<b class="nc">&nbsp;        this.creationContext = creationContext;</b>
+<b class="nc">&nbsp;        this.loadable = loadable;</b>
+&nbsp;        this.partsToSelect = partsToSelect;
+<b class="nc">&nbsp;        this.restrictedParts = restrictedParts;</b>
+<b class="nc">&nbsp;        this.cachedDomainResult = cachedDomainResult;</b>
+&nbsp;        this.numberOfKeysToLoad = numberOfKeysToLoad;
+<b class="nc">&nbsp;        this.loadQueryInfluencers = loadQueryInfluencers;</b>
+&nbsp;        this.lockOptions = lockOptions;
+&nbsp;        this.entityGraphTraversalState = entityGraphTraversalState;
+&nbsp;        this.forceIdentifierSelection = forceIdentifierSelection;
+&nbsp;        this.jdbcParameterConsumer = jdbcParameterConsumer;
+&nbsp;        if (loadable instanceof PluralAttributeMapping) {
+&nbsp;            PluralAttributeMapping pluralAttributeMapping = (PluralAttributeMapping)loadable;
+<b class="nc">&nbsp;            if (pluralAttributeMapping.getMappedType().getCollectionSemantics().getCollectionClassification() == CollectionClassification.BAG) {</b>
+&nbsp;                this.rowCardinality = LoaderSelectBuilder.RowCardinality.BAG;
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private LoaderSelectBuilder(SqlAstCreationContext creationContext, Loadable loadable, List&lt;? extends ModelPart&gt; partsToSelect, List&lt;ModelPart&gt; restrictedParts, DomainResult&lt;?&gt; cachedDomainResult, int numberOfKeysToLoad, LoadQueryInfluencers loadQueryInfluencers, LockOptions lockOptions, Consumer&lt;JdbcParameter&gt; jdbcParameterConsumer) {
+&nbsp;        this(creationContext, loadable, partsToSelect, restrictedParts, cachedDomainResult, numberOfKeysToLoad, loadQueryInfluencers, lockOptions != null ? lockOptions : LockOptions.NONE, determineGraphTraversalState(loadQueryInfluencers, creationContext.getSessionFactory()), determineWhetherToForceIdSelection(numberOfKeysToLoad, restrictedParts), jdbcParameterConsumer);
+&nbsp;    }
+&nbsp;
+&nbsp;    private LoaderSelectBuilder(SqlAstCreationContext creationContext, Loadable loadable, List&lt;? extends ModelPart&gt; partsToSelect, ModelPart restrictedPart, DomainResult&lt;?&gt; cachedDomainResult, int numberOfKeysToLoad, LoadQueryInfluencers loadQueryInfluencers, LockOptions lockOptions, Consumer&lt;JdbcParameter&gt; jdbcParameterConsumer) {
+<b class="nc">&nbsp;        this(creationContext, loadable, partsToSelect, Collections.singletonList(restrictedPart), cachedDomainResult, numberOfKeysToLoad, loadQueryInfluencers, lockOptions, jdbcParameterConsumer);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private static boolean determineWhetherToForceIdSelection(int numberOfKeysToLoad, List&lt;ModelPart&gt; restrictedParts) {</b>
+&nbsp;        if (numberOfKeysToLoad &gt; 1) {
+&nbsp;            return true;
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            if (restrictedParts.size() == 1) {
+&nbsp;                ModelPart restrictedPart = (ModelPart)restrictedParts.get(0);
+<b class="nc">&nbsp;                if (Objects.equals(restrictedPart.getPartName(), &quot;{natural-id}&quot;)) {</b>
+&nbsp;                    return true;
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            for(ModelPart restrictedPart : restrictedParts) {
+&nbsp;                if (restrictedPart instanceof ForeignKeyDescriptor || restrictedPart instanceof NonAggregatedIdentifierMapping) {
+&nbsp;                    return true;
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            return false;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private static EntityGraphTraversalState determineGraphTraversalState(LoadQueryInfluencers loadQueryInfluencers, SessionFactoryImplementor sessionFactory) {</b>
+&nbsp;        if (loadQueryInfluencers != null) {
+&nbsp;            EffectiveEntityGraph effectiveEntityGraph = loadQueryInfluencers.getEffectiveEntityGraph();
+&nbsp;            if (effectiveEntityGraph != null) {
+&nbsp;                GraphSemantic graphSemantic = effectiveEntityGraph.getSemantic();
+<b class="nc">&nbsp;                RootGraphImplementor&lt;?&gt; rootGraphImplementor = effectiveEntityGraph.getGraph();</b>
+&nbsp;                if (graphSemantic != null &amp;&amp; rootGraphImplementor != null) {
+&nbsp;                    return new StandardEntityGraphTraversalStateImpl(graphSemantic, rootGraphImplementor, sessionFactory.getJpaMetamodel());
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return null;
+&nbsp;    }
+&nbsp;
+&nbsp;    private SelectStatement generateSelect() {
+&nbsp;        NavigablePath rootNavigablePath = new NavigablePath(this.loadable.getRootPathName());
+&nbsp;        QuerySpec rootQuerySpec = new QuerySpec(true);
+&nbsp;        LoaderSqlAstCreationState sqlAstCreationState = this.createSqlAstCreationState(rootQuerySpec);
+&nbsp;        TableGroup rootTableGroup = this.buildRootTableGroup(rootNavigablePath, rootQuerySpec, sqlAstCreationState);
+&nbsp;        List&lt;DomainResult&lt;?&gt;&gt; domainResults;
+&nbsp;        if (this.partsToSelect != null &amp;&amp; !this.partsToSelect.isEmpty()) {
+&nbsp;            domainResults = this.buildRequestedDomainResults(rootNavigablePath, sqlAstCreationState, rootTableGroup);
+&nbsp;        } else if (this.cachedDomainResult != null) {
+&nbsp;            domainResults = Collections.singletonList(this.cachedDomainResult);
+&nbsp;        } else {
+&nbsp;            DomainResult&lt;?&gt; domainResult = this.loadable.createDomainResult(rootNavigablePath, rootTableGroup, (String)null, sqlAstCreationState);
+&nbsp;            domainResults = Collections.singletonList(domainResult);
+&nbsp;        }
+&nbsp;
+&nbsp;        for(ModelPart restrictedPart : this.restrictedParts) {
+<b class="fc">&nbsp;            int numberOfRestrictionColumns = restrictedPart.getJdbcTypeCount();</b>
+&nbsp;            this.applyRestriction(rootQuerySpec, rootNavigablePath, rootTableGroup, restrictedPart, numberOfRestrictionColumns, this.jdbcParameterConsumer, sqlAstCreationState);
+&nbsp;        }
+&nbsp;
+&nbsp;        if (this.loadable instanceof PluralAttributeMapping) {
+&nbsp;            PluralAttributeMapping pluralAttributeMapping = (PluralAttributeMapping)this.loadable;
+&nbsp;            this.applyFiltering((QuerySpec)rootQuerySpec, rootTableGroup, (PluralAttributeMapping)pluralAttributeMapping, sqlAstCreationState);
+&nbsp;            this.applyOrdering(rootQuerySpec, rootTableGroup, (PluralAttributeMapping)pluralAttributeMapping, sqlAstCreationState);
+&nbsp;        } else {
+&nbsp;            this.applyFiltering((PredicateContainer)rootQuerySpec, rootTableGroup, (Restrictable)((Restrictable)this.loadable), sqlAstCreationState);
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        return new SelectStatement(rootQuerySpec, domainResults);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private List&lt;DomainResult&lt;?&gt;&gt; buildRequestedDomainResults(NavigablePath rootNavigablePath, LoaderSqlAstCreationState sqlAstCreationState, TableGroup rootTableGroup) {
+&nbsp;        List&lt;DomainResult&lt;?&gt;&gt; domainResults = new ArrayList(this.partsToSelect.size());
+&nbsp;
+&nbsp;        for(ModelPart part : this.partsToSelect) {
+&nbsp;            NavigablePath navigablePath = rootNavigablePath.append(part.getPartName());
+&nbsp;            TableGroup tableGroup;
+&nbsp;            if (part instanceof TableGroupJoinProducer) {
+&nbsp;                TableGroupJoinProducer tableGroupJoinProducer = (TableGroupJoinProducer)part;
+&nbsp;                TableGroupJoin tableGroupJoin = tableGroupJoinProducer.createTableGroupJoin(navigablePath, rootTableGroup, (String)null, (SqlAliasBase)null, SqlAstJoinType.LEFT, true, false, sqlAstCreationState);
+&nbsp;                rootTableGroup.addTableGroupJoin(tableGroupJoin);
+<b class="nc">&nbsp;                tableGroup = tableGroupJoin.getJoinedGroup();</b>
+&nbsp;                sqlAstCreationState.getFromClauseAccess().registerTableGroup(navigablePath, tableGroup);
+&nbsp;                this.registerPluralTableGroupParts(sqlAstCreationState.getFromClauseAccess(), tableGroup);
+&nbsp;            } else {
+&nbsp;                tableGroup = rootTableGroup;
+&nbsp;            }
+&nbsp;
+&nbsp;            domainResults.add(part.createDomainResult(navigablePath, tableGroup, (String)null, sqlAstCreationState));
+&nbsp;        }
+&nbsp;
+&nbsp;        return domainResults;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private TableGroup buildRootTableGroup(NavigablePath rootNavigablePath, QuerySpec rootQuerySpec, LoaderSqlAstCreationState sqlAstCreationState) {
+&nbsp;        TableGroup rootTableGroup = this.loadable.createRootTableGroup(true, rootNavigablePath, (String)null, (SqlAliasBase)null, () -&gt; {
+&nbsp;            Objects.requireNonNull(rootQuerySpec);
+&nbsp;            return rootQuerySpec::applyPredicate;
+&nbsp;        }, sqlAstCreationState);
+&nbsp;        rootQuerySpec.getFromClause().addRoot(rootTableGroup);
+&nbsp;        sqlAstCreationState.getFromClauseAccess().registerTableGroup(rootNavigablePath, rootTableGroup);
+&nbsp;        this.registerPluralTableGroupParts(sqlAstCreationState.getFromClauseAccess(), rootTableGroup);
+&nbsp;        return rootTableGroup;
+&nbsp;    }
+&nbsp;
+&nbsp;    private LoaderSqlAstCreationState createSqlAstCreationState(QuerySpec rootQuerySpec) {
+&nbsp;        return new LoaderSqlAstCreationState(rootQuerySpec, new SqlAliasBaseManager(), new SimpleFromClauseAccessImpl(), this.lockOptions, this::visitFetches, this.forceIdentifierSelection, this.loadQueryInfluencers, this.creationContext);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private void applyRestriction(QuerySpec rootQuerySpec, NavigablePath rootNavigablePath, TableGroup rootTableGroup, ModelPart restrictedPart, int numberColumns, Consumer&lt;JdbcParameter&gt; jdbcParameterConsumer, LoaderSqlAstCreationState sqlAstCreationState) {</b>
+&nbsp;        SqlExpressionResolver sqlExpressionResolver = sqlAstCreationState.getSqlExpressionResolver();
+&nbsp;        NavigablePath navigablePath = rootNavigablePath.append(restrictedPart.getNavigableRole().getNavigableName());
+&nbsp;        if (numberColumns == 1) {
+&nbsp;            restrictedPart.forEachSelectable((columnIndex, selection) -&gt; {
+&nbsp;                TableReference tableReference = rootTableGroup.resolveTableReference(navigablePath, selection.getContainingTableExpression());
+&nbsp;                ColumnReference columnRef = (ColumnReference)sqlExpressionResolver.resolveSqlExpression(tableReference, selection);
+&nbsp;                if (this.numberOfKeysToLoad == 1) {
+&nbsp;                    JdbcParameter jdbcParameter = new JdbcParameterImpl(selection.getJdbcMapping());
+<b class="nc">&nbsp;                    jdbcParameterConsumer.accept(jdbcParameter);</b>
+&nbsp;                    rootQuerySpec.applyPredicate(new ComparisonPredicate(columnRef, ComparisonOperator.EQUAL, jdbcParameter));
+&nbsp;                } else {
+&nbsp;                    InListPredicate predicate = new InListPredicate(columnRef);
+&nbsp;
+<b class="nc">&nbsp;                    for(int i = 0; i &lt; this.numberOfKeysToLoad; ++i) {</b>
+&nbsp;                        for(int j = 0; j &lt; numberColumns; ++j) {
+&nbsp;                            JdbcParameter jdbcParameter = new JdbcParameterImpl(columnRef.getJdbcMapping());
+&nbsp;                            jdbcParameterConsumer.accept(jdbcParameter);
+&nbsp;                            predicate.addExpression(jdbcParameter);
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+&nbsp;                    rootQuerySpec.applyPredicate(predicate);
+&nbsp;                }
+&nbsp;
+&nbsp;            });
+&nbsp;        } else {
+&nbsp;            List&lt;ColumnReference&gt; columnReferences = new ArrayList(numberColumns);
+&nbsp;            restrictedPart.forEachSelectable((columnIndex, selection) -&gt; {
+&nbsp;                TableReference tableReference = rootTableGroup.resolveTableReference(navigablePath, selection.getContainingTableExpression());
+&nbsp;                columnReferences.add((ColumnReference)sqlExpressionResolver.resolveSqlExpression(tableReference, selection));
+&nbsp;            });
+&nbsp;            SqlTuple tuple = new SqlTuple(columnReferences, restrictedPart);
+&nbsp;            InListPredicate predicate = new InListPredicate(tuple);
+&nbsp;
+&nbsp;            for(int i = 0; i &lt; this.numberOfKeysToLoad; ++i) {
+&nbsp;                List&lt;JdbcParameter&gt; tupleParams = new ArrayList(numberColumns);
+&nbsp;
+<b class="nc">&nbsp;                for(int j = 0; j &lt; numberColumns; ++j) {</b>
+&nbsp;                    ColumnReference columnReference = (ColumnReference)columnReferences.get(j);
+&nbsp;                    JdbcParameter jdbcParameter = new JdbcParameterImpl(columnReference.getJdbcMapping());
+&nbsp;                    jdbcParameterConsumer.accept(jdbcParameter);
+<b class="nc">&nbsp;                    tupleParams.add(jdbcParameter);</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                SqlTuple paramTuple = new SqlTuple(tupleParams, restrictedPart);
+&nbsp;                predicate.addExpression(paramTuple);
+&nbsp;            }
+&nbsp;
+&nbsp;            rootQuerySpec.applyPredicate(predicate);
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private void applyFiltering(QuerySpec querySpec, TableGroup tableGroup, PluralAttributeMapping pluralAttributeMapping, SqlAstCreationState astCreationState) {
+&nbsp;        assert tableGroup.getNavigablePath().getParent() == null;
+&nbsp;
+&nbsp;        Objects.requireNonNull(querySpec);
+&nbsp;        pluralAttributeMapping.applyBaseRestrictions(querySpec::applyPredicate, tableGroup, true, this.loadQueryInfluencers.getEnabledFilters(), false, (Set)null, astCreationState);
+&nbsp;        Objects.requireNonNull(querySpec);
+&nbsp;        pluralAttributeMapping.applyBaseManyToManyRestrictions(querySpec::applyPredicate, tableGroup, true, this.loadQueryInfluencers.getEnabledFilters(), (Set)null, astCreationState);
+&nbsp;    }
+&nbsp;
+&nbsp;    private void applyFiltering(PredicateContainer predicateContainer, TableGroup tableGroup, Restrictable restrictable, SqlAstCreationState astCreationState) {
+&nbsp;        Objects.requireNonNull(predicateContainer);
+&nbsp;        restrictable.applyBaseRestrictions(predicateContainer::applyPredicate, tableGroup, true, this.loadQueryInfluencers.getEnabledFilters(), true, (Set)null, astCreationState);
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private void applyOrdering(QuerySpec querySpec, TableGroup tableGroup, PluralAttributeMapping pluralAttributeMapping, SqlAstCreationState astCreationState) {
+&nbsp;        if (pluralAttributeMapping.getOrderByFragment() != null) {
+&nbsp;            this.applyOrdering(querySpec, tableGroup, pluralAttributeMapping.getOrderByFragment(), astCreationState);
+&nbsp;        }
+&nbsp;
+&nbsp;        if (pluralAttributeMapping.getManyToManyOrderByFragment() != null) {
+&nbsp;            this.applyOrdering(querySpec, tableGroup, pluralAttributeMapping.getManyToManyOrderByFragment(), astCreationState);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    private void applyOrdering(QuerySpec querySpec, TableGroup tableGroup, OrderByFragment orderByFragment, SqlAstCreationState astCreationState) {</b>
+<b class="fc">&nbsp;        orderByFragment.apply(querySpec, tableGroup, astCreationState);</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private ImmutableFetchList visitFetches(FetchParent fetchParent, LoaderSqlAstCreationState creationState) {</b>
+<b class="fc">&nbsp;        if (log.isTraceEnabled()) {</b>
+<b class="fc">&nbsp;            log.tracef(&quot;Starting visitation of FetchParent&#39;s Fetchables : %s&quot;, fetchParent.getNavigablePath());</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;        ImmutableFetchList.Builder fetches = new ImmutableFetchList.Builder(fetchParent.getReferencedMappingContainer());</b>
+<b class="fc">&nbsp;        FetchableConsumer processor = this.createFetchableConsumer(fetchParent, creationState, fetches);</b>
+<b class="fc">&nbsp;        FetchableContainer referencedMappingContainer = fetchParent.getReferencedMappingContainer();</b>
+<b class="pc">&nbsp;        if (fetchParent.getNavigablePath().getParent() != null) {</b>
+<b class="nc">&nbsp;            int size = referencedMappingContainer.getNumberOfKeyFetchables();</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; size; ++i) {</b>
+<b class="nc">&nbsp;                processor.accept(referencedMappingContainer.getKeyFetchable(i), true, false);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        int size = referencedMappingContainer.getNumberOfFetchables();
+&nbsp;        List&lt;Fetchable&gt; bagFetchables = null;
+&nbsp;
+&nbsp;        for(int i = 0; i &lt; size; ++i) {
+&nbsp;            Fetchable fetchable = referencedMappingContainer.getFetchable(i);
+&nbsp;            if (this.isBag(fetchable)) {
+&nbsp;                if (bagFetchables == null) {
+&nbsp;                    bagFetchables = new ArrayList();
+&nbsp;                }
+&nbsp;
+&nbsp;                bagFetchables.add(fetchable);
+&nbsp;            } else {
+<b class="fc">&nbsp;                processor.accept(fetchable, false, false);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        if (bagFetchables != null) {
+&nbsp;            for(Fetchable fetchable : bagFetchables) {
+&nbsp;                processor.accept(fetchable, false, true);
+&nbsp;            }
+<b class="pc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;        return fetches.build();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean isBag(Fetchable fetchable) {
+&nbsp;        return this.isPluralAttributeMapping(fetchable) &amp;&amp; ((PluralAttributeMapping)fetchable).getMappedType().getCollectionSemantics().getCollectionClassification() == CollectionClassification.BAG;
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean isPluralAttributeMapping(Fetchable fetchable) {
+&nbsp;        AttributeMapping attributeMapping = fetchable.asAttributeMapping();
+&nbsp;        return attributeMapping != null &amp;&amp; attributeMapping.isPluralAttributeMapping();
+&nbsp;    }
+&nbsp;
+&nbsp;    private FetchableConsumer createFetchableConsumer(FetchParent fetchParent, LoaderSqlAstCreationState creationState, ImmutableFetchList.Builder fetches) {
+&nbsp;        return (fetchable, isKeyFetchable, isABag) -&gt; {
+&nbsp;            if (fetchable.isSelectable()) {
+<b class="fc">&nbsp;                NavigablePath fetchablePath;</b>
+&nbsp;                if (isKeyFetchable) {
+&nbsp;                    EntityIdentifierMapping identifierMapping;
+&nbsp;                    if (fetchParent instanceof BiDirectionalFetch) {
+<b class="fc">&nbsp;                        BiDirectionalFetch parentAsBiDirectionalFetch = (BiDirectionalFetch)fetchParent;</b>
+&nbsp;                        Fetchable biDirectionalFetchedMapping = parentAsBiDirectionalFetch.getFetchedMapping();
+&nbsp;                        if (biDirectionalFetchedMapping instanceof EntityValuedFetchable) {
+&nbsp;                            identifierMapping = ((EntityValuedFetchable)biDirectionalFetchedMapping).getEntityMappingType().getIdentifierMapping();
+&nbsp;                        } else {
+&nbsp;                            identifierMapping = null;
+&nbsp;                        }
+&nbsp;                    } else {
+&nbsp;                        FetchableContainer fetchableContainer = fetchParent.getReferencedMappingContainer();
+&nbsp;                        if (fetchableContainer instanceof EntityValuedModelPart) {
+<b class="pc">&nbsp;                            EntityValuedModelPart entityValuedModelPart = (EntityValuedModelPart)fetchableContainer;</b>
+<b class="nc">&nbsp;                            identifierMapping = entityValuedModelPart.getEntityMappingType().getIdentifierMapping();</b>
+&nbsp;                        } else {
+&nbsp;                            identifierMapping = null;
+<b class="pc">&nbsp;                        }</b>
+<b class="fc">&nbsp;                    }</b>
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;                    if (identifierMapping != null) {</b>
+&nbsp;                        fetchablePath = new EntityIdentifierNavigablePath(fetchParent.getNavigablePath(), ResultsHelper.attributeName(identifierMapping));
+&nbsp;                    } else {
+&nbsp;                        fetchablePath = fetchParent.resolveNavigablePath(fetchable);
+<b class="fc">&nbsp;                    }</b>
+<b class="pc">&nbsp;                } else {</b>
+<b class="nc">&nbsp;                    fetchablePath = fetchParent.resolveNavigablePath(fetchable);</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                FetchTiming fetchTiming = fetchable.getMappedFetchOptions().getTiming();
+<b class="fc">&nbsp;                boolean joined = fetchable.getMappedFetchOptions().getStyle() == FetchStyle.JOIN;</b>
+&nbsp;                boolean explicitFetch = false;
+&nbsp;                EntityGraphTraversalState.TraversalResult traversalResult = null;
+&nbsp;                boolean isFetchablePluralAttributeMapping = isABag || this.isPluralAttributeMapping(fetchable);
+&nbsp;                Integer maximumFetchDepth = this.creationContext.getMaximumFetchDepth();
+&nbsp;                if (!(fetchable instanceof CollectionPart)) {
+<b class="pc">&nbsp;                    if (this.entityGraphTraversalState != null) {</b>
+<b class="fc">&nbsp;                        traversalResult = this.entityGraphTraversalState.traverse(fetchParent, fetchable, isKeyFetchable);</b>
+<b class="pc">&nbsp;                        EntityGraphTraversalState.FetchStrategy fetchStrategy = traversalResult.getFetchStrategy();</b>
+<b class="fc">&nbsp;                        if (fetchStrategy != null) {</b>
+<b class="fc">&nbsp;                            fetchTiming = fetchStrategy.getFetchTiming();</b>
+<b class="pc">&nbsp;                            joined = fetchStrategy.isJoined();</b>
+<b class="nc">&nbsp;                            explicitFetch = this.shouldExplicitFetch(maximumFetchDepth, fetchable, creationState);</b>
+&nbsp;                        }
+&nbsp;                    } else if (this.loadQueryInfluencers.hasEnabledFetchProfiles()) {
+<b class="nc">&nbsp;                        if (fetchTiming != FetchTiming.IMMEDIATE || fetchable.incrementFetchDepth()) {</b>
+&nbsp;                            String fetchableRole = fetchable.getNavigableRole().getFullPath();
+&nbsp;
+&nbsp;                            for(String enabledFetchProfileName : this.loadQueryInfluencers.getEnabledFetchProfileNames()) {
+&nbsp;                                FetchProfile enabledFetchProfile = this.creationContext.getSessionFactory().getFetchProfile(enabledFetchProfileName);
+<b class="fc">&nbsp;                                Fetch profileFetch = enabledFetchProfile.getFetchByRole(fetchableRole);</b>
+&nbsp;                                if (profileFetch != null) {
+&nbsp;                                    fetchTiming = profileFetch.getTiming();
+&nbsp;                                    joined = joined || profileFetch.getMethod() == FetchStyle.JOIN;
+<b class="fc">&nbsp;                                    explicitFetch = this.shouldExplicitFetch(maximumFetchDepth, fetchable, creationState);</b>
+&nbsp;                                }
+<b class="fc">&nbsp;                            }</b>
+<b class="fc">&nbsp;                        }</b>
+&nbsp;                    } else if (this.loadQueryInfluencers.getEnabledCascadingFetchProfile() != null) {
+<b class="fc">&nbsp;                        CascadeStyle cascadeStyle = fetchable.asAttributeMapping() != null ? fetchable.asAttributeMapping().getAttributeMetadata().getCascadeStyle() : null;</b>
+&nbsp;                        CascadingAction&lt;?&gt; cascadingAction = this.loadQueryInfluencers.getEnabledCascadingFetchProfile().getCascadingAction();
+&nbsp;                        if (cascadeStyle == null || cascadeStyle.doCascade(cascadingAction)) {
+<b class="pc">&nbsp;                            fetchTiming = FetchTiming.IMMEDIATE;</b>
+<b class="nc">&nbsp;                            joined = !isFetchablePluralAttributeMapping || this.rowCardinality == LoaderSelectBuilder.RowCardinality.SINGLE;</b>
+&nbsp;                        }
+<b class="pc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                if (joined &amp;&amp; isFetchablePluralAttributeMapping) {
+<b class="fc">&nbsp;                    switch (this.rowCardinality) {</b>
+&nbsp;                        case SET:
+&nbsp;                            joined = !isABag;
+&nbsp;                            break;
+&nbsp;                        case BAG:
+&nbsp;                            joined = false;
+<b class="fc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                try {</b>
+<b class="fc">&nbsp;                    if (fetchable.incrementFetchDepth()) {</b>
+&nbsp;                        ++this.fetchDepth;
+<b class="fc">&nbsp;                    }</b>
+&nbsp;
+&nbsp;                    if (!explicitFetch &amp;&amp; !creationState.isResolvingCircularFetch()) {
+&nbsp;                        org.hibernate.sql.results.graph.Fetch biDirectionalFetch = fetchable.resolveCircularFetch(fetchablePath, fetchParent, fetchTiming, creationState);
+&nbsp;                        if (biDirectionalFetch != null) {
+&nbsp;                            fetches.add(biDirectionalFetch);
+&nbsp;                            return;
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+&nbsp;                    if (maximumFetchDepth != null) {
+<b class="pc">&nbsp;                        if (this.fetchDepth == maximumFetchDepth + 1) {</b>
+<b class="nc">&nbsp;                            joined = false;</b>
+<b class="nc">&nbsp;                        } else if (this.fetchDepth &gt; maximumFetchDepth + 1 &amp;&amp; fetchable.asBasicValuedModelPart() == null &amp;&amp; !(fetchable instanceof EmbeddedAttributeMapping)) {</b>
+<b class="nc">&nbsp;                            joined = false;</b>
+&nbsp;                        }
+&nbsp;                    }
+<b class="fc">&nbsp;</b>
+&nbsp;                    if (joined &amp;&amp; isFetchablePluralAttributeMapping) {
+&nbsp;                        this.rowCardinality = isABag ? LoaderSelectBuilder.RowCardinality.BAG : LoaderSelectBuilder.RowCardinality.SET;
+<b class="fc">&nbsp;                    }</b>
+&nbsp;
+&nbsp;                    org.hibernate.sql.results.graph.Fetch fetch = fetchParent.generateFetchableFetch(fetchable, fetchablePath, fetchTiming, joined, (String)null, creationState);
+&nbsp;                    fetches.add(fetch);
+&nbsp;                } finally {
+<b class="nc">&nbsp;                    if (fetchable.incrementFetchDepth()) {</b>
+<b class="nc">&nbsp;                        --this.fetchDepth;</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;
+<b class="nc">&nbsp;                    if (this.entityGraphTraversalState != null &amp;&amp; traversalResult != null) {</b>
+<b class="nc">&nbsp;                        this.entityGraphTraversalState.backtrack(traversalResult);</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;
+&nbsp;                }
+&nbsp;            }
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean shouldExplicitFetch(Integer maxFetchDepth, Fetchable fetchable, LoaderSqlAstCreationState creationState) {
+&nbsp;        if (maxFetchDepth == null) {
+&nbsp;            if (fetchable instanceof ToOneAttributeMapping) {
+<b class="nc">&nbsp;                return !creationState.isAssociationKeyVisited(((ToOneAttributeMapping)fetchable).getForeignKeyDescriptor().getAssociationKey());</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            if (fetchable instanceof PluralAttributeMapping) {</b>
+&nbsp;                return !creationState.isAssociationKeyVisited(((PluralAttributeMapping)fetchable).getKeyDescriptor().getAssociationKey());
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        return true;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private SelectStatement generateSelect(SubselectFetch subselect) {
+&nbsp;        assert this.loadable instanceof PluralAttributeMapping;
+&nbsp;
+&nbsp;        PluralAttributeMapping attributeMapping = (PluralAttributeMapping)this.loadable;
+&nbsp;        QuerySpec rootQuerySpec = new QuerySpec(true);
+&nbsp;        NavigablePath rootNavigablePath = new NavigablePath(this.loadable.getRootPathName());
+<b class="nc">&nbsp;        Map&lt;String, TableReference&gt; tableReferences = AliasCollector.getTableReferences(subselect.getLoadingSqlAst());</b>
+&nbsp;        LoaderSqlAstCreationState sqlAstCreationState = new LoaderSqlAstCreationState(rootQuerySpec, new SqlAliasBaseManager(tableReferences.keySet()), new SimpleFromClauseAccessImpl(), this.lockOptions, this::visitFetches, this.numberOfKeysToLoad &gt; 1, this.loadQueryInfluencers, this.creationContext);
+&nbsp;        TableGroup rootTableGroup = this.buildRootTableGroup(rootNavigablePath, rootQuerySpec, sqlAstCreationState);
+&nbsp;        this.applySubSelectRestriction(rootQuerySpec, rootTableGroup, subselect, sqlAstCreationState);
+<b class="fc">&nbsp;        this.applyFiltering((QuerySpec)rootQuerySpec, rootTableGroup, (PluralAttributeMapping)attributeMapping, sqlAstCreationState);</b>
+&nbsp;        this.applyOrdering(rootQuerySpec, rootTableGroup, (PluralAttributeMapping)attributeMapping, sqlAstCreationState);
+&nbsp;        return new SelectStatement(rootQuerySpec, Collections.singletonList(new CollectionDomainResult(rootNavigablePath, attributeMapping, (String)null, rootTableGroup, sqlAstCreationState)));
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private void applySubSelectRestriction(QuerySpec querySpec, TableGroup rootTableGroup, SubselectFetch subselect, LoaderSqlAstCreationState sqlAstCreationState) {</b>
+&nbsp;        assert this.loadable instanceof PluralAttributeMapping;
+&nbsp;
+&nbsp;        PluralAttributeMapping attributeMapping = (PluralAttributeMapping)this.loadable;
+<b class="fc">&nbsp;        ForeignKeyDescriptor fkDescriptor = attributeMapping.getKeyDescriptor();</b>
+<b class="fc">&nbsp;        Expression fkExpression;</b>
+<b class="fc">&nbsp;        if (!fkDescriptor.isEmbedded()) {</b>
+<b class="fc">&nbsp;            assert fkDescriptor instanceof SimpleForeignKeyDescriptor;</b>
+&nbsp;
+&nbsp;            SimpleForeignKeyDescriptor simpleFkDescriptor = (SimpleForeignKeyDescriptor)fkDescriptor;
+&nbsp;            TableReference tableReference = rootTableGroup.resolveTableReference((NavigablePath)null, fkDescriptor, simpleFkDescriptor.getContainingTableExpression());
+<b class="fc">&nbsp;            fkExpression = sqlAstCreationState.getSqlExpressionResolver().resolveSqlExpression(tableReference, simpleFkDescriptor);</b>
+&nbsp;        } else {
+&nbsp;            List&lt;ColumnReference&gt; columnReferences = new ArrayList(fkDescriptor.getJdbcTypeCount());
+&nbsp;            fkDescriptor.forEachSelectable((columnIndex, selection) -&gt; {
+&nbsp;                TableReference tableReference = rootTableGroup.resolveTableReference((NavigablePath)null, fkDescriptor, selection.getContainingTableExpression());
+&nbsp;                columnReferences.add((ColumnReference)sqlAstCreationState.getSqlExpressionResolver().resolveSqlExpression(tableReference, selection));
+&nbsp;            });
+&nbsp;            fkExpression = new SqlTuple(columnReferences, fkDescriptor);
+&nbsp;        }
+&nbsp;
+&nbsp;        querySpec.applyPredicate(new InSubQueryPredicate(fkExpression, this.generateSubSelect(attributeMapping, subselect, sqlAstCreationState), false));
+&nbsp;    }
+&nbsp;
+&nbsp;    private QueryPart generateSubSelect(PluralAttributeMapping attributeMapping, SubselectFetch subselect, LoaderSqlAstCreationState creationState) {
+&nbsp;        ForeignKeyDescriptor fkDescriptor = attributeMapping.getKeyDescriptor();
+&nbsp;        QuerySpec subQuery = new QuerySpec(false);
+&nbsp;        QuerySpec loadingSqlAst = subselect.getLoadingSqlAst();
+&nbsp;        TableGroup ownerTableGroup = subselect.getOwnerTableGroup();
+&nbsp;        FromClause var10000 = loadingSqlAst.getFromClause();
+&nbsp;        FromClause var10001 = subQuery.getFromClause();
+<b class="fc">&nbsp;        Objects.requireNonNull(var10001);</b>
+<b class="fc">&nbsp;        var10000.visitRoots(var10001::addRoot);</b>
+&nbsp;        SqlExpressionResolver sqlExpressionResolver = creationState.getSqlExpressionResolver();
+<b class="pc">&nbsp;        fkDescriptor.visitTargetSelectables((valuesPosition, selection) -&gt; {</b>
+<b class="fc">&nbsp;            TableReference tableReference = ownerTableGroup.resolveTableReference((NavigablePath)null, fkDescriptor, selection.getContainingTableExpression());</b>
+&nbsp;            Expression expression = sqlExpressionResolver.resolveSqlExpression(tableReference, selection);
+<b class="fc">&nbsp;            subQuery.getSelectClause().addSqlSelection(new SqlSelectionImpl(valuesPosition, expression));</b>
+<b class="fc">&nbsp;        });</b>
+<b class="fc">&nbsp;        subQuery.applyPredicate(loadingSqlAst.getWhereClauseRestrictions());</b>
+<b class="fc">&nbsp;        return subQuery;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void registerPluralTableGroupParts(FromClauseAccess fromClauseAccess, TableGroup tableGroup) {
+<b class="pc">&nbsp;        if (tableGroup instanceof PluralTableGroup) {</b>
+<b class="fc">&nbsp;            PluralTableGroup pluralTableGroup = (PluralTableGroup)tableGroup;</b>
+<b class="fc">&nbsp;            if (pluralTableGroup.getElementTableGroup() != null) {</b>
+&nbsp;                fromClauseAccess.registerTableGroup(pluralTableGroup.getElementTableGroup().getNavigablePath(), pluralTableGroup.getElementTableGroup());
+<b class="fc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            if (pluralTableGroup.getIndexTableGroup() != null) {
+&nbsp;                fromClauseAccess.registerTableGroup(pluralTableGroup.getIndexTableGroup().getNavigablePath(), pluralTableGroup.getIndexTableGroup());
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private static enum RowCardinality {</b>
+<b class="nc">&nbsp;        SINGLE,</b>
+&nbsp;        SET,
+&nbsp;        BAG;
+<b class="nc">&nbsp;</b>
+&nbsp;        private RowCardinality() {
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @FunctionalInterface
+&nbsp;    private interface FetchableConsumer {
+<b class="nc">&nbsp;        void accept(Fetchable var1, boolean var2, boolean var3);</b>
+&nbsp;    }
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
+</div>
+</body>
+</html>

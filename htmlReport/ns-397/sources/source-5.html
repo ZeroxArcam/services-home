@@ -1,0 +1,194 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > SpelAwareProxyProjectionFactory</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.data.projection</a>
+</div>
+
+<h1>Coverage Summary for Class: SpelAwareProxyProjectionFactory (org.springframework.data.projection)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SpelAwareProxyProjectionFactory</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (3/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    42.9%
+  </span>
+  <span class="absValue">
+    (6/14)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.data.projection;
+&nbsp;
+&nbsp;import java.beans.PropertyDescriptor;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import org.aopalliance.intercept.MethodInterceptor;
+&nbsp;import org.springframework.beans.BeansException;
+&nbsp;import org.springframework.beans.factory.BeanFactory;
+&nbsp;import org.springframework.beans.factory.BeanFactoryAware;
+&nbsp;import org.springframework.beans.factory.annotation.Value;
+&nbsp;import org.springframework.core.annotation.AnnotationUtils;
+&nbsp;import org.springframework.data.util.AnnotationDetectionMethodCallback;
+&nbsp;import org.springframework.expression.ExpressionParser;
+&nbsp;import org.springframework.expression.spel.standard.SpelExpressionParser;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.ReflectionUtils;
+&nbsp;
+&nbsp;public class SpelAwareProxyProjectionFactory extends ProxyProjectionFactory implements BeanFactoryAware {
+&nbsp;    private final Map&lt;Class&lt;?&gt;, Boolean&gt; typeCache;
+&nbsp;    private final ExpressionParser parser;
+&nbsp;    @Nullable
+&nbsp;    private BeanFactory beanFactory;
+&nbsp;
+&nbsp;    public SpelAwareProxyProjectionFactory() {
+&nbsp;        this(new SpelExpressionParser());
+&nbsp;    }
+&nbsp;
+&nbsp;    public SpelAwareProxyProjectionFactory(ExpressionParser parser) {
+&nbsp;        this.typeCache = new ConcurrentHashMap();
+&nbsp;        Assert.notNull(parser, &quot;ExpressionParser must not be null&quot;);
+&nbsp;        this.parser = parser;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+&nbsp;        this.beanFactory = beanFactory;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected ProjectionInformation createProjectionInformation(Class&lt;?&gt; projectionType) {
+&nbsp;        return new SpelAwareProjectionInformation(projectionType);
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    protected MethodInterceptor postProcessAccessorInterceptor(MethodInterceptor interceptor, Object source, Class&lt;?&gt; projectionType) {</b>
+&nbsp;        return (MethodInterceptor)((Boolean)this.typeCache.computeIfAbsent(projectionType, SpelAwareProxyProjectionFactory::hasMethodWithValueAnnotation) ? new SpelEvaluatingMethodInterceptor(interceptor, source, this.beanFactory, this.parser, projectionType) : interceptor);
+&nbsp;    }
+&nbsp;
+&nbsp;    private static boolean hasMethodWithValueAnnotation(Class&lt;?&gt; type) {
+&nbsp;        Assert.notNull(type, &quot;Type must not be null&quot;);
+&nbsp;        AnnotationDetectionMethodCallback&lt;Value&gt; callback = new AnnotationDetectionMethodCallback(Value.class);
+&nbsp;        ReflectionUtils.doWithMethods(type, callback);
+&nbsp;        return callback.hasFoundAnnotation();
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected static class SpelAwareProjectionInformation extends DefaultProjectionInformation {
+&nbsp;        protected SpelAwareProjectionInformation(Class&lt;?&gt; projectionType) {
+&nbsp;            super(projectionType);
+&nbsp;        }
+&nbsp;
+&nbsp;        protected boolean isInputProperty(PropertyDescriptor descriptor) {
+&nbsp;            if (!super.isInputProperty(descriptor)) {
+<b class="fc">&nbsp;                return false;</b>
+&nbsp;            } else {
+<b class="fc">&nbsp;                Method readMethod = descriptor.getReadMethod();</b>
+<b class="fc">&nbsp;                if (readMethod == null) {</b>
+&nbsp;                    return false;
+&nbsp;                } else {
+&nbsp;                    return AnnotationUtils.findAnnotation(readMethod, Value.class) == null;
+&nbsp;                }
+<b class="fc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:54</div>
+</div>
+</body>
+</html>

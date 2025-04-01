@@ -1,12 +1,19 @@
 package com.pragma.hogar360.serviceshome.infrastructure.adapters.persistence;
+import com.pragma.hogar360.serviceshome.commons.configurations.utils.Auxiliary;
 import com.pragma.hogar360.serviceshome.domain.model.HomeModel;
 import com.pragma.hogar360.serviceshome.domain.model.HomePublicationInfoModel;
+import com.pragma.hogar360.serviceshome.domain.model.HomeQueryModel;
 import com.pragma.hogar360.serviceshome.domain.ports.out.HomePersistencePort;
+import com.pragma.hogar360.serviceshome.domain.utils.constants.Pagination;
 import com.pragma.hogar360.serviceshome.infrastructure.entities.HomeEntity;
 import com.pragma.hogar360.serviceshome.infrastructure.mappers.HomeEntityMapper;
 import com.pragma.hogar360.serviceshome.infrastructure.repositories.mysql.HomeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,33 +56,42 @@ public class HomePersistenceAdapter implements HomePersistencePort {
         homeRepository.saveAll(entities);
     }
 
+    @Override
+    public Pagination<HomeModel> findHomesByFilters(
+            HomeQueryModel queryModel,
+            Integer page,
+            Integer size,
+            String sortBy,
+            String sortDirection
+    ) {
+        Sort sort = Auxiliary.createHomeSort(sortBy, sortDirection);
+        Pageable pageable = PageRequest.of(page, size, sort);
 
-//    @Scheduled(cron = "0 0 0 * * *")  // A medianoche todos los días
-//    public void activateScheduledPublications(HomeModel homeModel) {
-//        LocalDate today = LocalDate.now();
-//
-//        // 1. Buscar casas usando el puerto de persistencia (dominio puro)
-//        List<HomeModel> homesToActivate = findHomesToActivate(
-//                today,
-//                HomePublicationInfoModel.PublicationStatus.PUBLICATION_PAUSED
-//        );
-//
-//        if (!homesToActivate.isEmpty()) {
-//            // 2. Actualizar estado en el modelo de dominio
-//            homesToActivate.forEach(home ->
-//                    home.getPublicationInfo().setPublicationStatus(
-//                            HomePublicationInfoModel.PublicationStatus.PUBLISHED
-//                    )
-//            );
-//
-//            // 3. Guardar usando el puerto de persistencia
-//            homeRepository.save(homeEntityMapper.toEntity(homesToActivate));
-//
-//            log.info("Se activaron {} casas programadas para publicación.", homesToActivate.size());
-//        } else {
-//            log.info("No hay casas programadas para publicación hoy.");
-//        }
-//    }
+        log.info("Fetching homes from DB - Page: {}, Size: {}, SortBy: {}, SortDirection: {}, Query: {}",
+                page, size, sortBy, sortDirection, queryModel);
 
+        Page<HomeEntity> homePages = homeRepository.findFilteredHomes(
+                queryModel.getCurrentDate(),
+                queryModel.getLocationId(),
+                queryModel.getCategoryId(),
+                queryModel.getMinRooms(),
+                queryModel.getMaxRooms(),
+                queryModel.getMinBathrooms(),
+                queryModel.getMaxBathrooms(),
+                queryModel.getMinPrice(),
+                queryModel.getMaxPrice(),
+                pageable
+        );
+
+        log.info("Homes fetched. Total Elements: {}, Total Pages: {}",
+                homePages.getTotalElements(), homePages.getTotalPages());
+
+        Pagination<HomeModel> result = homeEntityMapper.homeEntityPageToHomeModelPagination(homePages);
+
+        log.info("Mapped Homes: {}", result.getItems());
+        log.info("Pagination mapped successfully. Returning response...");
+
+        return result;
+    }
 
 }

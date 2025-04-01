@@ -1,0 +1,397 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > TableGroupHelper</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.sql.ast.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: TableGroupHelper (org.hibernate.sql.ast.internal)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TableGroupHelper</td>
+<td class="coverageStat">
+  <span class="percent">
+    6.2%
+  </span>
+  <span class="absValue">
+    (1/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    2.4%
+  </span>
+  <span class="absValue">
+    (2/84)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    2%
+  </span>
+  <span class="absValue">
+    (2/98)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">TableGroupHelper$MultipleUsesFoundException</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    5.6%
+  </span>
+  <span class="absValue">
+    (1/18)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    2.4%
+  </span>
+  <span class="absValue">
+    (2/84)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    2%
+  </span>
+  <span class="absValue">
+    (2/100)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.sql.ast.internal;
+&nbsp;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import org.hibernate.internal.util.collections.CollectionHelper;
+&nbsp;import org.hibernate.metamodel.mapping.internal.CaseStatementDiscriminatorMappingImpl;
+&nbsp;import org.hibernate.persister.internal.SqlFragmentPredicate;
+&nbsp;import org.hibernate.sql.ast.spi.AbstractSqlAstWalker;
+&nbsp;import org.hibernate.sql.ast.tree.expression.AggregateColumnWriteExpression;
+&nbsp;import org.hibernate.sql.ast.tree.expression.ColumnReference;
+&nbsp;import org.hibernate.sql.ast.tree.expression.Expression;
+&nbsp;import org.hibernate.sql.ast.tree.expression.SelfRenderingExpression;
+&nbsp;import org.hibernate.sql.ast.tree.expression.SelfRenderingSqlFragmentExpression;
+&nbsp;import org.hibernate.sql.ast.tree.expression.SqlTuple;
+&nbsp;import org.hibernate.sql.ast.tree.expression.SqlTupleContainer;
+&nbsp;import org.hibernate.sql.ast.tree.from.NamedTableReference;
+&nbsp;import org.hibernate.sql.ast.tree.from.TableGroup;
+&nbsp;import org.hibernate.sql.ast.tree.from.TableReference;
+&nbsp;import org.hibernate.sql.ast.tree.from.TableReferenceJoin;
+&nbsp;import org.hibernate.sql.ast.tree.predicate.ComparisonPredicate;
+&nbsp;import org.hibernate.sql.ast.tree.predicate.FilterPredicate;
+&nbsp;import org.hibernate.sql.ast.tree.predicate.Junction;
+&nbsp;import org.hibernate.sql.ast.tree.predicate.Predicate;
+&nbsp;import org.hibernate.sql.ast.tree.predicate.Junction.Nature;
+&nbsp;import org.hibernate.sql.model.ast.ColumnWriteFragment;
+&nbsp;
+&nbsp;public class TableGroupHelper extends AbstractSqlAstWalker {
+&nbsp;    public static final int REAL_TABLE_GROUP_REQUIRED = Integer.MAX_VALUE;
+&nbsp;    public static final int NO_TABLE_GROUP_REQUIRED = -1;
+&nbsp;    private final String primaryQualifier;
+&nbsp;    private final Map&lt;String, Integer&gt; qualifiers;
+&nbsp;    private final String[] qualifierFragments;
+&nbsp;    private Integer usedTableReferenceJoinIndex;
+&nbsp;
+&nbsp;    private TableGroupHelper(String primaryQualifier, Map&lt;String, Integer&gt; qualifiers) {
+&nbsp;        this.primaryQualifier = primaryQualifier;
+&nbsp;        this.qualifiers = qualifiers;
+&nbsp;        String[] qualifierFragments = new String[qualifiers.size()];
+&nbsp;
+&nbsp;        for(Map.Entry&lt;String, Integer&gt; entry : qualifiers.entrySet()) {
+&nbsp;            qualifierFragments[(Integer)entry.getValue()] = (String)entry.getKey() + &quot;.&quot;;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        this.qualifierFragments = qualifierFragments;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public static int findReferenceJoinForPredicateSwap(TableGroup tableGroup, Predicate predicate) {</b>
+<b class="nc">&nbsp;        if (predicate != null &amp;&amp; !tableGroup.getTableReferenceJoins().isEmpty()) {</b>
+<b class="nc">&nbsp;            TableReference primaryTableReference = tableGroup.getPrimaryTableReference();</b>
+&nbsp;            HashMap&lt;String, Integer&gt; qualifiers = CollectionHelper.mapOfSize(tableGroup.getTableReferenceJoins().size());
+<b class="nc">&nbsp;            List&lt;TableReferenceJoin&gt; tableReferenceJoins = tableGroup.getTableReferenceJoins();</b>
+&nbsp;
+&nbsp;            for(int i = 0; i &lt; tableReferenceJoins.size(); ++i) {
+&nbsp;                TableReferenceJoin tableReferenceJoin = (TableReferenceJoin)tableReferenceJoins.get(i);
+&nbsp;                if (!tableGroup.canUseInnerJoins() &amp;&amp; !isSimplePredicate(tableGroup, i)) {
+&nbsp;                    return Integer.MAX_VALUE;
+&nbsp;                }
+&nbsp;
+&nbsp;                qualifiers.put(tableReferenceJoin.getJoinedTableReference().getIdentificationVariable(), i);
+&nbsp;            }
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;            TableGroupHelper qualifierCollector = new TableGroupHelper(primaryTableReference.getIdentificationVariable(), qualifiers);</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            try {</b>
+<b class="nc">&nbsp;                predicate.accept(qualifierCollector);</b>
+<b class="nc">&nbsp;                if (qualifierCollector.usedTableReferenceJoinIndex == null) {</b>
+<b class="nc">&nbsp;                    return -1;</b>
+<b class="nc">&nbsp;                } else if (qualifierCollector.usedTableReferenceJoinIndex != -1 &amp;&amp; !tableGroup.canUseInnerJoins() &amp;&amp; !isSimpleTableReference(primaryTableReference)) {</b>
+&nbsp;                    return Integer.MAX_VALUE;
+&nbsp;                } else {
+&nbsp;                    return qualifierCollector.usedTableReferenceJoinIndex;
+&nbsp;                }
+&nbsp;            } catch (MultipleUsesFoundException var7) {
+&nbsp;                return Integer.MAX_VALUE;
+&nbsp;            }
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            return -1;
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private static boolean isSimpleTableReference(TableReference tableReference) {</b>
+<b class="nc">&nbsp;        return tableReference instanceof NamedTableReference &amp;&amp; !tableReference.getTableId().startsWith(&quot;(select&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static boolean isSimplePredicate(TableGroup tableGroup, int index) {
+<b class="nc">&nbsp;        TableReference primaryTableReference = tableGroup.getPrimaryTableReference();</b>
+<b class="nc">&nbsp;        TableReferenceJoin tableReferenceJoin = (TableReferenceJoin)tableGroup.getTableReferenceJoins().get(index);</b>
+<b class="nc">&nbsp;        NamedTableReference joinedTableReference = tableReferenceJoin.getJoinedTableReference();</b>
+&nbsp;        Predicate predicate = tableReferenceJoin.getPredicate();
+<b class="nc">&nbsp;        if (predicate instanceof Junction) {</b>
+<b class="nc">&nbsp;            Junction junction = (Junction)predicate;</b>
+&nbsp;            if (junction.getNature() == Nature.CONJUNCTION) {
+&nbsp;                for(Predicate subPredicate : junction.getPredicates()) {
+<b class="nc">&nbsp;                    if (!isComparison(subPredicate, primaryTableReference, joinedTableReference)) {</b>
+&nbsp;                        return false;
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                return true;</b>
+&nbsp;            } else {
+&nbsp;                return false;
+<b class="fc">&nbsp;            }</b>
+&nbsp;        } else {
+&nbsp;            return isComparison(predicate, primaryTableReference, joinedTableReference);
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private static boolean isComparison(Predicate predicate, TableReference table1, TableReference table2) {
+&nbsp;        if (predicate instanceof ComparisonPredicate) {
+&nbsp;            ComparisonPredicate comparisonPredicate = (ComparisonPredicate)predicate;
+&nbsp;            Expression lhs = comparisonPredicate.getLeftHandExpression();
+&nbsp;            Expression rhs = comparisonPredicate.getRightHandExpression();
+&nbsp;            SqlTuple lhsTuple;
+&nbsp;            if (lhs instanceof SqlTupleContainer &amp;&amp; (lhsTuple = ((SqlTupleContainer)lhs).getSqlTuple()) != null) {
+<b class="nc">&nbsp;                SqlTuple rhsTuple = ((SqlTupleContainer)rhs).getSqlTuple();</b>
+<b class="nc">&nbsp;                List&lt;? extends Expression&gt; lhsExpressions = lhsTuple.getExpressions();</b>
+<b class="nc">&nbsp;                List&lt;? extends Expression&gt; rhsExpressions = rhsTuple.getExpressions();</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                for(int i = 0; i &lt; lhsExpressions.size(); ++i) {</b>
+<b class="nc">&nbsp;                    ColumnReference lhsColumn = ((Expression)lhsExpressions.get(i)).getColumnReference();</b>
+<b class="nc">&nbsp;                    ColumnReference rhsColumn = ((Expression)rhsExpressions.get(i)).getColumnReference();</b>
+<b class="nc">&nbsp;                    if (!isComparison(table1, table2, lhsColumn, rhsColumn)) {</b>
+<b class="nc">&nbsp;                        return false;</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                return true;</b>
+&nbsp;            } else {
+&nbsp;                return isComparison(table1, table2, lhs.getColumnReference(), rhs.getColumnReference());
+&nbsp;            }
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            return false;
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static boolean isComparison(TableReference table1, TableReference table2, ColumnReference column1, ColumnReference column2) {
+<b class="nc">&nbsp;        if (column1 != null &amp;&amp; column2 != null) {</b>
+<b class="nc">&nbsp;            String column1Qualifier = column1.getQualifier();</b>
+<b class="nc">&nbsp;            String column2Qualifier = column2.getQualifier();</b>
+<b class="nc">&nbsp;            String table1Qualifier = table1.getIdentificationVariable();</b>
+&nbsp;            String table2Qualifier = table2.getIdentificationVariable();
+<b class="nc">&nbsp;            return column1Qualifier.equals(table1Qualifier) &amp;&amp; column2Qualifier.equals(table2Qualifier) || column1Qualifier.equals(table2Qualifier) &amp;&amp; column2Qualifier.equals(table1Qualifier);</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            return false;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private void checkQualifier(String qualifier) {</b>
+<b class="nc">&nbsp;        if (this.primaryQualifier.equals(qualifier)) {</b>
+<b class="nc">&nbsp;            if (this.usedTableReferenceJoinIndex != null &amp;&amp; this.usedTableReferenceJoinIndex != -1) {</b>
+&nbsp;                throw new MultipleUsesFoundException();
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            this.usedTableReferenceJoinIndex = -1;
+&nbsp;        } else {
+<b class="nc">&nbsp;            Integer index = (Integer)this.qualifiers.get(qualifier);</b>
+&nbsp;            if (index != null) {
+&nbsp;                if (this.usedTableReferenceJoinIndex != null &amp;&amp; this.usedTableReferenceJoinIndex != index) {
+<b class="nc">&nbsp;                    throw new MultipleUsesFoundException();</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                this.usedTableReferenceJoinIndex = index;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private void checkSql(String sql) {</b>
+<b class="nc">&nbsp;        if (sql.contains(this.primaryQualifier + &quot;.&quot;)) {</b>
+<b class="nc">&nbsp;            if (this.usedTableReferenceJoinIndex != null &amp;&amp; this.usedTableReferenceJoinIndex != -1) {</b>
+<b class="nc">&nbsp;                throw new MultipleUsesFoundException();</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            this.usedTableReferenceJoinIndex = -1;
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            for(int i = 0; i &lt; this.qualifierFragments.length; ++i) {
+&nbsp;                if (sql.contains(this.qualifierFragments[i])) {
+&nbsp;                    if (this.usedTableReferenceJoinIndex != null &amp;&amp; this.usedTableReferenceJoinIndex != i) {
+<b class="nc">&nbsp;                        throw new MultipleUsesFoundException();</b>
+&nbsp;                    }
+&nbsp;
+&nbsp;                    this.usedTableReferenceJoinIndex = i;
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void visitSelfRenderingExpression(SelfRenderingExpression expression) {</b>
+<b class="nc">&nbsp;        if (expression instanceof SelfRenderingSqlFragmentExpression) {</b>
+<b class="nc">&nbsp;            this.checkSql(((SelfRenderingSqlFragmentExpression)expression).getExpression());</b>
+&nbsp;        } else if (expression instanceof CaseStatementDiscriminatorMappingImpl.CaseStatementDiscriminatorExpression) {
+<b class="nc">&nbsp;            for(TableReference usedTableReference : ((CaseStatementDiscriminatorMappingImpl.CaseStatementDiscriminatorExpression)expression).getUsedTableReferences()) {</b>
+&nbsp;                usedTableReference.accept(this);
+&nbsp;            }
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            super.visitSelfRenderingExpression(expression);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void visitNamedTableReference(NamedTableReference tableReference) {
+&nbsp;        this.checkQualifier(tableReference.getIdentificationVariable());
+&nbsp;    }
+&nbsp;
+&nbsp;    public void visitColumnReference(ColumnReference columnReference) {
+<b class="nc">&nbsp;        this.checkQualifier(columnReference.getQualifier());</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public void visitAggregateColumnWriteExpression(AggregateColumnWriteExpression aggregateColumnWriteExpression) {
+<b class="nc">&nbsp;        this.checkQualifier(aggregateColumnWriteExpression.getAggregateColumnReference().getQualifier());</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void visitFilterPredicate(FilterPredicate filterPredicate) {</b>
+<b class="nc">&nbsp;        for(FilterPredicate.FilterFragmentPredicate fragment : filterPredicate.getFragments()) {</b>
+<b class="nc">&nbsp;            this.visitFilterFragmentPredicate(fragment);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void visitFilterFragmentPredicate(FilterPredicate.FilterFragmentPredicate fragmentPredicate) {
+&nbsp;        this.checkSql(fragmentPredicate.getSqlFragment());
+&nbsp;    }
+&nbsp;
+&nbsp;    public void visitSqlFragmentPredicate(SqlFragmentPredicate predicate) {
+&nbsp;        this.checkSql(predicate.getSqlFragment());
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public void visitColumnWriteFragment(ColumnWriteFragment columnWriteFragment) {
+<b class="nc">&nbsp;        this.checkSql(columnWriteFragment.getFragment());</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private static class MultipleUsesFoundException extends RuntimeException {
+&nbsp;        public MultipleUsesFoundException() {
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        public Throwable fillInStackTrace() {
+&nbsp;            return this;
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
+</div>
+</body>
+</html>

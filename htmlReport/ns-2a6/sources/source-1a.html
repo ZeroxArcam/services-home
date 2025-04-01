@@ -1,0 +1,284 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > GenericTypeAwareAutowireCandidateResolver</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.beans.factory.support</a>
+</div>
+
+<h1>Coverage Summary for Class: GenericTypeAwareAutowireCandidateResolver (org.springframework.beans.factory.support)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">GenericTypeAwareAutowireCandidateResolver</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    75%
+  </span>
+  <span class="absValue">
+    (6/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    37.5%
+  </span>
+  <span class="absValue">
+    (27/72)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    62%
+  </span>
+  <span class="absValue">
+    (44/71)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.beans.factory.support;
+&nbsp;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;import java.util.Properties;
+&nbsp;import org.springframework.beans.factory.BeanFactory;
+&nbsp;import org.springframework.beans.factory.BeanFactoryAware;
+&nbsp;import org.springframework.beans.factory.FactoryBean;
+&nbsp;import org.springframework.beans.factory.config.BeanDefinition;
+&nbsp;import org.springframework.beans.factory.config.BeanDefinitionHolder;
+&nbsp;import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+&nbsp;import org.springframework.beans.factory.config.DependencyDescriptor;
+&nbsp;import org.springframework.core.ResolvableType;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.ClassUtils;
+&nbsp;
+&nbsp;public class GenericTypeAwareAutowireCandidateResolver extends SimpleAutowireCandidateResolver implements BeanFactoryAware, Cloneable {
+&nbsp;    @Nullable
+&nbsp;    private BeanFactory beanFactory;
+&nbsp;
+&nbsp;    public GenericTypeAwareAutowireCandidateResolver() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setBeanFactory(BeanFactory beanFactory) {
+&nbsp;        this.beanFactory = beanFactory;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    protected final BeanFactory getBeanFactory() {
+&nbsp;        return this.beanFactory;
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isAutowireCandidate(BeanDefinitionHolder bdHolder, DependencyDescriptor descriptor) {
+&nbsp;        return !super.isAutowireCandidate(bdHolder, descriptor) ? false : this.checkGenericTypeMatch(bdHolder, descriptor);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected boolean checkGenericTypeMatch(BeanDefinitionHolder bdHolder, DependencyDescriptor descriptor) {
+&nbsp;        ResolvableType dependencyType = descriptor.getResolvableType();
+&nbsp;        if (dependencyType.getType() instanceof Class) {
+&nbsp;            return true;
+<b class="fc">&nbsp;        } else {</b>
+&nbsp;            ResolvableType targetType = null;
+&nbsp;            boolean cacheType = false;
+&nbsp;            RootBeanDefinition rbd = null;
+&nbsp;            BeanDefinition classToMatch = bdHolder.getBeanDefinition();
+&nbsp;            if (classToMatch instanceof RootBeanDefinition) {
+&nbsp;                RootBeanDefinition rootBeanDef = (RootBeanDefinition)classToMatch;
+&nbsp;                rbd = rootBeanDef;
+&nbsp;            }
+<b class="fc">&nbsp;</b>
+&nbsp;            if (rbd != null) {
+&nbsp;                targetType = rbd.targetType;
+&nbsp;                if (targetType == null) {
+&nbsp;                    cacheType = true;
+<b class="nc">&nbsp;                    targetType = this.getReturnTypeForFactoryMethod(rbd, descriptor);</b>
+&nbsp;                    if (targetType == null) {
+&nbsp;                        RootBeanDefinition dbd = this.getResolvedDecoratedDefinition(rbd);
+&nbsp;                        if (dbd != null) {
+&nbsp;                            targetType = dbd.targetType;
+&nbsp;                            if (targetType == null) {
+<b class="pc">&nbsp;                                targetType = this.getReturnTypeForFactoryMethod(dbd, descriptor);</b>
+&nbsp;                            }
+<b class="nc">&nbsp;                        }</b>
+&nbsp;                    }
+<b class="fc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            if (targetType == null) {
+&nbsp;                if (this.beanFactory != null) {
+&nbsp;                    Class&lt;?&gt; beanType = this.beanFactory.getType(bdHolder.getBeanName());
+&nbsp;                    if (beanType != null) {
+&nbsp;                        targetType = ResolvableType.forClass(ClassUtils.getUserClass(beanType));
+&nbsp;                    }
+<b class="fc">&nbsp;                }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;                if (targetType == null &amp;&amp; rbd != null &amp;&amp; rbd.hasBeanClass() &amp;&amp; rbd.getFactoryMethodName() == null) {
+<b class="fc">&nbsp;                    Class&lt;?&gt; beanClass = rbd.getBeanClass();</b>
+&nbsp;                    if (!FactoryBean.class.isAssignableFrom(beanClass)) {
+&nbsp;                        targetType = ResolvableType.forClass(ClassUtils.getUserClass(beanClass));
+<b class="fc">&nbsp;                    }</b>
+<b class="fc">&nbsp;                }</b>
+<b class="fc">&nbsp;            }</b>
+<b class="pc">&nbsp;</b>
+<b class="fc">&nbsp;            if (targetType == null) {</b>
+&nbsp;                return true;
+<b class="pc">&nbsp;            } else {</b>
+<b class="fc">&nbsp;                if (cacheType) {</b>
+<b class="fc">&nbsp;                    rbd.targetType = targetType;</b>
+<b class="fc">&nbsp;                }</b>
+&nbsp;
+<b class="fc">&nbsp;                Class&lt;?&gt; targetClass = targetType.resolve();</b>
+<b class="pc">&nbsp;                if (targetClass != null &amp;&amp; FactoryBean.class.isAssignableFrom(targetClass)) {</b>
+<b class="fc">&nbsp;                    Class&lt;?&gt; classToMatch = dependencyType.resolve();</b>
+<b class="pc">&nbsp;                    if (classToMatch != null &amp;&amp; !FactoryBean.class.isAssignableFrom(classToMatch) &amp;&amp; !classToMatch.isAssignableFrom(targetClass)) {</b>
+<b class="nc">&nbsp;                        targetType = targetType.getGeneric(new int[0]);</b>
+<b class="nc">&nbsp;                        if (descriptor.fallbackMatchAllowed()) {</b>
+<b class="nc">&nbsp;                            targetType = ResolvableType.forClass(targetType.resolve());</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                if (descriptor.fallbackMatchAllowed()) {
+&nbsp;                    if (targetType.hasUnresolvableGenerics()) {
+<b class="fc">&nbsp;                        return dependencyType.isAssignableFromResolvedPart(targetType);</b>
+&nbsp;                    }
+<b class="pc">&nbsp;</b>
+<b class="fc">&nbsp;                    if (targetType.resolve() == Properties.class) {</b>
+<b class="pc">&nbsp;                        return true;</b>
+<b class="fc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                return dependencyType.isAssignableFrom(targetType);
+&nbsp;            }
+<b class="pc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    @Nullable</b>
+&nbsp;    protected RootBeanDefinition getResolvedDecoratedDefinition(RootBeanDefinition rbd) {
+&nbsp;        BeanDefinitionHolder decDef = rbd.getDecoratedDefinition();
+&nbsp;        if (decDef != null) {
+&nbsp;            BeanFactory dbd = this.beanFactory;
+<b class="pc">&nbsp;            if (dbd instanceof ConfigurableListableBeanFactory) {</b>
+<b class="nc">&nbsp;                ConfigurableListableBeanFactory clbf = (ConfigurableListableBeanFactory)dbd;</b>
+&nbsp;                if (clbf.containsBeanDefinition(decDef.getBeanName())) {
+<b class="fc">&nbsp;                    BeanDefinition dbd = clbf.getMergedBeanDefinition(decDef.getBeanName());</b>
+<b class="fc">&nbsp;                    if (dbd instanceof RootBeanDefinition) {</b>
+&nbsp;                        RootBeanDefinition rootBeanDef = (RootBeanDefinition)dbd;
+&nbsp;                        return rootBeanDef;
+&nbsp;                    }
+&nbsp;                }
+<b class="fc">&nbsp;            }</b>
+<b class="pc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return null;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    @Nullable</b>
+&nbsp;    protected ResolvableType getReturnTypeForFactoryMethod(RootBeanDefinition rbd, DependencyDescriptor descriptor) {
+&nbsp;        ResolvableType returnType = rbd.factoryMethodReturnType;
+<b class="nc">&nbsp;        if (returnType == null) {</b>
+&nbsp;            Method factoryMethod = rbd.getResolvedFactoryMethod();
+&nbsp;            if (factoryMethod != null) {
+&nbsp;                returnType = ResolvableType.forMethodReturnType(factoryMethod);
+&nbsp;            }
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        if (returnType != null) {
+&nbsp;            Class&lt;?&gt; resolvedClass = returnType.resolve();
+<b class="pc">&nbsp;            if (resolvedClass != null &amp;&amp; descriptor.getDependencyType().isAssignableFrom(resolvedClass)) {</b>
+<b class="nc">&nbsp;                return returnType;</b>
+&nbsp;            }
+<b class="pc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return null;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public AutowireCandidateResolver cloneIfNecessary() {</b>
+&nbsp;        try {
+&nbsp;            return (AutowireCandidateResolver)this.clone();
+&nbsp;        } catch (CloneNotSupportedException ex) {
+&nbsp;            throw new IllegalStateException(ex);
+<b class="fc">&nbsp;        }</b>
+<b class="pc">&nbsp;    }</b>
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:58</div>
+</div>
+</body>
+</html>

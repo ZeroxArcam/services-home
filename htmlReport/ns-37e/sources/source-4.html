@@ -1,0 +1,232 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > PropertiesLoaderUtils</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.core.io.support</a>
+</div>
+
+<h1>Coverage Summary for Class: PropertiesLoaderUtils (org.springframework.core.io.support)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PropertiesLoaderUtils</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    25%
+  </span>
+  <span class="absValue">
+    (2/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    7.7%
+  </span>
+  <span class="absValue">
+    (2/26)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    16.3%
+  </span>
+  <span class="absValue">
+    (7/43)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.core.io.support;
+&nbsp;
+&nbsp;import java.io.IOException;
+&nbsp;import java.io.InputStream;
+&nbsp;import java.io.Reader;
+&nbsp;import java.net.URL;
+&nbsp;import java.net.URLConnection;
+&nbsp;import java.util.Enumeration;
+&nbsp;import java.util.Properties;
+&nbsp;import org.springframework.core.io.Resource;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.ClassUtils;
+&nbsp;import org.springframework.util.DefaultPropertiesPersister;
+&nbsp;import org.springframework.util.PropertiesPersister;
+&nbsp;import org.springframework.util.ResourceUtils;
+&nbsp;
+&nbsp;public abstract class PropertiesLoaderUtils {
+&nbsp;    private static final String XML_FILE_EXTENSION = &quot;.xml&quot;;
+&nbsp;
+&nbsp;    public PropertiesLoaderUtils() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Properties loadProperties(EncodedResource resource) throws IOException {
+&nbsp;        Properties props = new Properties();
+&nbsp;        fillProperties(props, resource);
+&nbsp;        return props;
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void fillProperties(Properties props, EncodedResource resource) throws IOException {
+&nbsp;        fillProperties(props, resource, DefaultPropertiesPersister.INSTANCE);
+&nbsp;    }
+&nbsp;
+&nbsp;    static void fillProperties(Properties props, EncodedResource resource, PropertiesPersister persister) throws IOException {
+&nbsp;        InputStream stream = null;
+&nbsp;        Reader reader = null;
+&nbsp;
+&nbsp;        try {
+&nbsp;            String filename = resource.getResource().getFilename();
+&nbsp;            if (filename != null &amp;&amp; filename.endsWith(&quot;.xml&quot;)) {
+&nbsp;                stream = resource.getInputStream();
+&nbsp;                persister.loadFromXml(props, stream);
+<b class="nc">&nbsp;            } else if (resource.requiresReader()) {</b>
+&nbsp;                reader = resource.getReader();
+&nbsp;                persister.load(props, reader);
+&nbsp;            } else {
+&nbsp;                stream = resource.getInputStream();
+&nbsp;                persister.load(props, stream);
+&nbsp;            }
+&nbsp;        } finally {
+&nbsp;            if (stream != null) {
+&nbsp;                stream.close();
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            if (reader != null) {</b>
+<b class="nc">&nbsp;                reader.close();</b>
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Properties loadProperties(Resource resource) throws IOException {
+&nbsp;        Properties props = new Properties();
+&nbsp;        fillProperties(props, resource);
+&nbsp;        return props;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public static void fillProperties(Properties props, Resource resource) throws IOException {</b>
+&nbsp;        try (InputStream is = resource.getInputStream()) {
+&nbsp;            String filename = resource.getFilename();
+&nbsp;            if (filename != null &amp;&amp; filename.endsWith(&quot;.xml&quot;)) {
+&nbsp;                props.loadFromXML(is);
+&nbsp;            } else {
+&nbsp;                props.load(is);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Properties loadAllProperties(String resourceName) throws IOException {
+<b class="nc">&nbsp;        return loadAllProperties(resourceName, (ClassLoader)null);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public static Properties loadAllProperties(String resourceName, @Nullable ClassLoader classLoader) throws IOException {</b>
+<b class="nc">&nbsp;        Assert.notNull(resourceName, &quot;Resource name must not be null&quot;);</b>
+<b class="nc">&nbsp;        ClassLoader classLoaderToUse = classLoader;</b>
+<b class="nc">&nbsp;        if (classLoader == null) {</b>
+&nbsp;            classLoaderToUse = ClassUtils.getDefaultClassLoader();
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        Enumeration&lt;URL&gt; urls = classLoaderToUse != null ? classLoaderToUse.getResources(resourceName) : ClassLoader.getSystemResources(resourceName);</b>
+&nbsp;        Properties props = new Properties();
+&nbsp;
+<b class="nc">&nbsp;        while(urls.hasMoreElements()) {</b>
+<b class="nc">&nbsp;            URL url = (URL)urls.nextElement();</b>
+&nbsp;            URLConnection con = url.openConnection();
+&nbsp;            ResourceUtils.useCachesIfNecessary(con);
+&nbsp;
+<b class="nc">&nbsp;            try (InputStream is = con.getInputStream()) {</b>
+&nbsp;                if (resourceName.endsWith(&quot;.xml&quot;)) {
+&nbsp;                    props.loadFromXML(is);
+<b class="nc">&nbsp;                } else {</b>
+&nbsp;                    props.load(is);
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return props;
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
+</div>
+</body>
+</html>

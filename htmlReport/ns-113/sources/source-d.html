@@ -1,0 +1,506 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > SessionFactoryBuilderImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.boot.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: SessionFactoryBuilderImpl (org.hibernate.boot.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SessionFactoryBuilderImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    11.8%
+  </span>
+  <span class="absValue">
+    (8/68)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    25%
+  </span>
+  <span class="absValue">
+    (1/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    15.4%
+  </span>
+  <span class="absValue">
+    (22/143)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.boot.internal;
+&nbsp;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.function.Supplier;
+&nbsp;import org.hibernate.CustomEntityDirtinessStrategy;
+&nbsp;import org.hibernate.EntityNameResolver;
+&nbsp;import org.hibernate.Interceptor;
+&nbsp;import org.hibernate.SessionFactory;
+&nbsp;import org.hibernate.SessionFactoryObserver;
+&nbsp;import org.hibernate.annotations.CacheLayout;
+&nbsp;import org.hibernate.boot.SessionFactoryBuilder;
+&nbsp;import org.hibernate.boot.TempTableDdlTransactionHandling;
+&nbsp;import org.hibernate.boot.spi.BootstrapContext;
+&nbsp;import org.hibernate.boot.spi.MetadataImplementor;
+&nbsp;import org.hibernate.boot.spi.SessionFactoryBuilderImplementor;
+&nbsp;import org.hibernate.boot.spi.SessionFactoryOptions;
+&nbsp;import org.hibernate.bytecode.internal.SessionFactoryObserverForBytecodeEnhancer;
+&nbsp;import org.hibernate.bytecode.spi.BytecodeProvider;
+&nbsp;import org.hibernate.cache.spi.TimestampsCacheFactory;
+&nbsp;import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
+&nbsp;import org.hibernate.internal.SessionFactoryImpl;
+&nbsp;import org.hibernate.loader.BatchFetchStyle;
+&nbsp;import org.hibernate.proxy.EntityNotFoundDelegate;
+&nbsp;import org.hibernate.query.NullPrecedence;
+&nbsp;import org.hibernate.query.sqm.function.SqmFunctionDescriptor;
+&nbsp;import org.hibernate.resource.jdbc.spi.PhysicalConnectionHandlingMode;
+&nbsp;import org.hibernate.resource.jdbc.spi.StatementInspector;
+&nbsp;import org.hibernate.type.format.FormatMapper;
+&nbsp;
+&nbsp;public class SessionFactoryBuilderImpl implements SessionFactoryBuilderImplementor {
+&nbsp;    private final MetadataImplementor metadata;
+&nbsp;    private final SessionFactoryOptionsBuilder optionsBuilder;
+&nbsp;    private final BootstrapContext bootstrapContext;
+&nbsp;
+&nbsp;    public SessionFactoryBuilderImpl(MetadataImplementor metadata, BootstrapContext bootstrapContext) {
+&nbsp;        this(metadata, new SessionFactoryOptionsBuilder(metadata.getMetadataBuildingOptions().getServiceRegistry(), bootstrapContext), bootstrapContext);
+&nbsp;    }
+&nbsp;
+&nbsp;    public SessionFactoryBuilderImpl(MetadataImplementor metadata, SessionFactoryOptionsBuilder optionsBuilder, BootstrapContext context) {
+&nbsp;        this.metadata = metadata;
+&nbsp;        this.optionsBuilder = optionsBuilder;
+<b class="fc">&nbsp;        this.bootstrapContext = context;</b>
+&nbsp;        if (metadata.getSqlFunctionMap() != null) {
+&nbsp;            for(Map.Entry&lt;String, SqmFunctionDescriptor&gt; sqlFunctionEntry : metadata.getSqlFunctionMap().entrySet()) {
+<b class="fc">&nbsp;                this.applySqlFunction((String)sqlFunctionEntry.getKey(), (SqmFunctionDescriptor)sqlFunctionEntry.getValue());</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        BytecodeProvider bytecodeProvider = (BytecodeProvider)metadata.getMetadataBuildingOptions().getServiceRegistry().getService(BytecodeProvider.class);
+&nbsp;        this.addSessionFactoryObservers(new SessionFactoryObserverForBytecodeEnhancer(bytecodeProvider));
+&nbsp;        this.addSessionFactoryObservers(new SessionFactoryObserverForNamedQueryValidation(metadata));
+<b class="fc">&nbsp;        this.addSessionFactoryObservers(new SessionFactoryObserverForSchemaExport(metadata));</b>
+<b class="fc">&nbsp;        this.addSessionFactoryObservers(new SessionFactoryObserverForRegistration());</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    /** @deprecated */
+<b class="pc">&nbsp;    @Deprecated(</b>
+<b class="nc">&nbsp;        since = &quot;6.2&quot;,</b>
+<b class="nc">&nbsp;        forRemoval = true</b>
+&nbsp;    )
+&nbsp;    public SessionFactoryBuilderImpl(MetadataImplementor metadata, SessionFactoryOptionsBuilder optionsBuilder) {
+&nbsp;        this(metadata, optionsBuilder, metadata.getTypeConfiguration().getMetadataBuildingContext().getBootstrapContext());
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public SessionFactoryBuilder applyBeanManager(Object beanManager) {</b>
+<b class="fc">&nbsp;        this.optionsBuilder.applyBeanManager(beanManager);</b>
+<b class="fc">&nbsp;        return this;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    public SessionFactoryBuilder applyValidatorFactory(Object validatorFactory) {
+&nbsp;        this.optionsBuilder.applyValidatorFactory(validatorFactory);
+&nbsp;        return this;
+&nbsp;    }
+&nbsp;
+&nbsp;    public SessionFactoryBuilder applyName(String sessionFactoryName) {
+&nbsp;        this.optionsBuilder.applySessionFactoryName(sessionFactoryName);
+<b class="nc">&nbsp;        return this;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public SessionFactoryBuilder applyNameAsJndiName(boolean isJndiName) {
+&nbsp;        this.optionsBuilder.enableSessionFactoryNameAsJndiName(isJndiName);
+<b class="nc">&nbsp;        return this;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public SessionFactoryBuilder applyAutoClosing(boolean enabled) {
+&nbsp;        this.optionsBuilder.enableSessionAutoClosing(enabled);
+&nbsp;        return this;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public SessionFactoryBuilder applyAutoFlushing(boolean enabled) {
+&nbsp;        this.optionsBuilder.enableSessionAutoFlushing(enabled);
+&nbsp;        return this;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public SessionFactoryBuilder applyJtaTrackingByThread(boolean enabled) {</b>
+&nbsp;        this.optionsBuilder.enableJtaTrackingByThread(enabled);
+&nbsp;        return this;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public SessionFactoryBuilder applyPreferUserTransactions(boolean preferUserTransactions) {</b>
+<b class="nc">&nbsp;        this.optionsBuilder.enablePreferUserTransaction(preferUserTransactions);</b>
+&nbsp;        return this;
+&nbsp;    }
+&nbsp;
+&nbsp;    public SessionFactoryBuilder applyStatisticsSupport(boolean enabled) {
+<b class="nc">&nbsp;        this.optionsBuilder.enableStatisticsSupport(enabled);</b>
+<b class="nc">&nbsp;        return this;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public SessionFactoryBuilder addSessionFactoryObservers(SessionFactoryObserver... observers) {
+&nbsp;        this.optionsBuilder.addSessionFactoryObservers(observers);
+<b class="nc">&nbsp;        return this;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public SessionFactoryBuilder applyInterceptor(Interceptor interceptor) {
+&nbsp;        this.optionsBuilder.applyInterceptor(interceptor);
+&nbsp;        return this;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public SessionFactoryBuilder applyStatelessInterceptor(Class&lt;? extends Interceptor&gt; statelessInterceptorClass) {
+&nbsp;        this.optionsBuilder.applyStatelessInterceptor(statelessInterceptorClass);
+&nbsp;        return this;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public SessionFactoryBuilder applyStatelessInterceptor(Supplier&lt;? extends Interceptor&gt; statelessInterceptorSupplier) {</b>
+&nbsp;        this.optionsBuilder.applyStatelessInterceptorSupplier(statelessInterceptorSupplier);
+&nbsp;        return this;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public SessionFactoryBuilder applyStatementInspector(StatementInspector statementInspector) {</b>
+<b class="nc">&nbsp;        this.optionsBuilder.applyStatementInspector(statementInspector);</b>
+&nbsp;        return this;
+&nbsp;    }
+&nbsp;
+&nbsp;    public SessionFactoryBuilder applyCustomEntityDirtinessStrategy(CustomEntityDirtinessStrategy strategy) {
+<b class="fc">&nbsp;        this.optionsBuilder.applyCustomEntityDirtinessStrategy(strategy);</b>
+<b class="fc">&nbsp;        return this;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public SessionFactoryBuilder addEntityNameResolver(EntityNameResolver... entityNameResolvers) {
+&nbsp;        this.optionsBuilder.addEntityNameResolvers(entityNameResolvers);
+<b class="nc">&nbsp;        return this;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public SessionFactoryBuilder applyEntityNotFoundDelegate(EntityNotFoundDelegate entityNotFoundDelegate) {
+&nbsp;        this.optionsBuilder.applyEntityNotFoundDelegate(entityNotFoundDelegate);
+&nbsp;        return this;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public SessionFactoryBuilder applyIdentifierRollbackSupport(boolean enabled) {
+&nbsp;        this.optionsBuilder.enableIdentifierRollbackSupport(enabled);
+&nbsp;        return this;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public SessionFactoryBuilder applyNullabilityChecking(boolean enabled) {</b>
+&nbsp;        this.optionsBuilder.enableNullabilityChecking(enabled);
+&nbsp;        return this;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public SessionFactoryBuilder applyLazyInitializationOutsideTransaction(boolean enabled) {</b>
+<b class="nc">&nbsp;        this.optionsBuilder.allowLazyInitializationOutsideTransaction(enabled);</b>
+&nbsp;        return this;
+&nbsp;    }
+&nbsp;
+&nbsp;    public SessionFactoryBuilder applyTempTableDdlTransactionHandling(TempTableDdlTransactionHandling handling) {
+<b class="nc">&nbsp;        this.optionsBuilder.applyTempTableDdlTransactionHandling(handling);</b>
+<b class="nc">&nbsp;        return this;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public SessionFactoryBuilder applyBatchFetchStyle(BatchFetchStyle style) {
+&nbsp;        this.optionsBuilder.applyBatchFetchStyle(style);
+<b class="nc">&nbsp;        return this;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public SessionFactoryBuilder applyDelayedEntityLoaderCreations(boolean delay) {
+&nbsp;        this.optionsBuilder.applyDelayedEntityLoaderCreations(delay);
+&nbsp;        return this;
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    public SessionFactoryBuilder applyDefaultBatchFetchSize(int size) {
+&nbsp;        this.optionsBuilder.applyDefaultBatchFetchSize(size);
+&nbsp;        return this;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public SessionFactoryBuilder applyMaximumFetchDepth(int depth) {</b>
+&nbsp;        this.optionsBuilder.applyMaximumFetchDepth(depth);
+&nbsp;        return this;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public SessionFactoryBuilder applySubselectFetchEnabled(boolean enabled) {</b>
+<b class="nc">&nbsp;        this.optionsBuilder.applySubselectFetchEnabled(enabled);</b>
+&nbsp;        return this;
+&nbsp;    }
+&nbsp;
+&nbsp;    public SessionFactoryBuilder applyDefaultNullPrecedence(NullPrecedence nullPrecedence) {
+<b class="nc">&nbsp;        this.optionsBuilder.applyDefaultNullPrecedence(nullPrecedence);</b>
+<b class="nc">&nbsp;        return this;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public SessionFactoryBuilder applyOrderingOfInserts(boolean enabled) {
+&nbsp;        this.optionsBuilder.enableOrderingOfInserts(enabled);
+<b class="nc">&nbsp;        return this;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public SessionFactoryBuilder applyOrderingOfUpdates(boolean enabled) {
+&nbsp;        this.optionsBuilder.enableOrderingOfUpdates(enabled);
+&nbsp;        return this;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public SessionFactoryBuilder applyMultiTenancy(boolean enabled) {
+&nbsp;        this.optionsBuilder.applyMultiTenancy(enabled);
+&nbsp;        return this;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public SessionFactoryBuilder applyCurrentTenantIdentifierResolver(CurrentTenantIdentifierResolver&lt;?&gt; resolver) {</b>
+&nbsp;        this.optionsBuilder.applyCurrentTenantIdentifierResolver(resolver);
+&nbsp;        return this;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public SessionFactoryBuilder applyNamedQueryCheckingOnStartup(boolean enabled) {</b>
+<b class="nc">&nbsp;        this.optionsBuilder.enableNamedQueryCheckingOnStartup(enabled);</b>
+&nbsp;        return this;
+&nbsp;    }
+&nbsp;
+&nbsp;    public SessionFactoryBuilder applySecondLevelCacheSupport(boolean enabled) {
+<b class="nc">&nbsp;        this.optionsBuilder.enableSecondLevelCacheSupport(enabled);</b>
+<b class="nc">&nbsp;        return this;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public SessionFactoryBuilder applyQueryCacheSupport(boolean enabled) {
+&nbsp;        this.optionsBuilder.enableQueryCacheSupport(enabled);
+<b class="nc">&nbsp;        return this;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public SessionFactoryBuilder applyQueryCacheLayout(CacheLayout cacheLayout) {
+&nbsp;        this.optionsBuilder.applyQueryCacheLayout(cacheLayout);
+&nbsp;        return this;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public SessionFactoryBuilder applyTimestampsCacheFactory(TimestampsCacheFactory factory) {
+&nbsp;        this.optionsBuilder.applyTimestampsCacheFactory(factory);
+&nbsp;        return this;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public SessionFactoryBuilder applyCacheRegionPrefix(String prefix) {</b>
+&nbsp;        this.optionsBuilder.applyCacheRegionPrefix(prefix);
+&nbsp;        return this;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public SessionFactoryBuilder applyMinimalPutsForCaching(boolean enabled) {</b>
+<b class="nc">&nbsp;        this.optionsBuilder.enableMinimalPuts(enabled);</b>
+&nbsp;        return this;
+&nbsp;    }
+&nbsp;
+&nbsp;    public SessionFactoryBuilder applyStructuredCacheEntries(boolean enabled) {
+<b class="nc">&nbsp;        this.optionsBuilder.enabledStructuredCacheEntries(enabled);</b>
+<b class="nc">&nbsp;        return this;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public SessionFactoryBuilder applyDirectReferenceCaching(boolean enabled) {
+&nbsp;        this.optionsBuilder.allowDirectReferenceCacheEntries(enabled);
+<b class="nc">&nbsp;        return this;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public SessionFactoryBuilder applyAutomaticEvictionOfCollectionCaches(boolean enabled) {
+&nbsp;        this.optionsBuilder.enableAutoEvictCollectionCaches(enabled);
+&nbsp;        return this;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public SessionFactoryBuilder applyJdbcBatchSize(int size) {
+&nbsp;        this.optionsBuilder.applyJdbcBatchSize(size);
+&nbsp;        return this;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public SessionFactoryBuilder applyJdbcBatchingForVersionedEntities(boolean enabled) {</b>
+&nbsp;        this.optionsBuilder.enableJdbcBatchingForVersionedEntities(enabled);
+&nbsp;        return this;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public SessionFactoryBuilder applyScrollableResultsSupport(boolean enabled) {</b>
+<b class="nc">&nbsp;        this.optionsBuilder.enableScrollableResultSupport(enabled);</b>
+&nbsp;        return this;
+&nbsp;    }
+&nbsp;
+&nbsp;    public SessionFactoryBuilder applyGetGeneratedKeysSupport(boolean enabled) {
+<b class="nc">&nbsp;        this.optionsBuilder.enableGeneratedKeysSupport(enabled);</b>
+<b class="nc">&nbsp;        return this;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public SessionFactoryBuilder applyJdbcFetchSize(int size) {
+&nbsp;        this.optionsBuilder.applyJdbcFetchSize(size);
+<b class="nc">&nbsp;        return this;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public SessionFactoryBuilder applyConnectionHandlingMode(PhysicalConnectionHandlingMode connectionHandlingMode) {
+&nbsp;        this.optionsBuilder.applyConnectionHandlingMode(connectionHandlingMode);
+&nbsp;        return this;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public SessionFactoryBuilder applyConnectionProviderDisablesAutoCommit(boolean providerDisablesAutoCommit) {
+&nbsp;        this.optionsBuilder.applyConnectionProviderDisablesAutoCommit(providerDisablesAutoCommit);
+&nbsp;        return this;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public SessionFactoryBuilder applySqlComments(boolean enabled) {</b>
+&nbsp;        this.optionsBuilder.enableCommentsSupport(enabled);
+&nbsp;        return this;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public SessionFactoryBuilder applySqlFunction(String registrationName, SqmFunctionDescriptor functionDescriptor) {</b>
+<b class="nc">&nbsp;        this.optionsBuilder.applySqlFunction(registrationName, functionDescriptor);</b>
+&nbsp;        return this;
+&nbsp;    }
+&nbsp;
+&nbsp;    public SessionFactoryBuilder applyCollectionsInDefaultFetchGroup(boolean enabled) {
+<b class="nc">&nbsp;        this.optionsBuilder.enableCollectionInDefaultFetchGroup(enabled);</b>
+<b class="nc">&nbsp;        return this;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public SessionFactoryBuilder allowOutOfTransactionUpdateOperations(boolean allow) {
+&nbsp;        this.optionsBuilder.allowOutOfTransactionUpdateOperations(allow);
+<b class="nc">&nbsp;        return this;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public SessionFactoryBuilder enableReleaseResourcesOnCloseEnabled(boolean enable) {
+&nbsp;        this.optionsBuilder.enableReleaseResourcesOnClose(enable);
+&nbsp;        return this;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public SessionFactoryBuilder enableJpaQueryCompliance(boolean enabled) {
+&nbsp;        this.optionsBuilder.enableJpaQueryCompliance(enabled);
+&nbsp;        return this;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public SessionFactoryBuilder enableJpaOrderByMappingCompliance(boolean enabled) {</b>
+&nbsp;        this.optionsBuilder.enableJpaOrderByMappingCompliance(enabled);
+&nbsp;        return this;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public SessionFactoryBuilder enableJpaTransactionCompliance(boolean enabled) {</b>
+<b class="nc">&nbsp;        this.optionsBuilder.enableJpaTransactionCompliance(enabled);</b>
+&nbsp;        return this;
+&nbsp;    }
+&nbsp;
+&nbsp;    public SessionFactoryBuilder enableJpaListCompliance(boolean enabled) {
+<b class="nc">&nbsp;        this.optionsBuilder.enableJpaListCompliance(enabled);</b>
+<b class="nc">&nbsp;        return this;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public SessionFactoryBuilder enableJpaCascadeCompliance(boolean enabled) {
+&nbsp;        this.optionsBuilder.enableJpaCascadeCompliance(enabled);
+<b class="nc">&nbsp;        return this;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public SessionFactoryBuilder enableJpaClosedCompliance(boolean enabled) {
+&nbsp;        this.optionsBuilder.enableJpaClosedCompliance(enabled);
+&nbsp;        return this;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public SessionFactoryBuilder applyJsonFormatMapper(FormatMapper jsonFormatMapper) {
+&nbsp;        this.optionsBuilder.applyJsonFormatMapper(jsonFormatMapper);
+&nbsp;        return this;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public SessionFactoryBuilder applyXmlFormatMapper(FormatMapper xmlFormatMapper) {</b>
+&nbsp;        this.optionsBuilder.applyXmlFormatMapper(xmlFormatMapper);
+&nbsp;        return this;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void disableRefreshDetachedEntity() {</b>
+<b class="nc">&nbsp;        this.optionsBuilder.disableRefreshDetachedEntity();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void disableJtaTransactionAccess() {
+&nbsp;        this.optionsBuilder.disableJtaTransactionAccess();
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public SessionFactory build() {
+&nbsp;        return new SessionFactoryImpl(this.metadata, this.buildSessionFactoryOptions(), this.bootstrapContext);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public SessionFactoryOptions buildSessionFactoryOptions() {</b>
+<b class="nc">&nbsp;        return this.optionsBuilder.buildOptions();</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

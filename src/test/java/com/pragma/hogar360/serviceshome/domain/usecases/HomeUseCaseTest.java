@@ -1,15 +1,14 @@
 package com.pragma.hogar360.serviceshome.domain.usecases;
 
 import com.pragma.hogar360.serviceshome.domain.exceptions.*;
-import com.pragma.hogar360.serviceshome.domain.model.CategoryModel;
-import com.pragma.hogar360.serviceshome.domain.model.HomeModel;
-import com.pragma.hogar360.serviceshome.domain.model.HomePublicationInfoModel;
-import com.pragma.hogar360.serviceshome.domain.model.LocationModel;
+import com.pragma.hogar360.serviceshome.domain.model.*;
 import com.pragma.hogar360.serviceshome.domain.ports.out.CategoryPersistencePort;
 import com.pragma.hogar360.serviceshome.domain.ports.out.HomePersistencePort;
 import com.pragma.hogar360.serviceshome.domain.ports.out.LocationPersistencePort;
+import com.pragma.hogar360.serviceshome.domain.utils.constants.Pagination;
 import com.pragma.hogar360.serviceshome.factory.CategoryModelFactory;
 import com.pragma.hogar360.serviceshome.factory.HomeModelFactory;
+import com.pragma.hogar360.serviceshome.factory.HomeQueryModelFactory;
 import com.pragma.hogar360.serviceshome.factory.LocationModelFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,6 +16,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
@@ -317,6 +317,94 @@ class HomeUseCaseTest {
         // Act & Assert
         assertThrows(InvalidParameters.class, () -> homeUseCase.locationExists(locationModel));
         verify(locationPersistencePort, never()).findById(anyLong());
+    }
+
+    @Test
+    void testFindHomesByFilters_InvalidSortBy() {
+        // Arrange
+        HomeQueryModel queryModel = HomeQueryModelFactory.createDefaultHomeQueryModel();
+        String sortBy = "invalidSortBy";
+
+        // Act & Assert
+        assertThrows(InvalidSortByException.class, () -> homeUseCase.findHomesByFilters(queryModel, 0, 10, sortBy, "ASC"));
+    }
+
+    @Test
+    void testFindHomesByFilters_MinRoomsNegative() {
+        // Arrange
+        HomeQueryModel queryModel = HomeQueryModelFactory.createHomeQueryModelWithMinRooms(-1);
+
+        // Act & Assert
+        assertThrows(InvalidParameters.class, () -> homeUseCase.findHomesByFilters(queryModel, 0, 10, "price", "ASC"));
+    }
+
+    @Test
+    void testFindHomesByFilters_MaxRoomsNegative() {
+        // Arrange
+        HomeQueryModel queryModel = HomeQueryModelFactory.createHomeQueryModelWithMaxRooms(-1);
+
+        // Act & Assert
+        assertThrows(InvalidParameters.class, () -> homeUseCase.findHomesByFilters(queryModel, 0, 10, "price", "ASC"));
+    }
+
+    @Test
+    void testFindHomesByFilters_MinBathroomsNegative() {
+        // Arrange
+        HomeQueryModel queryModel = HomeQueryModelFactory.createHomeQueryModelWithMinBathrooms(-1);
+
+        // Act & Assert
+        assertThrows(InvalidParameters.class, () -> homeUseCase.findHomesByFilters(queryModel, 0, 10, "price", "ASC"));
+    }
+
+    @Test
+    void testFindHomesByFilters_MaxBathroomsNegative() {
+        // Arrange
+        HomeQueryModel queryModel = HomeQueryModelFactory.createHomeQueryModelWithMaxBathrooms(-1);
+
+        // Act & Assert
+        assertThrows(InvalidParameters.class, () -> homeUseCase.findHomesByFilters(queryModel, 0, 10, "price", "ASC"));
+    }
+
+    @Test
+    void testFindHomesByFilters_MinPriceNegative() {
+        // Arrange
+        HomeQueryModel queryModel = HomeQueryModelFactory.createHomeQueryModelWithMinPrice(BigDecimal.valueOf(-1));
+
+        // Act & Assert
+        assertThrows(InvalidParameters.class, () -> homeUseCase.findHomesByFilters(queryModel, 0, 10, "price", "ASC"));
+    }
+
+    @Test
+    void testFindHomesByFilters_MaxPriceNegative() {
+        // Arrange
+        HomeQueryModel queryModel = HomeQueryModelFactory.createHomeQueryModelWithMaxPrice(BigDecimal.valueOf(-1));
+
+        // Act & Assert
+        assertThrows(InvalidParameters.class, () -> homeUseCase.findHomesByFilters(queryModel, 0, 10, "price", "ASC"));
+    }
+
+    @Test
+    void testFindHomesByFilters_InvalidSortDirection() {
+        // Arrange
+        HomeQueryModel queryModel = HomeQueryModelFactory.createDefaultHomeQueryModel();
+        String sortDirection = "INVALID";
+
+        // Act & Assert
+        assertThrows(InvalidParameters.class, () -> homeUseCase.findHomesByFilters(queryModel, 0, 10, "price", sortDirection));
+    }
+
+    @Test
+    void testFindHomesByFilters_Success() {
+        // Arrange
+        HomeQueryModel queryModel = HomeQueryModelFactory.createDefaultHomeQueryModel();
+        Pagination<HomeModel> expectedPagination = new Pagination<>(); // Puedes ajustar esto según tus necesidades
+        when(homePersistencePort.findHomesByFilters(queryModel, 0, 10, "price", "ASC")).thenReturn(expectedPagination);
+
+        // Act
+        Pagination<HomeModel> result = homeUseCase.findHomesByFilters(queryModel, 0, 10, "price", "ASC");
+
+        // Assert
+        assertEquals(expectedPagination, result);
     }
 
 

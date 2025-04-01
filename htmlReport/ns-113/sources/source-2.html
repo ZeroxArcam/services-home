@@ -1,0 +1,190 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ClassLoaderAccessImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.boot.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: ClassLoaderAccessImpl (org.hibernate.boot.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ClassLoaderAccessImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    80%
+  </span>
+  <span class="absValue">
+    (8/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    58.3%
+  </span>
+  <span class="absValue">
+    (7/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    76.9%
+  </span>
+  <span class="absValue">
+    (20/26)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.boot.internal;
+&nbsp;
+&nbsp;import java.net.URL;
+&nbsp;import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
+&nbsp;import org.hibernate.boot.registry.classloading.spi.ClassLoadingException;
+&nbsp;import org.hibernate.boot.spi.ClassLoaderAccess;
+&nbsp;import org.hibernate.service.ServiceRegistry;
+&nbsp;import org.jboss.logging.Logger;
+&nbsp;
+&nbsp;public class ClassLoaderAccessImpl implements ClassLoaderAccess {
+&nbsp;    private static final Logger log = Logger.getLogger(ClassLoaderAccessImpl.class);
+&nbsp;    private final ClassLoaderService classLoaderService;
+&nbsp;    private ClassLoader jpaTempClassLoader;
+&nbsp;
+&nbsp;    public ClassLoaderAccessImpl(ClassLoader jpaTempClassLoader, ClassLoaderService classLoaderService) {
+&nbsp;        this.jpaTempClassLoader = jpaTempClassLoader;
+&nbsp;        this.classLoaderService = classLoaderService;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public ClassLoaderAccessImpl(ClassLoader tempClassLoader, ServiceRegistry serviceRegistry) {
+&nbsp;        this(tempClassLoader, (ClassLoaderService)serviceRegistry.getService(ClassLoaderService.class));
+&nbsp;    }
+&nbsp;
+&nbsp;    public ClassLoaderAccessImpl(ClassLoaderService classLoaderService) {
+&nbsp;        this((ClassLoader)null, (ClassLoaderService)classLoaderService);
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public void injectTempClassLoader(ClassLoader jpaTempClassLoader) {</b>
+&nbsp;        log.debugf(&quot;ClassLoaderAccessImpl#injectTempClassLoader(%s) [was %s]&quot;, jpaTempClassLoader, this.jpaTempClassLoader);
+&nbsp;        this.jpaTempClassLoader = jpaTempClassLoader;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public Class&lt;?&gt; classForName(String name) {
+&nbsp;        if (name == null) {
+&nbsp;            throw new IllegalArgumentException(&quot;Name of class to load cannot be null&quot;);
+<b class="fc">&nbsp;        } else if (this.isSafeClass(name)) {</b>
+&nbsp;            return this.classLoaderService.classForName(name);
+&nbsp;        } else {
+&nbsp;            log.debugf(&quot;Not known whether passed class name [%s] is safe&quot;, name);
+<b class="fc">&nbsp;            if (this.jpaTempClassLoader == null) {</b>
+<b class="fc">&nbsp;                log.debugf(&quot;No temp ClassLoader provided; using live ClassLoader for loading potentially unsafe class : %s&quot;, name);</b>
+&nbsp;                return this.classLoaderService.classForName(name);
+&nbsp;            } else {
+&nbsp;                log.debugf(&quot;Temp ClassLoader was provided, so we will use that : %s&quot;, name);
+&nbsp;
+&nbsp;                try {
+<b class="pc">&nbsp;                    return this.jpaTempClassLoader.loadClass(name);</b>
+<b class="nc">&nbsp;                } catch (ClassNotFoundException var3) {</b>
+&nbsp;                    throw new ClassLoadingException(name);
+&nbsp;                }
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    private boolean isSafeClass(String name) {</b>
+<b class="pc">&nbsp;        return name.startsWith(&quot;java.&quot;) || name.startsWith(&quot;javax.&quot;) || name.startsWith(&quot;jakarta.&quot;) || name.startsWith(&quot;org.hibernate.&quot;);</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public ClassLoader getJpaTempClassLoader() {
+&nbsp;        return this.jpaTempClassLoader;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public URL locateResource(String resourceName) {
+&nbsp;        return this.classLoaderService.locateResource(resourceName);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void release() {
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

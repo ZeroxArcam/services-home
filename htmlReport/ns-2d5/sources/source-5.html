@@ -1,0 +1,232 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ServletEndpointRegistrar</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.boot.actuate.endpoint.web</a>
+</div>
+
+<h1>Coverage Summary for Class: ServletEndpointRegistrar (org.springframework.boot.actuate.endpoint.web)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ServletEndpointRegistrar</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/26)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.boot.actuate.endpoint.web;
+&nbsp;
+&nbsp;import jakarta.servlet.DispatcherType;
+&nbsp;import jakarta.servlet.Filter;
+&nbsp;import jakarta.servlet.FilterChain;
+&nbsp;import jakarta.servlet.ServletContext;
+&nbsp;import jakarta.servlet.ServletException;
+&nbsp;import jakarta.servlet.ServletRegistration;
+&nbsp;import jakarta.servlet.ServletRequest;
+&nbsp;import jakarta.servlet.ServletResponse;
+&nbsp;import jakarta.servlet.http.HttpServletRequest;
+&nbsp;import jakarta.servlet.http.HttpServletResponse;
+&nbsp;import java.io.IOException;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.EnumSet;
+&nbsp;import java.util.Locale;
+&nbsp;import java.util.Set;
+&nbsp;import org.apache.commons.logging.Log;
+&nbsp;import org.apache.commons.logging.LogFactory;
+&nbsp;import org.springframework.boot.actuate.endpoint.Access;
+&nbsp;import org.springframework.boot.actuate.endpoint.EndpointAccessResolver;
+&nbsp;import org.springframework.boot.web.servlet.ServletContextInitializer;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.StringUtils;
+&nbsp;
+&nbsp;/** @deprecated */
+&nbsp;@Deprecated(
+&nbsp;    since = &quot;3.3.0&quot;,
+&nbsp;    forRemoval = true
+&nbsp;)
+&nbsp;public class ServletEndpointRegistrar implements ServletContextInitializer {
+&nbsp;    private static final Set&lt;String&gt; READ_ONLY_ACCESS_REQUEST_METHODS = Set.of(&quot;GET&quot;, &quot;HEAD&quot;);
+&nbsp;    private static final Log logger = LogFactory.getLog(ServletEndpointRegistrar.class);
+&nbsp;    private final String basePath;
+&nbsp;    private final Collection&lt;ExposableServletEndpoint&gt; servletEndpoints;
+&nbsp;    private final EndpointAccessResolver endpointAccessResolver;
+&nbsp;
+&nbsp;    public ServletEndpointRegistrar(String basePath, Collection&lt;ExposableServletEndpoint&gt; servletEndpoints) {
+&nbsp;        this(basePath, servletEndpoints, (endpointId, defaultAccess) -&gt; Access.NONE);
+&nbsp;    }
+&nbsp;
+&nbsp;    public ServletEndpointRegistrar(String basePath, Collection&lt;ExposableServletEndpoint&gt; servletEndpoints, EndpointAccessResolver endpointAccessResolver) {
+&nbsp;        Assert.notNull(servletEndpoints, &quot;ServletEndpoints must not be null&quot;);
+&nbsp;        this.basePath = cleanBasePath(basePath);
+&nbsp;        this.servletEndpoints = servletEndpoints;
+&nbsp;        this.endpointAccessResolver = endpointAccessResolver;
+&nbsp;    }
+&nbsp;
+&nbsp;    private static String cleanBasePath(String basePath) {
+&nbsp;        if (StringUtils.hasText(basePath) &amp;&amp; basePath.endsWith(&quot;/&quot;)) {
+&nbsp;            return basePath.substring(0, basePath.length() - 1);
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            return basePath != null ? basePath : &quot;&quot;;
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void onStartup(ServletContext servletContext) throws ServletException {
+&nbsp;        this.servletEndpoints.forEach((servletEndpoint) -&gt; this.register(servletContext, servletEndpoint));
+&nbsp;    }
+&nbsp;
+&nbsp;    private void register(ServletContext servletContext, ExposableServletEndpoint endpoint) {
+&nbsp;        Access access = this.endpointAccessResolver.accessFor(endpoint.getEndpointId(), endpoint.getDefaultAccess());
+<b class="nc">&nbsp;        if (access != Access.NONE) {</b>
+&nbsp;            String name = endpoint.getEndpointId().toLowerCaseString() + &quot;-actuator-endpoint&quot;;
+&nbsp;            String var10000 = this.basePath;
+&nbsp;            String path = var10000 + &quot;/&quot; + endpoint.getRootPath();
+<b class="nc">&nbsp;            String urlMapping = path.endsWith(&quot;/&quot;) ? path + &quot;*&quot; : path + &quot;/*&quot;;</b>
+<b class="nc">&nbsp;            EndpointServlet endpointServlet = endpoint.getEndpointServlet();</b>
+<b class="nc">&nbsp;            ServletRegistration.Dynamic registration = servletContext.addServlet(name, endpointServlet.getServlet());</b>
+<b class="nc">&nbsp;            registration.addMapping(new String[]{urlMapping});</b>
+<b class="nc">&nbsp;            registration.setInitParameters(endpointServlet.getInitParameters());</b>
+&nbsp;            registration.setLoadOnStartup(endpointServlet.getLoadOnStartup());
+&nbsp;            if (access == Access.READ_ONLY) {
+&nbsp;                servletContext.addFilter(name + &quot;-access-filter&quot;, new ReadOnlyAccessFilter()).addMappingForServletNames(EnumSet.allOf(DispatcherType.class), false, new String[]{name});
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            logger.info(&quot;Registered &#39;&quot; + path + &quot;&#39; to &quot; + name);
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    static class ReadOnlyAccessFilter implements Filter {
+&nbsp;        private static final int METHOD_NOT_ALLOWED = 405;
+<b class="nc">&nbsp;</b>
+&nbsp;        ReadOnlyAccessFilter() {
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {</b>
+<b class="nc">&nbsp;            if (request instanceof HttpServletRequest httpRequest) {</b>
+&nbsp;                if (response instanceof HttpServletResponse httpResponse) {
+&nbsp;                    this.doFilter(httpRequest, httpResponse, chain);
+<b class="nc">&nbsp;                    return;</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            throw new ServletException();</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        private void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {</b>
+<b class="nc">&nbsp;            if (this.isReadOnlyAccessMethod(request)) {</b>
+<b class="nc">&nbsp;                chain.doFilter(request, response);</b>
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                response.sendError(405);
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;        }
+&nbsp;
+&nbsp;        private boolean isReadOnlyAccessMethod(HttpServletRequest request) {
+&nbsp;            return ServletEndpointRegistrar.READ_ONLY_ACCESS_REQUEST_METHODS.contains(request.getMethod().toUpperCase(Locale.ROOT));
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:58</div>
+</div>
+</body>
+</html>

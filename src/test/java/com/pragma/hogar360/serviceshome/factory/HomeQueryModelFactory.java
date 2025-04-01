@@ -1,4 +1,59 @@
 package com.pragma.hogar360.serviceshome.factory;
 
+import com.pragma.hogar360.serviceshome.domain.model.HomeQueryModel;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
 public class HomeQueryModelFactory {
+
+    public static HomeQueryModel createDefaultHomeQueryModel() {
+        return new HomeQueryModel(
+                1L, // locationId
+                1L, // categoryId
+                1,  // minRooms
+                5,  // maxRooms
+                1,  // minBathrooms
+                3,  // maxBathrooms
+                BigDecimal.valueOf(100000), // minPrice
+                BigDecimal.valueOf(500000), // maxPrice
+                LocalDate.now() // currentDate
+        );
+    }
+
+    public static HomeQueryModel createHomeQueryModelWithMinRooms(int minRooms) {
+        HomeQueryModel model = createDefaultHomeQueryModel();
+        model.setMinRooms(minRooms);
+        return model;
+    }
+
+    public static HomeQueryModel createHomeQueryModelWithMaxRooms(int maxRooms) {
+        HomeQueryModel model = createDefaultHomeQueryModel();
+        model.setMaxRooms(maxRooms);
+        return model;
+    }
+
+    public static HomeQueryModel createHomeQueryModelWithMinBathrooms(int minBathrooms) {
+        HomeQueryModel model = createDefaultHomeQueryModel();
+        model.setMinBathrooms(minBathrooms);
+        return model;
+    }
+
+    public static HomeQueryModel createHomeQueryModelWithMaxBathrooms(int maxBathrooms) {
+        HomeQueryModel model = createDefaultHomeQueryModel();
+        model.setMaxBathrooms(maxBathrooms);
+        return model;
+    }
+
+    public static HomeQueryModel createHomeQueryModelWithMinPrice(BigDecimal minPrice) {
+        HomeQueryModel model = createDefaultHomeQueryModel();
+        model.setMinPrice(minPrice);
+        return model;
+    }
+
+    public static HomeQueryModel createHomeQueryModelWithMaxPrice(BigDecimal maxPrice) {
+        HomeQueryModel model = createDefaultHomeQueryModel();
+        model.setMaxPrice(maxPrice);
+        return model;
+    }
 }

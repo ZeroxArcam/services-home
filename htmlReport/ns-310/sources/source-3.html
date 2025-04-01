@@ -1,0 +1,332 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > FileWatcher</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.boot.autoconfigure.ssl</a>
+</div>
+
+<h1>Coverage Summary for Class: FileWatcher (org.springframework.boot.autoconfigure.ssl)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">FileWatcher</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/30)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.boot.autoconfigure.ssl;
+&nbsp;
+&nbsp;import java.io.Closeable;
+&nbsp;import java.io.IOException;
+&nbsp;import java.io.UncheckedIOException;
+&nbsp;import java.nio.file.ClosedWatchServiceException;
+&nbsp;import java.nio.file.FileSystems;
+&nbsp;import java.nio.file.Files;
+&nbsp;import java.nio.file.LinkOption;
+&nbsp;import java.nio.file.Path;
+&nbsp;import java.nio.file.StandardWatchEventKinds;
+&nbsp;import java.nio.file.WatchEvent;
+&nbsp;import java.nio.file.WatchKey;
+&nbsp;import java.nio.file.WatchService;
+&nbsp;import java.time.Duration;
+&nbsp;import java.util.HashSet;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Objects;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import java.util.concurrent.CopyOnWriteArrayList;
+&nbsp;import java.util.concurrent.TimeUnit;
+&nbsp;import java.util.stream.Collectors;
+&nbsp;import java.util.stream.Stream;
+&nbsp;import org.apache.commons.logging.Log;
+&nbsp;import org.apache.commons.logging.LogFactory;
+&nbsp;import org.springframework.core.log.LogMessage;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;
+&nbsp;class FileWatcher implements Closeable {
+&nbsp;    private static final Log logger = LogFactory.getLog(FileWatcher.class);
+&nbsp;    private final Duration quietPeriod;
+&nbsp;    private final Object lock = new Object();
+&nbsp;    private WatcherThread thread;
+&nbsp;
+&nbsp;    FileWatcher(Duration quietPeriod) {
+&nbsp;        Assert.notNull(quietPeriod, &quot;QuietPeriod must not be null&quot;);
+&nbsp;        this.quietPeriod = quietPeriod;
+&nbsp;    }
+&nbsp;
+&nbsp;    void watch(Set&lt;Path&gt; paths, Runnable action) {
+&nbsp;        Assert.notNull(paths, &quot;Paths must not be null&quot;);
+&nbsp;        Assert.notNull(action, &quot;Action must not be null&quot;);
+&nbsp;        if (!paths.isEmpty()) {
+&nbsp;            synchronized(this.lock) {
+&nbsp;                try {
+&nbsp;                    if (this.thread == null) {
+<b class="nc">&nbsp;                        this.thread = new WatcherThread();</b>
+&nbsp;                        this.thread.start();
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    Set&lt;Path&gt; actualPaths = new HashSet();</b>
+&nbsp;
+&nbsp;                    for(Path path : paths) {
+&nbsp;                        actualPaths.add(resolveSymlinkIfNecessary(path));
+&nbsp;                    }
+&nbsp;
+&nbsp;                    this.thread.register(new Registration(actualPaths, action));
+&nbsp;                } catch (IOException ex) {
+&nbsp;                    throw new UncheckedIOException(&quot;Failed to register paths for watching: &quot; + String.valueOf(paths), ex);
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static Path resolveSymlinkIfNecessary(Path path) throws IOException {
+&nbsp;        if (Files.isSymbolicLink(path)) {
+&nbsp;            Path target = path.resolveSibling(Files.readSymbolicLink(path));
+&nbsp;            return resolveSymlinkIfNecessary(target);
+&nbsp;        } else {
+<b class="nc">&nbsp;            return path;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void close() throws IOException {
+<b class="nc">&nbsp;        synchronized(this.lock) {</b>
+&nbsp;            if (this.thread != null) {
+<b class="nc">&nbsp;                this.thread.close();</b>
+<b class="nc">&nbsp;                this.thread.interrupt();</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                try {
+<b class="nc">&nbsp;                    this.thread.join();</b>
+<b class="nc">&nbsp;                } catch (InterruptedException var4) {</b>
+<b class="nc">&nbsp;                    Thread.currentThread().interrupt();</b>
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+&nbsp;                this.thread = null;
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private class WatcherThread extends Thread implements Closeable {
+&nbsp;        private final WatchService watchService = FileSystems.getDefault().newWatchService();
+<b class="nc">&nbsp;        private final Map&lt;WatchKey, List&lt;Registration&gt;&gt; registrations = new ConcurrentHashMap();</b>
+<b class="nc">&nbsp;        private volatile boolean running = true;</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        WatcherThread() throws IOException {
+<b class="nc">&nbsp;            this.setName(&quot;ssl-bundle-watcher&quot;);</b>
+&nbsp;            this.setDaemon(true);
+&nbsp;            this.setUncaughtExceptionHandler(this::onThreadException);
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        private void onThreadException(Thread thread, Throwable throwable) {</b>
+<b class="nc">&nbsp;            FileWatcher.logger.error(&quot;Uncaught exception in file watcher thread&quot;, throwable);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        void register(Registration registration) throws IOException {
+<b class="nc">&nbsp;            for(Path path : registration.paths()) {</b>
+&nbsp;                if (!Files.isRegularFile(path, new LinkOption[0]) &amp;&amp; !Files.isDirectory(path, new LinkOption[0])) {
+&nbsp;                    throw new IOException(&quot;&#39;%s&#39; is neither a file nor a directory&quot;.formatted(path));
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="nc">&nbsp;                Path directory = Files.isDirectory(path, new LinkOption[0]) ? path : path.getParent();</b>
+&nbsp;                WatchKey watchKey = this.register(directory);
+<b class="nc">&nbsp;                ((List)this.registrations.computeIfAbsent(watchKey, (key) -&gt; new CopyOnWriteArrayList())).add(registration);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;
+&nbsp;        private WatchKey register(Path directory) throws IOException {
+&nbsp;            FileWatcher.logger.debug(LogMessage.format(&quot;Registering &#39;%s&#39;&quot;, directory));
+&nbsp;            return directory.register(this.watchService, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_MODIFY, StandardWatchEventKinds.ENTRY_DELETE);
+&nbsp;        }
+&nbsp;
+&nbsp;        public void run() {
+&nbsp;            FileWatcher.logger.debug(&quot;Watch thread started&quot;);
+&nbsp;            Set&lt;Runnable&gt; actions = new HashSet();
+&nbsp;
+&nbsp;            while(this.running) {
+&nbsp;                try {
+&nbsp;                    long timeout = FileWatcher.this.quietPeriod.toMillis();
+&nbsp;                    WatchKey key = this.watchService.poll(timeout, TimeUnit.MILLISECONDS);
+&nbsp;                    if (key == null) {
+&nbsp;                        actions.forEach(this::runSafely);
+&nbsp;                        actions.clear();
+&nbsp;                    } else {
+&nbsp;                        this.accumulate(key, actions);
+&nbsp;                        key.reset();
+&nbsp;                    }
+&nbsp;                } catch (InterruptedException var5) {
+&nbsp;                    Thread.currentThread().interrupt();
+&nbsp;                } catch (ClosedWatchServiceException var6) {
+&nbsp;                    FileWatcher.logger.debug(&quot;File watcher has been closed&quot;);
+&nbsp;                    this.running = false;
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            FileWatcher.logger.debug(&quot;Watch thread stopped&quot;);
+&nbsp;        }
+&nbsp;
+&nbsp;        private void runSafely(Runnable action) {
+&nbsp;            try {
+&nbsp;                action.run();
+&nbsp;            } catch (Throwable ex) {
+&nbsp;                FileWatcher.logger.error(&quot;Unexpected SSL reload error&quot;, ex);
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;
+&nbsp;        private void accumulate(WatchKey key, Set&lt;Runnable&gt; actions) {
+&nbsp;            List&lt;Registration&gt; registrations = (List)this.registrations.get(key);
+&nbsp;            Path directory = (Path)key.watchable();
+&nbsp;
+&nbsp;            for(WatchEvent&lt;?&gt; event : key.pollEvents()) {
+&nbsp;                Path file = directory.resolve((Path)event.context());
+&nbsp;
+&nbsp;                for(Registration registration : registrations) {
+&nbsp;                    if (registration.manages(file)) {
+&nbsp;                        actions.add(registration.action());
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;
+&nbsp;        public void close() throws IOException {
+&nbsp;            this.running = false;
+&nbsp;            this.watchService.close();
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static record Registration(Set&lt;Path&gt; paths, Runnable action) {
+&nbsp;        Registration(Set&lt;Path&gt; paths, Runnable action) {
+&nbsp;            paths = (Set)paths.stream().map(Path::toAbsolutePath).collect(Collectors.toSet());
+&nbsp;            this.paths = paths;
+&nbsp;            this.action = action;
+&nbsp;        }
+&nbsp;
+&nbsp;        boolean manages(Path file) {
+&nbsp;            Path absolutePath = file.toAbsolutePath();
+&nbsp;            return this.paths.contains(absolutePath) || this.isInDirectories(absolutePath);
+&nbsp;        }
+&nbsp;
+&nbsp;        private boolean isInDirectories(Path file) {
+&nbsp;            Stream var10000 = this.paths.stream().filter((x$0) -&gt; Files.isDirectory(x$0, new LinkOption[0]));
+&nbsp;            Objects.requireNonNull(file);
+&nbsp;            return var10000.anyMatch(file::startsWith);
+&nbsp;        }
+&nbsp;
+&nbsp;        public Set&lt;Path&gt; paths() {
+&nbsp;            return this.paths;
+&nbsp;        }
+&nbsp;
+&nbsp;        public Runnable action() {
+&nbsp;            return this.action;
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
+</div>
+</body>
+</html>

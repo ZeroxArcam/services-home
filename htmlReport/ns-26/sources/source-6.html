@@ -1,0 +1,421 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > UTF8Writer</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.fasterxml.jackson.core.io</a>
+</div>
+
+<h1>Coverage Summary for Class: UTF8Writer (com.fasterxml.jackson.core.io)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">UTF8Writer</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/100)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/165)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package com.fasterxml.jackson.core.io;
+&nbsp;
+&nbsp;import java.io.IOException;
+&nbsp;import java.io.OutputStream;
+&nbsp;import java.io.Writer;
+&nbsp;
+&nbsp;public final class UTF8Writer extends Writer {
+&nbsp;    static final int SURR1_FIRST = 55296;
+&nbsp;    static final int SURR1_LAST = 56319;
+&nbsp;    static final int SURR2_FIRST = 56320;
+&nbsp;    static final int SURR2_LAST = 57343;
+&nbsp;    public static final int SURROGATE_BASE = -56613888;
+&nbsp;    private final IOContext _context;
+&nbsp;    private OutputStream _out;
+&nbsp;    private byte[] _outBuffer;
+&nbsp;    private final int _outBufferEnd;
+&nbsp;    private int _outPtr;
+&nbsp;    private int _surrogate;
+&nbsp;
+&nbsp;    public UTF8Writer(IOContext ctxt, OutputStream out) {
+&nbsp;        this._context = ctxt;
+&nbsp;        this._out = out;
+&nbsp;        this._outBuffer = ctxt.allocWriteEncodingBuffer();
+&nbsp;        this._outBufferEnd = this._outBuffer.length - 4;
+&nbsp;        this._outPtr = 0;
+&nbsp;    }
+&nbsp;
+&nbsp;    public Writer append(char c) throws IOException {
+&nbsp;        this.write(c);
+<b class="nc">&nbsp;        return this;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public void close() throws IOException {
+<b class="nc">&nbsp;        if (this._out != null) {</b>
+&nbsp;            if (this._outPtr &gt; 0) {
+&nbsp;                this._out.write(this._outBuffer, 0, this._outPtr);
+&nbsp;                this._outPtr = 0;
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            OutputStream out = this._out;</b>
+&nbsp;            this._out = null;
+&nbsp;            byte[] buf = this._outBuffer;
+&nbsp;            if (buf != null) {
+&nbsp;                this._outBuffer = null;
+&nbsp;                this._context.releaseWriteEncodingBuffer(buf);
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            out.close();</b>
+&nbsp;            int code = this._surrogate;
+&nbsp;            this._surrogate = 0;
+&nbsp;            if (code &gt; 0) {
+&nbsp;                illegalSurrogate(code);
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        this._context.close();</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public void flush() throws IOException {
+<b class="nc">&nbsp;        if (this._out != null) {</b>
+<b class="nc">&nbsp;            if (this._outPtr &gt; 0) {</b>
+&nbsp;                this._out.write(this._outBuffer, 0, this._outPtr);
+<b class="nc">&nbsp;                this._outPtr = 0;</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            this._out.flush();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void write(char[] cbuf) throws IOException {
+&nbsp;        this.write((char[])cbuf, 0, cbuf.length);
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void write(char[] cbuf, int off, int len) throws IOException {</b>
+<b class="nc">&nbsp;        if (len &lt; 2) {</b>
+&nbsp;            if (len == 1) {
+&nbsp;                this.write(cbuf[off]);
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;        } else {
+&nbsp;            if (this._surrogate &gt; 0) {
+&nbsp;                char second = cbuf[off++];
+&nbsp;                --len;
+&nbsp;                this.write(this.convertSurrogate(second));
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            int outPtr = this._outPtr;</b>
+<b class="nc">&nbsp;            byte[] outBuf = this._outBuffer;</b>
+&nbsp;            int outBufLast = this._outBufferEnd;
+<b class="nc">&nbsp;            len += off;</b>
+&nbsp;
+&nbsp;            while(off &lt; len) {
+&nbsp;                if (outPtr &gt;= outBufLast) {
+&nbsp;                    this._out.write(outBuf, 0, outPtr);
+&nbsp;                    outPtr = 0;
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                int c = cbuf[off++];</b>
+&nbsp;                if (c &lt; 128) {
+&nbsp;                    outBuf[outPtr++] = (byte)c;
+&nbsp;                    int maxInCount = len - off;
+&nbsp;                    int maxOutCount = outBufLast - outPtr;
+&nbsp;                    if (maxInCount &gt; maxOutCount) {
+&nbsp;                        maxInCount = maxOutCount;
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                    for(int var19 = maxInCount + off; off &lt; var19; outBuf[outPtr++] = (byte)c) {</b>
+&nbsp;                        c = cbuf[off++];
+&nbsp;                        if (c &gt;= 128) {
+&nbsp;                            break;
+&nbsp;                        }
+&nbsp;                    }
+<b class="nc">&nbsp;                    continue;</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                if (c &lt; 2048) {</b>
+&nbsp;                    outBuf[outPtr++] = (byte)(192 | c &gt;&gt; 6);
+&nbsp;                    outBuf[outPtr++] = (byte)(128 | c &amp; 63);
+&nbsp;                } else if (c &gt;= 55296 &amp;&amp; c &lt;= 57343) {
+<b class="nc">&nbsp;                    if (c &gt; 56319) {</b>
+<b class="nc">&nbsp;                        this._outPtr = outPtr;</b>
+<b class="nc">&nbsp;                        illegalSurrogate(c);</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    this._surrogate = c;</b>
+&nbsp;                    if (off &gt;= len) {
+&nbsp;                        break;
+<b class="nc">&nbsp;                    }</b>
+&nbsp;
+&nbsp;                    c = this.convertSurrogate(cbuf[off++]);
+&nbsp;                    if (c &gt; 1114111) {
+<b class="nc">&nbsp;                        this._outPtr = outPtr;</b>
+<b class="nc">&nbsp;                        illegalSurrogate(c);</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;
+&nbsp;                    outBuf[outPtr++] = (byte)(240 | c &gt;&gt; 18);
+<b class="nc">&nbsp;                    outBuf[outPtr++] = (byte)(128 | c &gt;&gt; 12 &amp; 63);</b>
+&nbsp;                    outBuf[outPtr++] = (byte)(128 | c &gt;&gt; 6 &amp; 63);
+<b class="nc">&nbsp;                    outBuf[outPtr++] = (byte)(128 | c &amp; 63);</b>
+<b class="nc">&nbsp;                } else {</b>
+&nbsp;                    outBuf[outPtr++] = (byte)(224 | c &gt;&gt; 12);
+<b class="nc">&nbsp;                    outBuf[outPtr++] = (byte)(128 | c &gt;&gt; 6 &amp; 63);</b>
+<b class="nc">&nbsp;                    outBuf[outPtr++] = (byte)(128 | c &amp; 63);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            this._outPtr = outPtr;
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void write(int c) throws IOException {</b>
+&nbsp;        if (this._surrogate &gt; 0) {
+&nbsp;            c = this.convertSurrogate(c);
+<b class="nc">&nbsp;        } else if (c &gt;= 55296 &amp;&amp; c &lt;= 57343) {</b>
+<b class="nc">&nbsp;            if (c &gt; 56319) {</b>
+&nbsp;                illegalSurrogate(c);
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            this._surrogate = c;
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if (this._outPtr &gt;= this._outBufferEnd) {</b>
+<b class="nc">&nbsp;            this._out.write(this._outBuffer, 0, this._outPtr);</b>
+<b class="nc">&nbsp;            this._outPtr = 0;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if (c &lt; 128) {</b>
+<b class="nc">&nbsp;            this._outBuffer[this._outPtr++] = (byte)c;</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            int ptr = this._outPtr;</b>
+&nbsp;            if (c &lt; 2048) {
+&nbsp;                this._outBuffer[ptr++] = (byte)(192 | c &gt;&gt; 6);
+&nbsp;                this._outBuffer[ptr++] = (byte)(128 | c &amp; 63);
+<b class="nc">&nbsp;            } else if (c &lt;= 65535) {</b>
+<b class="nc">&nbsp;                this._outBuffer[ptr++] = (byte)(224 | c &gt;&gt; 12);</b>
+<b class="nc">&nbsp;                this._outBuffer[ptr++] = (byte)(128 | c &gt;&gt; 6 &amp; 63);</b>
+&nbsp;                this._outBuffer[ptr++] = (byte)(128 | c &amp; 63);
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                if (c &gt; 1114111) {
+<b class="nc">&nbsp;                    illegalSurrogate(c);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                this._outBuffer[ptr++] = (byte)(240 | c &gt;&gt; 18);</b>
+<b class="nc">&nbsp;                this._outBuffer[ptr++] = (byte)(128 | c &gt;&gt; 12 &amp; 63);</b>
+<b class="nc">&nbsp;                this._outBuffer[ptr++] = (byte)(128 | c &gt;&gt; 6 &amp; 63);</b>
+<b class="nc">&nbsp;                this._outBuffer[ptr++] = (byte)(128 | c &amp; 63);</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            this._outPtr = ptr;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void write(String str) throws IOException {</b>
+&nbsp;        this.write((String)str, 0, str.length());
+&nbsp;    }
+&nbsp;
+&nbsp;    public void write(String str, int off, int len) throws IOException {
+&nbsp;        if (len &lt; 2) {
+&nbsp;            if (len == 1) {
+<b class="nc">&nbsp;                this.write(str.charAt(off));</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            if (this._surrogate &gt; 0) {
+<b class="nc">&nbsp;                char second = str.charAt(off++);</b>
+<b class="nc">&nbsp;                --len;</b>
+&nbsp;                this.write(this.convertSurrogate(second));
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            int outPtr = this._outPtr;
+&nbsp;            byte[] outBuf = this._outBuffer;
+&nbsp;            int outBufLast = this._outBufferEnd;
+<b class="nc">&nbsp;            len += off;</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            while(off &lt; len) {</b>
+&nbsp;                if (outPtr &gt;= outBufLast) {
+&nbsp;                    this._out.write(outBuf, 0, outPtr);
+<b class="nc">&nbsp;                    outPtr = 0;</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="nc">&nbsp;                int c = str.charAt(off++);</b>
+<b class="nc">&nbsp;                if (c &lt; 128) {</b>
+<b class="nc">&nbsp;                    outBuf[outPtr++] = (byte)c;</b>
+<b class="nc">&nbsp;                    int maxInCount = len - off;</b>
+<b class="nc">&nbsp;                    int maxOutCount = outBufLast - outPtr;</b>
+<b class="nc">&nbsp;                    if (maxInCount &gt; maxOutCount) {</b>
+<b class="nc">&nbsp;                        maxInCount = maxOutCount;</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;
+<b class="nc">&nbsp;                    for(int var19 = maxInCount + off; off &lt; var19; outBuf[outPtr++] = (byte)c) {</b>
+<b class="nc">&nbsp;                        c = str.charAt(off++);</b>
+&nbsp;                        if (c &gt;= 128) {
+<b class="nc">&nbsp;                            break;</b>
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                    continue;</b>
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+&nbsp;                if (c &lt; 2048) {
+&nbsp;                    outBuf[outPtr++] = (byte)(192 | c &gt;&gt; 6);
+&nbsp;                    outBuf[outPtr++] = (byte)(128 | c &amp; 63);
+&nbsp;                } else if (c &gt;= 55296 &amp;&amp; c &lt;= 57343) {
+&nbsp;                    if (c &gt; 56319) {
+&nbsp;                        this._outPtr = outPtr;
+<b class="nc">&nbsp;                        illegalSurrogate(c);</b>
+&nbsp;                    }
+&nbsp;
+&nbsp;                    this._surrogate = c;
+&nbsp;                    if (off &gt;= len) {
+&nbsp;                        break;
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                    c = this.convertSurrogate(str.charAt(off++));</b>
+&nbsp;                    if (c &gt; 1114111) {
+&nbsp;                        this._outPtr = outPtr;
+&nbsp;                        illegalSurrogate(c);
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    outBuf[outPtr++] = (byte)(240 | c &gt;&gt; 18);</b>
+<b class="nc">&nbsp;                    outBuf[outPtr++] = (byte)(128 | c &gt;&gt; 12 &amp; 63);</b>
+<b class="nc">&nbsp;                    outBuf[outPtr++] = (byte)(128 | c &gt;&gt; 6 &amp; 63);</b>
+<b class="nc">&nbsp;                    outBuf[outPtr++] = (byte)(128 | c &amp; 63);</b>
+&nbsp;                } else {
+&nbsp;                    outBuf[outPtr++] = (byte)(224 | c &gt;&gt; 12);
+&nbsp;                    outBuf[outPtr++] = (byte)(128 | c &gt;&gt; 6 &amp; 63);
+<b class="nc">&nbsp;                    outBuf[outPtr++] = (byte)(128 | c &amp; 63);</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            this._outPtr = outPtr;
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected int convertSurrogate(int secondPart) throws IOException {</b>
+&nbsp;        int firstPart = this._surrogate;
+&nbsp;        this._surrogate = 0;
+&nbsp;        if (secondPart &gt;= 56320 &amp;&amp; secondPart &lt;= 57343) {
+<b class="nc">&nbsp;            return (firstPart &lt;&lt; 10) + secondPart + -56613888;</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            throw new IOException(&quot;Broken surrogate pair: first char 0x&quot; + Integer.toHexString(firstPart) + &quot;, second 0x&quot; + Integer.toHexString(secondPart) + &quot;; illegal combination&quot;);</b>
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected static void illegalSurrogate(int code) throws IOException {
+<b class="nc">&nbsp;        throw new IOException(illegalSurrogateDesc(code));</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    protected static String illegalSurrogateDesc(int code) {</b>
+<b class="nc">&nbsp;        if (code &gt; 1114111) {</b>
+&nbsp;            return &quot;Illegal character point (0x&quot; + Integer.toHexString(code) + &quot;) to output; max is 0x10FFFF as per RFC 4627&quot;;
+<b class="nc">&nbsp;        } else if (code &gt;= 55296) {</b>
+<b class="nc">&nbsp;            return code &lt;= 56319 ? &quot;Unmatched first part of surrogate pair (0x&quot; + Integer.toHexString(code) + &quot;)&quot; : &quot;Unmatched second part of surrogate pair (0x&quot; + Integer.toHexString(code) + &quot;)&quot;;</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            return &quot;Illegal character point (0x&quot; + Integer.toHexString(code) + &quot;) to output&quot;;</b>
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
+</div>
+</body>
+</html>

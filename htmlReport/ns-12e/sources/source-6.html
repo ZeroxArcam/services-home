@@ -1,0 +1,271 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > LazyAttributeLoadingInterceptor</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.bytecode.enhance.spi.interceptor</a>
+</div>
+
+<h1>Coverage Summary for Class: LazyAttributeLoadingInterceptor (org.hibernate.bytecode.enhance.spi.interceptor)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LazyAttributeLoadingInterceptor</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/17)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/36)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/59)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.bytecode.enhance.spi.interceptor;
+&nbsp;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.HashSet;
+&nbsp;import java.util.Set;
+&nbsp;import org.hibernate.LockMode;
+&nbsp;import org.hibernate.bytecode.enhance.spi.CollectionTracker;
+&nbsp;import org.hibernate.bytecode.enhance.spi.LazyPropertyInitializer;
+&nbsp;import org.hibernate.collection.spi.PersistentCollection;
+&nbsp;import org.hibernate.engine.internal.ManagedTypeHelper;
+&nbsp;import org.hibernate.engine.spi.SelfDirtinessTracker;
+&nbsp;import org.hibernate.engine.spi.SharedSessionContractImplementor;
+&nbsp;import org.hibernate.engine.spi.Status;
+&nbsp;import org.hibernate.internal.util.collections.CollectionHelper;
+&nbsp;import org.hibernate.persister.entity.EntityPersister;
+&nbsp;
+&nbsp;public class LazyAttributeLoadingInterceptor extends AbstractLazyLoadInterceptor {
+&nbsp;    private final Object identifier;
+&nbsp;    private Set&lt;String&gt; lazyFields;
+&nbsp;    private Set&lt;String&gt; initializedLazyFields;
+&nbsp;    private Set&lt;String&gt; mutableLazyFields;
+&nbsp;
+&nbsp;    public LazyAttributeLoadingInterceptor(String entityName, Object identifier, Set&lt;String&gt; lazyFields, SharedSessionContractImplementor session) {
+&nbsp;        super(entityName, session);
+&nbsp;        this.identifier = identifier;
+&nbsp;        this.lazyFields = CollectionHelper.toSmallSet(lazyFields);
+&nbsp;    }
+&nbsp;
+&nbsp;    public Object getIdentifier() {
+&nbsp;        return this.identifier;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Object handleRead(Object target, String attributeName, Object value) {
+&nbsp;        if (!this.isAttributeLoaded(attributeName)) {
+&nbsp;            Object loadedValue = this.fetchAttribute(target, attributeName);
+&nbsp;            this.attributeInitialized(attributeName);
+&nbsp;            return loadedValue;
+&nbsp;        } else {
+&nbsp;            return value;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    protected Object handleWrite(Object target, String attributeName, Object oldValue, Object newValue) {</b>
+&nbsp;        if (!this.isAttributeLoaded(attributeName)) {
+&nbsp;            this.attributeInitialized(attributeName);
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return newValue;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Object fetchAttribute(Object target, String attributeName) {
+&nbsp;        return this.loadAttribute(target, attributeName);
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected Object loadAttribute(Object target, String attributeName) {</b>
+<b class="nc">&nbsp;        return EnhancementHelper.performWork(this, (session, isTemporarySession) -&gt; {</b>
+&nbsp;            EntityPersister persister = session.getFactory().getMappingMetamodel().getEntityDescriptor(this.getEntityName());
+<b class="nc">&nbsp;            if (isTemporarySession) {</b>
+&nbsp;                Object id = persister.getIdentifier(target, session);
+&nbsp;                Object[] loadedState = null;
+&nbsp;                boolean existsInDb = true;
+&nbsp;                session.getPersistenceContextInternal().addEntity(target, Status.READ_ONLY, loadedState, session.generateEntityKey(id, persister), persister.getVersion(target), LockMode.NONE, true, persister, true);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            LazyPropertyInitializer initializer = (LazyPropertyInitializer)persister;
+<b class="nc">&nbsp;            Object loadedValue = initializer.initializeLazyProperty(attributeName, target, session);</b>
+&nbsp;            this.takeCollectionSizeSnapshot(target, attributeName, loadedValue);
+&nbsp;            return loadedValue;
+&nbsp;        }, this.getEntityName(), attributeName);
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isAttributeLoaded(String fieldName) {
+<b class="nc">&nbsp;        return !this.isLazyAttribute(fieldName) || this.isInitializedLazyField(fieldName);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean isLazyAttribute(String fieldName) {
+<b class="nc">&nbsp;        return this.lazyFields.contains(fieldName);</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private boolean isInitializedLazyField(String fieldName) {</b>
+<b class="nc">&nbsp;        return this.initializedLazyFields != null &amp;&amp; this.initializedLazyFields.contains(fieldName);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public boolean hasAnyUninitializedAttributes() {</b>
+<b class="nc">&nbsp;        if (this.lazyFields.isEmpty()) {</b>
+&nbsp;            return false;
+&nbsp;        } else if (this.initializedLazyFields == null) {
+&nbsp;            return true;
+&nbsp;        } else {
+<b class="nc">&nbsp;            for(String fieldName : this.lazyFields) {</b>
+&nbsp;                if (!this.initializedLazyFields.contains(fieldName)) {
+<b class="nc">&nbsp;                    return true;</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            return false;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public String toString() {
+&nbsp;        String var10000 = this.getClass().getSimpleName();
+&nbsp;        return var10000 + &quot;(entityName=&quot; + this.getEntityName() + &quot; ,lazyFields=&quot; + this.lazyFields + &quot;)&quot;;
+&nbsp;    }
+&nbsp;
+&nbsp;    private void takeCollectionSizeSnapshot(Object target, String fieldName, Object value) {
+<b class="nc">&nbsp;        if (value instanceof Collection &amp;&amp; ManagedTypeHelper.isSelfDirtinessTracker(target)) {</b>
+<b class="nc">&nbsp;            SelfDirtinessTracker targetSDT = ManagedTypeHelper.asSelfDirtinessTracker(target);</b>
+&nbsp;            CollectionTracker tracker = targetSDT.$$_hibernate_getCollectionTracker();
+&nbsp;            if (tracker == null) {
+&nbsp;                targetSDT.$$_hibernate_clearDirtyAttributes();
+&nbsp;                tracker = targetSDT.$$_hibernate_getCollectionTracker();
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            if (value instanceof PersistentCollection &amp;&amp; !((PersistentCollection)value).wasInitialized()) {</b>
+&nbsp;                return;
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            tracker.add(fieldName, ((Collection)value).size());
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void attributeInitialized(String name) {
+&nbsp;        if (this.isLazyAttribute(name)) {
+&nbsp;            if (this.initializedLazyFields == null) {
+<b class="nc">&nbsp;                this.initializedLazyFields = new HashSet();</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            this.initializedLazyFields.add(name);
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Set&lt;String&gt; getInitializedLazyAttributeNames() {
+<b class="nc">&nbsp;        return this.initializedLazyFields == null ? Collections.emptySet() : this.initializedLazyFields;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void addLazyFieldByGraph(String fieldName) {
+<b class="nc">&nbsp;        if (this.mutableLazyFields == null) {</b>
+<b class="nc">&nbsp;            this.mutableLazyFields = new HashSet(this.lazyFields);</b>
+&nbsp;            this.lazyFields = this.mutableLazyFields;
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        this.mutableLazyFields.add(fieldName);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void clearInitializedLazyFields() {
+&nbsp;        this.initializedLazyFields = null;
+<b class="nc">&nbsp;    }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
+</div>
+</body>
+</html>

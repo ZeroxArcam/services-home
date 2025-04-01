@@ -1,0 +1,184 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > AbstractArrayJavaType</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.type.descriptor.java</a>
+</div>
+
+<h1>Coverage Summary for Class: AbstractArrayJavaType (org.hibernate.type.descriptor.java)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AbstractArrayJavaType</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    12.5%
+  </span>
+  <span class="absValue">
+    (1/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    6.9%
+  </span>
+  <span class="absValue">
+    (2/29)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.type.descriptor.java;
+&nbsp;
+&nbsp;import java.lang.reflect.Array;
+&nbsp;import org.hibernate.MappingException;
+&nbsp;import org.hibernate.dialect.Dialect;
+&nbsp;import org.hibernate.tool.schema.extract.spi.ColumnTypeInformation;
+&nbsp;import org.hibernate.type.BasicArrayType;
+&nbsp;import org.hibernate.type.BasicPluralType;
+&nbsp;import org.hibernate.type.BasicType;
+&nbsp;import org.hibernate.type.ConvertedBasicArrayType;
+&nbsp;import org.hibernate.type.descriptor.converter.internal.ArrayConverter;
+&nbsp;import org.hibernate.type.descriptor.converter.spi.BasicValueConverter;
+&nbsp;import org.hibernate.type.descriptor.java.spi.UnknownBasicJavaType;
+&nbsp;import org.hibernate.type.descriptor.jdbc.JdbcType;
+&nbsp;import org.hibernate.type.descriptor.jdbc.JdbcTypeIndicators;
+&nbsp;import org.hibernate.type.spi.TypeConfiguration;
+&nbsp;
+&nbsp;public abstract class AbstractArrayJavaType&lt;T, E&gt; extends AbstractClassJavaType&lt;T&gt; implements BasicPluralJavaType&lt;E&gt; {
+&nbsp;    private final JavaType&lt;E&gt; componentJavaType;
+&nbsp;
+&nbsp;    public AbstractArrayJavaType(Class&lt;T&gt; clazz, JavaType&lt;E&gt; baseDescriptor, MutabilityPlan&lt;T&gt; mutabilityPlan) {
+&nbsp;        super(clazz, mutabilityPlan);
+&nbsp;        this.componentJavaType = baseDescriptor;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public JavaType&lt;E&gt; getElementJavaType() {</b>
+<b class="fc">&nbsp;        return this.componentJavaType;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public JdbcType getRecommendedJdbcType(JdbcTypeIndicators indicators) {
+&nbsp;        if (this.componentJavaType instanceof UnknownBasicJavaType) {
+<b class="nc">&nbsp;            throw new MappingException(&quot;Basic array has element type &#39;&quot; + this.componentJavaType.getTypeName() + &quot;&#39; which is not a known basic type (attribute is not annotated &#39;@ElementCollection&#39;, &#39;@OneToMany&#39;, or &#39;@ManyToMany&#39;)&quot;);</b>
+&nbsp;        } else {
+&nbsp;            return indicators.getTypeConfiguration().getJdbcTypeRegistry().resolveTypeConstructorDescriptor(indicators.getPreferredSqlTypeCodeForArray(), indicators.getTypeConfiguration().getBasicTypeRegistry().resolve(this.componentJavaType, this.componentJavaType.getRecommendedJdbcType(indicators)), ColumnTypeInformation.EMPTY);
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public boolean isWider(JavaType&lt;?&gt; javaType) {</b>
+<b class="nc">&nbsp;        return this == javaType || this.componentJavaType == javaType;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public BasicType&lt;?&gt; resolveType(TypeConfiguration typeConfiguration, Dialect dialect, BasicType&lt;E&gt; elementType, ColumnTypeInformation columnTypeInformation, JdbcTypeIndicators stdIndicators) {
+&nbsp;        Class&lt;?&gt; elementJavaTypeClass = elementType.getJavaTypeDescriptor().getJavaTypeClass();
+<b class="nc">&nbsp;        if (!(elementType instanceof BasicPluralType) &amp;&amp; (elementJavaTypeClass == null || !elementJavaTypeClass.isArray())) {</b>
+<b class="nc">&nbsp;            BasicValueConverter&lt;E, ?&gt; valueConverter = elementType.getValueConverter();</b>
+<b class="nc">&nbsp;            return valueConverter == null ? this.resolveType(typeConfiguration, dialect, this, elementType, columnTypeInformation, stdIndicators) : this.createTypeUsingConverter(typeConfiguration, dialect, elementType, columnTypeInformation, stdIndicators, valueConverter);</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            return null;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    &lt;F&gt; BasicType&lt;T&gt; createTypeUsingConverter(TypeConfiguration typeConfiguration, Dialect dialect, BasicType&lt;E&gt; elementType, ColumnTypeInformation columnTypeInformation, JdbcTypeIndicators stdIndicators, BasicValueConverter&lt;E, F&gt; valueConverter) {
+&nbsp;        Class&lt;F&gt; convertedElementClass = valueConverter.getRelationalJavaType().getJavaTypeClass();
+&nbsp;        Class&lt;?&gt; convertedArrayClass = Array.newInstance(convertedElementClass, 0).getClass();
+<b class="nc">&nbsp;        JavaType&lt;?&gt; relationalJavaType = typeConfiguration.getJavaTypeRegistry().getDescriptor(convertedArrayClass);</b>
+&nbsp;        return new ConvertedBasicArrayType(elementType, typeConfiguration.getJdbcTypeRegistry().resolveTypeConstructorDescriptor(stdIndicators.getExplicitJdbcTypeCode(), elementType, columnTypeInformation), this, new ArrayConverter(valueConverter, this, relationalJavaType));
+&nbsp;    }
+&nbsp;
+&nbsp;    BasicType&lt;T&gt; resolveType(TypeConfiguration typeConfiguration, Dialect dialect, AbstractArrayJavaType&lt;T, E&gt; arrayJavaType, BasicType&lt;E&gt; elementType, ColumnTypeInformation columnTypeInformation, JdbcTypeIndicators stdIndicators) {
+&nbsp;        JdbcType arrayJdbcType = typeConfiguration.getJdbcTypeRegistry().resolveTypeConstructorDescriptor(stdIndicators.getExplicitJdbcTypeCode(), elementType, columnTypeInformation);
+&nbsp;        return typeConfiguration.getBasicTypeRegistry().resolve(arrayJavaType, arrayJdbcType, () -&gt; new BasicArrayType(elementType, arrayJdbcType, arrayJavaType));
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 21:00</div>
+</div>
+</body>
+</html>

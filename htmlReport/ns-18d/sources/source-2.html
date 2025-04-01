@@ -1,0 +1,268 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > AbstractMutationCoordinator</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.persister.entity.mutation</a>
+</div>
+
+<h1>Coverage Summary for Class: AbstractMutationCoordinator (org.hibernate.persister.entity.mutation)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AbstractMutationCoordinator</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (7/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    12.5%
+  </span>
+  <span class="absValue">
+    (5/40)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    23.9%
+  </span>
+  <span class="absValue">
+    (17/71)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.persister.entity.mutation;
+&nbsp;
+&nbsp;import org.hibernate.Internal;
+&nbsp;import org.hibernate.dialect.Dialect;
+&nbsp;import org.hibernate.engine.jdbc.batch.spi.BatchKey;
+&nbsp;import org.hibernate.engine.jdbc.mutation.JdbcValueBindings;
+&nbsp;import org.hibernate.engine.jdbc.mutation.ParameterUsage;
+&nbsp;import org.hibernate.engine.jdbc.mutation.internal.NoBatchKeyAccess;
+&nbsp;import org.hibernate.engine.jdbc.mutation.spi.BatchKeyAccess;
+&nbsp;import org.hibernate.engine.jdbc.mutation.spi.MutationExecutorService;
+&nbsp;import org.hibernate.engine.spi.SessionFactoryImplementor;
+&nbsp;import org.hibernate.engine.spi.SharedSessionContractImplementor;
+&nbsp;import org.hibernate.generator.OnExecutionGenerator;
+&nbsp;import org.hibernate.metamodel.mapping.AttributeMapping;
+&nbsp;import org.hibernate.metamodel.mapping.AttributeMappingsList;
+&nbsp;import org.hibernate.persister.entity.AbstractEntityPersister;
+&nbsp;import org.hibernate.sql.model.ModelMutationLogging;
+&nbsp;import org.hibernate.sql.model.MutationOperation;
+&nbsp;import org.hibernate.sql.model.MutationOperationGroup;
+&nbsp;import org.hibernate.sql.model.ValuesAnalysis;
+&nbsp;import org.hibernate.sql.model.ast.MutationGroup;
+&nbsp;import org.hibernate.sql.model.ast.TableMutation;
+&nbsp;import org.hibernate.sql.model.ast.builder.ColumnValuesTableMutationBuilder;
+&nbsp;import org.hibernate.sql.model.ast.builder.MutationGroupBuilder;
+&nbsp;import org.hibernate.sql.model.ast.builder.RestrictedTableMutationBuilder;
+&nbsp;import org.hibernate.sql.model.internal.MutationOperationGroupFactory;
+&nbsp;
+&nbsp;@Internal
+&nbsp;public abstract class AbstractMutationCoordinator {
+&nbsp;    protected final AbstractEntityPersister entityPersister;
+&nbsp;    protected final SessionFactoryImplementor factory;
+&nbsp;    protected final MutationExecutorService mutationExecutorService;
+&nbsp;    protected final Dialect dialect;
+&nbsp;
+&nbsp;    public AbstractMutationCoordinator(AbstractEntityPersister entityPersister, SessionFactoryImplementor factory) {
+&nbsp;        this.entityPersister = entityPersister;
+&nbsp;        this.factory = factory;
+&nbsp;        this.dialect = factory.getJdbcServices().getDialect();
+&nbsp;        this.mutationExecutorService = (MutationExecutorService)factory.getServiceRegistry().getService(MutationExecutorService.class);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected AbstractEntityPersister entityPersister() {
+<b class="fc">&nbsp;        return this.entityPersister;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    protected SessionFactoryImplementor factory() {</b>
+<b class="fc">&nbsp;        return this.factory;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Dialect dialect() {
+<b class="fc">&nbsp;        return this.dialect;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected BatchKeyAccess resolveBatchKeyAccess(boolean dynamicUpdate, SharedSessionContractImplementor session) {
+<b class="fc">&nbsp;        return (BatchKeyAccess)(!dynamicUpdate &amp;&amp; !this.entityPersister().optimisticLockStyle().isAllOrDirty() &amp;&amp; session.getTransactionCoordinator() != null &amp;&amp; session.getTransactionCoordinator().isTransactionActive() ? this::getBatchKey : NoBatchKeyAccess.INSTANCE);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected abstract BatchKey getBatchKey();
+<b class="fc">&nbsp;</b>
+&nbsp;    protected MutationOperationGroup createOperationGroup(ValuesAnalysis valuesAnalysis, MutationGroup mutationGroup) {
+&nbsp;        int numberOfTableMutations = mutationGroup.getNumberOfTableMutations();
+&nbsp;        switch (numberOfTableMutations) {
+<b class="nc">&nbsp;            case 0:</b>
+<b class="nc">&nbsp;                return MutationOperationGroupFactory.noOperations(mutationGroup);</b>
+<b class="nc">&nbsp;            case 1:</b>
+<b class="nc">&nbsp;                MutationOperation operation = mutationGroup.getSingleTableMutation().createMutationOperation(valuesAnalysis, this.factory());</b>
+<b class="nc">&nbsp;                return operation == null ? MutationOperationGroupFactory.noOperations(mutationGroup) : MutationOperationGroupFactory.singleOperation(mutationGroup, operation);</b>
+&nbsp;            default:
+&nbsp;                MutationOperation[] operations = new MutationOperation[numberOfTableMutations];
+<b class="nc">&nbsp;                int outputIndex = 0;</b>
+&nbsp;                int skipped = 0;
+&nbsp;
+&nbsp;                for(int i = 0; i &lt; mutationGroup.getNumberOfTableMutations(); ++i) {
+&nbsp;                    TableMutation tableMutation = mutationGroup.getTableMutation(i);
+&nbsp;                    MutationOperation operation = tableMutation.createMutationOperation(valuesAnalysis, this.factory);
+<b class="fc">&nbsp;                    if (operation != null) {</b>
+<b class="pc">&nbsp;                        operations[outputIndex++] = operation;</b>
+&nbsp;                    } else {
+<b class="nc">&nbsp;                        ++skipped;</b>
+&nbsp;                        ModelMutationLogging.MODEL_MUTATION_LOGGER.debugf(&quot;Skipping table update - %s&quot;, tableMutation.getTableName());
+<b class="fc">&nbsp;                    }</b>
+<b class="fc">&nbsp;                }</b>
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;                if (skipped != 0) {</b>
+<b class="fc">&nbsp;                    MutationOperation[] trimmed = new MutationOperation[outputIndex];</b>
+&nbsp;                    System.arraycopy(operations, 0, trimmed, 0, outputIndex);
+&nbsp;                    operations = trimmed;
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                return MutationOperationGroupFactory.manyOperations(mutationGroup.getMutationType(), this.entityPersister, operations);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected void handleValueGeneration(AttributeMapping attributeMapping, MutationGroupBuilder mutationGroupBuilder, OnExecutionGenerator generator) {</b>
+<b class="nc">&nbsp;        Dialect dialect = this.factory.getJdbcServices().getDialect();</b>
+&nbsp;        boolean writePropertyValue = generator.writePropertyValue();
+&nbsp;        String[] columnValues = writePropertyValue ? null : generator.getReferencedColumnValues(dialect);
+<b class="nc">&nbsp;        attributeMapping.forEachSelectable((j, mapping) -&gt; {</b>
+<b class="nc">&nbsp;            String tableName = this.entityPersister.physicalTableNameForMutation(mapping);</b>
+&nbsp;            ColumnValuesTableMutationBuilder tableUpdateBuilder = (ColumnValuesTableMutationBuilder)mutationGroupBuilder.findTableDetailsBuilder(tableName);
+<b class="nc">&nbsp;            tableUpdateBuilder.addValueColumn(mapping.getSelectionExpression(), writePropertyValue ? &quot;?&quot; : columnValues[j], mapping.getJdbcMapping(), mapping.isLob());</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected void bindPartitionColumnValueBindings(Object[] loadedState, SharedSessionContractImplementor session, JdbcValueBindings jdbcValueBindings) {</b>
+<b class="nc">&nbsp;        AbstractEntityPersister persister = this.entityPersister();</b>
+<b class="nc">&nbsp;        if (persister.hasPartitionedSelectionMapping()) {</b>
+<b class="nc">&nbsp;            AttributeMappingsList attributeMappings = persister.getAttributeMappings();</b>
+&nbsp;            int size = attributeMappings.size();
+<b class="nc">&nbsp;</b>
+&nbsp;            for(int i = 0; i &lt; size; ++i) {
+&nbsp;                AttributeMapping attributeMapping = attributeMappings.get(i);
+&nbsp;                if (attributeMapping.hasPartitionedSelectionMapping()) {
+&nbsp;                    attributeMapping.decompose(loadedState[i], 0, jdbcValueBindings, (Object)null, (valueIndex, bindings, noop, value, jdbcValueMapping) -&gt; {
+&nbsp;                        if (jdbcValueMapping.isPartitioned()) {
+&nbsp;                            bindings.bindValue(value, jdbcValueMapping, ParameterUsage.RESTRICT);
+&nbsp;                        }
+&nbsp;
+<b class="nc">&nbsp;                    }, session);</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected static boolean needsRowId(AbstractEntityPersister entityPersister, EntityTableMapping tableMapping) {</b>
+<b class="nc">&nbsp;        return entityPersister.getRowIdMapping() != null &amp;&amp; tableMapping.isIdentifierTable();</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    protected static void applyKeyRestriction(Object rowId, AbstractEntityPersister entityPersister, RestrictedTableMutationBuilder&lt;?, ?&gt; tableMutationBuilder, EntityTableMapping tableMapping) {
+&nbsp;        if (rowId != null &amp;&amp; needsRowId(entityPersister, tableMapping)) {
+&nbsp;            tableMutationBuilder.addKeyRestrictionLeniently(entityPersister.getRowIdMapping());
+&nbsp;        } else {
+&nbsp;            tableMutationBuilder.addKeyRestrictions(tableMapping.getKeyMapping());
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected void breakDownKeyJdbcValues(Object id, Object rowId, SharedSessionContractImplementor session, JdbcValueBindings jdbcValueBindings, EntityTableMapping tableMapping) {</b>
+<b class="nc">&nbsp;        if (rowId != null &amp;&amp; needsRowId(this.entityPersister(), tableMapping)) {</b>
+<b class="nc">&nbsp;            jdbcValueBindings.bindValue(rowId, tableMapping.getTableName(), this.entityPersister().getRowIdMapping().getRowIdName(), ParameterUsage.RESTRICT);</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            tableMapping.getKeyMapping().breakDownKeyJdbcValues(id, (jdbcValue, columnMapping) -&gt; jdbcValueBindings.bindValue(jdbcValue, tableMapping.getTableName(), columnMapping.getColumnName(), ParameterUsage.RESTRICT), session);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
+</div>
+</body>
+</html>

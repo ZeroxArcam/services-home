@@ -1,0 +1,212 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ApplicationListenerDetector</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.context.support</a>
+</div>
+
+<h1>Coverage Summary for Class: ApplicationListenerDetector (org.springframework.context.support)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ApplicationListenerDetector</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    88.9%
+  </span>
+  <span class="absValue">
+    (8/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (10/20)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    78.3%
+  </span>
+  <span class="absValue">
+    (18/23)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.context.support;
+&nbsp;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Objects;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import org.apache.commons.logging.Log;
+&nbsp;import org.apache.commons.logging.LogFactory;
+&nbsp;import org.springframework.beans.factory.config.DestructionAwareBeanPostProcessor;
+&nbsp;import org.springframework.beans.factory.support.MergedBeanDefinitionPostProcessor;
+&nbsp;import org.springframework.beans.factory.support.RootBeanDefinition;
+&nbsp;import org.springframework.context.ApplicationListener;
+&nbsp;import org.springframework.context.event.ApplicationEventMulticaster;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;
+&nbsp;class ApplicationListenerDetector implements DestructionAwareBeanPostProcessor, MergedBeanDefinitionPostProcessor {
+&nbsp;    private static final Log logger = LogFactory.getLog(ApplicationListenerDetector.class);
+&nbsp;    private final transient AbstractApplicationContext applicationContext;
+&nbsp;    private final transient Map&lt;String, Boolean&gt; singletonNames = new ConcurrentHashMap(256);
+&nbsp;
+&nbsp;    public ApplicationListenerDetector(AbstractApplicationContext applicationContext) {
+&nbsp;        this.applicationContext = applicationContext;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class&lt;?&gt; beanType, String beanName) {
+&nbsp;        if (ApplicationListener.class.isAssignableFrom(beanType)) {
+&nbsp;            this.singletonNames.put(beanName, beanDefinition.isSingleton());
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public Object postProcessBeforeInitialization(Object bean, String beanName) {
+&nbsp;        return bean;
+&nbsp;    }
+&nbsp;
+&nbsp;    public Object postProcessAfterInitialization(Object bean, String beanName) {
+&nbsp;        if (bean instanceof ApplicationListener&lt;?&gt; applicationListener) {
+&nbsp;            Boolean flag = (Boolean)this.singletonNames.get(beanName);
+&nbsp;            if (Boolean.TRUE.equals(flag)) {
+&nbsp;                this.applicationContext.addApplicationListener(applicationListener);
+&nbsp;            } else if (Boolean.FALSE.equals(flag)) {
+&nbsp;                if (logger.isWarnEnabled() &amp;&amp; !this.applicationContext.containsBean(beanName)) {
+&nbsp;                    logger.warn(&quot;Inner bean &#39;&quot; + beanName + &quot;&#39; implements ApplicationListener interface but is not reachable for event multicasting by its containing ApplicationContext because it does not have singleton scope. Only top-level listener beans are allowed to be of non-singleton scope.&quot;);
+<b class="fc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                this.singletonNames.remove(beanName);
+&nbsp;            }
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return bean;
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    public void postProcessBeforeDestruction(Object bean, String beanName) {
+&nbsp;        if (bean instanceof ApplicationListener&lt;?&gt; applicationListener) {
+&nbsp;            try {
+&nbsp;                ApplicationEventMulticaster multicaster = this.applicationContext.getApplicationEventMulticaster();
+&nbsp;                multicaster.removeApplicationListener(applicationListener);
+<b class="fc">&nbsp;                multicaster.removeApplicationListenerBean(beanName);</b>
+<b class="fc">&nbsp;            } catch (IllegalStateException var5) {</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public boolean requiresDestruction(Object bean) {</b>
+&nbsp;        return bean instanceof ApplicationListener;
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean equals(@Nullable Object other) {
+<b class="fc">&nbsp;        boolean var10000;</b>
+&nbsp;        if (this != other) {
+<b class="fc">&nbsp;            label26: {</b>
+<b class="pc">&nbsp;                if (other instanceof ApplicationListenerDetector) {</b>
+&nbsp;                    ApplicationListenerDetector that = (ApplicationListenerDetector)other;
+<b class="fc">&nbsp;                    if (this.applicationContext == that.applicationContext) {</b>
+&nbsp;                        break label26;
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="nc">&nbsp;                var10000 = false;</b>
+&nbsp;                return var10000;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        var10000 = true;</b>
+&nbsp;        return var10000;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public int hashCode() {
+&nbsp;        return Objects.hashCode(this.applicationContext);
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:57</div>
+</div>
+</body>
+</html>

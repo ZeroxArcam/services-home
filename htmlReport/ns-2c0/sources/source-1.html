@@ -1,0 +1,193 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > TaskExecutorMetricsAutoConfiguration</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.boot.actuate.autoconfigure.metrics.task</a>
+</div>
+
+<h1>Coverage Summary for Class: TaskExecutorMetricsAutoConfiguration (org.springframework.boot.actuate.autoconfigure.metrics.task)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TaskExecutorMetricsAutoConfiguration</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/14)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.boot.actuate.autoconfigure.metrics.task;
+&nbsp;
+&nbsp;import io.micrometer.core.instrument.MeterRegistry;
+&nbsp;import io.micrometer.core.instrument.binder.jvm.ExecutorServiceMetrics;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.concurrent.Executor;
+&nbsp;import java.util.concurrent.ThreadPoolExecutor;
+&nbsp;import org.springframework.beans.factory.annotation.Autowired;
+&nbsp;import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+&nbsp;import org.springframework.beans.factory.support.SimpleAutowireCandidateResolver;
+&nbsp;import org.springframework.boot.LazyInitializationExcludeFilter;
+&nbsp;import org.springframework.boot.actuate.autoconfigure.metrics.MetricsAutoConfiguration;
+&nbsp;import org.springframework.boot.actuate.autoconfigure.metrics.export.simple.SimpleMetricsExportAutoConfiguration;
+&nbsp;import org.springframework.boot.autoconfigure.AutoConfiguration;
+&nbsp;import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+&nbsp;import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+&nbsp;import org.springframework.boot.autoconfigure.task.TaskExecutionAutoConfiguration;
+&nbsp;import org.springframework.boot.autoconfigure.task.TaskSchedulingAutoConfiguration;
+&nbsp;import org.springframework.context.annotation.Bean;
+&nbsp;import org.springframework.core.task.TaskExecutor;
+&nbsp;import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+&nbsp;import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+&nbsp;
+&nbsp;@AutoConfiguration(
+&nbsp;    after = {MetricsAutoConfiguration.class, SimpleMetricsExportAutoConfiguration.class, TaskExecutionAutoConfiguration.class, TaskSchedulingAutoConfiguration.class}
+&nbsp;)
+&nbsp;@ConditionalOnClass({ExecutorServiceMetrics.class})
+&nbsp;@ConditionalOnBean({Executor.class, MeterRegistry.class})
+&nbsp;public class TaskExecutorMetricsAutoConfiguration {
+&nbsp;    public TaskExecutorMetricsAutoConfiguration() {
+&nbsp;    }
+&nbsp;
+&nbsp;    @Autowired
+&nbsp;    public void bindTaskExecutorsToRegistry(ConfigurableListableBeanFactory beanFactory, MeterRegistry registry) {
+&nbsp;        SimpleAutowireCandidateResolver.resolveAutowireCandidates(beanFactory, TaskExecutor.class).forEach((beanName, executor) -&gt; {
+&nbsp;            if (executor instanceof ThreadPoolTaskExecutor threadPoolTaskExecutor) {
+&nbsp;                this.monitor(registry, this.safeGetThreadPoolExecutor(threadPoolTaskExecutor), beanName);
+&nbsp;            } else if (executor instanceof ThreadPoolTaskScheduler threadPoolTaskScheduler) {
+&nbsp;                this.monitor(registry, this.safeGetThreadPoolExecutor(threadPoolTaskScheduler), beanName);
+&nbsp;            }
+&nbsp;
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    @Bean
+&nbsp;    static LazyInitializationExcludeFilter eagerTaskExecutorMetrics() {
+&nbsp;        return LazyInitializationExcludeFilter.forBeanTypes(new Class[]{TaskExecutorMetricsAutoConfiguration.class});
+&nbsp;    }
+&nbsp;
+&nbsp;    private void monitor(MeterRegistry registry, ThreadPoolExecutor threadPoolExecutor, String name) {
+<b class="nc">&nbsp;        if (threadPoolExecutor != null) {</b>
+&nbsp;            (new ExecutorServiceMetrics(threadPoolExecutor, name, Collections.emptyList())).bindTo(registry);
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private ThreadPoolExecutor safeGetThreadPoolExecutor(ThreadPoolTaskExecutor taskExecutor) {</b>
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            return taskExecutor.getThreadPoolExecutor();
+<b class="nc">&nbsp;        } catch (IllegalStateException var3) {</b>
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private ThreadPoolExecutor safeGetThreadPoolExecutor(ThreadPoolTaskScheduler taskScheduler) {
+&nbsp;        try {
+&nbsp;            return taskScheduler.getScheduledThreadPoolExecutor();
+<b class="nc">&nbsp;        } catch (IllegalStateException var3) {</b>
+&nbsp;            return null;
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
+</div>
+</body>
+</html>

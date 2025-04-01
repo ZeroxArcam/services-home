@@ -1,0 +1,407 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > EntityRepresentationStrategyPojoStandard</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.metamodel.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: EntityRepresentationStrategyPojoStandard (org.hibernate.metamodel.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">EntityRepresentationStrategyPojoStandard</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    68.4%
+  </span>
+  <span class="absValue">
+    (13/19)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    35.5%
+  </span>
+  <span class="absValue">
+    (27/76)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    53.4%
+  </span>
+  <span class="absValue">
+    (79/148)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.metamodel.internal;
+&nbsp;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;import java.util.LinkedHashMap;
+&nbsp;import java.util.LinkedHashSet;
+&nbsp;import java.util.Locale;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Set;
+&nbsp;import org.hibernate.HibernateException;
+&nbsp;import org.hibernate.MappingException;
+&nbsp;import org.hibernate.boot.registry.selector.spi.StrategySelector;
+&nbsp;import org.hibernate.bytecode.spi.BytecodeProvider;
+&nbsp;import org.hibernate.bytecode.spi.ReflectionOptimizer;
+&nbsp;import org.hibernate.classic.Lifecycle;
+&nbsp;import org.hibernate.engine.internal.ManagedTypeHelper;
+&nbsp;import org.hibernate.internal.CoreLogging;
+&nbsp;import org.hibernate.internal.CoreMessageLogger;
+&nbsp;import org.hibernate.internal.util.ReflectHelper;
+&nbsp;import org.hibernate.internal.util.StringHelper;
+&nbsp;import org.hibernate.mapping.Backref;
+&nbsp;import org.hibernate.mapping.Component;
+&nbsp;import org.hibernate.mapping.IndexBackref;
+&nbsp;import org.hibernate.mapping.KeyValue;
+&nbsp;import org.hibernate.mapping.PersistentClass;
+&nbsp;import org.hibernate.mapping.Property;
+&nbsp;import org.hibernate.mapping.Subclass;
+&nbsp;import org.hibernate.metamodel.RepresentationMode;
+&nbsp;import org.hibernate.metamodel.spi.EmbeddableInstantiator;
+&nbsp;import org.hibernate.metamodel.spi.EntityInstantiator;
+&nbsp;import org.hibernate.metamodel.spi.EntityRepresentationStrategy;
+&nbsp;import org.hibernate.metamodel.spi.RuntimeModelCreationContext;
+&nbsp;import org.hibernate.persister.entity.EntityPersister;
+&nbsp;import org.hibernate.property.access.internal.PropertyAccessStrategyBackRefImpl;
+&nbsp;import org.hibernate.property.access.internal.PropertyAccessStrategyIndexBackRefImpl;
+&nbsp;import org.hibernate.property.access.spi.BuiltInPropertyAccessStrategies;
+&nbsp;import org.hibernate.property.access.spi.PropertyAccess;
+&nbsp;import org.hibernate.property.access.spi.PropertyAccessStrategy;
+&nbsp;import org.hibernate.proxy.HibernateProxy;
+&nbsp;import org.hibernate.proxy.ProxyFactory;
+&nbsp;import org.hibernate.proxy.pojo.ProxyFactoryHelper;
+&nbsp;import org.hibernate.tuple.entity.EntityMetamodel;
+&nbsp;import org.hibernate.type.CompositeType;
+&nbsp;import org.hibernate.type.descriptor.java.JavaType;
+&nbsp;import org.hibernate.type.descriptor.java.spi.JavaTypeRegistry;
+&nbsp;import org.hibernate.type.spi.CompositeTypeImplementor;
+&nbsp;import org.hibernate.usertype.CompositeUserType;
+&nbsp;
+&nbsp;public class EntityRepresentationStrategyPojoStandard implements EntityRepresentationStrategy {
+&nbsp;    private static final CoreMessageLogger LOG = CoreLogging.messageLogger(EntityRepresentationStrategyPojoStandard.class);
+&nbsp;    private final JavaType&lt;?&gt; mappedJtd;
+&nbsp;    private final JavaType&lt;?&gt; proxyJtd;
+&nbsp;    private final boolean isBytecodeEnhanced;
+<b class="fc">&nbsp;    private final boolean lifecycleImplementor;</b>
+&nbsp;    private final ReflectionOptimizer reflectionOptimizer;
+&nbsp;    private final ProxyFactory proxyFactory;
+&nbsp;    private final EntityInstantiator instantiator;
+&nbsp;    private final StrategySelector strategySelector;
+&nbsp;    private final String identifierPropertyName;
+&nbsp;    private final PropertyAccess identifierPropertyAccess;
+&nbsp;    private final Map&lt;String, PropertyAccess&gt; propertyAccessMap;
+&nbsp;    private final EmbeddableRepresentationStrategyPojo mapsIdRepresentationStrategy;
+&nbsp;
+&nbsp;    public EntityRepresentationStrategyPojoStandard(PersistentClass bootDescriptor, EntityPersister runtimeDescriptor, RuntimeModelCreationContext creationContext) {
+&nbsp;        JavaTypeRegistry jtdRegistry = creationContext.getTypeConfiguration().getJavaTypeRegistry();
+&nbsp;        Class&lt;?&gt; mappedJavaType = bootDescriptor.getMappedClass();
+&nbsp;        this.mappedJtd = jtdRegistry.resolveEntityTypeDescriptor(mappedJavaType);
+&nbsp;        Class&lt;?&gt; proxyJavaType = bootDescriptor.getProxyInterface();
+&nbsp;        if (proxyJavaType != null) {
+&nbsp;            this.proxyJtd = jtdRegistry.getDescriptor(proxyJavaType);
+&nbsp;        } else {
+&nbsp;            this.proxyJtd = null;
+&nbsp;        }
+&nbsp;
+&nbsp;        this.lifecycleImplementor = Lifecycle.class.isAssignableFrom(mappedJavaType);
+<b class="fc">&nbsp;        this.isBytecodeEnhanced = ManagedTypeHelper.isPersistentAttributeInterceptableType(mappedJavaType);</b>
+<b class="fc">&nbsp;        Property identifierProperty = bootDescriptor.getIdentifierProperty();</b>
+&nbsp;        if (identifierProperty == null) {
+<b class="fc">&nbsp;            this.identifierPropertyName = null;</b>
+<b class="fc">&nbsp;            this.identifierPropertyAccess = null;</b>
+&nbsp;            KeyValue bootDescriptorIdentifier = bootDescriptor.getIdentifier();
+<b class="fc">&nbsp;            if (bootDescriptorIdentifier instanceof Component) {</b>
+<b class="pc">&nbsp;                if (bootDescriptor.getIdentifierMapper() != null) {</b>
+<b class="fc">&nbsp;                    this.mapsIdRepresentationStrategy = new EmbeddableRepresentationStrategyPojo(bootDescriptor.getIdentifierMapper(), () -&gt; ((CompositeTypeImplementor)bootDescriptor.getIdentifierMapper().getType()).getMappingModelPart().getEmbeddableTypeDescriptor(), (EmbeddableInstantiator)null, (CompositeUserType)null, creationContext);</b>
+&nbsp;                } else if (bootDescriptorIdentifier != null) {
+&nbsp;                    this.mapsIdRepresentationStrategy = new EmbeddableRepresentationStrategyPojo((Component)bootDescriptorIdentifier, () -&gt; ((CompositeTypeImplementor)bootDescriptor.getIdentifierMapper().getType()).getMappingModelPart().getEmbeddableTypeDescriptor(), (EmbeddableInstantiator)null, (CompositeUserType)null, creationContext);
+<b class="nc">&nbsp;                } else {</b>
+&nbsp;                    this.mapsIdRepresentationStrategy = null;
+&nbsp;                }
+<b class="fc">&nbsp;            } else {</b>
+<b class="fc">&nbsp;                this.mapsIdRepresentationStrategy = null;</b>
+&nbsp;            }
+<b class="fc">&nbsp;        } else {</b>
+<b class="pc">&nbsp;            this.mapsIdRepresentationStrategy = null;</b>
+<b class="nc">&nbsp;            this.identifierPropertyName = identifierProperty.getName();</b>
+<b class="nc">&nbsp;            this.identifierPropertyAccess = this.makePropertyAccess(identifierProperty);</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        this.strategySelector = (StrategySelector)creationContext.getServiceRegistry().getService(StrategySelector.class);
+<b class="nc">&nbsp;        BytecodeProvider bytecodeProvider = (BytecodeProvider)creationContext.getBootstrapContext().getServiceRegistry().requireService(BytecodeProvider.class);</b>
+<b class="nc">&nbsp;        this.proxyFactory = this.resolveProxyFactory(bootDescriptor, runtimeDescriptor, this.proxyJtd, bytecodeProvider, creationContext);</b>
+<b class="nc">&nbsp;        this.propertyAccessMap = this.buildPropertyAccessMap(bootDescriptor);</b>
+<b class="nc">&nbsp;        this.reflectionOptimizer = this.resolveReflectionOptimizer(bytecodeProvider);</b>
+<b class="nc">&nbsp;        this.instantiator = this.determineInstantiator(bootDescriptor, runtimeDescriptor.getEntityMetamodel());</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private ProxyFactory resolveProxyFactory(PersistentClass bootDescriptor, EntityPersister entityPersister, JavaType&lt;?&gt; proxyJtd, BytecodeProvider bytecodeProvider, RuntimeModelCreationContext creationContext) {
+&nbsp;        EntityMetamodel entityMetamodel = entityPersister.getEntityMetamodel();
+&nbsp;        boolean enhancedForLazyLoading = entityPersister.getBytecodeEnhancementMetadata().isEnhancedForLazyLoading();
+&nbsp;        if (enhancedForLazyLoading &amp;&amp; bootDescriptor.getRootClass() == bootDescriptor &amp;&amp; !bootDescriptor.hasSubclasses()) {
+&nbsp;            return null;
+<b class="nc">&nbsp;        } else if (proxyJtd != null &amp;&amp; entityMetamodel.isLazy()) {</b>
+<b class="nc">&nbsp;            ProxyFactory proxyFactory = this.createProxyFactory(bootDescriptor, bytecodeProvider, creationContext);</b>
+&nbsp;            if (proxyFactory == null) {
+<b class="nc">&nbsp;                entityMetamodel.setLazy(false);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            return proxyFactory;
+&nbsp;        } else {
+&nbsp;            return null;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private Map&lt;String, PropertyAccess&gt; buildPropertyAccessMap(PersistentClass bootDescriptor) {</b>
+&nbsp;        Map&lt;String, PropertyAccess&gt; propertyAccessMap = new LinkedHashMap();
+&nbsp;
+&nbsp;        for(Property property : bootDescriptor.getPropertyClosure()) {
+<b class="nc">&nbsp;            propertyAccessMap.put(property.getName(), this.makePropertyAccess(property));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        return propertyAccessMap;
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private EntityInstantiator determineInstantiator(PersistentClass bootDescriptor, EntityMetamodel entityMetamodel) {</b>
+&nbsp;        if (this.reflectionOptimizer != null &amp;&amp; this.reflectionOptimizer.getInstantiationOptimizer() != null) {
+&nbsp;            ReflectionOptimizer.InstantiationOptimizer instantiationOptimizer = this.reflectionOptimizer.getInstantiationOptimizer();
+<b class="fc">&nbsp;            return new EntityInstantiatorPojoOptimized(entityMetamodel, bootDescriptor, this.mappedJtd, instantiationOptimizer);</b>
+&nbsp;        } else {
+<b class="fc">&nbsp;            return new EntityInstantiatorPojoStandard(entityMetamodel, bootDescriptor, this.mappedJtd);</b>
+&nbsp;        }
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private ProxyFactory createProxyFactory(PersistentClass bootDescriptor, BytecodeProvider bytecodeProvider, RuntimeModelCreationContext creationContext) {
+&nbsp;        Set&lt;Class&lt;?&gt;&gt; proxyInterfaces = new LinkedHashSet();
+&nbsp;        Class&lt;?&gt; mappedClass = this.mappedJtd.getJavaTypeClass();
+&nbsp;        Class&lt;?&gt; proxyInterface;
+&nbsp;        if (this.proxyJtd != null) {
+&nbsp;            proxyInterface = this.proxyJtd.getJavaTypeClass();
+<b class="fc">&nbsp;        } else {</b>
+<b class="fc">&nbsp;            proxyInterface = null;</b>
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+&nbsp;        if (proxyInterface != null &amp;&amp; !mappedClass.equals(proxyInterface)) {
+&nbsp;            if (!proxyInterface.isInterface()) {
+&nbsp;                throw new MappingException(&quot;proxy must be either an interface, or the class itself: &quot; + bootDescriptor.getEntityName());
+&nbsp;            }
+&nbsp;
+&nbsp;            proxyInterfaces.add(proxyInterface);
+&nbsp;        }
+&nbsp;
+&nbsp;        if (mappedClass.isInterface()) {
+<b class="fc">&nbsp;            proxyInterfaces.add(mappedClass);</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        for(Subclass subclass : bootDescriptor.getSubclasses()) {
+<b class="pc">&nbsp;            Class&lt;?&gt; subclassProxy = subclass.getProxyInterface();</b>
+<b class="nc">&nbsp;            Class&lt;?&gt; subclassClass = subclass.getMappedClass();</b>
+<b class="nc">&nbsp;            if (subclassProxy != null &amp;&amp; !subclassClass.equals(subclassProxy)) {</b>
+&nbsp;                if (!subclassProxy.isInterface()) {
+&nbsp;                    throw new MappingException(&quot;proxy must be either an interface, or the class itself: &quot; + subclass.getEntityName());
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                proxyInterfaces.add(subclassProxy);
+<b class="pc">&nbsp;            }</b>
+<b class="fc">&nbsp;        }</b>
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;        proxyInterfaces.add(HibernateProxy.class);</b>
+&nbsp;        Class&lt;?&gt; clazz = bootDescriptor.getMappedClass();
+<b class="fc">&nbsp;</b>
+&nbsp;        Method idGetterMethod;
+&nbsp;        Method idSetterMethod;
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            for(Property property : bootDescriptor.getProperties()) {
+&nbsp;                ProxyFactoryHelper.validateGetterSetterMethodProxyability(&quot;Getter&quot;, property.getGetter(clazz).getMethod());
+&nbsp;                ProxyFactoryHelper.validateGetterSetterMethodProxyability(&quot;Setter&quot;, property.getSetter(clazz).getMethod());
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;            if (this.identifierPropertyAccess != null) {</b>
+&nbsp;                idGetterMethod = this.identifierPropertyAccess.getGetter().getMethod();
+<b class="fc">&nbsp;                idSetterMethod = this.identifierPropertyAccess.getSetter().getMethod();</b>
+&nbsp;                ProxyFactoryHelper.validateGetterSetterMethodProxyability(&quot;Getter&quot;, idGetterMethod);
+&nbsp;                ProxyFactoryHelper.validateGetterSetterMethodProxyability(&quot;Setter&quot;, idSetterMethod);
+&nbsp;            } else {
+<b class="pc">&nbsp;                idGetterMethod = null;</b>
+<b class="nc">&nbsp;                idSetterMethod = null;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        } catch (HibernateException he) {
+&nbsp;            LOG.unableToCreateProxyFactory(clazz.getName(), he);
+&nbsp;            return null;
+&nbsp;        }
+&nbsp;
+&nbsp;        Method proxyGetIdentifierMethod = idGetterMethod != null &amp;&amp; proxyInterface != null ? ReflectHelper.getMethod(proxyInterface, idGetterMethod) : null;
+&nbsp;        Method proxySetIdentifierMethod = idSetterMethod != null &amp;&amp; proxyInterface != null ? ReflectHelper.getMethod(proxyInterface, idSetterMethod) : null;
+<b class="fc">&nbsp;        ProxyFactory proxyFactory = bytecodeProvider.getProxyFactoryFactory().buildProxyFactory(creationContext.getSessionFactory());</b>
+&nbsp;
+&nbsp;        try {
+&nbsp;            proxyFactory.postInstantiate(bootDescriptor.getEntityName(), mappedClass, proxyInterfaces, proxyGetIdentifierMethod, proxySetIdentifierMethod, bootDescriptor.hasEmbeddedIdentifier() ? (CompositeType)bootDescriptor.getIdentifier().getType() : null);
+&nbsp;            return proxyFactory;
+&nbsp;        } catch (HibernateException he) {
+&nbsp;            LOG.unableToCreateProxyFactory(bootDescriptor.getEntityName(), he);
+&nbsp;            return null;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private ReflectionOptimizer resolveReflectionOptimizer(BytecodeProvider bytecodeProvider) {
+<b class="fc">&nbsp;        return bytecodeProvider.getReflectionOptimizer(this.mappedJtd.getJavaTypeClass(), this.propertyAccessMap);</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    private PropertyAccess makePropertyAccess(Property bootAttributeDescriptor) {
+<b class="pc">&nbsp;        PropertyAccessStrategy strategy = bootAttributeDescriptor.getPropertyAccessStrategy(this.mappedJtd.getJavaTypeClass());</b>
+<b class="fc">&nbsp;        if (strategy == null) {</b>
+&nbsp;            String propertyAccessorName = bootAttributeDescriptor.getPropertyAccessorName();
+&nbsp;            if (StringHelper.isNotEmpty(propertyAccessorName)) {
+<b class="nc">&nbsp;                strategy = (PropertyAccessStrategy)this.strategySelector.resolveStrategy(PropertyAccessStrategy.class, propertyAccessorName);</b>
+&nbsp;            } else if (bootAttributeDescriptor instanceof Backref) {
+&nbsp;                Backref backref = (Backref)bootAttributeDescriptor;
+<b class="pc">&nbsp;                strategy = new PropertyAccessStrategyBackRefImpl(backref.getCollectionRole(), backref.getEntityName());</b>
+<b class="nc">&nbsp;            } else if (bootAttributeDescriptor instanceof IndexBackref) {</b>
+<b class="nc">&nbsp;                IndexBackref indexBackref = (IndexBackref)bootAttributeDescriptor;</b>
+<b class="nc">&nbsp;                strategy = new PropertyAccessStrategyIndexBackRefImpl(indexBackref.getCollectionRole(), indexBackref.getEntityName());</b>
+&nbsp;            } else {
+&nbsp;                strategy = BuiltInPropertyAccessStrategies.MIXED.getStrategy();
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+<b class="pc">&nbsp;        if (strategy == null) {</b>
+<b class="nc">&nbsp;            throw new HibernateException(String.format(Locale.ROOT, &quot;Could not resolve PropertyAccess for attribute `%s#%s`&quot;, this.mappedJtd.getTypeName(), bootAttributeDescriptor.getName()));</b>
+&nbsp;        } else {
+&nbsp;            return strategy.buildPropertyAccess(this.mappedJtd.getJavaTypeClass(), bootAttributeDescriptor.getName(), true);
+<b class="pc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public RepresentationMode getMode() {</b>
+<b class="nc">&nbsp;        return RepresentationMode.POJO;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public ReflectionOptimizer getReflectionOptimizer() {
+&nbsp;        return this.reflectionOptimizer;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public EntityInstantiator getInstantiator() {
+&nbsp;        return this.instantiator;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+<b class="fc">&nbsp;    public ProxyFactory getProxyFactory() {</b>
+&nbsp;        return this.proxyFactory;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public boolean isLifecycleImplementor() {</b>
+<b class="fc">&nbsp;        return this.lifecycleImplementor;</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public boolean isBytecodeEnhanced() {
+<b class="fc">&nbsp;        return this.isBytecodeEnhanced;</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public JavaType&lt;?&gt; getMappedJavaType() {
+&nbsp;        return this.mappedJtd;
+<b class="pc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public JavaType&lt;?&gt; getProxyJavaType() {</b>
+<b class="fc">&nbsp;        return this.proxyJtd;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public PropertyAccess resolvePropertyAccess(Property bootAttributeDescriptor) {
+<b class="fc">&nbsp;        if (bootAttributeDescriptor.getName().equals(this.identifierPropertyName)) {</b>
+&nbsp;            return this.identifierPropertyAccess;
+&nbsp;        } else {
+&nbsp;            PropertyAccess propertyAccess = (PropertyAccess)this.propertyAccessMap.get(bootAttributeDescriptor.getName());
+&nbsp;            if (propertyAccess != null) {
+&nbsp;                return propertyAccess;
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                return this.mapsIdRepresentationStrategy != null ? this.mapsIdRepresentationStrategy.resolvePropertyAccess(bootAttributeDescriptor) : null;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:54</div>
+</div>
+</body>
+</html>

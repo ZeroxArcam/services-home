@@ -1,0 +1,584 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > EntityType</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.type</a>
+</div>
+
+<h1>Coverage Summary for Class: EntityType (org.hibernate.type)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">EntityType</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    28.9%
+  </span>
+  <span class="absValue">
+    (13/45)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    4.4%
+  </span>
+  <span class="absValue">
+    (6/136)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    11.3%
+  </span>
+  <span class="absValue">
+    (27/238)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.type;
+&nbsp;
+&nbsp;import java.sql.PreparedStatement;
+&nbsp;import java.sql.SQLException;
+&nbsp;import java.util.Map;
+&nbsp;import org.hibernate.AssertionFailure;
+&nbsp;import org.hibernate.HibernateException;
+&nbsp;import org.hibernate.MappingException;
+&nbsp;import org.hibernate.bytecode.enhance.spi.interceptor.EnhancementAsProxyLazinessInterceptor;
+&nbsp;import org.hibernate.engine.internal.ForeignKeys;
+&nbsp;import org.hibernate.engine.internal.ManagedTypeHelper;
+&nbsp;import org.hibernate.engine.spi.EntityUniqueKey;
+&nbsp;import org.hibernate.engine.spi.Mapping;
+&nbsp;import org.hibernate.engine.spi.PersistenceContext;
+&nbsp;import org.hibernate.engine.spi.PersistentAttributeInterceptor;
+&nbsp;import org.hibernate.engine.spi.SessionFactoryImplementor;
+&nbsp;import org.hibernate.engine.spi.SharedSessionContractImplementor;
+&nbsp;import org.hibernate.internal.util.ReflectHelper;
+&nbsp;import org.hibernate.persister.entity.EntityPersister;
+&nbsp;import org.hibernate.persister.entity.Joinable;
+&nbsp;import org.hibernate.persister.entity.UniqueKeyLoadable;
+&nbsp;import org.hibernate.proxy.HibernateProxy;
+&nbsp;import org.hibernate.proxy.LazyInitializer;
+&nbsp;import org.hibernate.type.spi.TypeConfiguration;
+&nbsp;
+&nbsp;public abstract class EntityType extends AbstractType implements AssociationType {
+&nbsp;    private final TypeConfiguration typeConfiguration;
+&nbsp;    private final String associatedEntityName;
+&nbsp;    protected final String uniqueKeyPropertyName;
+&nbsp;    private final boolean eager;
+&nbsp;    private final boolean unwrapProxy;
+&nbsp;    private final boolean referenceToPrimaryKey;
+&nbsp;    private transient volatile Type associatedIdentifierType;
+&nbsp;    private transient volatile EntityPersister associatedEntityPersister;
+<b class="fc">&nbsp;    private transient Class&lt;?&gt; returnedClass;</b>
+&nbsp;
+&nbsp;    protected EntityType(TypeConfiguration typeConfiguration, String entityName, boolean referenceToPrimaryKey, String uniqueKeyPropertyName, boolean eager, boolean unwrapProxy) {
+&nbsp;        this.typeConfiguration = typeConfiguration;
+&nbsp;        this.associatedEntityName = entityName;
+&nbsp;        this.uniqueKeyPropertyName = uniqueKeyPropertyName;
+&nbsp;        this.eager = eager;
+&nbsp;        this.unwrapProxy = unwrapProxy;
+&nbsp;        this.referenceToPrimaryKey = referenceToPrimaryKey;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected EntityType(EntityType original, String superTypeEntityName) {
+&nbsp;        this.typeConfiguration = original.typeConfiguration;
+&nbsp;        this.associatedEntityName = superTypeEntityName;
+&nbsp;        this.uniqueKeyPropertyName = original.uniqueKeyPropertyName;
+&nbsp;        this.eager = original.eager;
+&nbsp;        this.unwrapProxy = original.unwrapProxy;
+&nbsp;        this.referenceToPrimaryKey = original.referenceToPrimaryKey;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected TypeConfiguration scope() {
+&nbsp;        return this.typeConfiguration;
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isAssociationType() {
+&nbsp;        return true;
+&nbsp;    }
+&nbsp;
+&nbsp;    public final boolean isEntityType() {
+&nbsp;        return true;
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isMutable() {
+&nbsp;        return false;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public String toString() {</b>
+<b class="fc">&nbsp;        String var10000 = this.getClass().getName();</b>
+<b class="fc">&nbsp;        return var10000 + &quot;(&quot; + this.getAssociatedEntityName() + &quot;)&quot;;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public String getName() {</b>
+&nbsp;        return this.associatedEntityName;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public boolean isReferenceToPrimaryKey() {</b>
+<b class="nc">&nbsp;        return this.referenceToPrimaryKey;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public String getRHSUniqueKeyPropertyName() {</b>
+<b class="nc">&nbsp;        return this.referenceToPrimaryKey ? null : this.uniqueKeyPropertyName;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getLHSPropertyName() {
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getPropertyName() {
+&nbsp;        return null;
+&nbsp;    }
+&nbsp;
+&nbsp;    public final String getAssociatedEntityName() {
+&nbsp;        return this.associatedEntityName;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public String getAssociatedEntityName(SessionFactoryImplementor factory) {
+&nbsp;        return this.getAssociatedEntityName();
+&nbsp;    }
+&nbsp;
+&nbsp;    public Joinable getAssociatedJoinable(SessionFactoryImplementor factory) throws MappingException {
+&nbsp;        return (Joinable)this.getAssociatedEntityPersister(factory);
+&nbsp;    }
+&nbsp;
+&nbsp;    public final Class&lt;?&gt; getReturnedClass() {
+<b class="nc">&nbsp;        if (this.returnedClass == null) {</b>
+&nbsp;            this.returnedClass = this.determineAssociatedEntityClass();
+&nbsp;        }
+&nbsp;
+&nbsp;        return this.returnedClass;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private Class&lt;?&gt; determineAssociatedEntityClass() {
+&nbsp;        String entityName = this.getAssociatedEntityName();
+&nbsp;
+&nbsp;        try {
+&nbsp;            return ReflectHelper.classForName(entityName);
+&nbsp;        } catch (ClassNotFoundException var3) {
+&nbsp;            return this.typeConfiguration.entityClassForEntityName(entityName);
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void nullSafeSet(PreparedStatement st, Object value, int index, boolean[] settable, SharedSessionContractImplementor session) throws SQLException {
+&nbsp;        if (settable.length &gt; 0) {
+&nbsp;            this.requireIdentifierOrUniqueKeyType(session.getFactory()).nullSafeSet(st, this.getIdentifier(value, session), index, settable, session);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public void nullSafeSet(PreparedStatement st, Object value, int index, SharedSessionContractImplementor session) throws SQLException {
+&nbsp;        this.requireIdentifierOrUniqueKeyType(session.getFactory()).nullSafeSet(st, this.getIdentifier(value, session), index, session);
+&nbsp;    }
+&nbsp;
+&nbsp;    public final boolean isSame(Object x, Object y) {
+&nbsp;        return x == y;
+&nbsp;    }
+&nbsp;
+&nbsp;    public int compare(Object x, Object y) {
+<b class="fc">&nbsp;        throw new UnsupportedOperationException(&quot;compare() not implemented for EntityType&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int compare(Object x, Object y, SessionFactoryImplementor factory) {
+&nbsp;        if (x == null) {
+&nbsp;            return y == null ? 0 : -1;
+&nbsp;        } else if (y == null) {
+<b class="nc">&nbsp;            return 1;</b>
+&nbsp;        } else {
+&nbsp;            Object xId = this.extractIdentifier(x, factory);
+&nbsp;            Object yId = this.extractIdentifier(y, factory);
+&nbsp;            return this.getIdentifierType((Mapping)factory).compare(xId, yId);
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private Object extractIdentifier(Object entity, SessionFactoryImplementor factory) {
+<b class="nc">&nbsp;        EntityPersister concretePersister = this.getAssociatedEntityPersister(factory);</b>
+&nbsp;        return concretePersister == null ? null : concretePersister.getIdentifier(entity, (SharedSessionContractImplementor)null);
+&nbsp;    }
+&nbsp;
+&nbsp;    public Object deepCopy(Object value, SessionFactoryImplementor factory) {
+&nbsp;        return value;
+&nbsp;    }
+&nbsp;
+&nbsp;    public Object replace(Object original, Object target, SharedSessionContractImplementor session, Object owner, Map&lt;Object, Object&gt; copyCache) throws HibernateException {
+<b class="fc">&nbsp;        if (original == null) {</b>
+&nbsp;            return null;
+&nbsp;        } else {
+&nbsp;            Object cached = copyCache.get(original);
+&nbsp;            if (cached != null) {
+&nbsp;                return cached;
+&nbsp;            } else if (original == target) {
+&nbsp;                return target;
+&nbsp;            } else if (session.getContextEntityIdentifier(original) == null &amp;&amp; ForeignKeys.isTransient(this.associatedEntityName, original, Boolean.FALSE, session)) {
+&nbsp;                if (copyCache.containsValue(original)) {
+&nbsp;                    return original;
+&nbsp;                } else {
+<b class="nc">&nbsp;                    Object copy = session.getEntityPersister(this.associatedEntityName, original).instantiate((Object)null, session);</b>
+&nbsp;                    copyCache.put(original, copy);
+&nbsp;                    return copy;
+&nbsp;                }
+&nbsp;            } else {
+&nbsp;                Object id = this.getIdentifier(original, session);
+&nbsp;                if (id == null) {
+&nbsp;                    throw new AssertionFailure(&quot;non-transient entity has a null id: &quot; + original.getClass().getName());
+&nbsp;                } else {
+&nbsp;                    id = this.getIdentifierOrUniqueKeyType(session.getFactory()).replace(id, (Object)null, session, owner, copyCache);
+&nbsp;                    return this.resolve(id, session, owner);
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public int getHashCode(Object x, SessionFactoryImplementor factory) {
+&nbsp;        EntityPersister persister = this.getAssociatedEntityPersister(factory);
+&nbsp;        if (this.isReferenceToPrimaryKey()) {
+&nbsp;            LazyInitializer lazyInitializer = HibernateProxy.extractLazyInitializer(x);
+&nbsp;            Object id;
+&nbsp;            if (lazyInitializer != null) {
+&nbsp;                id = lazyInitializer.getInternalIdentifier();
+&nbsp;            } else {
+&nbsp;                Class&lt;?&gt; mappedClass = persister.getMappedClass();
+&nbsp;                if (mappedClass.isInstance(x)) {
+&nbsp;                    id = persister.getIdentifier(x, (SharedSessionContractImplementor)null);
+&nbsp;                } else {
+&nbsp;                    id = x;
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            return persister.getIdentifierType().getHashCode(id, factory);</b>
+&nbsp;        } else {
+&nbsp;            assert this.uniqueKeyPropertyName != null;
+&nbsp;
+<b class="nc">&nbsp;            Type keyType = persister.getPropertyType(this.uniqueKeyPropertyName);</b>
+&nbsp;            Object uniqueKey;
+<b class="nc">&nbsp;            if (keyType.getReturnedClass().isInstance(x)) {</b>
+&nbsp;                uniqueKey = x;
+&nbsp;            } else {
+<b class="nc">&nbsp;                uniqueKey = persister.getPropertyValue(x, this.uniqueKeyPropertyName);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            return keyType.getHashCode(uniqueKey, factory);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public boolean isEqual(Object x, Object y, SessionFactoryImplementor factory) {</b>
+<b class="nc">&nbsp;        if (x != null &amp;&amp; y != null) {</b>
+<b class="nc">&nbsp;            if (x == y) {</b>
+&nbsp;                return true;
+&nbsp;            } else {
+&nbsp;                EntityPersister persister = this.getAssociatedEntityPersister(factory);
+&nbsp;                if (this.isReferenceToPrimaryKey()) {
+&nbsp;                    Class&lt;?&gt; mappedClass = persister.getMappedClass();
+&nbsp;                    LazyInitializer lazyInitializerX = HibernateProxy.extractLazyInitializer(x);
+<b class="nc">&nbsp;                    Object xid;</b>
+<b class="nc">&nbsp;                    if (lazyInitializerX != null) {</b>
+&nbsp;                        xid = lazyInitializerX.getInternalIdentifier();
+&nbsp;                    } else if (mappedClass.isInstance(x)) {
+&nbsp;                        xid = persister.getIdentifier(x, (SharedSessionContractImplementor)null);
+&nbsp;                    } else {
+&nbsp;                        xid = x;
+&nbsp;                    }
+&nbsp;
+&nbsp;                    LazyInitializer lazyInitializerY = HibernateProxy.extractLazyInitializer(y);
+&nbsp;                    Object yid;
+&nbsp;                    if (lazyInitializerY != null) {
+&nbsp;                        yid = lazyInitializerY.getInternalIdentifier();
+&nbsp;                    } else if (mappedClass.isInstance(y)) {
+<b class="nc">&nbsp;                        yid = persister.getIdentifier(y, (SharedSessionContractImplementor)null);</b>
+&nbsp;                    } else {
+&nbsp;                        yid = y;
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    return xid == yid || persister.getIdentifierType().isEqual(xid, yid, factory);</b>
+&nbsp;                } else {
+&nbsp;                    assert this.uniqueKeyPropertyName != null;
+&nbsp;
+&nbsp;                    Type keyType = persister.getPropertyType(this.uniqueKeyPropertyName);
+<b class="nc">&nbsp;                    Object xUniqueKey;</b>
+&nbsp;                    if (keyType.getReturnedClass().isInstance(x)) {
+&nbsp;                        xUniqueKey = x;
+&nbsp;                    } else {
+<b class="nc">&nbsp;                        xUniqueKey = persister.getPropertyValue(x, this.uniqueKeyPropertyName);</b>
+&nbsp;                    }
+<b class="nc">&nbsp;</b>
+&nbsp;                    Object yUniqueKey;
+<b class="nc">&nbsp;                    if (keyType.getReturnedClass().isInstance(y)) {</b>
+&nbsp;                        yUniqueKey = y;
+&nbsp;                    } else {
+&nbsp;                        yUniqueKey = persister.getPropertyValue(y, this.uniqueKeyPropertyName);
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                    return xUniqueKey == yUniqueKey || keyType.isEqual(xUniqueKey, yUniqueKey, factory);
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;        } else {
+&nbsp;            return x == y;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected Object resolve(Object value, SharedSessionContractImplementor session, Object owner) {</b>
+&nbsp;        if (value != null &amp;&amp; !this.isNull(owner, session)) {
+&nbsp;            if (this.isReferenceToPrimaryKey()) {
+&nbsp;                return this.resolveIdentifier(value, session, (Boolean)null);
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            if (this.uniqueKeyPropertyName != null) {
+&nbsp;                return this.loadByUniqueKey(this.getAssociatedEntityName(), this.uniqueKeyPropertyName, value, session);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return null;
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isEager(Boolean overridingEager) {
+<b class="nc">&nbsp;        return overridingEager != null ? overridingEager : this.eager;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public EntityPersister getAssociatedEntityPersister(SessionFactoryImplementor factory) {</b>
+<b class="nc">&nbsp;        EntityPersister persister = this.associatedEntityPersister;</b>
+<b class="nc">&nbsp;        if (persister == null) {</b>
+&nbsp;            this.associatedEntityPersister = factory.getRuntimeMetamodels().getMappingMetamodel().getEntityDescriptor(this.getAssociatedEntityName());
+&nbsp;            return this.associatedEntityPersister;
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            return persister;</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    protected final Object getIdentifier(Object value, SharedSessionContractImplementor session) throws HibernateException {
+&nbsp;        if (this.isReferenceToIdentifierProperty()) {
+&nbsp;            return ForeignKeys.getEntityIdentifierIfNotUnsaved(this.getAssociatedEntityName(), value, session);
+<b class="nc">&nbsp;        } else if (value == null) {</b>
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        } else {
+&nbsp;            LazyInitializer lazyInitializer = HibernateProxy.extractLazyInitializer(value);
+&nbsp;            if (lazyInitializer != null) {
+<b class="nc">&nbsp;                value = lazyInitializer.getImplementation();</b>
+<b class="nc">&nbsp;            } else if (ManagedTypeHelper.isPersistentAttributeInterceptable(value)) {</b>
+<b class="nc">&nbsp;                PersistentAttributeInterceptor interceptor = ManagedTypeHelper.asPersistentAttributeInterceptable(value).$$_hibernate_getInterceptor();</b>
+<b class="nc">&nbsp;                if (interceptor instanceof EnhancementAsProxyLazinessInterceptor) {</b>
+&nbsp;                    ((EnhancementAsProxyLazinessInterceptor)interceptor).forceInitialize(value, (String)null);
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            EntityPersister entityPersister = this.getAssociatedEntityPersister(session.getFactory());</b>
+<b class="nc">&nbsp;            Object propertyValue = entityPersister.getPropertyValue(value, this.uniqueKeyPropertyName);</b>
+<b class="nc">&nbsp;            Type type = entityPersister.getPropertyType(this.uniqueKeyPropertyName);</b>
+<b class="nc">&nbsp;            return type instanceof EntityType ? ((EntityType)type).getIdentifier(propertyValue, session) : propertyValue;</b>
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected final Object getIdentifier(Object value, SessionFactoryImplementor sessionFactory) throws HibernateException {</b>
+<b class="nc">&nbsp;        if (this.isReferenceToIdentifierProperty()) {</b>
+&nbsp;            return this.getAssociatedEntityPersister(sessionFactory).getIdentifierMapping().getIdentifier(value);
+&nbsp;        } else if (value == null) {
+&nbsp;            return null;
+&nbsp;        } else {
+&nbsp;            EntityPersister entityPersister = this.getAssociatedEntityPersister(sessionFactory);
+&nbsp;            Object propertyValue = entityPersister.getPropertyValue(value, this.uniqueKeyPropertyName);
+<b class="nc">&nbsp;            Type type = entityPersister.getPropertyType(this.uniqueKeyPropertyName);</b>
+<b class="nc">&nbsp;            return type instanceof EntityType ? ((EntityType)type).getIdentifier(propertyValue, sessionFactory) : propertyValue;</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public String toLoggableString(Object value, SessionFactoryImplementor factory) {</b>
+&nbsp;        if (value == null) {
+&nbsp;            return &quot;null&quot;;
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            EntityPersister persister = this.getAssociatedEntityPersister(factory);</b>
+<b class="nc">&nbsp;            if (!persister.isInstance(value) &amp;&amp; persister.getIdentifierType().getReturnedClass().isInstance(value)) {</b>
+&nbsp;                return this.associatedEntityName + &quot;#&quot; + value;
+&nbsp;            } else {
+<b class="nc">&nbsp;                StringBuilder result = (new StringBuilder()).append(this.associatedEntityName);</b>
+&nbsp;                if (persister.hasIdentifierProperty()) {
+&nbsp;                    LazyInitializer lazyInitializer = HibernateProxy.extractLazyInitializer(value);
+<b class="nc">&nbsp;                    Object id;</b>
+&nbsp;                    if (lazyInitializer != null) {
+&nbsp;                        id = lazyInitializer.getInternalIdentifier();
+<b class="nc">&nbsp;                    } else {</b>
+&nbsp;                        id = persister.getIdentifier(value, (SharedSessionContractImplementor)null);
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                    result.append(&#39;#&#39;).append(persister.getIdentifierType().toLoggableString(id, factory));</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                return result.toString();</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public abstract boolean isOneToOne();
+&nbsp;
+&nbsp;    public boolean isLogicalOneToOne() {
+&nbsp;        return this.isOneToOne();
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    Type getIdentifierType(Mapping factory) {
+<b class="nc">&nbsp;        Type type = this.associatedIdentifierType;</b>
+<b class="nc">&nbsp;        if (type == null) {</b>
+&nbsp;            this.associatedIdentifierType = factory.getIdentifierType(this.getAssociatedEntityName());
+&nbsp;            return this.associatedIdentifierType;
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            return type;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    Type getIdentifierType(SharedSessionContractImplementor session) {</b>
+<b class="nc">&nbsp;        Type type = this.associatedIdentifierType;</b>
+&nbsp;        if (type == null) {
+&nbsp;            this.associatedIdentifierType = this.getIdentifierType((Mapping)session.getFactory());
+<b class="nc">&nbsp;            return this.associatedIdentifierType;</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            return type;
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public final Type getIdentifierOrUniqueKeyType(Mapping factory) throws MappingException {
+&nbsp;        if (this.isReferenceToIdentifierProperty()) {
+&nbsp;            return this.getIdentifierType(factory);
+&nbsp;        } else {
+<b class="nc">&nbsp;            Type type = factory.getReferencedPropertyType(this.getAssociatedEntityName(), this.uniqueKeyPropertyName);</b>
+<b class="nc">&nbsp;            return type instanceof EntityType ? ((EntityType)type).getIdentifierOrUniqueKeyType(factory) : type;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public final String getIdentifierOrUniqueKeyPropertyName(Mapping factory) throws MappingException {</b>
+<b class="nc">&nbsp;        return this.isReferenceToIdentifierProperty() ? factory.getIdentifierPropertyName(this.getAssociatedEntityName()) : this.uniqueKeyPropertyName;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isReferenceToIdentifierProperty() {
+<b class="nc">&nbsp;        return this.isReferenceToPrimaryKey() || this.uniqueKeyPropertyName == null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public abstract boolean isNullable();
+&nbsp;
+<b class="nc">&nbsp;    protected final Object resolveIdentifier(Object id, SharedSessionContractImplementor session, Boolean overridingEager) throws HibernateException {</b>
+&nbsp;        boolean isProxyUnwrapEnabled = this.unwrapProxy &amp;&amp; this.getAssociatedEntityPersister(session.getFactory()).isInstrumented();
+&nbsp;        boolean isEager = this.isEager(overridingEager);
+<b class="nc">&nbsp;        String entityName = isEager ? this.getAssociatedEntityName() : this.getAssociatedEntityPersister(session.getFactory()).resolveConcreteProxyTypeForId(id, session).getEntityName();</b>
+&nbsp;        Object proxyOrEntity = session.internalLoad(entityName, id, isEager, this.isNullable());
+<b class="nc">&nbsp;        LazyInitializer lazyInitializer = HibernateProxy.extractLazyInitializer(proxyOrEntity);</b>
+<b class="nc">&nbsp;        if (lazyInitializer != null) {</b>
+<b class="nc">&nbsp;            lazyInitializer.setUnwrap(isProxyUnwrapEnabled);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return proxyOrEntity;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected final Object resolveIdentifier(Object id, SharedSessionContractImplementor session) throws HibernateException {
+<b class="nc">&nbsp;        return this.resolveIdentifier(id, session, (Boolean)null);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected boolean isNull(Object owner, SharedSessionContractImplementor session) {
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public Object loadByUniqueKey(String entityName, String uniqueKeyPropertyName, Object key, SharedSessionContractImplementor session) throws HibernateException {</b>
+&nbsp;        SessionFactoryImplementor factory = session.getFactory();
+&nbsp;        UniqueKeyLoadable persister = (UniqueKeyLoadable)factory.getRuntimeMetamodels().getMappingMetamodel().getEntityDescriptor(entityName);
+&nbsp;        EntityUniqueKey euk = new EntityUniqueKey(entityName, uniqueKeyPropertyName, key, this.getIdentifierOrUniqueKeyType(factory), session.getFactory());
+&nbsp;        PersistenceContext persistenceContext = session.getPersistenceContextInternal();
+&nbsp;        Object result = persistenceContext.getEntity(euk);
+&nbsp;        if (result == null) {
+&nbsp;            result = persister.loadByUniqueKey(uniqueKeyPropertyName, key, session);
+<b class="nc">&nbsp;            if (result != null) {</b>
+<b class="nc">&nbsp;                persistenceContext.addEntity(euk, result);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return result == null ? null : persistenceContext.proxyFor(result);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Type requireIdentifierOrUniqueKeyType(Mapping mapping) {
+<b class="nc">&nbsp;        Type fkTargetType = this.getIdentifierOrUniqueKeyType(mapping);</b>
+&nbsp;        if (fkTargetType == null) {
+&nbsp;            String var10002 = this.getAssociatedEntityName();
+&nbsp;            throw new MappingException(&quot;Unable to determine FK target Type for many-to-one or one-to-one mapping: referenced-entity-name=[&quot; + var10002 + &quot;], referenced-entity-attribute-name=[&quot; + this.getLHSPropertyName() + &quot;]&quot;);
+&nbsp;        } else {
+&nbsp;            return fkTargetType;
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,256 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > AbstractLogicalConnectionImplementor</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.resource.jdbc.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: AbstractLogicalConnectionImplementor (org.hibernate.resource.jdbc.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AbstractLogicalConnectionImplementor</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    12.5%
+  </span>
+  <span class="absValue">
+    (2/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    6.4%
+  </span>
+  <span class="absValue">
+    (3/47)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.resource.jdbc.internal;
+&nbsp;
+&nbsp;import java.sql.Connection;
+&nbsp;import java.sql.SQLException;
+&nbsp;import org.hibernate.TransactionException;
+&nbsp;import org.hibernate.resource.jdbc.ResourceRegistry;
+&nbsp;import org.hibernate.resource.jdbc.spi.LogicalConnectionImplementor;
+&nbsp;import org.hibernate.resource.jdbc.spi.PhysicalJdbcTransaction;
+&nbsp;import org.hibernate.resource.transaction.spi.TransactionStatus;
+&nbsp;import org.jboss.logging.Logger;
+&nbsp;
+&nbsp;public abstract class AbstractLogicalConnectionImplementor implements LogicalConnectionImplementor, PhysicalJdbcTransaction {
+&nbsp;    private static final Logger log = Logger.getLogger(AbstractLogicalConnectionImplementor.class);
+&nbsp;    private TransactionStatus status;
+&nbsp;    protected ResourceRegistry resourceRegistry;
+&nbsp;
+&nbsp;    public AbstractLogicalConnectionImplementor() {
+<b class="fc">&nbsp;        this.status = TransactionStatus.NOT_ACTIVE;</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+<b class="fc">&nbsp;    public PhysicalJdbcTransaction getPhysicalJdbcTransaction() {</b>
+&nbsp;        this.errorIfClosed();
+&nbsp;        return this;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected void errorIfClosed() {</b>
+<b class="nc">&nbsp;        if (!this.isOpen()) {</b>
+&nbsp;            throw new IllegalStateException(this.toString() + &quot; is closed&quot;);
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public ResourceRegistry getResourceRegistry() {</b>
+&nbsp;        return this.resourceRegistry;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void afterStatement() {
+&nbsp;        log.trace(&quot;LogicalConnection#afterStatement&quot;);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void beforeTransactionCompletion() {
+&nbsp;        log.trace(&quot;LogicalConnection#beforeTransactionCompletion&quot;);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void afterTransaction() {
+&nbsp;        log.trace(&quot;LogicalConnection#afterTransaction&quot;);
+&nbsp;        this.resourceRegistry.releaseResources();
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected abstract Connection getConnectionForTransactionManagement();
+&nbsp;
+&nbsp;    public void begin() {
+&nbsp;        try {
+<b class="nc">&nbsp;            if (!this.doConnectionsFromProviderHaveAutoCommitDisabled()) {</b>
+&nbsp;                log.trace(&quot;Preparing to begin transaction via JDBC Connection.setAutoCommit(false)&quot;);
+<b class="nc">&nbsp;                this.getConnectionForTransactionManagement().setAutoCommit(false);</b>
+&nbsp;                log.trace(&quot;Transaction begun via JDBC Connection.setAutoCommit(false)&quot;);
+&nbsp;            }
+&nbsp;
+&nbsp;            this.status = TransactionStatus.ACTIVE;
+&nbsp;        } catch (SQLException e) {
+&nbsp;            throw new TransactionException(&quot;JDBC begin transaction failed: &quot;, e);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void commit() {</b>
+<b class="nc">&nbsp;        try {</b>
+<b class="nc">&nbsp;            log.trace(&quot;Preparing to commit transaction via JDBC Connection.commit()&quot;);</b>
+<b class="nc">&nbsp;            if (this.isPhysicallyConnected()) {</b>
+&nbsp;                this.getConnectionForTransactionManagement().commit();
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                this.errorIfClosed();
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            this.status = TransactionStatus.COMMITTED;
+&nbsp;            log.trace(&quot;Transaction committed via JDBC Connection.commit()&quot;);
+&nbsp;        } catch (SQLException e) {
+&nbsp;            this.status = TransactionStatus.FAILED_COMMIT;
+&nbsp;            throw new TransactionException(&quot;Unable to commit against JDBC Connection&quot;, e);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        this.afterCompletion();</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected void afterCompletion() {
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    protected void resetConnection(boolean initiallyAutoCommit) {</b>
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            if (initiallyAutoCommit) {
+&nbsp;                log.trace(&quot;re-enabling auto-commit on JDBC Connection after completion of JDBC-based transaction&quot;);
+<b class="nc">&nbsp;                this.getConnectionForTransactionManagement().setAutoCommit(true);</b>
+<b class="nc">&nbsp;                this.status = TransactionStatus.NOT_ACTIVE;</b>
+&nbsp;            }
+&nbsp;        } catch (Exception e) {
+<b class="nc">&nbsp;            log.debug(&quot;Could not re-enable auto-commit on JDBC Connection after completion of JDBC-based transaction : &quot; + e);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void rollback() {</b>
+&nbsp;        try {
+&nbsp;            log.trace(&quot;Preparing to rollback transaction via JDBC Connection.rollback()&quot;);
+&nbsp;            if (this.isPhysicallyConnected()) {
+<b class="nc">&nbsp;                this.getConnectionForTransactionManagement().rollback();</b>
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                this.errorIfClosed();</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            this.status = TransactionStatus.ROLLED_BACK;
+&nbsp;            log.trace(&quot;Transaction rolled-back via JDBC Connection.rollback()&quot;);
+<b class="nc">&nbsp;        } catch (SQLException e) {</b>
+&nbsp;            this.status = TransactionStatus.FAILED_ROLLBACK;
+&nbsp;            throw new TransactionException(&quot;Unable to rollback against JDBC Connection&quot;, e);
+&nbsp;        }
+&nbsp;
+&nbsp;        this.afterCompletion();
+&nbsp;    }
+&nbsp;
+&nbsp;    protected static boolean determineInitialAutoCommitMode(Connection providedConnection) {
+<b class="nc">&nbsp;        try {</b>
+<b class="nc">&nbsp;            return providedConnection.getAutoCommit();</b>
+<b class="nc">&nbsp;        } catch (SQLException var2) {</b>
+&nbsp;            log.debug(&quot;Unable to ascertain initial auto-commit state of provided connection; assuming auto-commit&quot;);
+&nbsp;            return true;
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public TransactionStatus getStatus() {</b>
+&nbsp;        return this.status;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected boolean doConnectionsFromProviderHaveAutoCommitDisabled() {</b>
+&nbsp;        return false;
+&nbsp;    }
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

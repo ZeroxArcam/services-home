@@ -5,7 +5,7 @@
 <html id="htmlId">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
-  <title>Coverage Report > ContextClassVisitor</title>
+  <title>Coverage Report > BaseJsonNode</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -19,10 +19,10 @@
 <div class="breadCrumbs">
 Current scope:     <a href="../../index.html">all classes</a>
     <span class="separator">|</span>
-    <a href="../index.html">net.bytebuddy.utility.visitor</a>
+    <a href="../index.html">com.fasterxml.jackson.databind.node</a>
 </div>
 
-<h1>Coverage Summary for Class: ContextClassVisitor (net.bytebuddy.utility.visitor)</h1>
+<h1>Coverage Summary for Class: BaseJsonNode (com.fasterxml.jackson.databind.node)</h1>
 
 <table class="coverageStats">
 <tr>
@@ -45,7 +45,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 </th>
 </tr>
 <tr>
-  <td class="name">ContextClassVisitor</td>
+  <td class="name">BaseJsonNode</td>
 <td class="coverageStat">
   <span class="percent">
     0%
@@ -59,7 +59,7 @@ Current scope:     <a href="../../index.html">all classes</a>
     0%
   </span>
   <span class="absValue">
-    (0/3)
+    (0/20)
   </span>
 </td>
 <td class="coverageStat">
@@ -67,7 +67,7 @@ Current scope:     <a href="../../index.html">all classes</a>
     0%
   </span>
   <span class="absValue">
-    (0/6)
+    (0/24)
   </span>
 </td>
 <td class="coverageStat">
@@ -75,7 +75,7 @@ Current scope:     <a href="../../index.html">all classes</a>
     0%
   </span>
   <span class="absValue">
-    (0/6)
+    (0/53)
   </span>
 </td>
 </tr>
@@ -92,35 +92,158 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;// (powered by FernFlower decompiler)
 &nbsp;//
 &nbsp;
-&nbsp;package net.bytebuddy.utility.visitor;
+&nbsp;package com.fasterxml.jackson.databind.node;
 &nbsp;
-&nbsp;import java.util.List;
-&nbsp;import net.bytebuddy.dynamic.DynamicType;
-&nbsp;import net.bytebuddy.implementation.LoadedTypeInitializer;
-&nbsp;import net.bytebuddy.jar.asm.ClassVisitor;
-&nbsp;import net.bytebuddy.utility.OpenedClassReader;
+&nbsp;import com.fasterxml.jackson.core.JsonGenerator;
+&nbsp;import com.fasterxml.jackson.core.JsonParser;
+&nbsp;import com.fasterxml.jackson.core.JsonPointer;
+&nbsp;import com.fasterxml.jackson.core.JsonToken;
+&nbsp;import com.fasterxml.jackson.core.ObjectCodec;
+&nbsp;import com.fasterxml.jackson.core.StreamReadConstraints;
+&nbsp;import com.fasterxml.jackson.core.exc.StreamConstraintsException;
+&nbsp;import com.fasterxml.jackson.databind.JsonNode;
+&nbsp;import com.fasterxml.jackson.databind.SerializerProvider;
+&nbsp;import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
+&nbsp;import com.fasterxml.jackson.databind.util.ExceptionUtil;
+&nbsp;import java.io.IOException;
+&nbsp;import java.io.Serializable;
+&nbsp;import java.math.BigDecimal;
+&nbsp;import java.math.BigInteger;
 &nbsp;
-&nbsp;public abstract class ContextClassVisitor extends ClassVisitor {
-&nbsp;    private boolean active;
+&nbsp;public abstract class BaseJsonNode extends JsonNode implements Serializable {
+&nbsp;    private static final long serialVersionUID = 1L;
 &nbsp;
-&nbsp;    protected ContextClassVisitor(ClassVisitor classVisitor) {
-&nbsp;        super(OpenedClassReader.ASM_API, classVisitor);
+&nbsp;    Object writeReplace() {
+&nbsp;        return NodeSerialization.from(this);
 &nbsp;    }
 &nbsp;
-&nbsp;    public ContextClassVisitor active() {
-&nbsp;        this.active = true;
-&nbsp;        return this;
+&nbsp;    protected BaseJsonNode() {
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public final JsonNode findPath(String fieldName) {
+<b class="nc">&nbsp;        JsonNode value = this.findValue(fieldName);</b>
+&nbsp;        return (JsonNode)(value == null ? MissingNode.getInstance() : value);
 &nbsp;    }
 &nbsp;
-&nbsp;    public abstract List&lt;DynamicType&gt; getAuxiliaryTypes();
+&nbsp;    public abstract int hashCode();
 &nbsp;
-&nbsp;    public abstract LoadedTypeInitializer getLoadedTypeInitializer();
+&nbsp;    public JsonNode required(String fieldName) {
+&nbsp;        return (JsonNode)this._reportRequiredViolation(&quot;Node of type `%s` has no fields&quot;, new Object[]{this.getClass().getSimpleName()});
+&nbsp;    }
 &nbsp;
-&nbsp;    public void visitEnd() {
-&nbsp;        super.visitEnd();
-&nbsp;        if (!this.active &amp;&amp; (!this.getAuxiliaryTypes().isEmpty() || this.getLoadedTypeInitializer().isAlive())) {
-&nbsp;            throw new IllegalStateException(this + &quot; is not defined &#39;active&#39; but defines auxiliary types or an alive type initializer&quot;);
+&nbsp;    public JsonNode required(int index) {
+<b class="nc">&nbsp;        return (JsonNode)this._reportRequiredViolation(&quot;Node of type `%s` has no indexed values&quot;, new Object[]{this.getClass().getSimpleName()});</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public JsonParser traverse() {
+<b class="nc">&nbsp;        return new TreeTraversingParser(this);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public JsonParser traverse(ObjectCodec codec) {
+&nbsp;        return new TreeTraversingParser(this, codec);
+&nbsp;    }
+&nbsp;
+&nbsp;    public abstract JsonToken asToken();
+&nbsp;
+&nbsp;    public JsonParser.NumberType numberType() {
+&nbsp;        return null;
+&nbsp;    }
+&nbsp;
+&nbsp;    public ObjectNode withObject(JsonPointer ptr, JsonNode.OverwriteMode overwriteMode, boolean preferIndex) {
+<b class="nc">&nbsp;        if (ptr.matches()) {</b>
+<b class="nc">&nbsp;            if (this instanceof ObjectNode) {</b>
+&nbsp;                return (ObjectNode)this;
+&nbsp;            }
+&nbsp;
+&nbsp;            this._reportWrongNodeType(&quot;Can only call `withObject()` with empty JSON Pointer on `ObjectNode`, not `%s`&quot;, this.getClass().getName());
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        ObjectNode n = this._withObject(ptr, ptr, overwriteMode, preferIndex);
+&nbsp;        if (n == null) {
+&nbsp;            this._reportWrongNodeType(&quot;Cannot replace context node (of type `%s`) using `withObject()` with  JSON Pointer &#39;%s&#39;&quot;, this.getClass().getName(), ptr);
 &nbsp;        }
+&nbsp;
+&nbsp;        return n;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected ObjectNode _withObject(JsonPointer origPtr, JsonPointer currentPtr, JsonNode.OverwriteMode overwriteMode, boolean preferIndex) {
+&nbsp;        return null;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected void _withXxxVerifyReplace(JsonPointer origPtr, JsonPointer currentPtr, JsonNode.OverwriteMode overwriteMode, boolean preferIndex, JsonNode toReplace) {
+&nbsp;        if (!this._withXxxMayReplace(toReplace, overwriteMode)) {
+&nbsp;            this._reportWrongNodeType(&quot;Cannot replace `JsonNode` of type `%s` for property \&quot;%s\&quot; in JSON Pointer \&quot;%s\&quot; (mode `OverwriteMode.%s`)&quot;, toReplace.getClass().getName(), currentPtr.getMatchingProperty(), origPtr, overwriteMode);
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected boolean _withXxxMayReplace(JsonNode node, JsonNode.OverwriteMode overwriteMode) {
+&nbsp;        switch (overwriteMode) {
+&nbsp;            case NONE:
+&nbsp;                return false;
+&nbsp;            case NULLS:
+&nbsp;                return node.isNull();
+&nbsp;            case SCALARS:
+&nbsp;                return !node.isContainerNode();
+&nbsp;            case ALL:
+&nbsp;            default:
+&nbsp;                return true;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public ArrayNode withArray(JsonPointer ptr, JsonNode.OverwriteMode overwriteMode, boolean preferIndex) {
+&nbsp;        if (ptr.matches()) {
+<b class="nc">&nbsp;            if (this instanceof ArrayNode) {</b>
+&nbsp;                return (ArrayNode)this;
+&nbsp;            }
+&nbsp;
+&nbsp;            this._reportWrongNodeType(&quot;Can only call `withArray()` with empty JSON Pointer on `ArrayNode`, not `%s`&quot;, this.getClass().getName());
+&nbsp;        }
+&nbsp;
+&nbsp;        ArrayNode n = this._withArray(ptr, ptr, overwriteMode, preferIndex);
+&nbsp;        if (n == null) {
+&nbsp;            this._reportWrongNodeType(&quot;Cannot replace context node (of type `%s`) using `withArray()` with  JSON Pointer &#39;%s&#39;&quot;, this.getClass().getName(), ptr);
+&nbsp;        }
+&nbsp;
+&nbsp;        return n;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected ArrayNode _withArray(JsonPointer origPtr, JsonPointer currentPtr, JsonNode.OverwriteMode overwriteMode, boolean preferIndex) {</b>
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public abstract void serialize(JsonGenerator var1, SerializerProvider var2) throws IOException;</b>
+&nbsp;
+&nbsp;    public abstract void serializeWithType(JsonGenerator var1, SerializerProvider var2, TypeSerializer var3) throws IOException;
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public String toString() {</b>
+<b class="nc">&nbsp;        return InternalNodeMapper.nodeToString(this);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public String toPrettyString() {</b>
+&nbsp;        return InternalNodeMapper.nodeToPrettyString(this);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected &lt;T&gt; T _reportWrongNodeType(String msgTemplate, Object... args) {
+&nbsp;        throw new UnsupportedOperationException(String.format(msgTemplate, args));
+&nbsp;    }
+&nbsp;
+&nbsp;    protected &lt;T&gt; T _reportWrongNodeOperation(String msgTemplate, Object... args) {
+&nbsp;        throw new UnsupportedOperationException(String.format(msgTemplate, args));
+&nbsp;    }
+&nbsp;
+&nbsp;    protected JsonPointer _jsonPointerIfValid(String exprOrProperty) {
+&nbsp;        return !exprOrProperty.isEmpty() &amp;&amp; exprOrProperty.charAt(0) != &#39;/&#39; ? null : JsonPointer.compile(exprOrProperty);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected BigInteger _bigIntFromBigDec(BigDecimal value) {
+&nbsp;        try {
+<b class="nc">&nbsp;            StreamReadConstraints.defaults().validateBigIntegerScale(value.scale());</b>
+&nbsp;        } catch (StreamConstraintsException e) {
+&nbsp;            ExceptionUtil.throwSneaky(e);
+&nbsp;        }
+&nbsp;
+&nbsp;        return value.toBigInteger();
 &nbsp;    }
 &nbsp;}
 </code>
@@ -146,7 +269,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2025-03-20 13:42</div>
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
 </div>
 </body>
 </html>

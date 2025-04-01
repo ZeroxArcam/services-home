@@ -1,0 +1,560 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > BasicFormatterImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.engine.jdbc.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: BasicFormatterImpl (org.hibernate.engine.jdbc.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">BasicFormatterImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (2/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    75%
+  </span>
+  <span class="absValue">
+    (3/4)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.engine.jdbc.internal;
+&nbsp;
+&nbsp;import java.util.LinkedList;
+&nbsp;import java.util.Locale;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.StringTokenizer;
+&nbsp;
+&nbsp;public class BasicFormatterImpl implements Formatter {
+&nbsp;    private static final Set&lt;String&gt; NON_FUNCTION_NAMES = Set.of(&quot;select&quot;, &quot;from&quot;, &quot;on&quot;, &quot;set&quot;, &quot;and&quot;, &quot;or&quot;, &quot;where&quot;, &quot;having&quot;, &quot;by&quot;, &quot;using&quot;);
+&nbsp;    private static final String INDENT_STRING = &quot;    &quot;;
+&nbsp;    private static final String INITIAL = System.lineSeparator() + &quot;    &quot;;
+&nbsp;
+&nbsp;    public BasicFormatterImpl() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public String format(String source) {
+<b class="fc">&nbsp;        return (new FormatProcess(source)).perform();</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    private static class FormatProcess {
+&nbsp;        boolean beginLine = true;
+&nbsp;        boolean afterBeginBeforeEnd;
+&nbsp;        boolean afterByOrSetOrFromOrSelect;
+<b class="fc">&nbsp;        int afterOn;</b>
+&nbsp;        boolean afterBetween;
+&nbsp;        boolean afterExtract;
+&nbsp;        boolean afterInsert;
+<b class="nc">&nbsp;        int inFunction;</b>
+&nbsp;        int parensSinceSelect;
+&nbsp;        int valuesParenCount;
+&nbsp;        private final LinkedList&lt;Integer&gt; parenCounts = new LinkedList();
+&nbsp;        private final LinkedList&lt;Boolean&gt; afterByOrFromOrSelects = new LinkedList();
+&nbsp;        int indent = 1;
+&nbsp;        StringBuilder result = new StringBuilder();
+&nbsp;        StringTokenizer tokens;
+&nbsp;        String lastToken;
+&nbsp;        String token;
+&nbsp;        String lcToken;
+&nbsp;
+&nbsp;        public FormatProcess(String sql) {
+&nbsp;            assert sql != null : &quot;SQL to format should not be null&quot;;
+&nbsp;
+&nbsp;            this.tokens = new StringTokenizer(sql, &quot;()+*/-=&lt;&gt;&#39;`\&quot;[], \n\r\f\t&quot;, true);
+&nbsp;        }
+&nbsp;
+&nbsp;        public String perform() {
+&nbsp;            this.result.append(BasicFormatterImpl.INITIAL);
+&nbsp;
+&nbsp;            while(this.tokens.hasMoreTokens()) {
+&nbsp;                this.token = this.tokens.nextToken();
+&nbsp;                this.lcToken = this.token.toLowerCase(Locale.ROOT);
+&nbsp;                switch (this.lcToken) {
+&nbsp;                    case &quot;&#39;&quot;:
+&nbsp;                    case &quot;`&quot;:
+&nbsp;                    case &quot;\&quot;&quot;:
+&nbsp;                        String t;
+&nbsp;                        do {
+&nbsp;                            t = this.tokens.nextToken();
+&nbsp;                            this.token = this.token + t;
+&nbsp;                        } while(!this.lcToken.equals(t) &amp;&amp; this.tokens.hasMoreTokens());
+&nbsp;
+&nbsp;                        this.lcToken = this.token;
+&nbsp;                        this.misc();
+&nbsp;                        break;
+&nbsp;                    case &quot;[&quot;:
+&nbsp;                        String tt;
+&nbsp;                        do {
+&nbsp;                            tt = this.tokens.nextToken();
+&nbsp;                            this.token = this.token + tt;
+&nbsp;                        } while(!&quot;]&quot;.equals(tt) &amp;&amp; this.tokens.hasMoreTokens());
+&nbsp;
+&nbsp;                        this.lcToken = this.token;
+&nbsp;                        this.misc();
+&nbsp;                        break;
+&nbsp;                    case &quot;,&quot;:
+&nbsp;                        this.comma();
+&nbsp;                        break;
+&nbsp;                    case &quot;(&quot;:
+&nbsp;                        this.openParen();
+&nbsp;                        break;
+&nbsp;                    case &quot;)&quot;:
+&nbsp;                        this.closeParen();
+&nbsp;                        break;
+&nbsp;                    case &quot;select&quot;:
+&nbsp;                        this.select();
+&nbsp;                        break;
+&nbsp;                    case &quot;merge&quot;:
+&nbsp;                    case &quot;insert&quot;:
+&nbsp;                    case &quot;update&quot;:
+&nbsp;                    case &quot;delete&quot;:
+&nbsp;                        this.updateOrInsertOrDelete();
+&nbsp;                        break;
+&nbsp;                    case &quot;values&quot;:
+&nbsp;                        this.values();
+&nbsp;                        break;
+&nbsp;                    case &quot;on&quot;:
+&nbsp;                        this.on();
+&nbsp;                        break;
+&nbsp;                    case &quot;between&quot;:
+&nbsp;                        this.afterBetween = true;
+&nbsp;                        this.misc();
+&nbsp;                        break;
+&nbsp;                    case &quot;trim&quot;:
+&nbsp;                    case &quot;extract&quot;:
+&nbsp;                        this.afterExtract = true;
+&nbsp;                        this.misc();
+&nbsp;                        break;
+&nbsp;                    case &quot;left&quot;:
+&nbsp;                    case &quot;right&quot;:
+&nbsp;                    case &quot;full&quot;:
+&nbsp;                    case &quot;inner&quot;:
+&nbsp;                    case &quot;outer&quot;:
+&nbsp;                    case &quot;cross&quot;:
+&nbsp;                    case &quot;group&quot;:
+&nbsp;                    case &quot;order&quot;:
+&nbsp;                    case &quot;returning&quot;:
+&nbsp;                    case &quot;using&quot;:
+&nbsp;                        this.beginNewClause();
+&nbsp;                        break;
+&nbsp;                    case &quot;from&quot;:
+&nbsp;                        this.from();
+&nbsp;                        break;
+&nbsp;                    case &quot;where&quot;:
+&nbsp;                    case &quot;set&quot;:
+&nbsp;                    case &quot;having&quot;:
+&nbsp;                    case &quot;by&quot;:
+&nbsp;                    case &quot;join&quot;:
+&nbsp;                    case &quot;into&quot;:
+&nbsp;                    case &quot;union&quot;:
+&nbsp;                    case &quot;intersect&quot;:
+&nbsp;                    case &quot;offset&quot;:
+&nbsp;                    case &quot;limit&quot;:
+&nbsp;                    case &quot;fetch&quot;:
+&nbsp;                        this.endNewClause();
+&nbsp;                        break;
+&nbsp;                    case &quot;case&quot;:
+&nbsp;                        this.beginCase();
+&nbsp;                        break;
+&nbsp;                    case &quot;end&quot;:
+&nbsp;                        this.endCase();
+&nbsp;                        break;
+&nbsp;                    case &quot;when&quot;:
+&nbsp;                    case &quot;else&quot;:
+&nbsp;                        this.when();
+&nbsp;                        break;
+&nbsp;                    case &quot;then&quot;:
+&nbsp;                        this.then();
+&nbsp;                        break;
+&nbsp;                    case &quot;and&quot;:
+&nbsp;                        this.and();
+&nbsp;                        break;
+&nbsp;                    case &quot;or&quot;:
+&nbsp;                        this.or();
+&nbsp;                        break;
+&nbsp;                    default:
+&nbsp;                        if (isWhitespace(this.token)) {
+&nbsp;                            this.white();
+&nbsp;                        } else {
+&nbsp;                            this.misc();
+&nbsp;                        }
+&nbsp;                }
+&nbsp;
+&nbsp;                if (!isWhitespace(this.token)) {
+&nbsp;                    this.lastToken = this.lcToken;
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            return this.result.toString();
+&nbsp;        }
+&nbsp;
+&nbsp;        private void or() {
+&nbsp;            this.logical();
+&nbsp;        }
+&nbsp;
+&nbsp;        private void and() {
+&nbsp;            if (this.afterBetween) {
+&nbsp;                this.misc();
+&nbsp;                this.afterBetween = false;
+&nbsp;            } else {
+&nbsp;                this.logical();
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;
+&nbsp;        private void from() {
+&nbsp;            if (this.afterExtract) {
+&nbsp;                this.misc();
+&nbsp;                this.afterExtract = false;
+&nbsp;            } else {
+&nbsp;                this.endNewClause();
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;
+&nbsp;        private void comma() {
+&nbsp;            if (this.afterByOrSetOrFromOrSelect &amp;&amp; this.inFunction == 0) {
+&nbsp;                this.commaAfterByOrFromOrSelect();
+&nbsp;            } else {
+&nbsp;                this.misc();
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;
+&nbsp;        private void then() {
+&nbsp;            this.incrementIndent();
+&nbsp;            this.newline();
+&nbsp;            this.misc();
+&nbsp;        }
+&nbsp;
+&nbsp;        private void when() {
+&nbsp;            this.decrementIndent();
+&nbsp;            this.newline();
+&nbsp;            this.out();
+&nbsp;            this.beginLine = false;
+&nbsp;            this.afterBeginBeforeEnd = true;
+&nbsp;        }
+&nbsp;
+&nbsp;        private void commaAfterByOrFromOrSelect() {
+&nbsp;            this.out();
+&nbsp;            this.newline();
+&nbsp;        }
+&nbsp;
+&nbsp;        private void logical() {
+&nbsp;            this.newline();
+&nbsp;            this.out();
+&nbsp;            this.beginLine = false;
+&nbsp;        }
+&nbsp;
+&nbsp;        private void endCase() {
+&nbsp;            this.afterBeginBeforeEnd = false;
+&nbsp;            this.decrementIndent();
+&nbsp;            this.decrementIndent();
+&nbsp;            this.logical();
+&nbsp;        }
+&nbsp;
+&nbsp;        private void on() {
+&nbsp;            if (this.afterOn == 0) {
+&nbsp;                this.incrementIndent();
+&nbsp;            } else if (this.afterOn == 1) {
+&nbsp;                this.decrementIndent();
+&nbsp;            }
+&nbsp;
+&nbsp;            ++this.afterOn;
+&nbsp;            this.newline();
+&nbsp;            this.out();
+&nbsp;            this.beginLine = false;
+&nbsp;        }
+&nbsp;
+&nbsp;        private void beginCase() {
+&nbsp;            this.out();
+&nbsp;            this.beginLine = false;
+&nbsp;            this.incrementIndent();
+&nbsp;            this.incrementIndent();
+&nbsp;            this.afterBeginBeforeEnd = true;
+&nbsp;        }
+&nbsp;
+&nbsp;        private void misc() {
+&nbsp;            this.out();
+&nbsp;            if (this.afterInsert &amp;&amp; this.inFunction == 0) {
+&nbsp;                this.newline();
+&nbsp;                this.afterInsert = false;
+&nbsp;            } else {
+&nbsp;                this.beginLine = false;
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;
+&nbsp;        private void white() {
+&nbsp;            if (!this.beginLine) {
+&nbsp;                this.result.append(&quot; &quot;);
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;
+&nbsp;        private void updateOrInsertOrDelete() {
+&nbsp;            if (this.indent &gt; 1) {
+&nbsp;                this.out();
+&nbsp;            } else {
+&nbsp;                this.out();
+&nbsp;                this.incrementIndent();
+&nbsp;                this.beginLine = false;
+&nbsp;                if (&quot;update&quot;.equals(this.lcToken)) {
+&nbsp;                    this.newline();
+&nbsp;                }
+&nbsp;
+&nbsp;                if (&quot;insert&quot;.equals(this.lcToken)) {
+&nbsp;                    this.afterInsert = true;
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;
+&nbsp;        private void select() {
+&nbsp;            this.out();
+&nbsp;            this.incrementIndent();
+&nbsp;            this.newline();
+&nbsp;            this.parenCounts.addLast(this.parensSinceSelect);
+&nbsp;            this.afterByOrFromOrSelects.addLast(this.afterByOrSetOrFromOrSelect);
+&nbsp;            this.parensSinceSelect = 0;
+&nbsp;            this.afterByOrSetOrFromOrSelect = true;
+&nbsp;        }
+&nbsp;
+&nbsp;        private void out() {
+&nbsp;            if (this.result.charAt(this.result.length() - 1) == &#39;,&#39;) {
+&nbsp;                this.result.append(&quot; &quot;);
+&nbsp;            }
+&nbsp;
+&nbsp;            this.result.append(this.token);
+&nbsp;        }
+&nbsp;
+&nbsp;        private void endNewClause() {
+&nbsp;            if (!this.afterBeginBeforeEnd) {
+&nbsp;                this.decrementIndent();
+&nbsp;                if (this.afterOn == 1) {
+&nbsp;                    this.decrementIndent();
+&nbsp;                }
+&nbsp;
+&nbsp;                if (this.afterOn &gt; 0) {
+&nbsp;                    this.afterOn = 0;
+&nbsp;                }
+&nbsp;
+&nbsp;                this.newline();
+&nbsp;            }
+&nbsp;
+&nbsp;            this.out();
+&nbsp;            if (!&quot;union&quot;.equals(this.lcToken) &amp;&amp; !&quot;intersect&quot;.equals(this.lcToken)) {
+&nbsp;                this.incrementIndent();
+&nbsp;            }
+&nbsp;
+&nbsp;            this.newline();
+&nbsp;            this.afterBeginBeforeEnd = false;
+&nbsp;            this.afterByOrSetOrFromOrSelect = &quot;by&quot;.equals(this.lcToken) || &quot;set&quot;.equals(this.lcToken) || &quot;from&quot;.equals(this.lcToken);
+&nbsp;        }
+&nbsp;
+&nbsp;        private void beginNewClause() {
+&nbsp;            if (!this.afterBeginBeforeEnd) {
+&nbsp;                if (this.afterOn == 1) {
+&nbsp;                    this.decrementIndent();
+&nbsp;                }
+&nbsp;
+&nbsp;                if (this.afterOn &gt; 0) {
+&nbsp;                    this.afterOn = 0;
+&nbsp;                }
+&nbsp;
+&nbsp;                this.decrementIndent();
+&nbsp;                this.newline();
+&nbsp;            }
+&nbsp;
+&nbsp;            this.out();
+&nbsp;            this.beginLine = false;
+&nbsp;            this.afterBeginBeforeEnd = true;
+&nbsp;        }
+&nbsp;
+&nbsp;        private void values() {
+&nbsp;            if (this.parensSinceSelect == 0) {
+&nbsp;                if (!this.afterBeginBeforeEnd) {
+&nbsp;                    this.decrementIndent();
+&nbsp;                }
+&nbsp;
+&nbsp;                this.newline();
+&nbsp;                this.out();
+&nbsp;                this.incrementIndent();
+&nbsp;                this.newline();
+&nbsp;                this.valuesParenCount = this.parensSinceSelect + 1;
+&nbsp;            } else {
+&nbsp;                this.out();
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;
+&nbsp;        private void closeParen() {
+&nbsp;            if (this.parensSinceSelect == 0) {
+&nbsp;                this.decrementIndent();
+&nbsp;                this.parensSinceSelect = (Integer)this.parenCounts.removeLast();
+&nbsp;                this.afterByOrSetOrFromOrSelect = (Boolean)this.afterByOrFromOrSelects.removeLast();
+&nbsp;            } else if (this.valuesParenCount == this.parensSinceSelect) {
+&nbsp;                this.valuesParenCount = 0;
+&nbsp;                if (this.afterBeginBeforeEnd) {
+&nbsp;                    this.decrementIndent();
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            --this.parensSinceSelect;
+&nbsp;            if (this.inFunction &gt; 0) {
+&nbsp;                --this.inFunction;
+&nbsp;                this.out();
+&nbsp;            } else if (this.afterOn &gt; 0) {
+&nbsp;                this.out();
+&nbsp;            } else {
+&nbsp;                if (!this.afterByOrSetOrFromOrSelect) {
+&nbsp;                    this.decrementIndent();
+&nbsp;                    this.newline();
+&nbsp;                }
+&nbsp;
+&nbsp;                this.out();
+&nbsp;            }
+&nbsp;
+&nbsp;            this.beginLine = false;
+&nbsp;        }
+&nbsp;
+&nbsp;        private void openParen() {
+&nbsp;            if (isFunctionName(this.lastToken) || this.inFunction &gt; 0) {
+&nbsp;                ++this.inFunction;
+&nbsp;            }
+&nbsp;
+&nbsp;            this.beginLine = false;
+&nbsp;            if (this.afterOn &lt;= 0 &amp;&amp; this.inFunction &lt;= 0) {
+&nbsp;                this.out();
+&nbsp;                if (!this.afterByOrSetOrFromOrSelect) {
+&nbsp;                    this.incrementIndent();
+&nbsp;                    this.newline();
+&nbsp;                    this.beginLine = true;
+&nbsp;                }
+&nbsp;            } else {
+&nbsp;                this.out();
+&nbsp;            }
+&nbsp;
+&nbsp;            ++this.parensSinceSelect;
+&nbsp;        }
+&nbsp;
+&nbsp;        private void incrementIndent() {
+&nbsp;            ++this.indent;
+&nbsp;        }
+&nbsp;
+&nbsp;        private void decrementIndent() {
+&nbsp;            if (this.indent &gt; 0) {
+&nbsp;                --this.indent;
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;
+&nbsp;        private static boolean isFunctionName(String tok) {
+&nbsp;            if (tok != null &amp;&amp; tok.length() != 0) {
+&nbsp;                char begin = tok.charAt(0);
+&nbsp;                boolean isIdentifier = Character.isJavaIdentifierStart(begin) || &#39;&quot;&#39; == begin;
+&nbsp;                return isIdentifier &amp;&amp; !BasicFormatterImpl.NON_FUNCTION_NAMES.contains(tok);
+&nbsp;            } else {
+&nbsp;                return false;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        private static boolean isWhitespace(String token) {
+&nbsp;            return &quot; \n\r\f\t&quot;.contains(token);
+&nbsp;        }
+&nbsp;
+&nbsp;        private void newline() {
+&nbsp;            this.result.append(System.lineSeparator()).append(&quot;    &quot;.repeat(this.indent));
+&nbsp;            this.beginLine = true;
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
+</div>
+</body>
+</html>

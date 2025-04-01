@@ -1,0 +1,1065 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > InternalSpelExpressionParser</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.expression.spel.standard</a>
+</div>
+
+<h1>Coverage Summary for Class: InternalSpelExpressionParser (org.springframework.expression.spel.standard)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">InternalSpelExpressionParser</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    62.3%
+  </span>
+  <span class="absValue">
+    (33/53)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    24%
+  </span>
+  <span class="absValue">
+    (87/362)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    31.5%
+  </span>
+  <span class="absValue">
+    (156/495)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.expression.spel.standard;
+&nbsp;
+&nbsp;import java.util.ArrayDeque;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.Deque;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Locale;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import java.util.concurrent.ConcurrentMap;
+&nbsp;import java.util.regex.Pattern;
+&nbsp;import org.springframework.expression.ParseException;
+&nbsp;import org.springframework.expression.ParserContext;
+&nbsp;import org.springframework.expression.common.TemplateAwareExpressionParser;
+&nbsp;import org.springframework.expression.spel.InternalParseException;
+&nbsp;import org.springframework.expression.spel.SpelEvaluationException;
+&nbsp;import org.springframework.expression.spel.SpelMessage;
+&nbsp;import org.springframework.expression.spel.SpelParseException;
+&nbsp;import org.springframework.expression.spel.SpelParserConfiguration;
+&nbsp;import org.springframework.expression.spel.ast.Assign;
+&nbsp;import org.springframework.expression.spel.ast.BeanReference;
+&nbsp;import org.springframework.expression.spel.ast.BooleanLiteral;
+&nbsp;import org.springframework.expression.spel.ast.CompoundExpression;
+&nbsp;import org.springframework.expression.spel.ast.ConstructorReference;
+&nbsp;import org.springframework.expression.spel.ast.Elvis;
+&nbsp;import org.springframework.expression.spel.ast.FunctionReference;
+&nbsp;import org.springframework.expression.spel.ast.Identifier;
+&nbsp;import org.springframework.expression.spel.ast.Indexer;
+&nbsp;import org.springframework.expression.spel.ast.InlineList;
+&nbsp;import org.springframework.expression.spel.ast.InlineMap;
+&nbsp;import org.springframework.expression.spel.ast.Literal;
+&nbsp;import org.springframework.expression.spel.ast.MethodReference;
+&nbsp;import org.springframework.expression.spel.ast.NullLiteral;
+&nbsp;import org.springframework.expression.spel.ast.OpAnd;
+&nbsp;import org.springframework.expression.spel.ast.OpDec;
+&nbsp;import org.springframework.expression.spel.ast.OpDivide;
+&nbsp;import org.springframework.expression.spel.ast.OpEQ;
+&nbsp;import org.springframework.expression.spel.ast.OpGE;
+&nbsp;import org.springframework.expression.spel.ast.OpGT;
+&nbsp;import org.springframework.expression.spel.ast.OpInc;
+&nbsp;import org.springframework.expression.spel.ast.OpLE;
+&nbsp;import org.springframework.expression.spel.ast.OpLT;
+&nbsp;import org.springframework.expression.spel.ast.OpMinus;
+&nbsp;import org.springframework.expression.spel.ast.OpModulus;
+&nbsp;import org.springframework.expression.spel.ast.OpMultiply;
+&nbsp;import org.springframework.expression.spel.ast.OpNE;
+&nbsp;import org.springframework.expression.spel.ast.OpOr;
+&nbsp;import org.springframework.expression.spel.ast.OpPlus;
+&nbsp;import org.springframework.expression.spel.ast.OperatorBetween;
+&nbsp;import org.springframework.expression.spel.ast.OperatorInstanceof;
+&nbsp;import org.springframework.expression.spel.ast.OperatorMatches;
+&nbsp;import org.springframework.expression.spel.ast.OperatorNot;
+&nbsp;import org.springframework.expression.spel.ast.OperatorPower;
+&nbsp;import org.springframework.expression.spel.ast.Projection;
+&nbsp;import org.springframework.expression.spel.ast.PropertyOrFieldReference;
+&nbsp;import org.springframework.expression.spel.ast.QualifiedIdentifier;
+&nbsp;import org.springframework.expression.spel.ast.Selection;
+&nbsp;import org.springframework.expression.spel.ast.SpelNodeImpl;
+&nbsp;import org.springframework.expression.spel.ast.StringLiteral;
+&nbsp;import org.springframework.expression.spel.ast.Ternary;
+&nbsp;import org.springframework.expression.spel.ast.TypeReference;
+&nbsp;import org.springframework.expression.spel.ast.VariableReference;
+&nbsp;import org.springframework.lang.Contract;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.StringUtils;
+&nbsp;
+&nbsp;class InternalSpelExpressionParser extends TemplateAwareExpressionParser {
+&nbsp;    private static final Pattern VALID_QUALIFIED_ID_PATTERN = Pattern.compile(&quot;[\\p{L}\\p{N}_$]+&quot;);
+&nbsp;    private final SpelParserConfiguration configuration;
+&nbsp;    private final Deque&lt;SpelNodeImpl&gt; constructedNodes = new ArrayDeque();
+&nbsp;    private final ConcurrentMap&lt;String, Pattern&gt; patternCache = new ConcurrentHashMap();
+&nbsp;    private String expressionString = &quot;&quot;;
+&nbsp;    private List&lt;Token&gt; tokenStream = Collections.emptyList();
+&nbsp;    private int tokenStreamLength;
+&nbsp;    private int tokenStreamPointer;
+&nbsp;
+&nbsp;    public InternalSpelExpressionParser(SpelParserConfiguration configuration) {
+&nbsp;        this.configuration = configuration;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected SpelExpression doParseExpression(String expressionString, @Nullable ParserContext context) throws ParseException {
+&nbsp;        this.checkExpressionLength(expressionString);
+&nbsp;
+&nbsp;        try {
+&nbsp;            this.expressionString = expressionString;
+&nbsp;            Tokenizer tokenizer = new Tokenizer(expressionString);
+&nbsp;            this.tokenStream = tokenizer.process();
+&nbsp;            this.tokenStreamLength = this.tokenStream.size();
+&nbsp;            this.tokenStreamPointer = 0;
+<b class="fc">&nbsp;            this.constructedNodes.clear();</b>
+&nbsp;            SpelNodeImpl ast = this.eatExpression();
+&nbsp;            if (ast == null) {
+&nbsp;                throw new SpelParseException(this.expressionString, 0, SpelMessage.OOD, new Object[0]);
+&nbsp;            } else {
+<b class="fc">&nbsp;                Token t = this.peekToken();</b>
+&nbsp;                if (t != null) {
+&nbsp;                    throw new SpelParseException(this.expressionString, t.startPos, SpelMessage.MORE_INPUT, new Object[]{this.toString(this.nextToken())});
+<b class="fc">&nbsp;                } else {</b>
+&nbsp;                    return new SpelExpression(expressionString, ast, this.configuration);
+&nbsp;                }
+<b class="fc">&nbsp;            }</b>
+&nbsp;        } catch (InternalParseException ex) {
+&nbsp;            throw ex.getCause();
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void checkExpressionLength(String string) {
+&nbsp;        int maxLength = this.configuration.getMaximumExpressionLength();
+&nbsp;        if (string.length() &gt; maxLength) {
+&nbsp;            throw new SpelEvaluationException(SpelMessage.MAX_EXPRESSION_LENGTH_EXCEEDED, new Object[]{maxLength});
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    private SpelNodeImpl eatExpression() {
+&nbsp;        SpelNodeImpl expr = this.eatLogicalOrExpression();
+<b class="fc">&nbsp;        Token t = this.peekToken();</b>
+<b class="fc">&nbsp;        if (t != null) {</b>
+&nbsp;            if (t.kind == TokenKind.ASSIGN) {
+&nbsp;                if (expr == null) {
+&nbsp;                    expr = new NullLiteral(t.startPos - 1, t.endPos - 1);
+&nbsp;                }
+&nbsp;
+&nbsp;                this.nextToken();
+&nbsp;                SpelNodeImpl assignedValue = this.eatLogicalOrExpression();
+<b class="fc">&nbsp;                return new Assign(t.startPos, t.endPos, new SpelNodeImpl[]{expr, assignedValue});</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if (t.kind == TokenKind.ELVIS) {</b>
+<b class="fc">&nbsp;                if (expr == null) {</b>
+<b class="fc">&nbsp;                    expr = new NullLiteral(t.startPos - 1, t.endPos - 2);</b>
+<b class="fc">&nbsp;                }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;                this.nextToken();</b>
+<b class="fc">&nbsp;                SpelNodeImpl valueIfNull = this.eatExpression();</b>
+<b class="pc">&nbsp;                if (valueIfNull == null) {</b>
+<b class="nc">&nbsp;                    valueIfNull = new NullLiteral(t.startPos + 1, t.endPos + 1);</b>
+&nbsp;                }
+<b class="fc">&nbsp;</b>
+<b class="pc">&nbsp;                return new Elvis(t.startPos, t.endPos, new SpelNodeImpl[]{expr, valueIfNull});</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="fc">&nbsp;            if (t.kind == TokenKind.QMARK) {</b>
+&nbsp;                if (expr == null) {
+&nbsp;                    expr = new NullLiteral(t.startPos - 1, t.endPos - 1);
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                this.nextToken();
+&nbsp;                SpelNodeImpl ifTrueExprValue = this.eatExpression();
+&nbsp;                this.eatToken(TokenKind.COLON);
+<b class="fc">&nbsp;                SpelNodeImpl ifFalseExprValue = this.eatExpression();</b>
+<b class="pc">&nbsp;                return new Ternary(t.startPos, t.endPos, new SpelNodeImpl[]{expr, ifTrueExprValue, ifFalseExprValue});</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        return expr;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    private SpelNodeImpl eatLogicalOrExpression() {
+&nbsp;        SpelNodeImpl expr;
+&nbsp;        Token t;
+&nbsp;        SpelNodeImpl rhExpr;
+&nbsp;        for(expr = this.eatLogicalAndExpression(); this.peekIdentifierToken(&quot;or&quot;) || this.peekToken(TokenKind.SYMBOLIC_OR); expr = new OpOr(t.startPos, t.endPos, new SpelNodeImpl[]{expr, rhExpr})) {
+&nbsp;            t = this.takeToken();
+<b class="fc">&nbsp;            rhExpr = this.eatLogicalAndExpression();</b>
+<b class="fc">&nbsp;            this.checkOperands(t, expr, rhExpr);</b>
+<b class="fc">&nbsp;        }</b>
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;        return expr;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    @Nullable</b>
+<b class="nc">&nbsp;    private SpelNodeImpl eatLogicalAndExpression() {</b>
+<b class="nc">&nbsp;        SpelNodeImpl expr;</b>
+&nbsp;        Token t;
+<b class="pc">&nbsp;        SpelNodeImpl rhExpr;</b>
+<b class="nc">&nbsp;        for(expr = this.eatRelationalExpression(); this.peekIdentifierToken(&quot;and&quot;) || this.peekToken(TokenKind.SYMBOLIC_AND); expr = new OpAnd(t.startPos, t.endPos, new SpelNodeImpl[]{expr, rhExpr})) {</b>
+<b class="nc">&nbsp;            t = this.takeToken();</b>
+&nbsp;            rhExpr = this.eatRelationalExpression();
+<b class="nc">&nbsp;            this.checkOperands(t, expr, rhExpr);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return expr;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    @Nullable
+<b class="pc">&nbsp;    private SpelNodeImpl eatRelationalExpression() {</b>
+<b class="nc">&nbsp;        SpelNodeImpl expr = this.eatSumExpression();</b>
+<b class="nc">&nbsp;        Token relationalOperatorToken = this.maybeEatRelationalOperator();</b>
+&nbsp;        if (relationalOperatorToken != null) {
+<b class="nc">&nbsp;            Token t = this.takeToken();</b>
+<b class="nc">&nbsp;            SpelNodeImpl rhExpr = this.eatSumExpression();</b>
+<b class="nc">&nbsp;            this.checkOperands(t, expr, rhExpr);</b>
+<b class="nc">&nbsp;            TokenKind tk = relationalOperatorToken.kind;</b>
+<b class="nc">&nbsp;            if (relationalOperatorToken.isNumericRelationalOperator()) {</b>
+&nbsp;                if (tk == TokenKind.GT) {
+&nbsp;                    return new OpGT(t.startPos, t.endPos, new SpelNodeImpl[]{expr, rhExpr});
+<b class="fc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                if (tk == TokenKind.LT) {
+&nbsp;                    return new OpLT(t.startPos, t.endPos, new SpelNodeImpl[]{expr, rhExpr});
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                if (tk == TokenKind.LE) {</b>
+<b class="pc">&nbsp;                    return new OpLE(t.startPos, t.endPos, new SpelNodeImpl[]{expr, rhExpr});</b>
+<b class="fc">&nbsp;                }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;                if (tk == TokenKind.GE) {</b>
+<b class="fc">&nbsp;                    return new OpGE(t.startPos, t.endPos, new SpelNodeImpl[]{expr, rhExpr});</b>
+&nbsp;                }
+<b class="fc">&nbsp;</b>
+&nbsp;                if (tk == TokenKind.EQ) {
+&nbsp;                    return new OpEQ(t.startPos, t.endPos, new SpelNodeImpl[]{expr, rhExpr});
+&nbsp;                }
+&nbsp;
+&nbsp;                if (tk == TokenKind.NE) {
+<b class="fc">&nbsp;                    return new OpNE(t.startPos, t.endPos, new SpelNodeImpl[]{expr, rhExpr});</b>
+<b class="pc">&nbsp;                }</b>
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;            if (tk == TokenKind.INSTANCEOF) {</b>
+<b class="fc">&nbsp;                return new OperatorInstanceof(t.startPos, t.endPos, new SpelNodeImpl[]{expr, rhExpr});</b>
+&nbsp;            }
+<b class="fc">&nbsp;</b>
+&nbsp;            if (tk == TokenKind.MATCHES) {
+&nbsp;                return new OperatorMatches(this.patternCache, t.startPos, t.endPos, new SpelNodeImpl[]{expr, rhExpr});
+&nbsp;            }
+&nbsp;
+&nbsp;            if (tk == TokenKind.BETWEEN) {
+<b class="fc">&nbsp;                return new OperatorBetween(t.startPos, t.endPos, new SpelNodeImpl[]{expr, rhExpr});</b>
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;        return expr;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    @Nullable
+<b class="pc">&nbsp;    private SpelNodeImpl eatSumExpression() {</b>
+<b class="pc">&nbsp;        SpelNodeImpl expr = this.eatProductExpression();</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        while(this.peekToken(TokenKind.PLUS, TokenKind.MINUS, TokenKind.INC)) {
+<b class="pc">&nbsp;            Token t = this.takeToken();</b>
+<b class="nc">&nbsp;            SpelNodeImpl rhExpr = this.eatProductExpression();</b>
+&nbsp;            this.checkRightOperand(t, rhExpr);
+<b class="pc">&nbsp;            if (t.kind == TokenKind.PLUS) {</b>
+<b class="nc">&nbsp;                expr = new OpPlus(t.startPos, t.endPos, new SpelNodeImpl[]{expr, rhExpr});</b>
+&nbsp;            } else if (t.kind == TokenKind.MINUS) {
+<b class="pc">&nbsp;                expr = new OpMinus(t.startPos, t.endPos, new SpelNodeImpl[]{expr, rhExpr});</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+<b class="pc">&nbsp;</b>
+<b class="fc">&nbsp;        return expr;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    @Nullable</b>
+&nbsp;    private SpelNodeImpl eatProductExpression() {
+&nbsp;        SpelNodeImpl expr = this.eatPowerIncDecExpression();
+&nbsp;
+<b class="nc">&nbsp;        while(this.peekToken(TokenKind.STAR, TokenKind.DIV, TokenKind.MOD)) {</b>
+<b class="nc">&nbsp;            Token t = this.takeToken();</b>
+&nbsp;            SpelNodeImpl rhExpr = this.eatPowerIncDecExpression();
+<b class="nc">&nbsp;            this.checkOperands(t, expr, rhExpr);</b>
+<b class="nc">&nbsp;            if (t.kind == TokenKind.STAR) {</b>
+&nbsp;                expr = new OpMultiply(t.startPos, t.endPos, new SpelNodeImpl[]{expr, rhExpr});
+<b class="nc">&nbsp;            } else if (t.kind == TokenKind.DIV) {</b>
+<b class="nc">&nbsp;                expr = new OpDivide(t.startPos, t.endPos, new SpelNodeImpl[]{expr, rhExpr});</b>
+&nbsp;            } else if (t.kind == TokenKind.MOD) {
+&nbsp;                expr = new OpModulus(t.startPos, t.endPos, new SpelNodeImpl[]{expr, rhExpr});
+<b class="fc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        return expr;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+<b class="fc">&nbsp;    private SpelNodeImpl eatPowerIncDecExpression() {</b>
+<b class="pc">&nbsp;        SpelNodeImpl expr = this.eatUnaryExpression();</b>
+<b class="nc">&nbsp;        if (this.peekToken(TokenKind.POWER)) {</b>
+<b class="nc">&nbsp;            Token t = this.takeToken();</b>
+<b class="nc">&nbsp;            SpelNodeImpl rhExpr = this.eatUnaryExpression();</b>
+<b class="nc">&nbsp;            this.checkRightOperand(t, rhExpr);</b>
+<b class="nc">&nbsp;            return new OperatorPower(t.startPos, t.endPos, new SpelNodeImpl[]{expr, rhExpr});</b>
+&nbsp;        } else if (expr != null &amp;&amp; this.peekToken(TokenKind.INC, TokenKind.DEC)) {
+<b class="nc">&nbsp;            Token t = this.takeToken();</b>
+<b class="nc">&nbsp;            return (SpelNodeImpl)(t.getKind() == TokenKind.INC ? new OpInc(t.startPos, t.endPos, true, new SpelNodeImpl[]{expr}) : new OpDec(t.startPos, t.endPos, true, new SpelNodeImpl[]{expr}));</b>
+&nbsp;        } else {
+&nbsp;            return expr;
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    private SpelNodeImpl eatUnaryExpression() {
+&nbsp;        if (this.peekToken(TokenKind.NOT, TokenKind.PLUS, TokenKind.MINUS)) {
+<b class="fc">&nbsp;            Token t = this.takeToken();</b>
+<b class="pc">&nbsp;            SpelNodeImpl expr = this.eatUnaryExpression();</b>
+<b class="nc">&nbsp;            if (expr == null) {</b>
+<b class="nc">&nbsp;                throw this.internalException(t.startPos, SpelMessage.OOD);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            if (t.kind == TokenKind.NOT) {</b>
+&nbsp;                return new OperatorNot(t.startPos, t.endPos, expr);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            if (t.kind == TokenKind.PLUS) {
+<b class="nc">&nbsp;                return new OpPlus(t.startPos, t.endPos, new SpelNodeImpl[]{expr});</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            if (t.kind == TokenKind.MINUS) {
+<b class="fc">&nbsp;                return new OpMinus(t.startPos, t.endPos, new SpelNodeImpl[]{expr});</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        if (this.peekToken(TokenKind.INC, TokenKind.DEC)) {
+&nbsp;            Token t = this.takeToken();
+&nbsp;            SpelNodeImpl expr = this.eatUnaryExpression();
+<b class="fc">&nbsp;            if (t.getKind() == TokenKind.INC) {</b>
+<b class="pc">&nbsp;                return new OpInc(t.startPos, t.endPos, false, new SpelNodeImpl[]{expr});</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            if (t.kind == TokenKind.DEC) {</b>
+<b class="nc">&nbsp;                return new OpDec(t.startPos, t.endPos, false, new SpelNodeImpl[]{expr});</b>
+&nbsp;            }
+<b class="pc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return this.eatPrimaryExpression();</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    @Nullable</b>
+&nbsp;    private SpelNodeImpl eatPrimaryExpression() {
+<b class="fc">&nbsp;        SpelNodeImpl start = this.eatStartNode();</b>
+&nbsp;        List&lt;SpelNodeImpl&gt; nodes = null;
+&nbsp;
+&nbsp;        for(SpelNodeImpl node = this.eatNode(); node != null; node = this.eatNode()) {
+&nbsp;            if (nodes == null) {
+&nbsp;                nodes = new ArrayList(4);
+&nbsp;                nodes.add(start);
+<b class="pc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            nodes.add(node);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        if (start != null &amp;&amp; nodes != null) {
+<b class="nc">&nbsp;            return new CompoundExpression(start.getStartPosition(), ((SpelNodeImpl)nodes.get(nodes.size() - 1)).getEndPosition(), (SpelNodeImpl[])nodes.toArray(new SpelNodeImpl[0]));</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            return start;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    @Nullable</b>
+<b class="nc">&nbsp;    private SpelNodeImpl eatNode() {</b>
+&nbsp;        return this.peekToken(TokenKind.DOT, TokenKind.SAFE_NAVI) ? this.eatDottedNode() : this.eatNonDottedNode();
+&nbsp;    }
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;    @Nullable</b>
+<b class="nc">&nbsp;    private SpelNodeImpl eatNonDottedNode() {</b>
+<b class="nc">&nbsp;        return this.peekToken(TokenKind.LSQUARE) &amp;&amp; this.maybeEatIndexer(false) ? this.pop() : null;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private SpelNodeImpl eatDottedNode() {</b>
+<b class="nc">&nbsp;        Token t = this.takeToken();</b>
+&nbsp;        boolean nullSafeNavigation = t.kind == TokenKind.SAFE_NAVI;
+&nbsp;        if (!this.maybeEatMethodOrProperty(nullSafeNavigation) &amp;&amp; !this.maybeEatFunctionOrVar() &amp;&amp; !this.maybeEatProjection(nullSafeNavigation) &amp;&amp; !this.maybeEatSelection(nullSafeNavigation) &amp;&amp; !this.maybeEatIndexer(nullSafeNavigation)) {
+<b class="fc">&nbsp;            if (this.peekToken() == null) {</b>
+&nbsp;                throw this.internalException(t.startPos, SpelMessage.OOD);
+&nbsp;            } else {
+&nbsp;                throw this.internalException(t.startPos, SpelMessage.UNEXPECTED_DATA_AFTER_DOT, this.toString(this.peekToken()));
+&nbsp;            }
+&nbsp;        } else {
+<b class="fc">&nbsp;            return this.pop();</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;    }</b>
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;    private boolean maybeEatFunctionOrVar() {</b>
+<b class="nc">&nbsp;        if (!this.peekToken(TokenKind.HASH)) {</b>
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            Token t = this.takeToken();</b>
+<b class="nc">&nbsp;            Token functionOrVariableName = this.eatToken(TokenKind.IDENTIFIER);</b>
+&nbsp;            SpelNodeImpl[] args = this.maybeEatMethodArgs();
+<b class="pc">&nbsp;            if (args == null) {</b>
+<b class="fc">&nbsp;                this.push(new VariableReference(functionOrVariableName.stringValue(), t.startPos, functionOrVariableName.endPos));</b>
+&nbsp;                return true;
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                this.push(new FunctionReference(functionOrVariableName.stringValue(), t.startPos, functionOrVariableName.endPos, args));</b>
+&nbsp;                return true;
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="pc">&nbsp;    @Nullable</b>
+&nbsp;    private SpelNodeImpl[] maybeEatMethodArgs() {
+&nbsp;        if (!this.peekToken(TokenKind.LPAREN)) {
+&nbsp;            return null;
+&nbsp;        } else {
+&nbsp;            List&lt;SpelNodeImpl&gt; args = new ArrayList();
+<b class="pc">&nbsp;            this.consumeArguments(args);</b>
+<b class="nc">&nbsp;            this.eatToken(TokenKind.RPAREN);</b>
+<b class="nc">&nbsp;            return (SpelNodeImpl[])args.toArray(new SpelNodeImpl[0]);</b>
+&nbsp;        }
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    private void eatConstructorArgs(List&lt;SpelNodeImpl&gt; accumulatedArguments) {
+&nbsp;        if (!this.peekToken(TokenKind.LPAREN)) {
+&nbsp;            throw this.internalException(this.positionOf(this.peekToken()), SpelMessage.MISSING_CONSTRUCTOR_ARGS);
+&nbsp;        } else {
+&nbsp;            this.consumeArguments(accumulatedArguments);
+&nbsp;            this.eatToken(TokenKind.RPAREN);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void consumeArguments(List&lt;SpelNodeImpl&gt; accumulatedArguments) {
+&nbsp;        Token t = this.peekToken();
+&nbsp;        if (t != null) {
+<b class="nc">&nbsp;            int pos = t.startPos;</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            Token next;</b>
+<b class="nc">&nbsp;            do {</b>
+<b class="nc">&nbsp;                this.nextToken();</b>
+<b class="nc">&nbsp;                t = this.peekToken();</b>
+&nbsp;                if (t == null) {
+<b class="nc">&nbsp;                    throw this.internalException(pos, SpelMessage.RUN_OUT_OF_ARGUMENTS);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                if (t.kind != TokenKind.RPAREN) {
+<b class="nc">&nbsp;                    accumulatedArguments.add(this.eatExpression());</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                next = this.peekToken();
+&nbsp;            } while(next != null &amp;&amp; next.kind == TokenKind.COMMA);
+&nbsp;
+&nbsp;            if (next == null) {
+&nbsp;                throw this.internalException(pos, SpelMessage.RUN_OUT_OF_ARGUMENTS);
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private int positionOf(@Nullable Token t) {</b>
+&nbsp;        return t == null ? this.expressionString.length() : t.startPos;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    @Nullable</b>
+<b class="nc">&nbsp;    private SpelNodeImpl eatStartNode() {</b>
+<b class="nc">&nbsp;        if (this.maybeEatLiteral()) {</b>
+&nbsp;            return this.pop();
+<b class="nc">&nbsp;        } else if (this.maybeEatParenExpression()) {</b>
+&nbsp;            return this.pop();
+&nbsp;        } else if (!this.maybeEatTypeReference() &amp;&amp; !this.maybeEatNullReference() &amp;&amp; !this.maybeEatConstructorReference() &amp;&amp; !this.maybeEatMethodOrProperty(false) &amp;&amp; !this.maybeEatFunctionOrVar()) {
+<b class="nc">&nbsp;            if (this.maybeEatBeanReference()) {</b>
+&nbsp;                return this.pop();
+<b class="nc">&nbsp;            } else if (!this.maybeEatProjection(false) &amp;&amp; !this.maybeEatSelection(false) &amp;&amp; !this.maybeEatIndexer(false)) {</b>
+&nbsp;                return this.maybeEatInlineListOrMap() ? this.pop() : null;
+&nbsp;            } else {
+&nbsp;                return this.pop();
+&nbsp;            }
+&nbsp;        } else {
+<b class="nc">&nbsp;            return this.pop();</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private boolean maybeEatBeanReference() {</b>
+<b class="nc">&nbsp;        if (!this.peekToken(TokenKind.BEAN_REF) &amp;&amp; !this.peekToken(TokenKind.FACTORY_BEAN_REF)) {</b>
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        } else {
+&nbsp;            Token beanRefToken = this.takeToken();
+&nbsp;            Token beanNameToken = null;
+<b class="nc">&nbsp;            String beanName = null;</b>
+<b class="nc">&nbsp;            if (this.peekToken(TokenKind.IDENTIFIER)) {</b>
+&nbsp;                beanNameToken = this.eatToken(TokenKind.IDENTIFIER);
+<b class="nc">&nbsp;                beanName = beanNameToken.stringValue();</b>
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                if (!this.peekToken(TokenKind.LITERAL_STRING)) {
+&nbsp;                    throw this.internalException(beanRefToken.startPos, SpelMessage.INVALID_BEAN_REFERENCE);
+&nbsp;                }
+&nbsp;
+&nbsp;                beanNameToken = this.eatToken(TokenKind.LITERAL_STRING);
+&nbsp;                beanName = beanNameToken.stringValue();
+<b class="nc">&nbsp;                beanName = beanName.substring(1, beanName.length() - 1);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            BeanReference beanReference;
+<b class="nc">&nbsp;            if (beanRefToken.getKind() == TokenKind.FACTORY_BEAN_REF) {</b>
+&nbsp;                String var10000 = String.valueOf(TokenKind.FACTORY_BEAN_REF.tokenChars);
+&nbsp;                String beanNameString = var10000 + beanName;
+<b class="nc">&nbsp;                beanReference = new BeanReference(beanRefToken.startPos, beanNameToken.endPos, beanNameString);</b>
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                beanReference = new BeanReference(beanNameToken.startPos, beanNameToken.endPos, beanName);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            this.constructedNodes.push(beanReference);</b>
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private boolean maybeEatTypeReference() {</b>
+&nbsp;        if (!this.peekToken(TokenKind.IDENTIFIER)) {
+<b class="nc">&nbsp;            return false;</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            Token typeName = this.peekToken();
+&nbsp;            if (typeName != null &amp;&amp; &quot;T&quot;.equals(typeName.stringValue())) {
+&nbsp;                Token t = this.takeToken();
+&nbsp;                if (this.peekToken(TokenKind.RSQUARE)) {
+<b class="nc">&nbsp;                    this.push(new PropertyOrFieldReference(false, t.stringValue(), t.startPos, t.endPos));</b>
+&nbsp;                    return true;
+&nbsp;                } else {
+<b class="nc">&nbsp;                    this.eatToken(TokenKind.LPAREN);</b>
+&nbsp;                    SpelNodeImpl node = this.eatPossiblyQualifiedId();
+<b class="nc">&nbsp;</b>
+&nbsp;                    int dims;
+&nbsp;                    for(dims = 0; this.peekToken(TokenKind.LSQUARE, true); ++dims) {
+&nbsp;                        this.eatToken(TokenKind.RSQUARE);
+&nbsp;                    }
+&nbsp;
+&nbsp;                    this.eatToken(TokenKind.RPAREN);
+&nbsp;                    this.constructedNodes.push(new TypeReference(typeName.startPos, typeName.endPos, node, dims));
+&nbsp;                    return true;
+&nbsp;                }
+&nbsp;            } else {
+&nbsp;                return false;
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    private boolean maybeEatNullReference() {</b>
+<b class="fc">&nbsp;        if (this.peekToken(TokenKind.IDENTIFIER)) {</b>
+&nbsp;            Token nullToken = this.peekToken();
+<b class="pc">&nbsp;            if (nullToken != null &amp;&amp; &quot;null&quot;.equalsIgnoreCase(nullToken.stringValue())) {</b>
+<b class="fc">&nbsp;                this.nextToken();</b>
+&nbsp;                this.constructedNodes.push(new NullLiteral(nullToken.startPos, nullToken.endPos));
+<b class="nc">&nbsp;                return true;</b>
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                return false;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private boolean maybeEatProjection(boolean nullSafeNavigation) {
+<b class="nc">&nbsp;        Token t = this.peekToken();</b>
+<b class="nc">&nbsp;        if (t != null &amp;&amp; this.peekToken(TokenKind.PROJECT, true)) {</b>
+&nbsp;            SpelNodeImpl expr = this.eatExpression();
+&nbsp;            if (expr == null) {
+<b class="nc">&nbsp;                throw this.internalException(t.startPos, SpelMessage.OOD);</b>
+&nbsp;            } else {
+&nbsp;                this.eatToken(TokenKind.RSQUARE);
+&nbsp;                this.constructedNodes.push(new Projection(nullSafeNavigation, t.startPos, t.endPos, expr));
+&nbsp;                return true;
+&nbsp;            }
+&nbsp;        } else {
+<b class="nc">&nbsp;            return false;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private boolean maybeEatInlineListOrMap() {</b>
+<b class="nc">&nbsp;        Token t = this.peekToken();</b>
+<b class="nc">&nbsp;        if (t != null &amp;&amp; this.peekToken(TokenKind.LCURLY, true)) {</b>
+&nbsp;            SpelNodeImpl expr = null;
+<b class="nc">&nbsp;            Token closingCurly = this.peekToken();</b>
+<b class="nc">&nbsp;            Object var6;</b>
+<b class="nc">&nbsp;            if (closingCurly != null &amp;&amp; this.peekToken(TokenKind.RCURLY, true)) {</b>
+<b class="nc">&nbsp;                var6 = new InlineList(t.startPos, closingCurly.endPos, new SpelNodeImpl[0]);</b>
+&nbsp;            } else if (this.peekToken(TokenKind.COLON, true)) {
+&nbsp;                closingCurly = this.eatToken(TokenKind.RCURLY);
+<b class="nc">&nbsp;                var6 = new InlineMap(t.startPos, closingCurly.endPos, new SpelNodeImpl[0]);</b>
+&nbsp;            } else {
+&nbsp;                SpelNodeImpl firstExpression = this.eatExpression();
+<b class="nc">&nbsp;                if (this.peekToken(TokenKind.RCURLY)) {</b>
+<b class="nc">&nbsp;                    List&lt;SpelNodeImpl&gt; elements = new ArrayList();</b>
+<b class="nc">&nbsp;                    elements.add(firstExpression);</b>
+&nbsp;                    closingCurly = this.eatToken(TokenKind.RCURLY);
+&nbsp;                    var6 = new InlineList(t.startPos, closingCurly.endPos, (SpelNodeImpl[])elements.toArray(new SpelNodeImpl[0]));
+<b class="nc">&nbsp;                } else if (this.peekToken(TokenKind.COMMA, true)) {</b>
+&nbsp;                    List&lt;SpelNodeImpl&gt; elements = new ArrayList();
+<b class="nc">&nbsp;                    elements.add(firstExpression);</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                    do {
+<b class="nc">&nbsp;                        elements.add(this.eatExpression());</b>
+&nbsp;                    } while(this.peekToken(TokenKind.COMMA, true));
+&nbsp;
+&nbsp;                    closingCurly = this.eatToken(TokenKind.RCURLY);
+<b class="nc">&nbsp;                    var6 = new InlineList(t.startPos, closingCurly.endPos, (SpelNodeImpl[])elements.toArray(new SpelNodeImpl[0]));</b>
+<b class="nc">&nbsp;                } else {</b>
+<b class="nc">&nbsp;                    if (!this.peekToken(TokenKind.COLON, true)) {</b>
+<b class="nc">&nbsp;                        throw this.internalException(t.startPos, SpelMessage.OOD);</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    List&lt;SpelNodeImpl&gt; elements = new ArrayList();</b>
+<b class="nc">&nbsp;                    elements.add(firstExpression);</b>
+&nbsp;                    elements.add(this.eatExpression());
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                    while(this.peekToken(TokenKind.COMMA, true)) {</b>
+&nbsp;                        elements.add(this.eatExpression());
+<b class="nc">&nbsp;                        this.eatToken(TokenKind.COLON);</b>
+<b class="nc">&nbsp;                        elements.add(this.eatExpression());</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    closingCurly = this.eatToken(TokenKind.RCURLY);</b>
+<b class="nc">&nbsp;                    var6 = new InlineMap(t.startPos, closingCurly.endPos, (SpelNodeImpl[])elements.toArray(new SpelNodeImpl[0]));</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            this.constructedNodes.push(var6);</b>
+<b class="nc">&nbsp;            return true;</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            return false;
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean maybeEatIndexer(boolean nullSafeNavigation) {
+<b class="nc">&nbsp;        Token t = this.peekToken();</b>
+<b class="nc">&nbsp;        if (t != null &amp;&amp; this.peekToken(TokenKind.LSQUARE, true)) {</b>
+<b class="nc">&nbsp;            SpelNodeImpl expr = this.eatExpression();</b>
+<b class="nc">&nbsp;            if (expr == null) {</b>
+&nbsp;                throw this.internalException(t.startPos, SpelMessage.MISSING_SELECTION_EXPRESSION);
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                this.eatToken(TokenKind.RSQUARE);</b>
+<b class="nc">&nbsp;                this.constructedNodes.push(new Indexer(nullSafeNavigation, t.startPos, t.endPos, expr));</b>
+&nbsp;                return true;
+<b class="nc">&nbsp;            }</b>
+&nbsp;        } else {
+&nbsp;            return false;
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private boolean maybeEatSelection(boolean nullSafeNavigation) {</b>
+<b class="nc">&nbsp;        Token t = this.peekToken();</b>
+&nbsp;        if (t != null &amp;&amp; this.peekSelectToken()) {
+<b class="nc">&nbsp;            this.nextToken();</b>
+<b class="nc">&nbsp;            SpelNodeImpl expr = this.eatExpression();</b>
+<b class="nc">&nbsp;            if (expr == null) {</b>
+&nbsp;                throw this.internalException(t.startPos, SpelMessage.MISSING_SELECTION_EXPRESSION);
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                this.eatToken(TokenKind.RSQUARE);</b>
+<b class="nc">&nbsp;                if (t.kind == TokenKind.SELECT_FIRST) {</b>
+&nbsp;                    this.constructedNodes.push(new Selection(nullSafeNavigation, 1, t.startPos, t.endPos, expr));
+&nbsp;                } else if (t.kind == TokenKind.SELECT_LAST) {
+&nbsp;                    this.constructedNodes.push(new Selection(nullSafeNavigation, 2, t.startPos, t.endPos, expr));
+&nbsp;                } else {
+&nbsp;                    this.constructedNodes.push(new Selection(nullSafeNavigation, 0, t.startPos, t.endPos, expr));
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                return true;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            return false;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private SpelNodeImpl eatPossiblyQualifiedId() {
+<b class="nc">&nbsp;        Deque&lt;SpelNodeImpl&gt; qualifiedIdPieces = new ArrayDeque();</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        Token node;
+<b class="nc">&nbsp;        for(node = this.peekToken(); this.isValidQualifiedId(node); node = this.peekToken()) {</b>
+&nbsp;            this.nextToken();
+&nbsp;            if (node.kind != TokenKind.DOT) {
+<b class="nc">&nbsp;                qualifiedIdPieces.add(new Identifier(node.stringValue(), node.startPos, node.endPos));</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        if (qualifiedIdPieces.isEmpty()) {
+<b class="nc">&nbsp;            if (node == null) {</b>
+<b class="nc">&nbsp;                throw this.internalException(this.expressionString.length(), SpelMessage.OOD);</b>
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                throw this.internalException(node.startPos, SpelMessage.NOT_EXPECTED_TOKEN, &quot;qualified ID&quot;, node.getKind().toString().toLowerCase(Locale.ROOT));</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            return new QualifiedIdentifier(((SpelNodeImpl)qualifiedIdPieces.getFirst()).getStartPosition(), ((SpelNodeImpl)qualifiedIdPieces.getLast()).getEndPosition(), (SpelNodeImpl[])qualifiedIdPieces.toArray(new SpelNodeImpl[0]));</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    @Contract(&quot;null -&gt; false&quot;)</b>
+&nbsp;    private boolean isValidQualifiedId(@Nullable Token node) {
+<b class="nc">&nbsp;        if (node != null &amp;&amp; node.kind != TokenKind.LITERAL_STRING) {</b>
+<b class="nc">&nbsp;            if (node.kind != TokenKind.DOT &amp;&amp; node.kind != TokenKind.IDENTIFIER) {</b>
+<b class="nc">&nbsp;                String value = node.stringValue();</b>
+&nbsp;                return StringUtils.hasLength(value) &amp;&amp; VALID_QUALIFIED_ID_PATTERN.matcher(value).matches();
+&nbsp;            } else {
+<b class="nc">&nbsp;                return true;</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            return false;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private boolean maybeEatMethodOrProperty(boolean nullSafeNavigation) {</b>
+&nbsp;        if (this.peekToken(TokenKind.IDENTIFIER)) {
+<b class="nc">&nbsp;            Token methodOrPropertyName = this.takeToken();</b>
+<b class="nc">&nbsp;            SpelNodeImpl[] args = this.maybeEatMethodArgs();</b>
+&nbsp;            if (args == null) {
+&nbsp;                this.push(new PropertyOrFieldReference(nullSafeNavigation, methodOrPropertyName.stringValue(), methodOrPropertyName.startPos, methodOrPropertyName.endPos));
+<b class="nc">&nbsp;                return true;</b>
+&nbsp;            } else {
+&nbsp;                this.push(new MethodReference(nullSafeNavigation, methodOrPropertyName.stringValue(), methodOrPropertyName.startPos, methodOrPropertyName.endPos, args));
+<b class="nc">&nbsp;                return true;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        } else {
+&nbsp;            return false;
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private boolean maybeEatConstructorReference() {</b>
+&nbsp;        if (this.peekIdentifierToken(&quot;new&quot;)) {
+<b class="nc">&nbsp;            Token newToken = this.takeToken();</b>
+<b class="nc">&nbsp;            if (this.peekToken(TokenKind.RSQUARE)) {</b>
+<b class="nc">&nbsp;                this.push(new PropertyOrFieldReference(false, newToken.stringValue(), newToken.startPos, newToken.endPos));</b>
+&nbsp;                return true;
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                SpelNodeImpl possiblyQualifiedConstructorName = this.eatPossiblyQualifiedId();</b>
+<b class="nc">&nbsp;                List&lt;SpelNodeImpl&gt; nodes = new ArrayList();</b>
+&nbsp;                nodes.add(possiblyQualifiedConstructorName);
+&nbsp;                if (this.peekToken(TokenKind.LSQUARE)) {
+&nbsp;                    List&lt;SpelNodeImpl&gt; dimensions;
+<b class="nc">&nbsp;                    for(dimensions = new ArrayList(); this.peekToken(TokenKind.LSQUARE, true); this.eatToken(TokenKind.RSQUARE)) {</b>
+<b class="nc">&nbsp;                        if (!this.peekToken(TokenKind.RSQUARE)) {</b>
+<b class="nc">&nbsp;                            dimensions.add(this.eatExpression());</b>
+&nbsp;                        } else {
+<b class="nc">&nbsp;                            dimensions.add((Object)null);</b>
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                    if (this.maybeEatInlineListOrMap()) {
+<b class="nc">&nbsp;                        nodes.add(this.pop());</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                    this.push(new ConstructorReference(newToken.startPos, newToken.endPos, (SpelNodeImpl[])dimensions.toArray(new SpelNodeImpl[0]), (SpelNodeImpl[])nodes.toArray(new SpelNodeImpl[0])));
+<b class="nc">&nbsp;                } else {</b>
+<b class="nc">&nbsp;                    this.eatConstructorArgs(nodes);</b>
+&nbsp;                    this.push(new ConstructorReference(newToken.startPos, newToken.endPos, (SpelNodeImpl[])nodes.toArray(new SpelNodeImpl[0])));
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+&nbsp;                return true;
+<b class="nc">&nbsp;            }</b>
+&nbsp;        } else {
+&nbsp;            return false;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void push(SpelNodeImpl newNode) {
+<b class="nc">&nbsp;        this.constructedNodes.push(newNode);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private SpelNodeImpl pop() {</b>
+<b class="nc">&nbsp;        return (SpelNodeImpl)this.constructedNodes.pop();</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private boolean maybeEatLiteral() {</b>
+&nbsp;        Token t = this.peekToken();
+<b class="nc">&nbsp;        if (t == null) {</b>
+<b class="nc">&nbsp;            return false;</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            if (t.kind == TokenKind.LITERAL_INT) {
+<b class="nc">&nbsp;                this.push(Literal.getIntLiteral(t.stringValue(), t.startPos, t.endPos, 10));</b>
+<b class="nc">&nbsp;            } else if (t.kind == TokenKind.LITERAL_LONG) {</b>
+&nbsp;                this.push(Literal.getLongLiteral(t.stringValue(), t.startPos, t.endPos, 10));
+<b class="nc">&nbsp;            } else if (t.kind == TokenKind.LITERAL_HEXINT) {</b>
+<b class="nc">&nbsp;                this.push(Literal.getIntLiteral(t.stringValue(), t.startPos, t.endPos, 16));</b>
+&nbsp;            } else if (t.kind == TokenKind.LITERAL_HEXLONG) {
+&nbsp;                this.push(Literal.getLongLiteral(t.stringValue(), t.startPos, t.endPos, 16));
+&nbsp;            } else if (t.kind == TokenKind.LITERAL_REAL) {
+&nbsp;                this.push(Literal.getRealLiteral(t.stringValue(), t.startPos, t.endPos, false));
+<b class="nc">&nbsp;            } else if (t.kind == TokenKind.LITERAL_REAL_FLOAT) {</b>
+<b class="nc">&nbsp;                this.push(Literal.getRealLiteral(t.stringValue(), t.startPos, t.endPos, true));</b>
+&nbsp;            } else if (this.peekIdentifierToken(&quot;true&quot;)) {
+<b class="nc">&nbsp;                this.push(new BooleanLiteral(t.stringValue(), t.startPos, t.endPos, true));</b>
+<b class="nc">&nbsp;            } else if (this.peekIdentifierToken(&quot;false&quot;)) {</b>
+&nbsp;                this.push(new BooleanLiteral(t.stringValue(), t.startPos, t.endPos, false));
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                if (t.kind != TokenKind.LITERAL_STRING) {</b>
+&nbsp;                    return false;
+&nbsp;                }
+&nbsp;
+&nbsp;                this.push(new StringLiteral(t.stringValue(), t.startPos, t.endPos, t.stringValue()));
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            this.nextToken();</b>
+<b class="nc">&nbsp;            return true;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private boolean maybeEatParenExpression() {</b>
+&nbsp;        if (this.peekToken(TokenKind.LPAREN)) {
+<b class="nc">&nbsp;            Token t = this.nextToken();</b>
+&nbsp;            if (t == null) {
+&nbsp;                return false;
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                SpelNodeImpl expr = this.eatExpression();
+<b class="nc">&nbsp;                if (expr == null) {</b>
+&nbsp;                    throw this.internalException(t.startPos, SpelMessage.OOD);
+<b class="nc">&nbsp;                } else {</b>
+&nbsp;                    this.eatToken(TokenKind.RPAREN);
+&nbsp;                    this.push(expr);
+&nbsp;                    return true;
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    @Nullable</b>
+<b class="nc">&nbsp;    private Token maybeEatRelationalOperator() {</b>
+&nbsp;        Token t = this.peekToken();
+<b class="nc">&nbsp;        if (t == null) {</b>
+<b class="nc">&nbsp;            return null;</b>
+<b class="nc">&nbsp;        } else if (t.isNumericRelationalOperator()) {</b>
+<b class="nc">&nbsp;            return t;</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            if (t.isIdentifier()) {</b>
+<b class="nc">&nbsp;                String idString = t.stringValue();</b>
+<b class="nc">&nbsp;                if (idString.equalsIgnoreCase(&quot;instanceof&quot;)) {</b>
+<b class="nc">&nbsp;                    return t.asInstanceOfToken();</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                if (idString.equalsIgnoreCase(&quot;matches&quot;)) {
+&nbsp;                    return t.asMatchesToken();
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="nc">&nbsp;                if (idString.equalsIgnoreCase(&quot;between&quot;)) {</b>
+&nbsp;                    return t.asBetweenToken();
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            return null;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private Token eatToken(TokenKind expectedKind) {
+<b class="nc">&nbsp;        Token t = this.nextToken();</b>
+<b class="nc">&nbsp;        if (t == null) {</b>
+&nbsp;            int pos = this.expressionString.length();
+<b class="nc">&nbsp;            throw this.internalException(pos, SpelMessage.OOD);</b>
+&nbsp;        } else if (t.kind != expectedKind) {
+<b class="nc">&nbsp;            throw this.internalException(t.startPos, SpelMessage.NOT_EXPECTED_TOKEN, expectedKind.toString().toLowerCase(Locale.ROOT), t.getKind().toString().toLowerCase(Locale.ROOT));</b>
+&nbsp;        } else {
+&nbsp;            return t;
+&nbsp;        }
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private boolean peekToken(TokenKind desiredTokenKind) {
+&nbsp;        return this.peekToken(desiredTokenKind, false);
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private boolean peekToken(TokenKind desiredTokenKind, boolean consumeIfMatched) {
+&nbsp;        Token t = this.peekToken();
+&nbsp;        if (t == null) {
+&nbsp;            return false;
+&nbsp;        } else if (t.kind == desiredTokenKind) {
+&nbsp;            if (consumeIfMatched) {
+&nbsp;                ++this.tokenStreamPointer;
+&nbsp;            }
+&nbsp;
+&nbsp;            return true;
+<b class="fc">&nbsp;        } else {</b>
+<b class="pc">&nbsp;            return desiredTokenKind == TokenKind.IDENTIFIER &amp;&amp; t.kind.ordinal() &gt;= TokenKind.DIV.ordinal() &amp;&amp; t.kind.ordinal() &lt;= TokenKind.NOT.ordinal() &amp;&amp; t.data != null;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;    private boolean peekToken(TokenKind possible1, TokenKind possible2) {</b>
+&nbsp;        Token t = this.peekToken();
+<b class="pc">&nbsp;        if (t == null) {</b>
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        } else {
+<b class="pc">&nbsp;            return t.kind == possible1 || t.kind == possible2;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;    private boolean peekToken(TokenKind possible1, TokenKind possible2, TokenKind possible3) {</b>
+&nbsp;        Token t = this.peekToken();
+<b class="pc">&nbsp;        if (t == null) {</b>
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        } else {
+<b class="pc">&nbsp;            return t.kind == possible1 || t.kind == possible2 || t.kind == possible3;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private boolean peekIdentifierToken(String identifierString) {</b>
+&nbsp;        Token t = this.peekToken();
+<b class="fc">&nbsp;        if (t == null) {</b>
+<b class="fc">&nbsp;            return false;</b>
+&nbsp;        } else {
+<b class="pc">&nbsp;            return t.kind == TokenKind.IDENTIFIER &amp;&amp; identifierString.equalsIgnoreCase(t.stringValue());</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    private boolean peekSelectToken() {</b>
+&nbsp;        Token t = this.peekToken();
+<b class="fc">&nbsp;        if (t == null) {</b>
+<b class="fc">&nbsp;            return false;</b>
+&nbsp;        } else {
+&nbsp;            return t.kind == TokenKind.SELECT || t.kind == TokenKind.SELECT_FIRST || t.kind == TokenKind.SELECT_LAST;
+&nbsp;        }
+&nbsp;    }
+<b class="pc">&nbsp;</b>
+<b class="fc">&nbsp;    private Token takeToken() {</b>
+<b class="pc">&nbsp;        if (this.tokenStreamPointer &gt;= this.tokenStreamLength) {</b>
+<b class="nc">&nbsp;            throw new IllegalStateException(&quot;No token&quot;);</b>
+&nbsp;        } else {
+<b class="fc">&nbsp;            return (Token)this.tokenStream.get(this.tokenStreamPointer++);</b>
+<b class="pc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="fc">&nbsp;    @Nullable</b>
+<b class="fc">&nbsp;    private Token nextToken() {</b>
+<b class="fc">&nbsp;        return this.tokenStreamPointer &gt;= this.tokenStreamLength ? null : (Token)this.tokenStream.get(this.tokenStreamPointer++);</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    @Nullable</b>
+&nbsp;    private Token peekToken() {
+&nbsp;        return this.tokenStreamPointer &gt;= this.tokenStreamLength ? null : (Token)this.tokenStream.get(this.tokenStreamPointer);
+&nbsp;    }
+&nbsp;
+&nbsp;    public String toString(@Nullable Token t) {
+&nbsp;        if (t == null) {
+&nbsp;            return &quot;&quot;;
+&nbsp;        } else {
+<b class="fc">&nbsp;            return t.getKind().hasPayload() ? t.stringValue() : t.kind.toString().toLowerCase(Locale.ROOT);</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+<b class="fc">&nbsp;    @Contract(&quot;_, null, _ -&gt; fail; _, _, null -&gt; fail&quot;)</b>
+<b class="fc">&nbsp;    private void checkOperands(Token token, @Nullable SpelNodeImpl left, @Nullable SpelNodeImpl right) {</b>
+&nbsp;        this.checkLeftOperand(token, left);
+<b class="pc">&nbsp;        this.checkRightOperand(token, right);</b>
+<b class="fc">&nbsp;    }</b>
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;    @Contract(&quot;_, null -&gt; fail&quot;)</b>
+&nbsp;    private void checkLeftOperand(Token token, @Nullable SpelNodeImpl operandExpression) {
+<b class="pc">&nbsp;        if (operandExpression == null) {</b>
+<b class="nc">&nbsp;            throw this.internalException(token.startPos, SpelMessage.LEFT_OPERAND_PROBLEM);</b>
+&nbsp;        }
+<b class="pc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    @Contract(&quot;_, null -&gt; fail&quot;)
+&nbsp;    private void checkRightOperand(Token token, @Nullable SpelNodeImpl operandExpression) {
+<b class="fc">&nbsp;        if (operandExpression == null) {</b>
+&nbsp;            throw this.internalException(token.startPos, SpelMessage.RIGHT_OPERAND_PROBLEM);
+&nbsp;        }
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="pc">&nbsp;    private InternalParseException internalException(int startPos, SpelMessage message, Object... inserts) {</b>
+<b class="nc">&nbsp;        return new InternalParseException(new SpelParseException(this.expressionString, startPos, message, inserts));</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:58</div>
+</div>
+</body>
+</html>

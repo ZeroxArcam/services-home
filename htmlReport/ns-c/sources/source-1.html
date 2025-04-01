@@ -5,7 +5,7 @@
 <html id="htmlId">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
-  <title>Coverage Report > CategoryUseCase</title>
+  <title>Coverage Report > BasicStatusManager</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -19,10 +19,10 @@
 <div class="breadCrumbs">
 Current scope:     <a href="../../index.html">all classes</a>
     <span class="separator">|</span>
-    <a href="../index.html">com.pragma.hogar360.serviceshome.domain.usecases</a>
+    <a href="../index.html">ch.qos.logback.core</a>
 </div>
 
-<h1>Coverage Summary for Class: CategoryUseCase (com.pragma.hogar360.serviceshome.domain.usecases)</h1>
+<h1>Coverage Summary for Class: BasicStatusManager (ch.qos.logback.core)</h1>
 
 <table class="coverageStats">
 <tr>
@@ -45,37 +45,37 @@ Current scope:     <a href="../../index.html">all classes</a>
 </th>
 </tr>
 <tr>
-  <td class="name">CategoryUseCase</td>
+  <td class="name">BasicStatusManager</td>
 <td class="coverageStat">
   <span class="percent">
-    0%
+    100%
   </span>
   <span class="absValue">
-    (0/1)
+    (1/1)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    0%
+    54.5%
   </span>
   <span class="absValue">
-    (0/4)
+    (6/11)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    0%
+    21.4%
   </span>
   <span class="absValue">
-    (0/2)
+    (3/14)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    0%
+    56.9%
   </span>
   <span class="absValue">
-    (0/11)
+    (29/51)
   </span>
 </td>
 </tr>
@@ -87,73 +87,122 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 
 <pre>
-<code class="sourceCode" id="sourceCode">&nbsp;package com.pragma.hogar360.serviceshome.domain.usecases;
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
 &nbsp;
-&nbsp;import com.pragma.hogar360.serviceshome.domain.exceptions.CategoryAlreadyExistsException;
-&nbsp;import com.pragma.hogar360.serviceshome.domain.model.CategoryModel;
-&nbsp;import com.pragma.hogar360.serviceshome.domain.ports.in.CategoryServicePort;
-&nbsp;import com.pragma.hogar360.serviceshome.domain.ports.out.CategoryPersistencePort;
-&nbsp;import com.pragma.hogar360.serviceshome.domain.utils.constants.Pagination;
-&nbsp;import com.pragma.hogar360.serviceshome.domain.utils.constants.Validation;
+&nbsp;package ch.qos.logback.core;
 &nbsp;
-&nbsp;/**
-&nbsp; * Use case implementation for category operations.
-&nbsp; * Implements the CategoryServicePort interface.
-&nbsp; */
-&nbsp;public class CategoryUseCase implements CategoryServicePort {
-&nbsp;    private final CategoryPersistencePort categoryPersistencePort;
+&nbsp;import ch.qos.logback.core.helpers.CyclicBuffer;
+&nbsp;import ch.qos.logback.core.spi.LogbackLock;
+&nbsp;import ch.qos.logback.core.status.OnConsoleStatusListener;
+&nbsp;import ch.qos.logback.core.status.Status;
+&nbsp;import ch.qos.logback.core.status.StatusListener;
+&nbsp;import ch.qos.logback.core.status.StatusManager;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.List;
 &nbsp;
-&nbsp;    /**
-&nbsp;     * Constructs a new CategoryUseCase with the given CategoryPersistencePort.
-&nbsp;     *
-&nbsp;     * @param categoryPersistencePort The persistence port for category operations.
-&nbsp;     */
-<b class="nc">&nbsp;    public CategoryUseCase(CategoryPersistencePort categoryPersistencePort) {</b>
-<b class="nc">&nbsp;        this.categoryPersistencePort = categoryPersistencePort;</b>
+&nbsp;public class BasicStatusManager implements StatusManager {
+&nbsp;    public static final int MAX_HEADER_COUNT = 150;
+&nbsp;    public static final int TAIL_SIZE = 150;
+&nbsp;    int count = 0;
+&nbsp;    protected final List&lt;Status&gt; statusList = new ArrayList();
+&nbsp;    protected final CyclicBuffer&lt;Status&gt; tailBuffer = new CyclicBuffer(150);
+&nbsp;    protected final LogbackLock statusListLock = new LogbackLock();
+&nbsp;    int level = 0;
+&nbsp;    protected final List&lt;StatusListener&gt; statusListenerList = new ArrayList();
+<b class="fc">&nbsp;    protected final LogbackLock statusListenerListLock = new LogbackLock();</b>
+&nbsp;
+&nbsp;    public BasicStatusManager() {
 &nbsp;    }
 &nbsp;
-&nbsp;    /**
-&nbsp;     * Saves a CategoryModel.
-&nbsp;     * Throws CategoryAlreadyExistsException if a category with the same name already exists.
-&nbsp;     *
-&nbsp;     * @param categoryModel The CategoryModel to be saved.
-&nbsp;     */
-&nbsp;    @Override
-&nbsp;    public void save(CategoryModel categoryModel) {
-<b class="nc">&nbsp;        Validation.validateName(categoryModel.getName());</b>
-<b class="nc">&nbsp;        Validation.validateDescription(categoryModel.getDescription());</b>
-<b class="nc">&nbsp;        CategoryModel category = categoryPersistencePort.getCategoryByName(categoryModel.getName());</b>
-<b class="nc">&nbsp;        if (category != null) {</b>
-<b class="nc">&nbsp;            throw new CategoryAlreadyExistsException();</b>
+<b class="fc">&nbsp;    public void add(Status newStatus) {</b>
+&nbsp;        this.fireStatusAddEvent(newStatus);
+&nbsp;        ++this.count;
+<b class="fc">&nbsp;        if (newStatus.getLevel() &gt; this.level) {</b>
+<b class="fc">&nbsp;            this.level = newStatus.getLevel();</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+<b class="fc">&nbsp;        synchronized(this.statusListLock) {</b>
+&nbsp;            if (this.statusList.size() &lt; 150) {
+&nbsp;                this.statusList.add(newStatus);
+<b class="fc">&nbsp;            } else {</b>
+<b class="fc">&nbsp;                this.tailBuffer.add(newStatus);</b>
+&nbsp;            }
+&nbsp;
 &nbsp;        }
-<b class="nc">&nbsp;        categoryPersistencePort.save(categoryModel);</b>
 &nbsp;    }
 &nbsp;
-&nbsp;    /**
-&nbsp;     * Retrieves a paginated list of CategoryModels.
-&nbsp;     *
-&nbsp;     * @param page      The page number (0-based).
-&nbsp;     * @param size      The number of categories per page.
-&nbsp;     * @param orderAsc  True for ascending order, false for descending order.
-&nbsp;     * @return A list of CategoryModels representing the requested page.
-&nbsp;     */
-&nbsp;    @Override
-&nbsp;    public Pagination&lt;CategoryModel&gt; getCategories(Integer page, Integer size, boolean orderAsc) {
-<b class="nc">&nbsp;        Validation.ValidatePageAndSize(page,size);</b>
-<b class="nc">&nbsp;        return categoryPersistencePort.getCategories(page, size, orderAsc);</b>
+&nbsp;    public List&lt;Status&gt; getCopyOfStatusList() {
+&nbsp;        synchronized(this.statusListLock) {
+&nbsp;            List&lt;Status&gt; tList = new ArrayList(this.statusList);
+&nbsp;            tList.addAll(this.tailBuffer.asList());
+&nbsp;            return tList;
+&nbsp;        }
 &nbsp;    }
 &nbsp;
-&nbsp;    /**
-&nbsp;     * Retrieves a CategoryModel by its name.
-&nbsp;     *
-&nbsp;     * @param name The name of the category to retrieve.
-&nbsp;     * @return The CategoryModel object if found, or null if not found.
-&nbsp;     */
-&nbsp;    @Override
-&nbsp;    public CategoryModel getCategoryByName(String name) {
-<b class="nc">&nbsp;        return categoryPersistencePort.getCategoryByName(name);</b>
+&nbsp;    private void fireStatusAddEvent(Status status) {
+&nbsp;        synchronized(this.statusListenerListLock) {
+<b class="fc">&nbsp;            for(StatusListener sl : this.statusListenerList) {</b>
+&nbsp;                sl.addStatusEvent(status);
+<b class="fc">&nbsp;            }</b>
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;        }</b>
 &nbsp;    }
-&nbsp;}
+&nbsp;
+<b class="fc">&nbsp;    public void clear() {</b>
+<b class="pc">&nbsp;        synchronized(this.statusListLock) {</b>
+<b class="fc">&nbsp;            this.count = 0;</b>
+&nbsp;            this.statusList.clear();
+<b class="nc">&nbsp;            this.tailBuffer.clear();</b>
+&nbsp;        }
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public int getLevel() {
+&nbsp;        return this.level;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public int getCount() {</b>
+<b class="fc">&nbsp;        return this.count;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public boolean add(StatusListener listener) {
+&nbsp;        synchronized(this.statusListenerListLock) {
+&nbsp;            if (listener instanceof OnConsoleStatusListener) {
+<b class="fc">&nbsp;                boolean alreadyPresent = this.checkForPresence(this.statusListenerList, listener.getClass());</b>
+<b class="pc">&nbsp;                if (alreadyPresent) {</b>
+<b class="nc">&nbsp;                    return false;</b>
+&nbsp;                }
+<b class="fc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            this.statusListenerList.add(listener);
+&nbsp;            return true;
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private boolean checkForPresence(List&lt;StatusListener&gt; statusListenerList, Class&lt;?&gt; aClass) {</b>
+<b class="fc">&nbsp;        for(StatusListener e : statusListenerList) {</b>
+&nbsp;            if (e.getClass() == aClass) {
+&nbsp;                return true;
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return false;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void remove(StatusListener listener) {
+&nbsp;        synchronized(this.statusListenerListLock) {
+&nbsp;            this.statusListenerList.remove(listener);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public List&lt;StatusListener&gt; getCopyOfStatusListenerList() {
+&nbsp;        synchronized(this.statusListenerListLock) {
+&nbsp;            return new ArrayList(this.statusListenerList);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;}</b>
 </code>
 </pre>
 </div>
@@ -177,7 +226,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2025-03-20 13:44</div>
+    <div style="float:right;">generated on 2025-03-31 20:57</div>
 </div>
 </body>
 </html>

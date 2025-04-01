@@ -1,0 +1,271 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > StrategySelectorImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.boot.registry.selector.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: StrategySelectorImpl (org.hibernate.boot.registry.selector.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">StrategySelectorImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    93.8%
+  </span>
+  <span class="absValue">
+    (15/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    52.9%
+  </span>
+  <span class="absValue">
+    (18/34)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    58.1%
+  </span>
+  <span class="absValue">
+    (43/74)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.boot.registry.selector.internal;
+&nbsp;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.HashSet;
+&nbsp;import java.util.Iterator;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.concurrent.Callable;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import org.hibernate.HibernateException;
+&nbsp;import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
+&nbsp;import org.hibernate.boot.registry.classloading.spi.ClassLoadingException;
+&nbsp;import org.hibernate.boot.registry.selector.spi.StrategyCreator;
+&nbsp;import org.hibernate.boot.registry.selector.spi.StrategySelectionException;
+&nbsp;import org.hibernate.boot.registry.selector.spi.StrategySelector;
+&nbsp;import org.jboss.logging.Logger;
+&nbsp;
+&nbsp;public class StrategySelectorImpl implements StrategySelector {
+&nbsp;    private static final Logger log = Logger.getLogger(StrategySelectorImpl.class);
+&nbsp;    private static final StrategyCreator STANDARD_STRATEGY_CREATOR = (strategyClass) -&gt; {
+&nbsp;        try {
+&nbsp;            return strategyClass.newInstance();
+&nbsp;        } catch (Exception e) {
+&nbsp;            throw new StrategySelectionException(String.format(&quot;Could not instantiate named strategy class [%s]&quot;, strategyClass.getName()), e);
+&nbsp;        }
+&nbsp;    };
+&nbsp;    private final Map&lt;Class, Map&lt;String, Class&gt;&gt; namedStrategyImplementorByStrategyMap = new ConcurrentHashMap();
+<b class="fc">&nbsp;    private final Map&lt;Class, LazyServiceResolver&gt; lazyStrategyImplementorByStrategyMap = new ConcurrentHashMap();</b>
+&nbsp;    private final ClassLoaderService classLoaderService;
+<b class="fc">&nbsp;</b>
+&nbsp;    public StrategySelectorImpl(ClassLoaderService classLoaderService) {
+<b class="fc">&nbsp;        this.classLoaderService = classLoaderService;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public &lt;T&gt; void registerStrategyLazily(Class&lt;T&gt; strategy, LazyServiceResolver&lt;T&gt; resolver) {</b>
+<b class="nc">&nbsp;        LazyServiceResolver previous = (LazyServiceResolver)this.lazyStrategyImplementorByStrategyMap.put(strategy, resolver);</b>
+&nbsp;        if (previous != null) {
+&nbsp;            throw new HibernateException(&quot;Detected a second LazyServiceResolver replacing an existing LazyServiceResolver implementation for strategy &quot; + strategy.getName());
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;T&gt; void registerStrategyImplementor(Class&lt;T&gt; strategy, String name, Class&lt;? extends T&gt; implementation) {
+<b class="fc">&nbsp;        Map&lt;String, Class&gt; namedStrategyImplementorMap = (Map)this.namedStrategyImplementorByStrategyMap.computeIfAbsent(strategy, (aClass) -&gt; new ConcurrentHashMap());</b>
+&nbsp;        Class old = (Class)namedStrategyImplementorMap.put(name, implementation);
+&nbsp;        if (old == null) {
+&nbsp;            if (log.isTraceEnabled()) {
+&nbsp;                log.trace(String.format(&quot;Registering named strategy selector [%s] : [%s] -&gt; [%s]&quot;, strategy.getName(), name, implementation.getName()));
+<b class="fc">&nbsp;            }</b>
+&nbsp;        } else if (log.isDebugEnabled()) {
+&nbsp;            log.debug(String.format(&quot;Registering named strategy selector [%s] : [%s] -&gt; [%s] (replacing [%s])&quot;, strategy.getName(), name, implementation.getName(), old.getName()));
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;T&gt; void unRegisterStrategyImplementor(Class&lt;T&gt; strategy, Class&lt;? extends T&gt; implementation) {
+&nbsp;        Map&lt;String, Class&gt; namedStrategyImplementorMap = (Map)this.namedStrategyImplementorByStrategyMap.get(strategy);
+<b class="fc">&nbsp;        if (namedStrategyImplementorMap == null) {</b>
+<b class="fc">&nbsp;            log.debug(&quot;Named strategy map did not exist on call to un-register&quot;);</b>
+&nbsp;        } else {
+&nbsp;            Iterator itr = namedStrategyImplementorMap.values().iterator();
+&nbsp;
+<b class="fc">&nbsp;            while(itr.hasNext()) {</b>
+<b class="pc">&nbsp;                Class registered = (Class)itr.next();</b>
+<b class="nc">&nbsp;                if (registered.equals(implementation)) {</b>
+&nbsp;                    itr.remove();
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            if (namedStrategyImplementorMap.isEmpty()) {
+<b class="fc">&nbsp;                this.namedStrategyImplementorByStrategyMap.remove(strategy);</b>
+&nbsp;            }
+<b class="fc">&nbsp;</b>
+&nbsp;        }
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="pc">&nbsp;    public &lt;T&gt; Class&lt;? extends T&gt; selectStrategyImplementor(Class&lt;T&gt; strategy, String name) {</b>
+<b class="pc">&nbsp;        Map&lt;String, Class&gt; namedStrategyImplementorMap = (Map)this.namedStrategyImplementorByStrategyMap.get(strategy);</b>
+<b class="nc">&nbsp;        if (namedStrategyImplementorMap != null) {</b>
+<b class="nc">&nbsp;            Class registered = (Class)namedStrategyImplementorMap.get(name);</b>
+&nbsp;            if (registered != null) {
+<b class="nc">&nbsp;                return registered;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        LazyServiceResolver lazyServiceResolver = (LazyServiceResolver)this.lazyStrategyImplementorByStrategyMap.get(strategy);
+&nbsp;        if (lazyServiceResolver != null) {
+&nbsp;            Class resolve = lazyServiceResolver.resolve(name);
+&nbsp;            if (resolve != null) {
+<b class="nc">&nbsp;                return resolve;</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            return this.classLoaderService.classForName(name);
+<b class="nc">&nbsp;        } catch (ClassLoadingException e) {</b>
+<b class="nc">&nbsp;            throw new StrategySelectionException(&quot;Unable to resolve name [&quot; + name + &quot;] as strategy [&quot; + strategy.getName() + &quot;]&quot;, e);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;T&gt; T resolveStrategy(Class&lt;T&gt; strategy, Object strategyReference) {
+&nbsp;        return (T)this.resolveDefaultableStrategy(strategy, strategyReference, (Object)null);
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;T&gt; T resolveDefaultableStrategy(Class&lt;T&gt; strategy, Object strategyReference, T defaultValue) {
+<b class="nc">&nbsp;        return (T)this.resolveDefaultableStrategy(strategy, strategyReference, (Callable)(() -&gt; defaultValue));</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public &lt;T&gt; T resolveDefaultableStrategy(Class&lt;T&gt; strategy, Object strategyReference, Callable&lt;T&gt; defaultResolver) {
+&nbsp;        return (T)this.resolveStrategy(strategy, strategyReference, defaultResolver, STANDARD_STRATEGY_CREATOR);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public &lt;T&gt; T resolveStrategy(Class&lt;T&gt; strategy, Object strategyReference, T defaultValue, StrategyCreator&lt;T&gt; creator) {</b>
+<b class="nc">&nbsp;        return (T)this.resolveStrategy(strategy, strategyReference, (Callable)(() -&gt; defaultValue), creator);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public Collection getRegisteredStrategyImplementors(Class strategy) {
+&nbsp;        LazyServiceResolver lazyServiceResolver = (LazyServiceResolver)this.lazyStrategyImplementorByStrategyMap.get(strategy);
+&nbsp;        if (lazyServiceResolver != null) {
+&nbsp;            throw new StrategySelectionException(&quot;Can&#39;t use this method on for strategy types which are embedded in the core library&quot;);
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            Map&lt;String, Class&gt; registrations = (Map)this.namedStrategyImplementorByStrategyMap.get(strategy);</b>
+&nbsp;            return (Collection)(registrations == null ? Collections.emptySet() : new HashSet(registrations.values()));
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;T&gt; T resolveStrategy(Class&lt;T&gt; strategy, Object strategyReference, Callable&lt;T&gt; defaultResolver, StrategyCreator&lt;T&gt; creator) {
+&nbsp;        if (strategyReference == null) {
+<b class="fc">&nbsp;            try {</b>
+<b class="fc">&nbsp;                return (T)defaultResolver.call();</b>
+<b class="fc">&nbsp;            } catch (Exception e) {</b>
+<b class="fc">&nbsp;                throw new StrategySelectionException(&quot;Default-resolver threw exception&quot;, e);</b>
+<b class="fc">&nbsp;            }</b>
+&nbsp;        } else if (strategy.isInstance(strategyReference)) {
+&nbsp;            return (T)strategy.cast(strategyReference);
+&nbsp;        } else {
+<b class="fc">&nbsp;            Class&lt;? extends T&gt; implementationClass;</b>
+<b class="fc">&nbsp;            if (strategyReference instanceof Class) {</b>
+<b class="fc">&nbsp;                implementationClass = (Class)strategyReference;</b>
+<b class="pc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                implementationClass = this.&lt;T&gt;selectStrategyImplementor(strategy, strategyReference.toString());</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            try {
+&nbsp;                return (T)creator.create(implementationClass);
+<b class="fc">&nbsp;            } catch (Exception e) {</b>
+&nbsp;                throw new StrategySelectionException(String.format(&quot;Could not instantiate named strategy class [%s]&quot;, implementationClass.getName()), e);
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 21:00</div>
+</div>
+</body>
+</html>

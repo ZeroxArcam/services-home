@@ -5,7 +5,7 @@
 <html id="htmlId">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
-  <title>Coverage Report > FieldInitializationReport</title>
+  <title>Coverage Report > LifecycleBase</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -19,10 +19,10 @@
 <div class="breadCrumbs">
 Current scope:     <a href="../../index.html">all classes</a>
     <span class="separator">|</span>
-    <a href="../index.html">org.mockito.internal.util.reflection</a>
+    <a href="../index.html">org.apache.catalina.util</a>
 </div>
 
-<h1>Coverage Summary for Class: FieldInitializationReport (org.mockito.internal.util.reflection)</h1>
+<h1>Coverage Summary for Class: LifecycleBase (org.apache.catalina.util)</h1>
 
 <table class="coverageStats">
 <tr>
@@ -45,7 +45,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 </th>
 </tr>
 <tr>
-  <td class="name">FieldInitializationReport</td>
+  <td class="name">LifecycleBase</td>
 <td class="coverageStat">
   <span class="percent">
     100%
@@ -56,10 +56,10 @@ Current scope:     <a href="../../index.html">all classes</a>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    40%
+    10.5%
   </span>
   <span class="absValue">
-    (2/5)
+    (2/19)
   </span>
 </td>
 <td class="coverageStat">
@@ -67,15 +67,15 @@ Current scope:     <a href="../../index.html">all classes</a>
     0%
   </span>
   <span class="absValue">
-    (0/2)
+    (0/102)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    62.5%
+    5.7%
   </span>
   <span class="absValue">
-    (5/8)
+    (6/105)
   </span>
 </td>
 </tr>
@@ -92,33 +92,256 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;// (powered by FernFlower decompiler)
 &nbsp;//
 &nbsp;
-&nbsp;package org.mockito.internal.util.reflection;
+&nbsp;package org.apache.catalina.util;
 &nbsp;
-&nbsp;public class FieldInitializationReport {
-&nbsp;    private final Object fieldInstance;
-&nbsp;    private final boolean wasInitialized;
-&nbsp;    private final boolean wasInitializedUsingConstructorArgs;
+&nbsp;import java.util.List;
+&nbsp;import java.util.concurrent.CopyOnWriteArrayList;
+&nbsp;import org.apache.catalina.Lifecycle;
+&nbsp;import org.apache.catalina.LifecycleEvent;
+&nbsp;import org.apache.catalina.LifecycleException;
+&nbsp;import org.apache.catalina.LifecycleListener;
+&nbsp;import org.apache.catalina.LifecycleState;
+&nbsp;import org.apache.juli.logging.Log;
+&nbsp;import org.apache.juli.logging.LogFactory;
+&nbsp;import org.apache.tomcat.util.ExceptionUtils;
+&nbsp;import org.apache.tomcat.util.res.StringManager;
 &nbsp;
-&nbsp;    public FieldInitializationReport(Object fieldInstance, boolean wasInitialized, boolean wasInitializedUsingConstructorArgs) {
-&nbsp;        this.fieldInstance = fieldInstance;
-&nbsp;        this.wasInitialized = wasInitialized;
-&nbsp;        this.wasInitializedUsingConstructorArgs = wasInitializedUsingConstructorArgs;
+&nbsp;public abstract class LifecycleBase implements Lifecycle {
+&nbsp;    private static final Log log = LogFactory.getLog(LifecycleBase.class);
+&nbsp;    private static final StringManager sm = StringManager.getManager(LifecycleBase.class);
+&nbsp;    private final List&lt;LifecycleListener&gt; lifecycleListeners = new CopyOnWriteArrayList();
+&nbsp;    private volatile LifecycleState state;
+&nbsp;    private boolean throwOnFailure;
+&nbsp;
+&nbsp;    public LifecycleBase() {
+&nbsp;        this.state = LifecycleState.NEW;
+&nbsp;        this.throwOnFailure = true;
 &nbsp;    }
-<b class="fc">&nbsp;</b>
-<b class="fc">&nbsp;    public Object fieldInstance() {</b>
-<b class="fc">&nbsp;        return this.fieldInstance;</b>
+&nbsp;
+&nbsp;    public boolean getThrowOnFailure() {
+&nbsp;        return this.throwOnFailure;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public void setThrowOnFailure(boolean throwOnFailure) {</b>
+&nbsp;        this.throwOnFailure = throwOnFailure;
 <b class="fc">&nbsp;    }</b>
 &nbsp;
-&nbsp;    public boolean fieldWasInitialized() {
-&nbsp;        return this.wasInitialized;
+<b class="fc">&nbsp;    public void addLifecycleListener(LifecycleListener listener) {</b>
+&nbsp;        this.lifecycleListeners.add(listener);
 &nbsp;    }
 &nbsp;
-&nbsp;    public boolean fieldWasInitializedUsingContructorArgs() {
-&nbsp;        return this.wasInitializedUsingConstructorArgs;
+&nbsp;    public LifecycleListener[] findLifecycleListeners() {
+&nbsp;        return (LifecycleListener[])this.lifecycleListeners.toArray(new LifecycleListener[0]);
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void removeLifecycleListener(LifecycleListener listener) {
+&nbsp;        this.lifecycleListeners.remove(listener);
 &nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    protected void fireLifecycleEvent(String type, Object data) {</b>
+&nbsp;        LifecycleEvent event = new LifecycleEvent(this, type, data);
+&nbsp;
+<b class="fc">&nbsp;        for(LifecycleListener listener : this.lifecycleListeners) {</b>
+&nbsp;            listener.lifecycleEvent(event);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public final synchronized void init() throws LifecycleException {
+&nbsp;        if (!this.state.equals(LifecycleState.NEW)) {
+&nbsp;            this.invalidTransition(&quot;before_init&quot;);
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            this.setStateInternal(LifecycleState.INITIALIZING, (Object)null, false);
+&nbsp;            this.initInternal();
+&nbsp;            this.setStateInternal(LifecycleState.INITIALIZED, (Object)null, false);
+&nbsp;        } catch (Throwable t) {
+&nbsp;            this.handleSubClassException(t, &quot;lifecycleBase.initFail&quot;, this.toString());
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected abstract void initInternal() throws LifecycleException;
+&nbsp;
+<b class="nc">&nbsp;    public final synchronized void start() throws LifecycleException {</b>
+&nbsp;        if (!LifecycleState.STARTING_PREP.equals(this.state) &amp;&amp; !LifecycleState.STARTING.equals(this.state) &amp;&amp; !LifecycleState.STARTED.equals(this.state)) {
+&nbsp;            if (this.state.equals(LifecycleState.NEW)) {
+&nbsp;                this.init();
+&nbsp;            } else if (this.state.equals(LifecycleState.FAILED)) {
+&nbsp;                this.stop();
+<b class="nc">&nbsp;            } else if (!this.state.equals(LifecycleState.INITIALIZED) &amp;&amp; !this.state.equals(LifecycleState.STOPPED)) {</b>
+&nbsp;                this.invalidTransition(&quot;before_start&quot;);
+&nbsp;            }
+&nbsp;
+&nbsp;            try {
+&nbsp;                this.setStateInternal(LifecycleState.STARTING_PREP, (Object)null, false);
+<b class="nc">&nbsp;                this.startInternal();</b>
+&nbsp;                if (this.state.equals(LifecycleState.FAILED)) {
+&nbsp;                    this.stop();
+&nbsp;                } else if (!this.state.equals(LifecycleState.STARTING)) {
+&nbsp;                    this.invalidTransition(&quot;after_start&quot;);
+&nbsp;                } else {
+<b class="nc">&nbsp;                    this.setStateInternal(LifecycleState.STARTED, (Object)null, false);</b>
+&nbsp;                }
+&nbsp;            } catch (Throwable t) {
+&nbsp;                this.handleSubClassException(t, &quot;lifecycleBase.startFail&quot;, this.toString());
+&nbsp;            }
+&nbsp;
+&nbsp;        } else {
+&nbsp;            if (log.isDebugEnabled()) {
+&nbsp;                Exception e = new LifecycleException();
+&nbsp;                log.debug(sm.getString(&quot;lifecycleBase.alreadyStarted&quot;, new Object[]{this.toString()}), e);
+&nbsp;            } else if (log.isInfoEnabled()) {
+<b class="nc">&nbsp;                log.info(sm.getString(&quot;lifecycleBase.alreadyStarted&quot;, new Object[]{this.toString()}));</b>
+<b class="nc">&nbsp;            }</b>
 <b class="nc">&nbsp;</b>
-&nbsp;    public Class&lt;?&gt; fieldClass() {
-&nbsp;        return this.fieldInstance != null ? this.fieldInstance.getClass() : null;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected abstract void startInternal() throws LifecycleException;
+&nbsp;
+&nbsp;    public final synchronized void stop() throws LifecycleException {
+<b class="nc">&nbsp;        if (!LifecycleState.STOPPING_PREP.equals(this.state) &amp;&amp; !LifecycleState.STOPPING.equals(this.state) &amp;&amp; !LifecycleState.STOPPED.equals(this.state)) {</b>
+<b class="nc">&nbsp;            if (!this.state.equals(LifecycleState.INITIALIZED)) {</b>
+&nbsp;                if (this.state.equals(LifecycleState.NEW)) {
+&nbsp;                    this.state = LifecycleState.STOPPED;
+&nbsp;                } else {
+<b class="nc">&nbsp;                    if (!this.state.equals(LifecycleState.STARTED) &amp;&amp; !this.state.equals(LifecycleState.FAILED)) {</b>
+<b class="nc">&nbsp;                        this.invalidTransition(&quot;before_stop&quot;);</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;
+<b class="nc">&nbsp;                    try {</b>
+&nbsp;                        if (this.state.equals(LifecycleState.FAILED)) {
+&nbsp;                            this.fireLifecycleEvent(&quot;before_stop&quot;, (Object)null);
+&nbsp;                        } else {
+&nbsp;                            this.setStateInternal(LifecycleState.STOPPING_PREP, (Object)null, false);
+&nbsp;                        }
+&nbsp;
+&nbsp;                        this.stopInternal();
+&nbsp;                        if (!this.state.equals(LifecycleState.STOPPING) &amp;&amp; !this.state.equals(LifecycleState.FAILED)) {
+&nbsp;                            this.invalidTransition(&quot;after_stop&quot;);
+&nbsp;                        }
+&nbsp;
+&nbsp;                        this.setStateInternal(LifecycleState.STOPPED, (Object)null, false);
+&nbsp;                    } catch (Throwable t) {
+&nbsp;                        this.handleSubClassException(t, &quot;lifecycleBase.stopFail&quot;, this.toString());
+&nbsp;                    } finally {
+<b class="nc">&nbsp;                        if (this instanceof Lifecycle.SingleUse) {</b>
+<b class="nc">&nbsp;                            this.setStateInternal(LifecycleState.STOPPED, (Object)null, false);</b>
+&nbsp;                            this.destroy();
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;        } else {
+&nbsp;            if (log.isDebugEnabled()) {
+&nbsp;                Exception e = new LifecycleException();
+&nbsp;                log.debug(sm.getString(&quot;lifecycleBase.alreadyStopped&quot;, new Object[]{this.toString()}), e);
+<b class="nc">&nbsp;            } else if (log.isInfoEnabled()) {</b>
+<b class="nc">&nbsp;                log.info(sm.getString(&quot;lifecycleBase.alreadyStopped&quot;, new Object[]{this.toString()}));</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected abstract void stopInternal() throws LifecycleException;
+&nbsp;
+<b class="nc">&nbsp;    public final synchronized void destroy() throws LifecycleException {</b>
+<b class="nc">&nbsp;        if (LifecycleState.FAILED.equals(this.state)) {</b>
+<b class="nc">&nbsp;            try {</b>
+&nbsp;                this.stop();
+&nbsp;            } catch (LifecycleException e) {
+<b class="nc">&nbsp;                log.error(sm.getString(&quot;lifecycleBase.destroyStopFail&quot;, new Object[]{this.toString()}), e);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if (!LifecycleState.DESTROYING.equals(this.state) &amp;&amp; !LifecycleState.DESTROYED.equals(this.state)) {</b>
+&nbsp;            if (!this.state.equals(LifecycleState.STOPPED) &amp;&amp; !this.state.equals(LifecycleState.FAILED) &amp;&amp; !this.state.equals(LifecycleState.NEW) &amp;&amp; !this.state.equals(LifecycleState.INITIALIZED)) {
+<b class="nc">&nbsp;                this.invalidTransition(&quot;before_destroy&quot;);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            try {
+&nbsp;                this.setStateInternal(LifecycleState.DESTROYING, (Object)null, false);
+<b class="nc">&nbsp;                this.destroyInternal();</b>
+&nbsp;                this.setStateInternal(LifecycleState.DESTROYED, (Object)null, false);
+&nbsp;            } catch (Throwable t) {
+&nbsp;                this.handleSubClassException(t, &quot;lifecycleBase.destroyFail&quot;, this.toString());
+&nbsp;            }
+&nbsp;
+&nbsp;        } else {
+&nbsp;            if (log.isDebugEnabled()) {
+&nbsp;                Exception e = new LifecycleException();
+&nbsp;                log.debug(sm.getString(&quot;lifecycleBase.alreadyDestroyed&quot;, new Object[]{this.toString()}), e);
+&nbsp;            } else if (log.isInfoEnabled() &amp;&amp; !(this instanceof Lifecycle.SingleUse)) {
+&nbsp;                log.info(sm.getString(&quot;lifecycleBase.alreadyDestroyed&quot;, new Object[]{this.toString()}));
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected abstract void destroyInternal() throws LifecycleException;
+&nbsp;
+&nbsp;    public LifecycleState getState() {
+<b class="nc">&nbsp;        return this.state;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public String getStateName() {</b>
+<b class="nc">&nbsp;        return this.getState().toString();</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected synchronized void setState(LifecycleState state) throws LifecycleException {</b>
+&nbsp;        this.setStateInternal(state, (Object)null, true);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected synchronized void setState(LifecycleState state, Object data) throws LifecycleException {
+&nbsp;        this.setStateInternal(state, data, true);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private synchronized void setStateInternal(LifecycleState state, Object data, boolean check) throws LifecycleException {
+&nbsp;        if (log.isDebugEnabled()) {
+<b class="nc">&nbsp;            log.debug(sm.getString(&quot;lifecycleBase.setState&quot;, new Object[]{this, state}));</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        if (check) {
+&nbsp;            if (state == null) {
+<b class="nc">&nbsp;                this.invalidTransition(&quot;null&quot;);</b>
+<b class="nc">&nbsp;                return;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            if (state != LifecycleState.FAILED &amp;&amp; (this.state != LifecycleState.STARTING_PREP || state != LifecycleState.STARTING) &amp;&amp; (this.state != LifecycleState.STOPPING_PREP || state != LifecycleState.STOPPING) &amp;&amp; (this.state != LifecycleState.FAILED || state != LifecycleState.STOPPING)) {
+<b class="nc">&nbsp;                this.invalidTransition(state.name());</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        this.state = state;</b>
+&nbsp;        String lifecycleEvent = state.getLifecycleEvent();
+<b class="nc">&nbsp;        if (lifecycleEvent != null) {</b>
+&nbsp;            this.fireLifecycleEvent(lifecycleEvent, data);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void invalidTransition(String type) throws LifecycleException {
+<b class="nc">&nbsp;        String msg = sm.getString(&quot;lifecycleBase.invalidTransition&quot;, new Object[]{type, this.toString(), this.state});</b>
+<b class="nc">&nbsp;        throw new LifecycleException(msg);</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private void handleSubClassException(Throwable t, String key, Object... args) throws LifecycleException {</b>
+&nbsp;        this.setStateInternal(LifecycleState.FAILED, (Object)null, false);
+<b class="nc">&nbsp;        ExceptionUtils.handleThrowable(t);</b>
+&nbsp;        String msg = sm.getString(key, args);
+<b class="nc">&nbsp;        if (this.getThrowOnFailure()) {</b>
+&nbsp;            if (!(t instanceof LifecycleException)) {
+<b class="nc">&nbsp;                t = new LifecycleException(msg, t);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            throw (LifecycleException)t;
+&nbsp;        } else {
+&nbsp;            log.error(msg, t);
+&nbsp;        }
 &nbsp;    }
 &nbsp;}
 </code>
@@ -144,7 +367,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2025-03-20 13:41</div>
+    <div style="float:right;">generated on 2025-03-31 20:54</div>
 </div>
 </body>
 </html>

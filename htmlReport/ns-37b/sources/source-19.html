@@ -1,0 +1,261 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ObjectToObjectConverter</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.core.convert.support</a>
+</div>
+
+<h1>Coverage Summary for Class: ObjectToObjectConverter (org.springframework.core.convert.support)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ObjectToObjectConverter</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    75%
+  </span>
+  <span class="absValue">
+    (9/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    27.8%
+  </span>
+  <span class="absValue">
+    (15/54)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    47.4%
+  </span>
+  <span class="absValue">
+    (27/57)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.core.convert.support;
+&nbsp;
+&nbsp;import java.lang.reflect.Constructor;
+&nbsp;import java.lang.reflect.Executable;
+&nbsp;import java.lang.reflect.InvocationTargetException;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;import java.lang.reflect.Modifier;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Set;
+&nbsp;import org.springframework.core.convert.ConversionFailedException;
+&nbsp;import org.springframework.core.convert.TypeDescriptor;
+&nbsp;import org.springframework.core.convert.converter.ConditionalGenericConverter;
+&nbsp;import org.springframework.core.convert.converter.GenericConverter;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.ClassUtils;
+&nbsp;import org.springframework.util.ConcurrentReferenceHashMap;
+&nbsp;import org.springframework.util.ReflectionUtils;
+&nbsp;
+&nbsp;final class ObjectToObjectConverter implements ConditionalGenericConverter {
+&nbsp;    private static final Map&lt;Class&lt;?&gt;, Executable&gt; conversionExecutableCache = new ConcurrentReferenceHashMap(32);
+&nbsp;
+&nbsp;    ObjectToObjectConverter() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public Set&lt;GenericConverter.ConvertiblePair&gt; getConvertibleTypes() {
+&nbsp;        return Collections.singleton(new GenericConverter.ConvertiblePair(Object.class, Object.class));
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
+&nbsp;        return sourceType.getType() != targetType.getType() &amp;&amp; hasConversionMethodOrConstructor(targetType.getType(), sourceType.getType());
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public Object convert(@Nullable Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
+&nbsp;        if (source == null) {
+&nbsp;            return null;
+&nbsp;        } else {
+&nbsp;            Class&lt;?&gt; sourceClass = sourceType.getType();
+&nbsp;            Class&lt;?&gt; targetClass = targetType.getType();
+&nbsp;            Executable executable = getValidatedExecutable(targetClass, sourceClass);
+&nbsp;
+&nbsp;            try {
+&nbsp;                if (executable instanceof Method) {
+&nbsp;                    Method method = (Method)executable;
+&nbsp;                    ReflectionUtils.makeAccessible(method);
+&nbsp;                    if (!Modifier.isStatic(method.getModifiers())) {
+&nbsp;                        return method.invoke(source);
+&nbsp;                    }
+&nbsp;
+&nbsp;                    return method.invoke((Object)null, source);
+&nbsp;                }
+&nbsp;
+&nbsp;                if (executable instanceof Constructor) {
+&nbsp;                    Constructor&lt;?&gt; constructor = (Constructor)executable;
+&nbsp;                    ReflectionUtils.makeAccessible(constructor);
+&nbsp;                    return constructor.newInstance(source);
+&nbsp;                }
+&nbsp;            } catch (InvocationTargetException ex) {
+&nbsp;                throw new ConversionFailedException(sourceType, targetType, source, ex.getTargetException());
+&nbsp;            } catch (Throwable ex) {
+&nbsp;                throw new ConversionFailedException(sourceType, targetType, source, ex);
+&nbsp;            }
+&nbsp;
+&nbsp;            throw new IllegalStateException(String.format(&quot;No to%3$s() method exists on %1$s, and no static valueOf/of/from(%1$s) method or %3$s(%1$s) constructor exists on %2$s.&quot;, sourceClass.getName(), targetClass.getName(), targetClass.getSimpleName()));
+&nbsp;        }
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    static boolean hasConversionMethodOrConstructor(Class&lt;?&gt; targetClass, Class&lt;?&gt; sourceClass) {
+&nbsp;        return getValidatedExecutable(targetClass, sourceClass) != null;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    private static Executable getValidatedExecutable(Class&lt;?&gt; targetClass, Class&lt;?&gt; sourceClass) {
+&nbsp;        Executable executable = (Executable)conversionExecutableCache.get(targetClass);
+&nbsp;        if (executable != null &amp;&amp; isApplicable(executable, sourceClass)) {
+<b class="fc">&nbsp;            return executable;</b>
+&nbsp;        } else {
+&nbsp;            executable = determineToMethod(targetClass, sourceClass);
+&nbsp;            if (executable == null) {
+&nbsp;                executable = determineFactoryMethod(targetClass, sourceClass);
+<b class="fc">&nbsp;                if (executable == null) {</b>
+<b class="fc">&nbsp;                    executable = determineFactoryConstructor(targetClass, sourceClass);</b>
+&nbsp;                    if (executable == null) {
+&nbsp;                        return null;
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            conversionExecutableCache.put(targetClass, executable);</b>
+&nbsp;            return executable;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private static boolean isApplicable(Executable executable, Class&lt;?&gt; sourceClass) {
+&nbsp;        if (executable instanceof Method method) {
+<b class="nc">&nbsp;            return !Modifier.isStatic(method.getModifiers()) ? ClassUtils.isAssignable(method.getDeclaringClass(), sourceClass) : method.getParameterTypes()[0] == sourceClass;</b>
+<b class="nc">&nbsp;        } else if (executable instanceof Constructor&lt;?&gt; constructor) {</b>
+<b class="nc">&nbsp;            return constructor.getParameterTypes()[0] == sourceClass;</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            return false;
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    @Nullable
+<b class="nc">&nbsp;    private static Method determineToMethod(Class&lt;?&gt; targetClass, Class&lt;?&gt; sourceClass) {</b>
+<b class="nc">&nbsp;        if (String.class != targetClass &amp;&amp; String.class != sourceClass) {</b>
+<b class="nc">&nbsp;            Method method = ClassUtils.getMethodIfAvailable(sourceClass, &quot;to&quot; + targetClass.getSimpleName(), new Class[0]);</b>
+&nbsp;            return method != null &amp;&amp; !Modifier.isStatic(method.getModifiers()) &amp;&amp; ClassUtils.isAssignable(targetClass, method.getReturnType()) ? method : null;
+&nbsp;        } else {
+&nbsp;            return null;
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    @Nullable</b>
+&nbsp;    private static Method determineFactoryMethod(Class&lt;?&gt; targetClass, Class&lt;?&gt; sourceClass) {
+&nbsp;        if (String.class == targetClass) {
+&nbsp;            return null;
+&nbsp;        } else {
+&nbsp;            Method method = ClassUtils.getStaticMethod(targetClass, &quot;valueOf&quot;, new Class[]{sourceClass});
+<b class="nc">&nbsp;            if (method == null) {</b>
+&nbsp;                method = ClassUtils.getStaticMethod(targetClass, &quot;of&quot;, new Class[]{sourceClass});
+<b class="nc">&nbsp;                if (method == null) {</b>
+&nbsp;                    method = ClassUtils.getStaticMethod(targetClass, &quot;from&quot;, new Class[]{sourceClass});
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="pc">&nbsp;            return method != null &amp;&amp; areRelatedTypes(targetClass, method.getReturnType()) ? method : null;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static boolean areRelatedTypes(Class&lt;?&gt; type1, Class&lt;?&gt; type2) {
+<b class="fc">&nbsp;        return ClassUtils.isAssignable(type1, type2) || ClassUtils.isAssignable(type2, type1);</b>
+<b class="pc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    @Nullable
+&nbsp;    private static Constructor&lt;?&gt; determineFactoryConstructor(Class&lt;?&gt; targetClass, Class&lt;?&gt; sourceClass) {
+<b class="fc">&nbsp;        return ClassUtils.getConstructorIfAvailable(targetClass, new Class[]{sourceClass});</b>
+<b class="pc">&nbsp;    }</b>
+<b class="fc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

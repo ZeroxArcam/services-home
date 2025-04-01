@@ -1,0 +1,377 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > TypeDiscoverer</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.data.util</a>
+</div>
+
+<h1>Coverage Summary for Class: TypeDiscoverer (org.springframework.data.util)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TypeDiscoverer</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    21.9%
+  </span>
+  <span class="absValue">
+    (7/32)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    10%
+  </span>
+  <span class="absValue">
+    (8/80)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    21.2%
+  </span>
+  <span class="absValue">
+    (29/137)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.data.util;
+&nbsp;
+&nbsp;import java.beans.PropertyDescriptor;
+&nbsp;import java.lang.annotation.Annotation;
+&nbsp;import java.lang.reflect.Constructor;
+&nbsp;import java.lang.reflect.Field;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;import java.lang.reflect.Type;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Arrays;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Optional;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import java.util.stream.Collectors;
+&nbsp;import org.springframework.beans.BeanUtils;
+&nbsp;import org.springframework.core.MethodParameter;
+&nbsp;import org.springframework.core.ResolvableType;
+&nbsp;import org.springframework.core.convert.TypeDescriptor;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.ConcurrentLruCache;
+&nbsp;import org.springframework.util.ObjectUtils;
+&nbsp;import org.springframework.util.ReflectionUtils;
+&nbsp;
+&nbsp;class TypeDiscoverer&lt;S&gt; implements TypeInformation&lt;S&gt; {
+&nbsp;    private static final ConcurrentLruCache&lt;ResolvableType, TypeInformation&lt;?&gt;&gt; CACHE = new ConcurrentLruCache(64, TypeDiscoverer::new);
+&nbsp;    private final ResolvableType resolvableType;
+&nbsp;    private final Map&lt;String, Optional&lt;TypeInformation&lt;?&gt;&gt;&gt; fields = new ConcurrentHashMap();
+&nbsp;    private final Lazy&lt;Boolean&gt; isMap = Lazy.of(() -&gt; CustomCollections.isMap(this.getType()));
+&nbsp;    private final Lazy&lt;Boolean&gt; isCollectionLike = Lazy.of(() -&gt; {
+&nbsp;        Class&lt;S&gt; type = this.getType();
+&nbsp;        return type.isArray() || Iterable.class.equals(type) || Collection.class.isAssignableFrom(type) || Streamable.class.isAssignableFrom(type) || CustomCollections.isCollection(type);
+&nbsp;    });
+&nbsp;    private final Lazy&lt;TypeInformation&lt;?&gt;&gt; componentType;
+&nbsp;    private final Lazy&lt;TypeInformation&lt;?&gt;&gt; valueType;
+&nbsp;    private final Map&lt;Constructor&lt;?&gt;, List&lt;TypeInformation&lt;?&gt;&gt;&gt; constructorParameters = new ConcurrentHashMap();
+&nbsp;    private final Lazy&lt;List&lt;TypeInformation&lt;?&gt;&gt;&gt; typeArguments;
+&nbsp;    private final Lazy&lt;List&lt;TypeInformation&lt;?&gt;&gt;&gt; resolvedGenerics;
+&nbsp;
+&nbsp;    protected TypeDiscoverer(ResolvableType type) {
+&nbsp;        Assert.notNull(type, &quot;Type must not be null&quot;);
+&nbsp;        this.resolvableType = type;
+&nbsp;        this.componentType = Lazy.of(this::doGetComponentType);
+&nbsp;        this.valueType = Lazy.of(this::doGetMapValueType);
+<b class="fc">&nbsp;        this.typeArguments = Lazy.of(this::doGetTypeArguments);</b>
+&nbsp;        this.resolvedGenerics = Lazy.of(() -&gt; (List)Arrays.stream(this.resolvableType.getGenerics()).map(TypeInformation::of).collect(Collectors.toList()));
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    static TypeDiscoverer&lt;?&gt; ofCached(ResolvableType type) {</b>
+<b class="fc">&nbsp;        Assert.notNull(type, &quot;Type must not be null&quot;);</b>
+<b class="fc">&nbsp;        return (TypeDiscoverer)CACHE.get(type);</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public List&lt;TypeInformation&lt;?&gt;&gt; getParameterTypes(Constructor&lt;?&gt; constructor) {
+<b class="nc">&nbsp;        Assert.notNull(constructor, &quot;Constructor must not be null&quot;);</b>
+<b class="nc">&nbsp;        return (List)this.constructorParameters.computeIfAbsent(constructor, (it) -&gt; {</b>
+<b class="nc">&nbsp;            List&lt;TypeInformation&lt;?&gt;&gt; target = new ArrayList();</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            for(int i = 0; i &lt; it.getParameterCount(); ++i) {
+&nbsp;                target.add(TypeInformation.of(ResolvableType.forConstructorParameter(it, i)));
+&nbsp;            }
+<b class="fc">&nbsp;</b>
+&nbsp;            return target;
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    @Nullable</b>
+&nbsp;    public TypeInformation&lt;?&gt; getProperty(String name) {
+<b class="fc">&nbsp;        int separatorIndex = name.indexOf(46);</b>
+&nbsp;        if (separatorIndex == -1) {
+<b class="fc">&nbsp;            return (TypeInformation)((Optional)this.fields.computeIfAbsent(name, this::getPropertyInformation)).orElse((Object)null);</b>
+<b class="fc">&nbsp;        } else {</b>
+<b class="fc">&nbsp;            String head = name.substring(0, separatorIndex);</b>
+<b class="fc">&nbsp;            TypeInformation&lt;?&gt; info = this.getProperty(head);</b>
+<b class="fc">&nbsp;            return info == null ? null : info.getProperty(name.substring(separatorIndex + 1));</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public boolean isCollectionLike() {
+&nbsp;        Class&lt;S&gt; type = this.getType();
+&nbsp;        return (Boolean)this.isCollectionLike.get();
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    @Nullable
+<b class="fc">&nbsp;    public TypeInformation&lt;?&gt; getComponentType() {</b>
+&nbsp;        return (TypeInformation)this.componentType.orElse((Object)null);
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    protected TypeInformation&lt;?&gt; doGetComponentType() {
+<b class="nc">&nbsp;        if (this.resolvableType.isArray()) {</b>
+&nbsp;            return TypeInformation.of(this.resolvableType.getComponentType());
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            Class&lt;S&gt; rawType = this.getType();
+<b class="nc">&nbsp;            if (this.isMap()) {</b>
+&nbsp;                return this.getTypeArgument(CustomCollections.getMapBaseType(rawType), 0);
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                List&lt;TypeInformation&lt;?&gt;&gt; arguments = this.getTypeArguments();</b>
+&nbsp;                if (!arguments.isEmpty()) {
+&nbsp;                    return (TypeInformation)arguments.get(0);
+<b class="nc">&nbsp;                } else if (Iterable.class.isAssignableFrom(rawType)) {</b>
+&nbsp;                    return this.getTypeArgument(Iterable.class, 0);
+&nbsp;                } else {
+&nbsp;                    return this.isNullableWrapper() ? this.getTypeArgument(rawType, 0) : null;
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public boolean isMap() {
+<b class="nc">&nbsp;        return (Boolean)this.isMap.get();</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    @Nullable
+<b class="nc">&nbsp;    public TypeInformation&lt;?&gt; getMapValueType() {</b>
+<b class="nc">&nbsp;        return (TypeInformation)this.valueType.orElse((Object)null);</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    @Nullable</b>
+&nbsp;    protected TypeInformation&lt;?&gt; doGetMapValueType() {
+&nbsp;        return this.isMap() ? this.getTypeArgument(CustomCollections.getMapBaseType(this.getType()), 1) : (TypeInformation)this.getTypeArguments().stream().skip(1L).findFirst().orElse((Object)null);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public Class&lt;S&gt; getType() {
+&nbsp;        return this.resolvableType.toClass();
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public TypeDescriptor toTypeDescriptor() {</b>
+&nbsp;        return new TypeDescriptor(this.resolvableType, this.getType(), (Annotation[])null);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public TypeInformation&lt;?&gt; getRawTypeInformation() {
+&nbsp;        return new ClassTypeInformation(ResolvableType.forRawClass(this.resolvableType.toClass()));
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    @Nullable</b>
+&nbsp;    public TypeInformation&lt;?&gt; getActualType() {
+&nbsp;        if (this.isMap()) {
+&nbsp;            return this.getMapValueType();
+&nbsp;        } else if (this.isCollectionLike()) {
+&nbsp;            return this.getComponentType();
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            return (TypeInformation&lt;?&gt;)(this.isNullableWrapper() ? this.getComponentType() : this);</b>
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public TypeInformation&lt;?&gt; getReturnType(Method method) {
+<b class="nc">&nbsp;        return TypeInformation.of(ResolvableType.forMethodReturnType(method, this.getType()));</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public List&lt;TypeInformation&lt;?&gt;&gt; getParameterTypes(Method method) {
+<b class="nc">&nbsp;        Assert.notNull(method, &quot;Method most not be null&quot;);</b>
+&nbsp;        return Arrays.stream(method.getParameters()).map(MethodParameter::forParameter).map((it) -&gt; ResolvableType.forMethodParameter(it, this.resolvableType)).map(TypeInformation::of).toList();
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    @Nullable
+&nbsp;    public TypeInformation&lt;?&gt; getSuperTypeInformation(Class&lt;?&gt; superType) {
+<b class="nc">&nbsp;        Class&lt;?&gt; rawType = this.getType();</b>
+<b class="nc">&nbsp;        if (!superType.isAssignableFrom(rawType)) {</b>
+&nbsp;            return null;
+&nbsp;        } else if (rawType.equals(superType)) {
+<b class="nc">&nbsp;            return this;</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            ResolvableType resolvableSuperType = this.resolvableType.as(superType);
+&nbsp;            Type type = this.resolvableType.getType();
+<b class="nc">&nbsp;            if (type instanceof Class &amp;&amp; ObjectUtils.isEmpty(((Class)type).getTypeParameters())) {</b>
+&nbsp;                boolean noGenericsResolvable = !Arrays.stream(resolvableSuperType.resolveGenerics()).filter((it) -&gt; it != null).findAny().isPresent();
+&nbsp;                return (TypeInformation&lt;?&gt;)(noGenericsResolvable ? new ClassTypeInformation(ResolvableType.forRawClass(superType)) : TypeInformation.of(resolvableSuperType));
+&nbsp;            } else {
+&nbsp;                return TypeInformation.of(resolvableSuperType);
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isAssignableFrom(TypeInformation&lt;?&gt; target) {
+&nbsp;        TypeInformation&lt;?&gt; superTypeInformation = target.getSuperTypeInformation(this.getType());
+<b class="nc">&nbsp;        if (superTypeInformation == null) {</b>
+&nbsp;            return false;
+&nbsp;        } else if (superTypeInformation.equals(this)) {
+&nbsp;            return true;
+&nbsp;        } else {
+&nbsp;            return this.resolvableType.isAssignableFrom(target.getType());
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public List&lt;TypeInformation&lt;?&gt;&gt; getTypeArguments() {
+&nbsp;        return (List)this.typeArguments.get();
+&nbsp;    }
+&nbsp;
+&nbsp;    private List&lt;TypeInformation&lt;?&gt;&gt; doGetTypeArguments() {
+<b class="fc">&nbsp;        return !this.resolvableType.hasGenerics() ? Collections.emptyList() : Arrays.stream(this.resolvableType.getGenerics()).map((it) -&gt; it.resolve(Object.class) == null ? null : TypeInformation.of(it)).toList();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public TypeInformation&lt;? extends S&gt; specialize(TypeInformation&lt;?&gt; type) {
+&nbsp;        return this.getTypeArguments().size() == type.getTypeArguments().size() ? TypeInformation.of(ResolvableType.forClassWithGenerics(type.getType(), this.resolvableType.getGenerics())) : TypeInformation.of(type.getType());
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public boolean equals(@Nullable Object o) {
+&nbsp;        if (this == o) {
+&nbsp;            return true;
+<b class="nc">&nbsp;        } else if (o != null &amp;&amp; ObjectUtils.nullSafeEquals(this.getClass(), o.getClass())) {</b>
+&nbsp;            TypeDiscoverer&lt;?&gt; that = (TypeDiscoverer)o;
+&nbsp;            if (!ObjectUtils.nullSafeEquals(this.getType(), that.getType())) {
+&nbsp;                return false;
+&nbsp;            } else {
+&nbsp;                return !that.resolvableType.hasUnresolvableGenerics() &amp;&amp; !this.resolvableType.hasUnresolvableGenerics() ? ObjectUtils.nullSafeEquals(this.resolvedGenerics.get(), that.resolvedGenerics.get()) : ObjectUtils.nullSafeEquals(that.resolvableType.toString(), this.resolvableType.toString());
+&nbsp;            }
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public int hashCode() {</b>
+&nbsp;        int result = 31 * this.getClass().hashCode();
+&nbsp;        result += 31 * this.getType().hashCode();
+<b class="nc">&nbsp;        return result;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public String toString() {
+<b class="nc">&nbsp;        return this.resolvableType.toString();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    private TypeInformation&lt;?&gt; getTypeArgument(Class&lt;?&gt; bound, int index) {
+<b class="nc">&nbsp;        TypeInformation&lt;?&gt; superTypeInformation = this.getSuperTypeInformation(bound);</b>
+&nbsp;        if (superTypeInformation == null) {
+&nbsp;            return null;
+&nbsp;        } else {
+&nbsp;            List&lt;TypeInformation&lt;?&gt;&gt; arguments = superTypeInformation.getTypeArguments();
+&nbsp;            return !arguments.isEmpty() &amp;&amp; index &lt;= arguments.size() - 1 ? (TypeInformation)arguments.get(index) : null;
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private Optional&lt;TypeInformation&lt;?&gt;&gt; getPropertyInformation(String fieldname) {</b>
+<b class="nc">&nbsp;        Class&lt;S&gt; rawType = this.getType();</b>
+<b class="nc">&nbsp;        Field field = ReflectionUtils.findField(rawType, fieldname);</b>
+<b class="nc">&nbsp;        return field != null ? Optional.of(TypeInformation.of(ResolvableType.forField(field, this.resolvableType))) : Optional.ofNullable(BeanUtils.getPropertyDescriptor(rawType, fieldname)).filter((it) -&gt; it.getName().equals(fieldname)).map((it) -&gt; this.from(it, rawType)).map(TypeInformation::of);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private ResolvableType from(PropertyDescriptor descriptor, Class&lt;?&gt; rawType) {
+&nbsp;        Method method = descriptor.getReadMethod();
+&nbsp;        if (method != null) {
+&nbsp;            return ResolvableType.forMethodReturnType(method, rawType);
+&nbsp;        } else {
+<b class="fc">&nbsp;            method = descriptor.getWriteMethod();</b>
+&nbsp;            return method != null ? ResolvableType.forMethodParameter(method, 0, rawType) : ResolvableType.forType(descriptor.getPropertyType(), this.resolvableType);
+<b class="pc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private boolean isNullableWrapper() {
+<b class="pc">&nbsp;        return NullableWrapperConverters.supports(this.getType());</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 21:00</div>
+</div>
+</body>
+</html>

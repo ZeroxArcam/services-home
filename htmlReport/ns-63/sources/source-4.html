@@ -5,7 +5,7 @@
 <html id="htmlId">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
-  <title>Coverage Report > RecoverableMessageIOException</title>
+  <title>Coverage Report > JvmGcMetrics</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -19,10 +19,10 @@
 <div class="breadCrumbs">
 Current scope:     <a href="../../index.html">all classes</a>
     <span class="separator">|</span>
-    <a href="../index.html">org.gradle.internal.remote.internal</a>
+    <a href="../index.html">io.micrometer.core.instrument.binder.jvm</a>
 </div>
 
-<h1>Coverage Summary for Class: RecoverableMessageIOException (org.gradle.internal.remote.internal)</h1>
+<h1>Coverage Summary for Class: JvmGcMetrics (io.micrometer.core.instrument.binder.jvm)</h1>
 
 <table class="coverageStats">
 <tr>
@@ -37,11 +37,15 @@ Current scope:     <a href="../../index.html">all classes</a>
 </th>
 <th class="coverageStat 
 ">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
   Line, %
 </th>
 </tr>
 <tr>
-  <td class="name">RecoverableMessageIOException</td>
+  <td class="name">JvmGcMetrics</td>
 <td class="coverageStat">
   <span class="percent">
     0%
@@ -55,7 +59,7 @@ Current scope:     <a href="../../index.html">all classes</a>
     0%
   </span>
   <span class="absValue">
-    (0/1)
+    (0/12)
   </span>
 </td>
 <td class="coverageStat">
@@ -63,7 +67,15 @@ Current scope:     <a href="../../index.html">all classes</a>
     0%
   </span>
   <span class="absValue">
-    (0/1)
+    (0/34)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/83)
   </span>
 </td>
 </tr>
@@ -73,7 +85,296 @@ Current scope:     <a href="../../index.html">all classes</a>
 <br/>
 <br/>
 
-  <code class="sourceCode">Source code is not available<br /></code>
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package io.micrometer.core.instrument.binder.jvm;
+&nbsp;
+&nbsp;import com.sun.management.GarbageCollectionNotificationInfo;
+&nbsp;import com.sun.management.GcInfo;
+&nbsp;import io.micrometer.common.lang.NonNullApi;
+&nbsp;import io.micrometer.common.lang.NonNullFields;
+&nbsp;import io.micrometer.common.lang.Nullable;
+&nbsp;import io.micrometer.common.util.internal.logging.InternalLogger;
+&nbsp;import io.micrometer.common.util.internal.logging.InternalLoggerFactory;
+&nbsp;import io.micrometer.core.instrument.Counter;
+&nbsp;import io.micrometer.core.instrument.Gauge;
+&nbsp;import io.micrometer.core.instrument.MeterRegistry;
+&nbsp;import io.micrometer.core.instrument.Tag;
+&nbsp;import io.micrometer.core.instrument.Tags;
+&nbsp;import io.micrometer.core.instrument.Timer;
+&nbsp;import io.micrometer.core.instrument.binder.MeterBinder;
+&nbsp;import java.lang.management.GarbageCollectorMXBean;
+&nbsp;import java.lang.management.ManagementFactory;
+&nbsp;import java.lang.management.MemoryPoolMXBean;
+&nbsp;import java.lang.management.MemoryUsage;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Arrays;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.HashSet;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.concurrent.CopyOnWriteArrayList;
+&nbsp;import java.util.concurrent.TimeUnit;
+&nbsp;import java.util.concurrent.atomic.AtomicLong;
+&nbsp;import javax.management.ListenerNotFoundException;
+&nbsp;import javax.management.Notification;
+&nbsp;import javax.management.NotificationEmitter;
+&nbsp;import javax.management.NotificationListener;
+&nbsp;import javax.management.openmbean.CompositeData;
+&nbsp;
+&nbsp;@NonNullApi
+&nbsp;@NonNullFields
+&nbsp;public class JvmGcMetrics implements MeterBinder, AutoCloseable {
+&nbsp;    private static final InternalLogger log = InternalLoggerFactory.getInstance(JvmGcMetrics.class);
+&nbsp;    private final boolean managementExtensionsPresent;
+&nbsp;    private final boolean garbageCollectorNotificationsAvailable;
+&nbsp;    final boolean isGenerationalGc;
+&nbsp;    private final Iterable&lt;Tag&gt; tags;
+&nbsp;    @Nullable
+&nbsp;    private String allocationPoolName;
+&nbsp;    private final Set&lt;String&gt; longLivedPoolNames;
+&nbsp;    private final List&lt;Runnable&gt; notificationListenerCleanUpRunnables;
+&nbsp;    private Counter allocatedBytes;
+&nbsp;    @Nullable
+&nbsp;    private Counter promotedBytes;
+&nbsp;    private AtomicLong allocationPoolSizeAfter;
+&nbsp;    private AtomicLong liveDataSize;
+&nbsp;    private AtomicLong maxDataSize;
+&nbsp;    GcMetricsNotificationListener gcNotificationListener;
+&nbsp;
+&nbsp;    public JvmGcMetrics() {
+&nbsp;        this(Collections.emptyList());
+&nbsp;    }
+&nbsp;
+&nbsp;    public JvmGcMetrics(Iterable&lt;Tag&gt; tags) {
+&nbsp;        this.managementExtensionsPresent = isManagementExtensionsPresent();
+&nbsp;        this.garbageCollectorNotificationsAvailable = isGarbageCollectorNotificationsAvailable();
+&nbsp;        this.isGenerationalGc = this.isGenerationalGcConfigured();
+<b class="nc">&nbsp;        this.longLivedPoolNames = new HashSet();</b>
+&nbsp;        this.notificationListenerCleanUpRunnables = new CopyOnWriteArrayList();
+<b class="nc">&nbsp;</b>
+&nbsp;        for(MemoryPoolMXBean mbean : ManagementFactory.getMemoryPoolMXBeans()) {
+<b class="nc">&nbsp;            String name = mbean.getName();</b>
+&nbsp;            if (JvmMemory.isAllocationPool(name)) {
+<b class="nc">&nbsp;                this.allocationPoolName = name;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if (JvmMemory.isLongLivedPool(name)) {</b>
+&nbsp;                this.longLivedPoolNames.add(name);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        this.tags = tags;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void bindTo(MeterRegistry registry) {
+<b class="nc">&nbsp;        if (this.managementExtensionsPresent &amp;&amp; this.garbageCollectorNotificationsAvailable) {</b>
+&nbsp;            this.gcNotificationListener = new GcMetricsNotificationListener(registry);
+&nbsp;            double maxLongLivedPoolBytes = JvmMemory.getLongLivedHeapPools().mapToDouble((mem) -&gt; JvmMemory.getUsageValue(mem, MemoryUsage::getMax)).sum();
+&nbsp;            this.maxDataSize = new AtomicLong((long)maxLongLivedPoolBytes);
+&nbsp;            Gauge.builder(&quot;jvm.gc.max.data.size&quot;, this.maxDataSize, AtomicLong::get).tags(this.tags).description(&quot;Max size of long-lived heap memory pool&quot;).baseUnit(&quot;bytes&quot;).register(registry);
+&nbsp;            this.liveDataSize = new AtomicLong();
+&nbsp;            Gauge.builder(&quot;jvm.gc.live.data.size&quot;, this.liveDataSize, AtomicLong::get).tags(this.tags).description(&quot;Size of long-lived heap memory pool after reclamation&quot;).baseUnit(&quot;bytes&quot;).register(registry);
+&nbsp;            this.allocatedBytes = Counter.builder(&quot;jvm.gc.memory.allocated&quot;).tags(this.tags).baseUnit(&quot;bytes&quot;).description(&quot;Incremented for an increase in the size of the (young) heap memory pool after one GC to before the next&quot;).register(registry);
+&nbsp;            this.promotedBytes = this.isGenerationalGc ? Counter.builder(&quot;jvm.gc.memory.promoted&quot;).tags(this.tags).baseUnit(&quot;bytes&quot;).description(&quot;Count of positive increases in the size of the old generation memory pool before GC to after GC&quot;).register(registry) : null;
+&nbsp;            this.allocationPoolSizeAfter = new AtomicLong(0L);
+&nbsp;
+&nbsp;            for(GarbageCollectorMXBean gcBean : ManagementFactory.getGarbageCollectorMXBeans()) {
+&nbsp;                if (gcBean instanceof NotificationEmitter) {
+&nbsp;                    NotificationEmitter notificationEmitter = (NotificationEmitter)gcBean;
+<b class="nc">&nbsp;                    notificationEmitter.addNotificationListener(this.gcNotificationListener, (notification) -&gt; notification.getType().equals(&quot;com.sun.management.gc.notification&quot;), (Object)null);</b>
+&nbsp;                    this.notificationListenerCleanUpRunnables.add((Runnable)() -&gt; {
+&nbsp;                        try {
+<b class="nc">&nbsp;                            notificationEmitter.removeNotificationListener(this.gcNotificationListener);</b>
+<b class="nc">&nbsp;                        } catch (ListenerNotFoundException var3) {</b>
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                    });</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private boolean isGenerationalGcConfigured() {
+&nbsp;        int nonTenuredPools = 0;
+&nbsp;
+&nbsp;        for(MemoryPoolMXBean bean : ManagementFactory.getMemoryPoolMXBeans()) {
+&nbsp;            if (JvmMemory.isHeap(bean)) {
+&nbsp;                String name = bean.getName();
+&nbsp;                if (!name.contains(&quot;tenured&quot;)) {
+<b class="nc">&nbsp;                    ++nonTenuredPools;</b>
+&nbsp;                    if (nonTenuredPools == 2) {
+&nbsp;                        return true;
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="nc">&nbsp;                if (name.contains(&quot;GPGC&quot;)) {</b>
+<b class="nc">&nbsp;                    return true;</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return false;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private static boolean isManagementExtensionsPresent() {</b>
+&nbsp;        if (ManagementFactory.getMemoryPoolMXBeans().isEmpty()) {
+<b class="nc">&nbsp;            log.warn(&quot;GC notifications will not be available because MemoryPoolMXBeans are not provided by the JVM&quot;);</b>
+&nbsp;            return false;
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            try {</b>
+<b class="nc">&nbsp;                Class.forName(&quot;com.sun.management.GarbageCollectionNotificationInfo&quot;, false, MemoryPoolMXBean.class.getClassLoader());</b>
+<b class="nc">&nbsp;                return true;</b>
+<b class="nc">&nbsp;            } catch (Throwable var1) {</b>
+&nbsp;                log.warn(&quot;GC notifications will not be available because com.sun.management.GarbageCollectionNotificationInfo is not present&quot;);
+<b class="nc">&nbsp;                return false;</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private static boolean isGarbageCollectorNotificationsAvailable() {</b>
+&nbsp;        List&lt;String&gt; gcsWithoutNotification = new ArrayList();
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        for(GarbageCollectorMXBean gcBean : ManagementFactory.getGarbageCollectorMXBeans()) {</b>
+<b class="nc">&nbsp;            if (gcBean instanceof NotificationEmitter) {</b>
+<b class="nc">&nbsp;                NotificationEmitter notificationEmitter = (NotificationEmitter)gcBean;</b>
+&nbsp;                boolean notificationAvailable = Arrays.stream(notificationEmitter.getNotificationInfo()).anyMatch((mBeanNotificationInfo) -&gt; Arrays.asList(mBeanNotificationInfo.getNotifTypes()).contains(&quot;com.sun.management.gc.notification&quot;));
+<b class="nc">&nbsp;                if (notificationAvailable) {</b>
+&nbsp;                    return true;
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="nc">&nbsp;                gcsWithoutNotification.add(gcBean.getName());</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        log.warn(&quot;GC notifications will not be available because no GarbageCollectorMXBean of the JVM provides any. GCs=&quot; + gcsWithoutNotification);</b>
+<b class="nc">&nbsp;        return false;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public void close() {
+<b class="nc">&nbsp;        this.notificationListenerCleanUpRunnables.forEach(Runnable::run);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    class GcMetricsNotificationListener implements NotificationListener {
+&nbsp;        private final MeterRegistry registry;
+&nbsp;
+&nbsp;        GcMetricsNotificationListener(MeterRegistry registry) {
+&nbsp;            this.registry = registry;
+&nbsp;        }
+&nbsp;
+&nbsp;        public void handleNotification(Notification notification, Object ref) {
+&nbsp;            CompositeData cd = (CompositeData)notification.getUserData();
+&nbsp;            GarbageCollectionNotificationInfo notificationInfo = GarbageCollectionNotificationInfo.from(cd);
+&nbsp;            String gcName = notificationInfo.getGcName();
+&nbsp;            String gcCause = notificationInfo.getGcCause();
+&nbsp;            String gcAction = notificationInfo.getGcAction();
+&nbsp;            GcInfo gcInfo = notificationInfo.getGcInfo();
+&nbsp;            long duration = gcInfo.getDuration();
+&nbsp;            Tags gcTags = Tags.of(new String[]{&quot;gc&quot;, gcName, &quot;action&quot;, gcAction, &quot;cause&quot;, gcCause}).and(JvmGcMetrics.this.tags);
+&nbsp;            if (JvmMemory.isConcurrentPhase(gcCause, gcName)) {
+&nbsp;                Timer.builder(&quot;jvm.gc.concurrent.phase.time&quot;).tags(gcTags).description(&quot;Time spent in concurrent phase&quot;).register(this.registry).record(duration, TimeUnit.MILLISECONDS);
+&nbsp;            } else {
+&nbsp;                Timer.builder(&quot;jvm.gc.pause&quot;).tags(gcTags).description(&quot;Time spent in GC pause&quot;).register(this.registry).record(duration, TimeUnit.MILLISECONDS);
+&nbsp;            }
+&nbsp;
+&nbsp;            Map&lt;String, MemoryUsage&gt; before = gcInfo.getMemoryUsageBeforeGc();
+&nbsp;            Map&lt;String, MemoryUsage&gt; after = gcInfo.getMemoryUsageAfterGc();
+&nbsp;            this.countPoolSizeDelta(before, after);
+&nbsp;            long longLivedBefore = JvmGcMetrics.this.longLivedPoolNames.stream().mapToLong((pool) -&gt; ((MemoryUsage)before.get(pool)).getUsed()).sum();
+&nbsp;            long longLivedAfter = JvmGcMetrics.this.longLivedPoolNames.stream().mapToLong((pool) -&gt; ((MemoryUsage)after.get(pool)).getUsed()).sum();
+&nbsp;            if (JvmGcMetrics.this.isGenerationalGc) {
+&nbsp;                long delta = longLivedAfter - longLivedBefore;
+&nbsp;                if (delta &gt; 0L) {
+&nbsp;                    JvmGcMetrics.this.promotedBytes.increment((double)delta);
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            if ((longLivedAfter &lt; longLivedBefore || this.shouldUpdateDataSizeMetrics(gcName)) &amp;&amp; !this.isZgcWarmingUp(gcCause, longLivedAfter)) {
+&nbsp;                JvmGcMetrics.this.liveDataSize.set(longLivedAfter);
+&nbsp;                JvmGcMetrics.this.maxDataSize.set(JvmGcMetrics.this.longLivedPoolNames.stream().mapToLong((pool) -&gt; ((MemoryUsage)after.get(pool)).getMax()).sum());
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;
+&nbsp;        private void countPoolSizeDelta(Map&lt;String, MemoryUsage&gt; before, Map&lt;String, MemoryUsage&gt; after) {
+&nbsp;            if (JvmGcMetrics.this.allocationPoolName != null) {
+&nbsp;                long beforeBytes = ((MemoryUsage)before.get(JvmGcMetrics.this.allocationPoolName)).getUsed();
+&nbsp;                long afterBytes = ((MemoryUsage)after.get(JvmGcMetrics.this.allocationPoolName)).getUsed();
+&nbsp;                long delta = beforeBytes - JvmGcMetrics.this.allocationPoolSizeAfter.get();
+&nbsp;                JvmGcMetrics.this.allocationPoolSizeAfter.set(afterBytes);
+&nbsp;                if (delta &gt; 0L) {
+&nbsp;                    JvmGcMetrics.this.allocatedBytes.increment((double)delta);
+&nbsp;                }
+&nbsp;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        private boolean isZgcWarmingUp(String gcCause, long longLivedAfter) {
+&nbsp;            return longLivedAfter == 0L &amp;&amp; &quot;Warmup&quot;.equals(gcCause);
+&nbsp;        }
+&nbsp;
+&nbsp;        private boolean shouldUpdateDataSizeMetrics(String gcName) {
+&nbsp;            return this.nonGenerationalGcShouldUpdateDataSize(gcName) || this.isMajorGenerationalGc(gcName);
+&nbsp;        }
+&nbsp;
+&nbsp;        private boolean isMajorGenerationalGc(String gcName) {
+&nbsp;            return JvmGcMetrics.GcGenerationAge.fromGcName(gcName) == JvmGcMetrics.GcGenerationAge.OLD;
+&nbsp;        }
+&nbsp;
+&nbsp;        private boolean nonGenerationalGcShouldUpdateDataSize(String gcName) {
+&nbsp;            return !JvmGcMetrics.this.isGenerationalGc &amp;&amp; !gcName.endsWith(&quot;Pauses&quot;);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @NonNullApi
+&nbsp;    static enum GcGenerationAge {
+&nbsp;        OLD,
+&nbsp;        YOUNG,
+&nbsp;        UNKNOWN;
+&nbsp;
+&nbsp;        private static final Map&lt;String, GcGenerationAge&gt; knownCollectors = new HashMap&lt;String, GcGenerationAge&gt;() {
+&nbsp;            {
+&nbsp;                this.put(&quot;ConcurrentMarkSweep&quot;, JvmGcMetrics.GcGenerationAge.OLD);
+&nbsp;                this.put(&quot;Copy&quot;, JvmGcMetrics.GcGenerationAge.YOUNG);
+&nbsp;                this.put(&quot;G1 Old Generation&quot;, JvmGcMetrics.GcGenerationAge.OLD);
+&nbsp;                this.put(&quot;G1 Young Generation&quot;, JvmGcMetrics.GcGenerationAge.YOUNG);
+&nbsp;                this.put(&quot;MarkSweepCompact&quot;, JvmGcMetrics.GcGenerationAge.OLD);
+&nbsp;                this.put(&quot;PS MarkSweep&quot;, JvmGcMetrics.GcGenerationAge.OLD);
+&nbsp;                this.put(&quot;PS Scavenge&quot;, JvmGcMetrics.GcGenerationAge.YOUNG);
+&nbsp;                this.put(&quot;ParNew&quot;, JvmGcMetrics.GcGenerationAge.YOUNG);
+&nbsp;                this.put(&quot;global&quot;, JvmGcMetrics.GcGenerationAge.OLD);
+&nbsp;                this.put(&quot;scavenge&quot;, JvmGcMetrics.GcGenerationAge.YOUNG);
+&nbsp;                this.put(&quot;partial gc&quot;, JvmGcMetrics.GcGenerationAge.YOUNG);
+&nbsp;                this.put(&quot;global garbage collect&quot;, JvmGcMetrics.GcGenerationAge.OLD);
+&nbsp;                this.put(&quot;Epsilon&quot;, JvmGcMetrics.GcGenerationAge.OLD);
+&nbsp;                this.put(&quot;GPGC New&quot;, JvmGcMetrics.GcGenerationAge.YOUNG);
+&nbsp;                this.put(&quot;GPGC Old&quot;, JvmGcMetrics.GcGenerationAge.OLD);
+&nbsp;                this.put(&quot;GPGC New Cycles&quot;, JvmGcMetrics.GcGenerationAge.YOUNG);
+&nbsp;                this.put(&quot;GPGC Old Cycles&quot;, JvmGcMetrics.GcGenerationAge.OLD);
+&nbsp;                this.put(&quot;GPGC New Pauses&quot;, JvmGcMetrics.GcGenerationAge.YOUNG);
+&nbsp;                this.put(&quot;GPGC Old Pauses&quot;, JvmGcMetrics.GcGenerationAge.OLD);
+&nbsp;                this.put(&quot;ZGC Major Cycles&quot;, JvmGcMetrics.GcGenerationAge.OLD);
+&nbsp;            }
+&nbsp;        };
+&nbsp;
+&nbsp;        private GcGenerationAge() {
+&nbsp;        }
+&nbsp;
+&nbsp;        static GcGenerationAge fromGcName(String gcName) {
+&nbsp;            return (GcGenerationAge)knownCollectors.getOrDefault(gcName, UNKNOWN);
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
 </div>
 
 <script type="text/javascript">
@@ -95,7 +396,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2025-03-20 13:42</div>
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
 </div>
 </body>
 </html>

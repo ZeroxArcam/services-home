@@ -1,0 +1,662 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > MimeType</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.util</a>
+</div>
+
+<h1>Coverage Summary for Class: MimeType (org.springframework.util)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MimeType</td>
+<td class="coverageStat">
+  <span class="percent">
+    20.5%
+  </span>
+  <span class="absValue">
+    (8/39)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    8.2%
+  </span>
+  <span class="absValue">
+    (13/158)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    24.1%
+  </span>
+  <span class="absValue">
+    (56/232)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">MimeType$SpecificityComparator</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (1/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/20)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    5.9%
+  </span>
+  <span class="absValue">
+    (1/17)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    21.4%
+  </span>
+  <span class="absValue">
+    (9/42)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    7.3%
+  </span>
+  <span class="absValue">
+    (13/178)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    22.9%
+  </span>
+  <span class="absValue">
+    (57/249)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.util;
+&nbsp;
+&nbsp;import java.io.IOException;
+&nbsp;import java.io.ObjectInputStream;
+&nbsp;import java.io.Serializable;
+&nbsp;import java.nio.charset.Charset;
+&nbsp;import java.util.BitSet;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.Comparator;
+&nbsp;import java.util.Iterator;
+&nbsp;import java.util.LinkedHashMap;
+&nbsp;import java.util.Locale;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.TreeSet;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;
+&nbsp;public class MimeType implements Comparable&lt;MimeType&gt;, Serializable {
+&nbsp;    private static final long serialVersionUID = 4085923477777865903L;
+&nbsp;    protected static final String WILDCARD_TYPE = &quot;*&quot;;
+&nbsp;    private static final String PARAM_CHARSET = &quot;charset&quot;;
+&nbsp;    private static final BitSet TOKEN;
+&nbsp;    private final String type;
+&nbsp;    private final String subtype;
+&nbsp;    private final Map&lt;String, String&gt; parameters;
+&nbsp;    @Nullable
+&nbsp;    private transient Charset resolvedCharset;
+&nbsp;    @Nullable
+&nbsp;    private volatile String toStringValue;
+&nbsp;
+&nbsp;    public MimeType(String type) {
+&nbsp;        this(type, &quot;*&quot;);
+&nbsp;    }
+&nbsp;
+&nbsp;    public MimeType(String type, String subtype) {
+&nbsp;        this(type, subtype, Collections.emptyMap());
+&nbsp;    }
+&nbsp;
+&nbsp;    public MimeType(String type, String subtype, Charset charset) {
+&nbsp;        this(type, subtype, Collections.singletonMap(&quot;charset&quot;, charset.name()));
+&nbsp;        this.resolvedCharset = charset;
+&nbsp;    }
+&nbsp;
+&nbsp;    public MimeType(MimeType other, Charset charset) {
+&nbsp;        this(other.getType(), other.getSubtype(), addCharsetParameter(charset, other.getParameters()));
+&nbsp;        this.resolvedCharset = charset;
+&nbsp;    }
+&nbsp;
+&nbsp;    public MimeType(MimeType other, @Nullable Map&lt;String, String&gt; parameters) {
+&nbsp;        this(other.getType(), other.getSubtype(), parameters);
+&nbsp;    }
+&nbsp;
+&nbsp;    public MimeType(String type, String subtype, @Nullable Map&lt;String, String&gt; parameters) {
+&nbsp;        Assert.hasLength(type, &quot;&#39;type&#39; must not be empty&quot;);
+&nbsp;        Assert.hasLength(subtype, &quot;&#39;subtype&#39; must not be empty&quot;);
+&nbsp;        this.checkToken(type);
+&nbsp;        this.checkToken(subtype);
+&nbsp;        this.type = type.toLowerCase(Locale.ROOT);
+&nbsp;        this.subtype = subtype.toLowerCase(Locale.ROOT);
+&nbsp;        if (!CollectionUtils.isEmpty(parameters)) {
+&nbsp;            Map&lt;String, String&gt; map = new LinkedCaseInsensitiveMap(parameters.size(), Locale.ROOT);
+<b class="fc">&nbsp;            parameters.forEach((parameter, value) -&gt; {</b>
+<b class="fc">&nbsp;                this.checkParameters(parameter, value);</b>
+<b class="fc">&nbsp;                map.put(parameter, value);</b>
+&nbsp;            });
+<b class="fc">&nbsp;            this.parameters = Collections.unmodifiableMap(map);</b>
+&nbsp;        } else {
+<b class="fc">&nbsp;            this.parameters = Collections.emptyMap();</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    protected MimeType(MimeType other) {</b>
+<b class="fc">&nbsp;        this.type = other.type;</b>
+<b class="fc">&nbsp;        this.subtype = other.subtype;</b>
+<b class="fc">&nbsp;        this.parameters = other.parameters;</b>
+<b class="fc">&nbsp;        this.resolvedCharset = other.resolvedCharset;</b>
+<b class="fc">&nbsp;        this.toStringValue = other.toStringValue;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private void checkToken(String token) {</b>
+<b class="fc">&nbsp;        for(int i = 0; i &lt; token.length(); ++i) {</b>
+<b class="fc">&nbsp;            char ch = token.charAt(i);</b>
+<b class="fc">&nbsp;            if (!TOKEN.get(ch)) {</b>
+<b class="fc">&nbsp;                throw new IllegalArgumentException(&quot;Invalid token character &#39;&quot; + ch + &quot;&#39; in token \&quot;&quot; + token + &quot;\&quot;&quot;);</b>
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    protected void checkParameters(String parameter, String value) {</b>
+<b class="fc">&nbsp;        Assert.hasLength(parameter, &quot;&#39;parameter&#39; must not be empty&quot;);</b>
+&nbsp;        Assert.hasLength(value, &quot;&#39;value&#39; must not be empty&quot;);
+&nbsp;        this.checkToken(parameter);
+&nbsp;        if (&quot;charset&quot;.equals(parameter)) {
+&nbsp;            if (this.resolvedCharset == null) {
+&nbsp;                this.resolvedCharset = Charset.forName(this.unquote(value));
+&nbsp;            }
+&nbsp;        } else if (!this.isQuotedString(value)) {
+&nbsp;            this.checkToken(value);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean isQuotedString(String s) {
+&nbsp;        if (s.length() &lt; 2) {
+&nbsp;            return false;
+&nbsp;        } else {
+&nbsp;            return s.startsWith(&quot;\&quot;&quot;) &amp;&amp; s.endsWith(&quot;\&quot;&quot;) || s.startsWith(&quot;&#39;&quot;) &amp;&amp; s.endsWith(&quot;&#39;&quot;);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected String unquote(String s) {
+&nbsp;        return this.isQuotedString(s) ? s.substring(1, s.length() - 1) : s;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public boolean isWildcardType() {</b>
+&nbsp;        return &quot;*&quot;.equals(this.getType());
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isWildcardSubtype() {
+&nbsp;        String subtype = this.getSubtype();
+&nbsp;        return &quot;*&quot;.equals(subtype) || subtype.startsWith(&quot;*+&quot;);
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isConcrete() {
+&nbsp;        return !this.isWildcardType() &amp;&amp; !this.isWildcardSubtype();
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public String getType() {
+&nbsp;        return this.type;
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getSubtype() {
+&nbsp;        return this.subtype;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+<b class="fc">&nbsp;    public String getSubtypeSuffix() {</b>
+<b class="fc">&nbsp;        int suffixIndex = this.subtype.lastIndexOf(43);</b>
+&nbsp;        return suffixIndex != -1 &amp;&amp; this.subtype.length() &gt; suffixIndex ? this.subtype.substring(suffixIndex + 1) : null;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public Charset getCharset() {
+&nbsp;        return this.resolvedCharset;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public String getParameter(String name) {
+&nbsp;        return (String)this.parameters.get(name);
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public Map&lt;String, String&gt; getParameters() {
+&nbsp;        return this.parameters;
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean includes(@Nullable MimeType other) {
+&nbsp;        if (other == null) {
+&nbsp;            return false;
+&nbsp;        } else if (this.isWildcardType()) {
+&nbsp;            return true;
+&nbsp;        } else {
+<b class="nc">&nbsp;            if (this.getType().equals(other.getType())) {</b>
+&nbsp;                if (this.getSubtype().equals(other.getSubtype())) {
+&nbsp;                    return true;
+&nbsp;                }
+&nbsp;
+&nbsp;                if (this.isWildcardSubtype()) {
+&nbsp;                    int thisPlusIdx = this.getSubtype().lastIndexOf(43);
+&nbsp;                    if (thisPlusIdx == -1) {
+&nbsp;                        return true;
+&nbsp;                    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;                    int otherPlusIdx = other.getSubtype().lastIndexOf(43);</b>
+<b class="fc">&nbsp;                    if (otherPlusIdx != -1) {</b>
+<b class="fc">&nbsp;                        String thisSubtypeNoSuffix = this.getSubtype().substring(0, thisPlusIdx);</b>
+<b class="fc">&nbsp;                        String thisSubtypeSuffix = this.getSubtype().substring(thisPlusIdx + 1);</b>
+<b class="fc">&nbsp;                        String otherSubtypeSuffix = other.getSubtype().substring(otherPlusIdx + 1);</b>
+<b class="fc">&nbsp;                        if (thisSubtypeSuffix.equals(otherSubtypeSuffix) &amp;&amp; &quot;*&quot;.equals(thisSubtypeNoSuffix)) {</b>
+<b class="fc">&nbsp;                            return true;</b>
+<b class="fc">&nbsp;                        }</b>
+<b class="fc">&nbsp;                    }</b>
+<b class="fc">&nbsp;                }</b>
+<b class="fc">&nbsp;            }</b>
+&nbsp;
+<b class="fc">&nbsp;            return false;</b>
+&nbsp;        }
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public boolean isCompatibleWith(@Nullable MimeType other) {
+&nbsp;        if (other == null) {
+&nbsp;            return false;
+&nbsp;        } else if (!this.isWildcardType() &amp;&amp; !other.isWildcardType()) {
+&nbsp;            if (this.getType().equals(other.getType())) {
+&nbsp;                if (this.getSubtype().equals(other.getSubtype())) {
+&nbsp;                    return true;
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if (this.isWildcardSubtype() || other.isWildcardSubtype()) {</b>
+<b class="nc">&nbsp;                    String thisSuffix = this.getSubtypeSuffix();</b>
+<b class="nc">&nbsp;                    String otherSuffix = other.getSubtypeSuffix();</b>
+<b class="nc">&nbsp;                    if (this.getSubtype().equals(&quot;*&quot;) || other.getSubtype().equals(&quot;*&quot;)) {</b>
+<b class="nc">&nbsp;                        return true;</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;
+&nbsp;                    if (this.isWildcardSubtype() &amp;&amp; thisSuffix != null) {
+&nbsp;                        return thisSuffix.equals(other.getSubtype()) || thisSuffix.equals(otherSuffix);
+&nbsp;                    }
+&nbsp;
+&nbsp;                    if (other.isWildcardSubtype() &amp;&amp; otherSuffix != null) {
+&nbsp;                        return this.getSubtype().equals(otherSuffix) || otherSuffix.equals(thisSuffix);
+&nbsp;                    }
+&nbsp;                }
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;</b>
+<b class="pc">&nbsp;            return false;</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            return true;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean equalsTypeAndSubtype(@Nullable MimeType other) {
+<b class="fc">&nbsp;        if (other == null) {</b>
+<b class="fc">&nbsp;            return false;</b>
+<b class="fc">&nbsp;        } else {</b>
+<b class="pc">&nbsp;            return this.type.equalsIgnoreCase(other.type) &amp;&amp; this.subtype.equalsIgnoreCase(other.subtype);</b>
+<b class="pc">&nbsp;        }</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public boolean isPresentIn(Collection&lt;? extends MimeType&gt; mimeTypes) {
+<b class="nc">&nbsp;        for(MimeType mimeType : mimeTypes) {</b>
+<b class="nc">&nbsp;            if (mimeType.equalsTypeAndSubtype(this)) {</b>
+&nbsp;                return true;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="pc">&nbsp;        return false;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="pc">&nbsp;    public boolean equals(@Nullable Object other) {</b>
+&nbsp;        boolean var10000;
+&nbsp;        if (this != other) {
+&nbsp;            label30: {
+<b class="pc">&nbsp;                if (other instanceof MimeType) {</b>
+&nbsp;                    MimeType otherType = (MimeType)other;
+&nbsp;                    if (this.type.equalsIgnoreCase(otherType.type) &amp;&amp; this.subtype.equalsIgnoreCase(otherType.subtype) &amp;&amp; this.parametersAreEqual(otherType)) {
+&nbsp;                        break label30;
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                var10000 = false;
+<b class="nc">&nbsp;                return var10000;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        var10000 = true;
+&nbsp;        return var10000;
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean parametersAreEqual(MimeType other) {
+&nbsp;        if (this.parameters.size() != other.parameters.size()) {
+<b class="nc">&nbsp;            return false;</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            for(Map.Entry&lt;String, String&gt; entry : this.parameters.entrySet()) {
+&nbsp;                String key = (String)entry.getKey();
+&nbsp;                if (!other.parameters.containsKey(key)) {
+&nbsp;                    return false;
+&nbsp;                }
+&nbsp;
+&nbsp;                if (&quot;charset&quot;.equals(key)) {
+&nbsp;                    if (!ObjectUtils.nullSafeEquals(this.getCharset(), other.getCharset())) {
+<b class="nc">&nbsp;                        return false;</b>
+&nbsp;                    }
+&nbsp;                } else if (!ObjectUtils.nullSafeEquals(entry.getValue(), other.parameters.get(key))) {
+&nbsp;                    return false;
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public int hashCode() {
+&nbsp;        int result = this.type.hashCode();
+&nbsp;        result = 31 * result + this.subtype.hashCode();
+<b class="nc">&nbsp;        result = 31 * result + this.parameters.hashCode();</b>
+&nbsp;        return result;
+&nbsp;    }
+&nbsp;
+&nbsp;    public String toString() {
+&nbsp;        String value = this.toStringValue;
+&nbsp;        if (value == null) {
+&nbsp;            StringBuilder builder = new StringBuilder();
+&nbsp;            this.appendTo(builder);
+<b class="nc">&nbsp;            value = builder.toString();</b>
+<b class="nc">&nbsp;            this.toStringValue = value;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        return value;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void appendTo(StringBuilder builder) {
+&nbsp;        builder.append(this.type);
+&nbsp;        builder.append(&#39;/&#39;);
+&nbsp;        builder.append(this.subtype);
+&nbsp;        this.appendTo(this.parameters, builder);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private void appendTo(Map&lt;String, String&gt; map, StringBuilder builder) {</b>
+&nbsp;        map.forEach((key, val) -&gt; {
+&nbsp;            builder.append(&#39;;&#39;);
+&nbsp;            builder.append(key);
+&nbsp;            builder.append(&#39;=&#39;);
+&nbsp;            builder.append(val);
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    public int compareTo(MimeType other) {
+<b class="nc">&nbsp;        int comp = this.getType().compareToIgnoreCase(other.getType());</b>
+&nbsp;        if (comp != 0) {
+&nbsp;            return comp;
+&nbsp;        } else {
+&nbsp;            comp = this.getSubtype().compareToIgnoreCase(other.getSubtype());
+&nbsp;            if (comp != 0) {
+&nbsp;                return comp;
+&nbsp;            } else {
+<b class="nc">&nbsp;                comp = this.getParameters().size() - other.getParameters().size();</b>
+&nbsp;                if (comp != 0) {
+&nbsp;                    return comp;
+&nbsp;                } else {
+&nbsp;                    TreeSet&lt;String&gt; thisAttributes = new TreeSet(String.CASE_INSENSITIVE_ORDER);
+&nbsp;                    thisAttributes.addAll(this.getParameters().keySet());
+&nbsp;                    TreeSet&lt;String&gt; otherAttributes = new TreeSet(String.CASE_INSENSITIVE_ORDER);
+&nbsp;                    otherAttributes.addAll(other.getParameters().keySet());
+&nbsp;                    Iterator&lt;String&gt; thisAttributesIterator = thisAttributes.iterator();
+&nbsp;                    Iterator&lt;String&gt; otherAttributesIterator = otherAttributes.iterator();
+&nbsp;
+&nbsp;                    while(thisAttributesIterator.hasNext()) {
+&nbsp;                        String thisAttribute = (String)thisAttributesIterator.next();
+<b class="nc">&nbsp;                        String otherAttribute = (String)otherAttributesIterator.next();</b>
+<b class="nc">&nbsp;                        comp = thisAttribute.compareToIgnoreCase(otherAttribute);</b>
+&nbsp;                        if (comp != 0) {
+<b class="nc">&nbsp;                            return comp;</b>
+&nbsp;                        }
+<b class="nc">&nbsp;</b>
+&nbsp;                        if (&quot;charset&quot;.equals(thisAttribute)) {
+<b class="nc">&nbsp;                            Charset thisCharset = this.getCharset();</b>
+<b class="nc">&nbsp;                            Charset otherCharset = other.getCharset();</b>
+<b class="nc">&nbsp;                            if (thisCharset != otherCharset) {</b>
+&nbsp;                                if (thisCharset == null) {
+<b class="nc">&nbsp;                                    return -1;</b>
+&nbsp;                                }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                                if (otherCharset == null) {</b>
+<b class="nc">&nbsp;                                    return 1;</b>
+&nbsp;                                }
+&nbsp;
+&nbsp;                                comp = thisCharset.compareTo(otherCharset);
+<b class="nc">&nbsp;                                if (comp != 0) {</b>
+<b class="nc">&nbsp;                                    return comp;</b>
+<b class="nc">&nbsp;                                }</b>
+<b class="nc">&nbsp;                            }</b>
+<b class="nc">&nbsp;                        } else {</b>
+<b class="nc">&nbsp;                            String thisValue = (String)this.getParameters().get(thisAttribute);</b>
+<b class="nc">&nbsp;                            String otherValue = (String)other.getParameters().get(otherAttribute);</b>
+&nbsp;                            Assert.notNull(thisValue, &quot;Parameter for &quot; + thisAttribute + &quot; must not be null&quot;);
+&nbsp;                            if (otherValue == null) {
+&nbsp;                                otherValue = &quot;&quot;;
+&nbsp;                            }
+&nbsp;
+<b class="nc">&nbsp;                            comp = thisValue.compareTo(otherValue);</b>
+&nbsp;                            if (comp != 0) {
+&nbsp;                                return comp;
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+&nbsp;                    return 0;
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public boolean isMoreSpecific(MimeType other) {</b>
+<b class="nc">&nbsp;        Assert.notNull(other, &quot;Other must not be null&quot;);</b>
+&nbsp;        boolean thisWildcard = this.isWildcardType();
+<b class="nc">&nbsp;        boolean otherWildcard = other.isWildcardType();</b>
+<b class="nc">&nbsp;        if (thisWildcard &amp;&amp; !otherWildcard) {</b>
+&nbsp;            return false;
+<b class="nc">&nbsp;        } else if (!thisWildcard &amp;&amp; otherWildcard) {</b>
+<b class="nc">&nbsp;            return true;</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            boolean thisWildcardSubtype = this.isWildcardSubtype();
+<b class="nc">&nbsp;            boolean otherWildcardSubtype = other.isWildcardSubtype();</b>
+<b class="nc">&nbsp;            if (thisWildcardSubtype &amp;&amp; !otherWildcardSubtype) {</b>
+<b class="nc">&nbsp;                return false;</b>
+<b class="nc">&nbsp;            } else if (!thisWildcardSubtype &amp;&amp; otherWildcardSubtype) {</b>
+<b class="nc">&nbsp;                return true;</b>
+&nbsp;            } else if (this.getType().equals(other.getType()) &amp;&amp; this.getSubtype().equals(other.getSubtype())) {
+<b class="nc">&nbsp;                int paramsSize1 = this.getParameters().size();</b>
+<b class="nc">&nbsp;                int paramsSize2 = other.getParameters().size();</b>
+&nbsp;                return paramsSize1 &gt; paramsSize2;
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                return false;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public boolean isLessSpecific(MimeType other) {
+&nbsp;        Assert.notNull(other, &quot;Other must not be null&quot;);
+&nbsp;        return other.isMoreSpecific(this);
+&nbsp;    }
+&nbsp;
+&nbsp;    private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
+&nbsp;        ois.defaultReadObject();
+&nbsp;        String charsetName = this.getParameter(&quot;charset&quot;);
+&nbsp;        if (charsetName != null) {
+&nbsp;            this.resolvedCharset = Charset.forName(this.unquote(charsetName));
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public static MimeType valueOf(String value) {
+&nbsp;        return MimeTypeUtils.parseMimeType(value);
+&nbsp;    }
+&nbsp;
+&nbsp;    private static Map&lt;String, String&gt; addCharsetParameter(Charset charset, Map&lt;String, String&gt; parameters) {
+&nbsp;        Map&lt;String, String&gt; map = new LinkedHashMap(parameters);
+&nbsp;        map.put(&quot;charset&quot;, charset.name());
+&nbsp;        return map;
+&nbsp;    }
+&nbsp;
+&nbsp;    static {
+<b class="nc">&nbsp;        BitSet ctl = new BitSet(128);</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt;= 31; ++i) {</b>
+&nbsp;            ctl.set(i);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        ctl.set(127);
+&nbsp;        BitSet separators = new BitSet(128);
+&nbsp;        separators.set(40);
+&nbsp;        separators.set(41);
+&nbsp;        separators.set(60);
+<b class="nc">&nbsp;        separators.set(62);</b>
+<b class="nc">&nbsp;        separators.set(64);</b>
+<b class="nc">&nbsp;        separators.set(44);</b>
+<b class="nc">&nbsp;        separators.set(59);</b>
+&nbsp;        separators.set(58);
+&nbsp;        separators.set(92);
+&nbsp;        separators.set(34);
+&nbsp;        separators.set(47);
+&nbsp;        separators.set(91);
+&nbsp;        separators.set(93);
+&nbsp;        separators.set(63);
+&nbsp;        separators.set(61);
+&nbsp;        separators.set(123);
+<b class="nc">&nbsp;        separators.set(125);</b>
+<b class="nc">&nbsp;        separators.set(32);</b>
+&nbsp;        separators.set(9);
+&nbsp;        TOKEN = new BitSet(128);
+<b class="nc">&nbsp;        TOKEN.set(0, 128);</b>
+<b class="nc">&nbsp;        TOKEN.andNot(ctl);</b>
+<b class="nc">&nbsp;        TOKEN.andNot(separators);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    /** @deprecated */</b>
+<b class="nc">&nbsp;    @Deprecated(</b>
+<b class="nc">&nbsp;        since = &quot;6.0&quot;,</b>
+&nbsp;        forRemoval = true
+&nbsp;    )
+<b class="nc">&nbsp;    public static class SpecificityComparator&lt;T extends MimeType&gt; implements Comparator&lt;T&gt; {</b>
+<b class="nc">&nbsp;        public SpecificityComparator() {</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public int compare(T mimeType1, T mimeType2) {
+<b class="nc">&nbsp;            if (mimeType1.isWildcardType() &amp;&amp; !mimeType2.isWildcardType()) {</b>
+&nbsp;                return 1;
+&nbsp;            } else if (mimeType2.isWildcardType() &amp;&amp; !mimeType1.isWildcardType()) {
+&nbsp;                return -1;
+&nbsp;            } else if (!mimeType1.getType().equals(mimeType2.getType())) {
+<b class="nc">&nbsp;                return 0;</b>
+<b class="nc">&nbsp;            } else if (mimeType1.isWildcardSubtype() &amp;&amp; !mimeType2.isWildcardSubtype()) {</b>
+<b class="nc">&nbsp;                return 1;</b>
+<b class="nc">&nbsp;            } else if (mimeType2.isWildcardSubtype() &amp;&amp; !mimeType1.isWildcardSubtype()) {</b>
+&nbsp;                return -1;
+&nbsp;            } else {
+&nbsp;                return !mimeType1.getSubtype().equals(mimeType2.getSubtype()) ? 0 : this.compareParameters(mimeType1, mimeType2);
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        protected int compareParameters(T mimeType1, T mimeType2) {</b>
+<b class="nc">&nbsp;            int paramsSize1 = mimeType1.getParameters().size();</b>
+<b class="nc">&nbsp;            int paramsSize2 = mimeType2.getParameters().size();</b>
+<b class="nc">&nbsp;            return Integer.compare(paramsSize2, paramsSize1);</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

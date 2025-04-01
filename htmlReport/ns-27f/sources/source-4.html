@@ -1,0 +1,399 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > MessageFormatter</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.slf4j.helpers</a>
+</div>
+
+<h1>Coverage Summary for Class: MessageFormatter (org.slf4j.helpers)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MessageFormatter</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    27.3%
+  </span>
+  <span class="absValue">
+    (6/22)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    12.2%
+  </span>
+  <span class="absValue">
+    (10/82)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    17.7%
+  </span>
+  <span class="absValue">
+    (25/141)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.slf4j.helpers;
+&nbsp;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.Map;
+&nbsp;
+&nbsp;public final class MessageFormatter {
+&nbsp;    static final char DELIM_START = &#39;{&#39;;
+&nbsp;    static final char DELIM_STOP = &#39;}&#39;;
+&nbsp;    static final String DELIM_STR = &quot;{}&quot;;
+&nbsp;    private static final char ESCAPE_CHAR = &#39;\\&#39;;
+&nbsp;
+&nbsp;    public MessageFormatter() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public static final FormattingTuple format(String messagePattern, Object arg) {
+&nbsp;        return arrayFormat(messagePattern, new Object[]{arg});
+&nbsp;    }
+&nbsp;
+&nbsp;    public static final FormattingTuple format(String messagePattern, Object arg1, Object arg2) {
+&nbsp;        return arrayFormat(messagePattern, new Object[]{arg1, arg2});
+&nbsp;    }
+&nbsp;
+&nbsp;    public static final FormattingTuple arrayFormat(String messagePattern, Object[] argArray) {
+&nbsp;        Throwable throwableCandidate = getThrowableCandidate(argArray);
+&nbsp;        Object[] args = argArray;
+&nbsp;        if (throwableCandidate != null) {
+&nbsp;            args = trimmedCopy(argArray);
+&nbsp;        }
+&nbsp;
+&nbsp;        return arrayFormat(messagePattern, args, throwableCandidate);
+&nbsp;    }
+&nbsp;
+&nbsp;    public static final String basicArrayFormat(String messagePattern, Object[] argArray) {
+&nbsp;        FormattingTuple ft = arrayFormat(messagePattern, argArray, (Throwable)null);
+&nbsp;        return ft.getMessage();
+&nbsp;    }
+&nbsp;
+&nbsp;    public static String basicArrayFormat(NormalizedParameters np) {
+&nbsp;        return basicArrayFormat(np.getMessage(), np.getArguments());
+&nbsp;    }
+&nbsp;
+&nbsp;    public static final FormattingTuple arrayFormat(String messagePattern, Object[] argArray, Throwable throwable) {
+&nbsp;        if (messagePattern == null) {
+&nbsp;            return new FormattingTuple((String)null, argArray, throwable);
+&nbsp;        } else if (argArray == null) {
+&nbsp;            return new FormattingTuple(messagePattern);
+&nbsp;        } else {
+&nbsp;            int i = 0;
+&nbsp;            StringBuilder sbuf = new StringBuilder(messagePattern.length() + 50);
+&nbsp;
+&nbsp;            for(int L = 0; L &lt; argArray.length; ++L) {
+&nbsp;                int j = messagePattern.indexOf(&quot;{}&quot;, i);
+&nbsp;                if (j == -1) {
+&nbsp;                    if (i == 0) {
+&nbsp;                        return new FormattingTuple(messagePattern, argArray, throwable);
+&nbsp;                    }
+&nbsp;
+&nbsp;                    sbuf.append(messagePattern, i, messagePattern.length());
+&nbsp;                    return new FormattingTuple(sbuf.toString(), argArray, throwable);
+&nbsp;                }
+&nbsp;
+&nbsp;                if (isEscapedDelimeter(messagePattern, j)) {
+&nbsp;                    if (!isDoubleEscaped(messagePattern, j)) {
+&nbsp;                        --L;
+&nbsp;                        sbuf.append(messagePattern, i, j - 1);
+&nbsp;                        sbuf.append(&#39;{&#39;);
+&nbsp;                        i = j + 1;
+&nbsp;                    } else {
+&nbsp;                        sbuf.append(messagePattern, i, j - 1);
+&nbsp;                        deeplyAppendParameter(sbuf, argArray[L], new HashMap());
+&nbsp;                        i = j + 2;
+&nbsp;                    }
+&nbsp;                } else {
+&nbsp;                    sbuf.append(messagePattern, i, j);
+&nbsp;                    deeplyAppendParameter(sbuf, argArray[L], new HashMap());
+&nbsp;                    i = j + 2;
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            sbuf.append(messagePattern, i, messagePattern.length());
+&nbsp;            return new FormattingTuple(sbuf.toString(), argArray, throwable);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    static final boolean isEscapedDelimeter(String messagePattern, int delimeterStartIndex) {
+&nbsp;        if (delimeterStartIndex == 0) {
+&nbsp;            return false;
+&nbsp;        } else {
+&nbsp;            char potentialEscape = messagePattern.charAt(delimeterStartIndex - 1);
+&nbsp;            return potentialEscape == &#39;\\&#39;;
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    static final boolean isDoubleEscaped(String messagePattern, int delimeterStartIndex) {
+&nbsp;        return delimeterStartIndex &gt;= 2 &amp;&amp; messagePattern.charAt(delimeterStartIndex - 2) == &#39;\\&#39;;
+&nbsp;    }
+&nbsp;
+&nbsp;    private static void deeplyAppendParameter(StringBuilder sbuf, Object o, Map&lt;Object[], Object&gt; seenMap) {
+&nbsp;        if (o == null) {
+&nbsp;            sbuf.append(&quot;null&quot;);
+&nbsp;        } else {
+&nbsp;            if (!o.getClass().isArray()) {
+&nbsp;                safeObjectAppend(sbuf, o);
+&nbsp;            } else if (o instanceof boolean[]) {
+&nbsp;                booleanArrayAppend(sbuf, (boolean[])o);
+&nbsp;            } else if (o instanceof byte[]) {
+&nbsp;                byteArrayAppend(sbuf, (byte[])o);
+&nbsp;            } else if (o instanceof char[]) {
+&nbsp;                charArrayAppend(sbuf, (char[])o);
+&nbsp;            } else if (o instanceof short[]) {
+&nbsp;                shortArrayAppend(sbuf, (short[])o);
+&nbsp;            } else if (o instanceof int[]) {
+&nbsp;                intArrayAppend(sbuf, (int[])o);
+&nbsp;            } else if (o instanceof long[]) {
+&nbsp;                longArrayAppend(sbuf, (long[])o);
+&nbsp;            } else if (o instanceof float[]) {
+&nbsp;                floatArrayAppend(sbuf, (float[])o);
+&nbsp;            } else if (o instanceof double[]) {
+<b class="nc">&nbsp;                doubleArrayAppend(sbuf, (double[])o);</b>
+&nbsp;            } else {
+&nbsp;                objectArrayAppend(sbuf, o, seenMap);
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static void safeObjectAppend(StringBuilder sbuf, Object o) {
+&nbsp;        try {
+&nbsp;            String oAsString = o.toString();
+&nbsp;            sbuf.append(oAsString);
+&nbsp;        } catch (Throwable t) {
+&nbsp;            Reporter.error(&quot;Failed toString() invocation on an object of type [&quot; + o.getClass().getName() + &quot;]&quot;, t);
+&nbsp;            sbuf.append(&quot;[FAILED toString()]&quot;);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private static void objectArrayAppend(StringBuilder sbuf, Object[] a, Map&lt;Object[], Object&gt; seenMap) {
+&nbsp;        sbuf.append(&#39;[&#39;);
+&nbsp;        if (!seenMap.containsKey(a)) {
+&nbsp;            seenMap.put(a, (Object)null);
+&nbsp;            int len = a.length;
+&nbsp;
+&nbsp;            for(int i = 0; i &lt; len; ++i) {
+&nbsp;                deeplyAppendParameter(sbuf, a[i], seenMap);
+<b class="nc">&nbsp;                if (i != len - 1) {</b>
+&nbsp;                    sbuf.append(&quot;, &quot;);
+&nbsp;                }
+&nbsp;            }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;            seenMap.remove(a);</b>
+<b class="pc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            sbuf.append(&quot;...&quot;);</b>
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+&nbsp;        sbuf.append(&#39;]&#39;);
+&nbsp;    }
+&nbsp;
+&nbsp;    private static void booleanArrayAppend(StringBuilder sbuf, boolean[] a) {
+&nbsp;        sbuf.append(&#39;[&#39;);
+&nbsp;        int len = a.length;
+&nbsp;
+&nbsp;        for(int i = 0; i &lt; len; ++i) {
+&nbsp;            sbuf.append(a[i]);
+<b class="nc">&nbsp;            if (i != len - 1) {</b>
+<b class="nc">&nbsp;                sbuf.append(&quot;, &quot;);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        sbuf.append(&#39;]&#39;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static void byteArrayAppend(StringBuilder sbuf, byte[] a) {
+&nbsp;        sbuf.append(&#39;[&#39;);
+<b class="pc">&nbsp;        int len = a.length;</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        for(int i = 0; i &lt; len; ++i) {
+&nbsp;            sbuf.append(a[i]);
+<b class="pc">&nbsp;            if (i != len - 1) {</b>
+<b class="nc">&nbsp;                sbuf.append(&quot;, &quot;);</b>
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+&nbsp;        sbuf.append(&#39;]&#39;);
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    private static void charArrayAppend(StringBuilder sbuf, char[] a) {
+&nbsp;        sbuf.append(&#39;[&#39;);
+<b class="fc">&nbsp;        int len = a.length;</b>
+&nbsp;
+<b class="fc">&nbsp;        for(int i = 0; i &lt; len; ++i) {</b>
+&nbsp;            sbuf.append(a[i]);
+<b class="pc">&nbsp;            if (i != len - 1) {</b>
+&nbsp;                sbuf.append(&quot;, &quot;);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        sbuf.append(&#39;]&#39;);
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private static void shortArrayAppend(StringBuilder sbuf, short[] a) {
+&nbsp;        sbuf.append(&#39;[&#39;);
+<b class="pc">&nbsp;        int len = a.length;</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; len; ++i) {</b>
+<b class="nc">&nbsp;            sbuf.append(a[i]);</b>
+<b class="nc">&nbsp;            if (i != len - 1) {</b>
+<b class="nc">&nbsp;                sbuf.append(&quot;, &quot;);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        sbuf.append(&#39;]&#39;);
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private static void intArrayAppend(StringBuilder sbuf, int[] a) {</b>
+&nbsp;        sbuf.append(&#39;[&#39;);
+&nbsp;        int len = a.length;
+&nbsp;
+<b class="fc">&nbsp;        for(int i = 0; i &lt; len; ++i) {</b>
+<b class="fc">&nbsp;            sbuf.append(a[i]);</b>
+<b class="fc">&nbsp;            if (i != len - 1) {</b>
+&nbsp;                sbuf.append(&quot;, &quot;);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        sbuf.append(&#39;]&#39;);</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private static void longArrayAppend(StringBuilder sbuf, long[] a) {
+&nbsp;        sbuf.append(&#39;[&#39;);
+&nbsp;        int len = a.length;
+<b class="pc">&nbsp;</b>
+<b class="fc">&nbsp;        for(int i = 0; i &lt; len; ++i) {</b>
+&nbsp;            sbuf.append(a[i]);
+<b class="nc">&nbsp;            if (i != len - 1) {</b>
+<b class="nc">&nbsp;                sbuf.append(&quot;, &quot;);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        sbuf.append(&#39;]&#39;);
+&nbsp;    }
+&nbsp;
+&nbsp;    private static void floatArrayAppend(StringBuilder sbuf, float[] a) {
+<b class="nc">&nbsp;        sbuf.append(&#39;[&#39;);</b>
+<b class="nc">&nbsp;        int len = a.length;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; len; ++i) {</b>
+&nbsp;            sbuf.append(a[i]);
+&nbsp;            if (i != len - 1) {
+&nbsp;                sbuf.append(&quot;, &quot;);
+&nbsp;            }
+&nbsp;        }
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;        sbuf.append(&#39;]&#39;);</b>
+&nbsp;    }
+&nbsp;
+<b class="pc">&nbsp;    private static void doubleArrayAppend(StringBuilder sbuf, double[] a) {</b>
+<b class="fc">&nbsp;        sbuf.append(&#39;[&#39;);</b>
+&nbsp;        int len = a.length;
+&nbsp;
+&nbsp;        for(int i = 0; i &lt; len; ++i) {
+<b class="nc">&nbsp;            sbuf.append(a[i]);</b>
+<b class="nc">&nbsp;            if (i != len - 1) {</b>
+<b class="nc">&nbsp;                sbuf.append(&quot;, &quot;);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        sbuf.append(&#39;]&#39;);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public static Throwable getThrowableCandidate(Object[] argArray) {</b>
+<b class="nc">&nbsp;        return NormalizedParameters.getThrowableCandidate(argArray);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public static Object[] trimmedCopy(Object[] argArray) {</b>
+<b class="nc">&nbsp;        return NormalizedParameters.trimmedCopy(argArray);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:58</div>
+</div>
+</body>
+</html>

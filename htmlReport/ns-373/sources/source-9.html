@@ -1,0 +1,279 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > EventListenerMethodProcessor</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.context.event</a>
+</div>
+
+<h1>Coverage Summary for Class: EventListenerMethodProcessor (org.springframework.context.event)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">EventListenerMethodProcessor</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    42.9%
+  </span>
+  <span class="absValue">
+    (3/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/44)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    21%
+  </span>
+  <span class="absValue">
+    (13/62)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.context.event;
+&nbsp;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import org.apache.commons.logging.Log;
+&nbsp;import org.apache.commons.logging.LogFactory;
+&nbsp;import org.springframework.aop.framework.autoproxy.AutoProxyUtils;
+&nbsp;import org.springframework.aop.scope.ScopedObject;
+&nbsp;import org.springframework.aop.scope.ScopedProxyUtils;
+&nbsp;import org.springframework.aop.support.AopUtils;
+&nbsp;import org.springframework.beans.factory.BeanInitializationException;
+&nbsp;import org.springframework.beans.factory.SmartInitializingSingleton;
+&nbsp;import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
+&nbsp;import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+&nbsp;import org.springframework.context.ApplicationContext;
+&nbsp;import org.springframework.context.ApplicationContextAware;
+&nbsp;import org.springframework.context.ApplicationListener;
+&nbsp;import org.springframework.context.ConfigurableApplicationContext;
+&nbsp;import org.springframework.context.expression.BeanFactoryResolver;
+&nbsp;import org.springframework.core.MethodIntrospector;
+&nbsp;import org.springframework.core.annotation.AnnotatedElementUtils;
+&nbsp;import org.springframework.core.annotation.AnnotationAwareOrderComparator;
+&nbsp;import org.springframework.core.annotation.AnnotationUtils;
+&nbsp;import org.springframework.expression.spel.support.StandardEvaluationContext;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.stereotype.Component;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.ClassUtils;
+&nbsp;import org.springframework.util.CollectionUtils;
+&nbsp;
+&nbsp;public class EventListenerMethodProcessor implements SmartInitializingSingleton, ApplicationContextAware, BeanFactoryPostProcessor {
+&nbsp;    protected final Log logger = LogFactory.getLog(this.getClass());
+&nbsp;    @Nullable
+&nbsp;    private ConfigurableApplicationContext applicationContext;
+&nbsp;    @Nullable
+&nbsp;    private ConfigurableListableBeanFactory beanFactory;
+&nbsp;    @Nullable
+&nbsp;    private List&lt;EventListenerFactory&gt; eventListenerFactories;
+&nbsp;    private final StandardEvaluationContext originalEvaluationContext = new StandardEvaluationContext();
+&nbsp;    @Nullable
+&nbsp;    private final EventExpressionEvaluator evaluator;
+&nbsp;    private final Set&lt;Class&lt;?&gt;&gt; nonAnnotatedClasses = ConcurrentHashMap.newKeySet(64);
+&nbsp;
+&nbsp;    public EventListenerMethodProcessor() {
+&nbsp;        this.evaluator = new EventExpressionEvaluator(this.originalEvaluationContext);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setApplicationContext(ApplicationContext applicationContext) {
+&nbsp;        Assert.isTrue(applicationContext instanceof ConfigurableApplicationContext, &quot;ApplicationContext does not implement ConfigurableApplicationContext&quot;);
+&nbsp;        this.applicationContext = (ConfigurableApplicationContext)applicationContext;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) {
+&nbsp;        this.beanFactory = beanFactory;
+&nbsp;        this.originalEvaluationContext.setBeanResolver(new BeanFactoryResolver(this.beanFactory));
+&nbsp;        Map&lt;String, EventListenerFactory&gt; beans = beanFactory.getBeansOfType(EventListenerFactory.class, false, false);
+&nbsp;        List&lt;EventListenerFactory&gt; factories = new ArrayList(beans.values());
+&nbsp;        AnnotationAwareOrderComparator.sort(factories);
+<b class="fc">&nbsp;        this.eventListenerFactories = factories;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void afterSingletonsInstantiated() {
+&nbsp;        ConfigurableListableBeanFactory beanFactory = this.beanFactory;
+&nbsp;        Assert.state(beanFactory != null, &quot;No ConfigurableListableBeanFactory set&quot;);
+&nbsp;        String[] beanNames = beanFactory.getBeanNamesForType(Object.class);
+&nbsp;
+&nbsp;        for(String beanName : beanNames) {
+&nbsp;            if (!ScopedProxyUtils.isScopedTarget(beanName)) {
+&nbsp;                Class&lt;?&gt; type = null;
+&nbsp;
+&nbsp;                try {
+&nbsp;                    type = AutoProxyUtils.determineTargetClass(beanFactory, beanName);
+&nbsp;                } catch (Throwable ex) {
+&nbsp;                    if (this.logger.isDebugEnabled()) {
+<b class="fc">&nbsp;                        this.logger.debug(&quot;Could not resolve target class for bean with name &#39;&quot; + beanName + &quot;&#39;&quot;, ex);</b>
+&nbsp;                    }
+&nbsp;                }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;                if (type != null) {</b>
+<b class="fc">&nbsp;                    if (ScopedObject.class.isAssignableFrom(type)) {</b>
+&nbsp;                        try {
+&nbsp;                            Class&lt;?&gt; targetClass = AutoProxyUtils.determineTargetClass(beanFactory, ScopedProxyUtils.getTargetBeanName(beanName));
+&nbsp;                            if (targetClass != null) {
+&nbsp;                                type = targetClass;
+<b class="fc">&nbsp;                            }</b>
+&nbsp;                        } catch (Throwable ex) {
+<b class="fc">&nbsp;                            if (this.logger.isDebugEnabled()) {</b>
+&nbsp;                                this.logger.debug(&quot;Could not resolve target bean for scoped proxy &#39;&quot; + beanName + &quot;&#39;&quot;, ex);
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;                    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;                    try {</b>
+&nbsp;                        this.processBean(beanName, type);
+<b class="fc">&nbsp;                    } catch (Throwable ex) {</b>
+<b class="fc">&nbsp;                        throw new BeanInitializationException(&quot;Failed to process @EventListener annotation on bean with name &#39;&quot; + beanName + &quot;&#39;: &quot; + ex.getMessage(), ex);</b>
+<b class="fc">&nbsp;                    }</b>
+<b class="fc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private void processBean(final String beanName, final Class&lt;?&gt; targetType) {</b>
+<b class="nc">&nbsp;        if (!this.nonAnnotatedClasses.contains(targetType) &amp;&amp; AnnotationUtils.isCandidateClass(targetType, EventListener.class) &amp;&amp; !isSpringContainerClass(targetType)) {</b>
+<b class="nc">&nbsp;            Map&lt;Method, EventListener&gt; annotatedMethods = null;</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            try {</b>
+<b class="nc">&nbsp;                annotatedMethods = MethodIntrospector.selectMethods(targetType, (methodx) -&gt; (EventListener)AnnotatedElementUtils.findMergedAnnotation(methodx, EventListener.class));</b>
+&nbsp;            } catch (Throwable ex) {
+<b class="nc">&nbsp;                if (this.logger.isDebugEnabled()) {</b>
+&nbsp;                    this.logger.debug(&quot;Could not resolve methods for bean with name &#39;&quot; + beanName + &quot;&#39;&quot;, ex);
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            if (CollectionUtils.isEmpty(annotatedMethods)) {</b>
+&nbsp;                this.nonAnnotatedClasses.add(targetType);
+&nbsp;                if (this.logger.isTraceEnabled()) {
+<b class="nc">&nbsp;                    this.logger.trace(&quot;No @EventListener annotations found on bean class: &quot; + targetType.getName());</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            } else {
+<b class="nc">&nbsp;                ConfigurableApplicationContext context = this.applicationContext;</b>
+<b class="nc">&nbsp;                Assert.state(context != null, &quot;No ApplicationContext set&quot;);</b>
+<b class="nc">&nbsp;                List&lt;EventListenerFactory&gt; factories = this.eventListenerFactories;</b>
+<b class="nc">&nbsp;                Assert.state(factories != null, &quot;EventListenerFactory List not initialized&quot;);</b>
+&nbsp;
+&nbsp;                for(Method method : annotatedMethods.keySet()) {
+&nbsp;                    for(EventListenerFactory factory : factories) {
+&nbsp;                        if (factory.supportsMethod(method)) {
+<b class="nc">&nbsp;                            Method methodToUse = AopUtils.selectInvocableMethod(method, context.getType(beanName));</b>
+<b class="nc">&nbsp;                            ApplicationListener&lt;?&gt; applicationListener = factory.createApplicationListener(beanName, targetType, methodToUse);</b>
+&nbsp;                            if (applicationListener instanceof ApplicationListenerMethodAdapter) {
+&nbsp;                                ApplicationListenerMethodAdapter alma = (ApplicationListenerMethodAdapter)applicationListener;
+&nbsp;                                alma.init(context, this.evaluator);
+&nbsp;                            }
+<b class="nc">&nbsp;</b>
+&nbsp;                            context.addApplicationListener(applicationListener);
+&nbsp;                            break;
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                if (this.logger.isDebugEnabled()) {
+&nbsp;                    this.logger.debug(annotatedMethods.size() + &quot; @EventListener methods processed on bean &#39;&quot; + beanName + &quot;&#39;: &quot; + String.valueOf(annotatedMethods));
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private static boolean isSpringContainerClass(Class&lt;?&gt; clazz) {
+<b class="nc">&nbsp;        return clazz.getName().startsWith(&quot;org.springframework.&quot;) &amp;&amp; !AnnotatedElementUtils.isAnnotated(ClassUtils.getUserClass(clazz), Component.class);</b>
+&nbsp;    }
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

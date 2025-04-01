@@ -5,7 +5,7 @@
 <html id="htmlId">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
-  <title>Coverage Report > GenericTypeAwareAssigner</title>
+  <title>Coverage Report > ByteArrayBuilder</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -19,10 +19,10 @@
 <div class="breadCrumbs">
 Current scope:     <a href="../../index.html">all classes</a>
     <span class="separator">|</span>
-    <a href="../index.html">net.bytebuddy.implementation.bytecode.assign.reference</a>
+    <a href="../index.html">com.fasterxml.jackson.core.util</a>
 </div>
 
-<h1>Coverage Summary for Class: GenericTypeAwareAssigner (net.bytebuddy.implementation.bytecode.assign.reference)</h1>
+<h1>Coverage Summary for Class: ByteArrayBuilder (com.fasterxml.jackson.core.util)</h1>
 
 <table class="coverageStats">
 <tr>
@@ -45,21 +45,13 @@ Current scope:     <a href="../../index.html">all classes</a>
 </th>
 </tr>
 <tr>
-  <td class="name">GenericTypeAwareAssigner</td>
+  <td class="name">ByteArrayBuilder</td>
 <td class="coverageStat">
   <span class="percent">
-    100%
+    0%
   </span>
   <span class="absValue">
-    (1/1)
-  </span>
-</td>
-<td class="coverageStat">
-  <span class="percent">
-    50%
-  </span>
-  <span class="absValue">
-    (1/2)
+    (0/1)
   </span>
 </td>
 <td class="coverageStat">
@@ -67,15 +59,23 @@ Current scope:     <a href="../../index.html">all classes</a>
     0%
   </span>
   <span class="absValue">
-    (0/12)
+    (0/29)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    20%
+    0%
   </span>
   <span class="absValue">
-    (2/10)
+    (0/34)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/100)
   </span>
 </td>
 </tr>
@@ -92,347 +92,236 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;// (powered by FernFlower decompiler)
 &nbsp;//
 &nbsp;
-&nbsp;package net.bytebuddy.implementation.bytecode.assign.reference;
+&nbsp;package com.fasterxml.jackson.core.util;
 &nbsp;
-&nbsp;import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-&nbsp;import java.util.Collections;
-&nbsp;import java.util.HashSet;
-&nbsp;import java.util.Queue;
-&nbsp;import java.util.Set;
-&nbsp;import net.bytebuddy.build.HashCodeAndEqualsPlugin.Enhance;
-&nbsp;import net.bytebuddy.description.type.TypeDescription;
-&nbsp;import net.bytebuddy.description.type.TypeList;
-&nbsp;import net.bytebuddy.implementation.bytecode.StackManipulation;
-&nbsp;import net.bytebuddy.implementation.bytecode.StackManipulation.Illegal;
-&nbsp;import net.bytebuddy.implementation.bytecode.StackManipulation.Trivial;
-&nbsp;import net.bytebuddy.implementation.bytecode.assign.Assigner;
-&nbsp;import net.bytebuddy.implementation.bytecode.assign.TypeCasting;
-&nbsp;import net.bytebuddy.utility.QueueFactory;
-&nbsp;import net.bytebuddy.utility.nullability.MaybeNull;
+&nbsp;import java.io.OutputStream;
+&nbsp;import java.util.LinkedList;
 &nbsp;
-&nbsp;public enum GenericTypeAwareAssigner implements Assigner {
-&nbsp;    INSTANCE;
+&nbsp;public final class ByteArrayBuilder extends OutputStream implements BufferRecycler.Gettable {
+&nbsp;    public static final byte[] NO_BYTES = new byte[0];
+&nbsp;    private static final int INITIAL_BLOCK_SIZE = 500;
+&nbsp;    private static final int MAX_BLOCK_SIZE = 131072;
+&nbsp;    static final int DEFAULT_BLOCK_ARRAY_SIZE = 40;
+&nbsp;    private final BufferRecycler _bufferRecycler;
+&nbsp;    private final LinkedList&lt;byte[]&gt; _pastBlocks;
+&nbsp;    private int _pastLen;
+&nbsp;    private byte[] _currBlock;
+&nbsp;    private int _currBlockPtr;
 &nbsp;
-&nbsp;    private GenericTypeAwareAssigner() {
+&nbsp;    public ByteArrayBuilder() {
+&nbsp;        this((BufferRecycler)null);
 &nbsp;    }
 &nbsp;
-&nbsp;    public StackManipulation assign(TypeDescription.Generic source, TypeDescription.Generic target, Assigner.Typing typing) {
-&nbsp;        if (!source.isPrimitive() &amp;&amp; !target.isPrimitive()) {
-&nbsp;            if ((Boolean)source.accept(new IsAssignableToVisitor(target))) {
-&nbsp;                return Trivial.INSTANCE;
-&nbsp;            } else if (typing.isDynamic()) {
-&nbsp;                return (StackManipulation)(source.asErasure().isAssignableTo(target.asErasure()) ? Trivial.INSTANCE : TypeCasting.to(target));
-&nbsp;            } else {
-<b class="fc">&nbsp;                return Illegal.INSTANCE;</b>
-&nbsp;            }
+&nbsp;    public ByteArrayBuilder(BufferRecycler br) {
+&nbsp;        this(br, 500);
+&nbsp;    }
+&nbsp;
+&nbsp;    public ByteArrayBuilder(int firstBlockSize) {
+&nbsp;        this((BufferRecycler)null, firstBlockSize);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public ByteArrayBuilder(BufferRecycler br, int firstBlockSize) {
+&nbsp;        this._pastBlocks = new LinkedList();
+&nbsp;        this._bufferRecycler = br;
+&nbsp;        if (firstBlockSize &gt; 131072) {
+&nbsp;            firstBlockSize = 131072;
+&nbsp;        }
+&nbsp;
+&nbsp;        this._currBlock = br == null ? new byte[firstBlockSize] : br.allocByteBuffer(2);
+&nbsp;    }
+&nbsp;
+&nbsp;    private ByteArrayBuilder(BufferRecycler br, byte[] initialBlock, int initialLen) {
+&nbsp;        this._pastBlocks = new LinkedList();
+<b class="nc">&nbsp;        this._bufferRecycler = br;</b>
+&nbsp;        this._currBlock = initialBlock;
+&nbsp;        this._currBlockPtr = initialLen;
+&nbsp;    }
+&nbsp;
+&nbsp;    public static ByteArrayBuilder fromInitial(byte[] initialBlock, int length) {
+&nbsp;        return new ByteArrayBuilder((BufferRecycler)null, initialBlock, length);
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void reset() {</b>
+&nbsp;        this._pastLen = 0;
+<b class="nc">&nbsp;        this._currBlockPtr = 0;</b>
+<b class="nc">&nbsp;        if (!this._pastBlocks.isEmpty()) {</b>
+&nbsp;            this._pastBlocks.clear();
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public int size() {</b>
+&nbsp;        return this._pastLen + this._currBlockPtr;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void release() {</b>
+<b class="nc">&nbsp;        this.reset();</b>
+<b class="nc">&nbsp;        if (this._bufferRecycler != null &amp;&amp; this._currBlock != null) {</b>
+&nbsp;            this._bufferRecycler.releaseByteBuffer(2, this._currBlock);
+&nbsp;            this._currBlock = null;
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void append(int i) {
+<b class="nc">&nbsp;        if (this._currBlockPtr &gt;= this._currBlock.length) {</b>
+<b class="nc">&nbsp;            this._allocMore();</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        this._currBlock[this._currBlockPtr++] = (byte)i;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void appendTwoBytes(int b16) {
+&nbsp;        if (this._currBlockPtr + 1 &lt; this._currBlock.length) {
+&nbsp;            this._currBlock[this._currBlockPtr++] = (byte)(b16 &gt;&gt; 8);
+&nbsp;            this._currBlock[this._currBlockPtr++] = (byte)b16;
 &nbsp;        } else {
-&nbsp;            return (StackManipulation)(source.equals(target) ? Trivial.INSTANCE : Illegal.INSTANCE);
-&nbsp;        }
-<b class="fc">&nbsp;    }</b>
+&nbsp;            this.append(b16 &gt;&gt; 8);
+&nbsp;            this.append(b16);
+<b class="nc">&nbsp;        }</b>
 &nbsp;
-&nbsp;    @Enhance
-&nbsp;    protected static class IsAssignableToVisitor implements TypeDescription.Generic.Visitor&lt;Boolean&gt; {
-&nbsp;        private final TypeDescription.Generic typeDescription;
-&nbsp;        private final boolean polymorphic;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void appendThreeBytes(int b24) {
+&nbsp;        if (this._currBlockPtr + 2 &lt; this._currBlock.length) {
+&nbsp;            this._currBlock[this._currBlockPtr++] = (byte)(b24 &gt;&gt; 16);
+&nbsp;            this._currBlock[this._currBlockPtr++] = (byte)(b24 &gt;&gt; 8);
+&nbsp;            this._currBlock[this._currBlockPtr++] = (byte)b24;
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            this.append(b24 &gt;&gt; 16);</b>
+<b class="nc">&nbsp;            this.append(b24 &gt;&gt; 8);</b>
+<b class="nc">&nbsp;            this.append(b24);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void appendFourBytes(int b32) {</b>
+<b class="nc">&nbsp;        if (this._currBlockPtr + 3 &lt; this._currBlock.length) {</b>
+&nbsp;            this._currBlock[this._currBlockPtr++] = (byte)(b32 &gt;&gt; 24);
+<b class="nc">&nbsp;            this._currBlock[this._currBlockPtr++] = (byte)(b32 &gt;&gt; 16);</b>
+&nbsp;            this._currBlock[this._currBlockPtr++] = (byte)(b32 &gt;&gt; 8);
+&nbsp;            this._currBlock[this._currBlockPtr++] = (byte)b32;
+&nbsp;        } else {
+<b class="nc">&nbsp;            this.append(b32 &gt;&gt; 24);</b>
+<b class="nc">&nbsp;            this.append(b32 &gt;&gt; 16);</b>
+<b class="nc">&nbsp;            this.append(b32 &gt;&gt; 8);</b>
+&nbsp;            this.append(b32);
+<b class="nc">&nbsp;        }</b>
 <b class="nc">&nbsp;</b>
-<b class="nc">&nbsp;        public IsAssignableToVisitor(TypeDescription.Generic typeDescription) {</b>
-&nbsp;            this(typeDescription, true);
-&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public byte[] toByteArray() {
+&nbsp;        int totalLen = this._pastLen + this._currBlockPtr;
+<b class="nc">&nbsp;        if (totalLen == 0) {</b>
+<b class="nc">&nbsp;            return NO_BYTES;</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            byte[] result = new byte[totalLen];</b>
+&nbsp;            int offset = 0;
 <b class="nc">&nbsp;</b>
-<b class="nc">&nbsp;        protected IsAssignableToVisitor(TypeDescription.Generic typeDescription, boolean polymorphic) {</b>
-<b class="nc">&nbsp;            this.typeDescription = typeDescription;</b>
-<b class="nc">&nbsp;            this.polymorphic = polymorphic;</b>
-&nbsp;        }
+<b class="nc">&nbsp;            for(byte[] block : this._pastBlocks) {</b>
+<b class="nc">&nbsp;                int len = block.length;</b>
+&nbsp;                System.arraycopy(block, 0, result, offset, len);
+&nbsp;                offset += len;
+&nbsp;            }
+&nbsp;
+&nbsp;            System.arraycopy(this._currBlock, 0, result, offset, this._currBlockPtr);
+<b class="nc">&nbsp;            offset += this._currBlockPtr;</b>
+<b class="nc">&nbsp;            if (offset != totalLen) {</b>
+<b class="nc">&nbsp;                throw new RuntimeException(&quot;Internal error: total len assumed to be &quot; + totalLen + &quot;, copied &quot; + offset + &quot; bytes&quot;);</b>
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                if (!this._pastBlocks.isEmpty()) {</b>
+&nbsp;                    this.reset();
+<b class="nc">&nbsp;                }</b>
 <b class="nc">&nbsp;</b>
-&nbsp;        public Boolean onGenericArray(TypeDescription.Generic genericArray) {
-<b class="nc">&nbsp;            return (Boolean)this.typeDescription.accept(new OfGenericArray(genericArray, this.polymorphic));</b>
+<b class="nc">&nbsp;                return result;</b>
+<b class="nc">&nbsp;            }</b>
 &nbsp;        }
+&nbsp;    }
 &nbsp;
-&nbsp;        public Boolean onWildcard(TypeDescription.Generic wildcard) {
-&nbsp;            return (Boolean)this.typeDescription.accept(new OfWildcard(wildcard));
+&nbsp;    public byte[] getClearAndRelease() {
+&nbsp;        byte[] result = this.toByteArray();
+&nbsp;        this.release();
+&nbsp;        return result;
+&nbsp;    }
+&nbsp;
+&nbsp;    public BufferRecycler bufferRecycler() {
+&nbsp;        return this._bufferRecycler;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public byte[] resetAndGetFirstSegment() {</b>
+<b class="nc">&nbsp;        this.reset();</b>
+&nbsp;        return this._currBlock;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public byte[] finishCurrentSegment() {
+<b class="nc">&nbsp;        this._allocMore();</b>
+<b class="nc">&nbsp;        return this._currBlock;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public byte[] completeAndCoalesce(int lastBlockLength) {
+<b class="nc">&nbsp;        this._currBlockPtr = lastBlockLength;</b>
+<b class="nc">&nbsp;        return this.toByteArray();</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public byte[] getCurrentSegment() {
+&nbsp;        return this._currBlock;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public void setCurrentSegmentLength(int len) {
+<b class="nc">&nbsp;        this._currBlockPtr = len;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getCurrentSegmentLength() {
+&nbsp;        return this._currBlockPtr;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void write(byte[] b) {
+&nbsp;        this.write(b, 0, b.length);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void write(byte[] b, int off, int len) {
+&nbsp;        while(true) {
+&nbsp;            int max = this._currBlock.length - this._currBlockPtr;
+&nbsp;            int toCopy = Math.min(max, len);
+&nbsp;            if (toCopy &gt; 0) {
+&nbsp;                System.arraycopy(b, off, this._currBlock, this._currBlockPtr, toCopy);
+&nbsp;                off += toCopy;
+&nbsp;                this._currBlockPtr += toCopy;
+&nbsp;                len -= toCopy;
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            if (len &lt;= 0) {</b>
+&nbsp;                return;
+&nbsp;            }
+&nbsp;
+&nbsp;            this._allocMore();
 &nbsp;        }
+&nbsp;    }
 &nbsp;
-&nbsp;        public Boolean onParameterizedType(TypeDescription.Generic parameterizedType) {
-&nbsp;            return (Boolean)this.typeDescription.accept(new OfParameterizedType(parameterizedType, this.polymorphic));
-&nbsp;        }
+&nbsp;    public void write(int b) {
+&nbsp;        this.append(b);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void close() {
+&nbsp;    }
 &nbsp;
-&nbsp;        public Boolean onTypeVariable(TypeDescription.Generic typeVariable) {
-&nbsp;            if (typeVariable.getTypeVariableSource().isInferrable()) {
-&nbsp;                throw new UnsupportedOperationException(&quot;Assignability checks for type variables declared by methods are not currently supported&quot;);
-&nbsp;            } else if (typeVariable.equals(this.typeDescription)) {
-&nbsp;                return true;
-&nbsp;            } else if (this.polymorphic) {
-&nbsp;                Queue&lt;TypeDescription.Generic&gt; candidates = QueueFactory.make(typeVariable.getUpperBounds());
+&nbsp;    public void flush() {
+&nbsp;    }
 &nbsp;
-&nbsp;                while(!candidates.isEmpty()) {
-&nbsp;                    TypeDescription.Generic candidate = (TypeDescription.Generic)candidates.remove();
-&nbsp;                    if ((Boolean)candidate.accept(new IsAssignableToVisitor(this.typeDescription))) {
-&nbsp;                        return true;
-&nbsp;                    }
-&nbsp;
-&nbsp;                    if (candidate.getSort().isTypeVariable()) {
-&nbsp;                        candidates.addAll(candidate.getUpperBounds());
-&nbsp;                    }
-&nbsp;                }
-&nbsp;
-&nbsp;                return false;
-&nbsp;            } else {
-&nbsp;                return false;
-&nbsp;            }
-&nbsp;        }
-&nbsp;
-&nbsp;        public Boolean onNonGenericType(TypeDescription.Generic typeDescription) {
-&nbsp;            return (Boolean)this.typeDescription.accept(new OfNonGenericType(typeDescription, this.polymorphic));
-&nbsp;        }
-&nbsp;
-&nbsp;        public boolean equals(@MaybeNull Object var1) {
-&nbsp;            if (this == var1) {
-&nbsp;                return true;
-&nbsp;            } else if (var1 == null) {
-&nbsp;                return false;
-&nbsp;            } else if (this.getClass() != var1.getClass()) {
-&nbsp;                return false;
-&nbsp;            } else if (this.polymorphic != ((IsAssignableToVisitor)var1).polymorphic) {
-&nbsp;                return false;
-&nbsp;            } else {
-&nbsp;                return this.typeDescription.equals(((IsAssignableToVisitor)var1).typeDescription);
-&nbsp;            }
-&nbsp;        }
-&nbsp;
-&nbsp;        public int hashCode() {
-&nbsp;            return (this.getClass().hashCode() * 31 + this.typeDescription.hashCode()) * 31 + this.polymorphic;
-&nbsp;        }
-&nbsp;
-&nbsp;        @Enhance
-&nbsp;        protected abstract static class OfManifestType implements TypeDescription.Generic.Visitor&lt;Boolean&gt; {
-&nbsp;            protected final TypeDescription.Generic typeDescription;
-&nbsp;            protected final boolean polymorphic;
-&nbsp;
-&nbsp;            protected OfManifestType(TypeDescription.Generic typeDescription, boolean polymorphic) {
-&nbsp;                this.typeDescription = typeDescription;
-&nbsp;                this.polymorphic = polymorphic;
-&nbsp;            }
-&nbsp;
-&nbsp;            public Boolean onWildcard(TypeDescription.Generic wildcard) {
-&nbsp;                for(TypeDescription.Generic upperBound : wildcard.getUpperBounds()) {
-&nbsp;                    if (!(Boolean)this.typeDescription.accept(new IsAssignableToVisitor(upperBound))) {
-&nbsp;                        return false;
-&nbsp;                    }
-&nbsp;                }
-&nbsp;
-&nbsp;                for(TypeDescription.Generic lowerBound : wildcard.getLowerBounds()) {
-&nbsp;                    if (!(Boolean)lowerBound.accept(new IsAssignableToVisitor(this.typeDescription))) {
-&nbsp;                        return false;
-&nbsp;                    }
-&nbsp;                }
-&nbsp;
-&nbsp;                return true;
-&nbsp;            }
-&nbsp;
-&nbsp;            public Boolean onTypeVariable(TypeDescription.Generic typeVariable) {
-&nbsp;                if (typeVariable.getTypeVariableSource().isInferrable()) {
-&nbsp;                    throw new UnsupportedOperationException(&quot;Assignability checks for type variables declared by methods arel not currently supported&quot;);
-&nbsp;                } else {
-&nbsp;                    return false;
-&nbsp;                }
-&nbsp;            }
-&nbsp;
-&nbsp;            public boolean equals(@MaybeNull Object var1) {
-&nbsp;                if (this == var1) {
-&nbsp;                    return true;
-&nbsp;                } else if (var1 == null) {
-&nbsp;                    return false;
-&nbsp;                } else if (this.getClass() != var1.getClass()) {
-&nbsp;                    return false;
-&nbsp;                } else if (this.polymorphic != ((OfManifestType)var1).polymorphic) {
-&nbsp;                    return false;
-&nbsp;                } else {
-&nbsp;                    return this.typeDescription.equals(((OfManifestType)var1).typeDescription);
-&nbsp;                }
-&nbsp;            }
-&nbsp;
-&nbsp;            public int hashCode() {
-&nbsp;                return (this.getClass().hashCode() * 31 + this.typeDescription.hashCode()) * 31 + this.polymorphic;
-&nbsp;            }
-&nbsp;        }
-&nbsp;
-&nbsp;        protected abstract static class OfSimpleType extends OfManifestType {
-&nbsp;            protected OfSimpleType(TypeDescription.Generic typeDescription, boolean polymorphic) {
-&nbsp;                super(typeDescription, polymorphic);
-&nbsp;            }
-&nbsp;
-&nbsp;            public Boolean onParameterizedType(TypeDescription.Generic parameterizedType) {
-&nbsp;                Queue&lt;TypeDescription.Generic&gt; candidates = QueueFactory.make(Collections.singleton(this.typeDescription));
-&nbsp;                Set&lt;TypeDescription&gt; previous = new HashSet(Collections.singleton(this.typeDescription.asErasure()));
-&nbsp;
-&nbsp;                do {
-&nbsp;                    TypeDescription.Generic candidate = (TypeDescription.Generic)candidates.remove();
-&nbsp;                    if (candidate.asErasure().equals(parameterizedType.asErasure())) {
-&nbsp;                        if (candidate.getSort().isNonGeneric()) {
-&nbsp;                            return true;
-&nbsp;                        }
-&nbsp;
-&nbsp;                        TypeList.Generic source = candidate.getTypeArguments();
-&nbsp;                        TypeList.Generic target = parameterizedType.getTypeArguments();
-&nbsp;                        int size = target.size();
-&nbsp;                        if (source.size() != size) {
-&nbsp;                            return false;
-&nbsp;                        }
-&nbsp;
-&nbsp;                        for(int index = 0; index &lt; size; ++index) {
-&nbsp;                            if (!(Boolean)((TypeDescription.Generic)source.get(index)).accept(new IsAssignableToVisitor((TypeDescription.Generic)target.get(index), false))) {
-&nbsp;                                return false;
-&nbsp;                            }
-&nbsp;                        }
-&nbsp;
-&nbsp;                        TypeDescription.Generic ownerType = parameterizedType.getOwnerType();
-&nbsp;                        return ownerType == null || (Boolean)ownerType.accept(new IsAssignableToVisitor(ownerType));
-&nbsp;                    }
-&nbsp;
-&nbsp;                    if (this.polymorphic) {
-&nbsp;                        TypeDescription.Generic superClass = candidate.getSuperClass();
-&nbsp;                        if (superClass != null &amp;&amp; previous.add(superClass.asErasure())) {
-&nbsp;                            candidates.add(superClass);
-&nbsp;                        }
-&nbsp;
-&nbsp;                        for(TypeDescription.Generic anInterface : candidate.getInterfaces()) {
-&nbsp;                            if (previous.add(anInterface.asErasure())) {
-&nbsp;                                candidates.add(anInterface);
-&nbsp;                            }
-&nbsp;                        }
-&nbsp;                    }
-&nbsp;                } while(!candidates.isEmpty());
-&nbsp;
-&nbsp;                return false;
-&nbsp;            }
-&nbsp;
-&nbsp;            public Boolean onNonGenericType(TypeDescription.Generic typeDescription) {
-&nbsp;                return this.polymorphic ? this.typeDescription.asErasure().isAssignableTo(typeDescription.asErasure()) : this.typeDescription.asErasure().equals(typeDescription.asErasure());
-&nbsp;            }
-&nbsp;        }
-&nbsp;
-&nbsp;        protected static class OfGenericArray extends OfManifestType {
-&nbsp;            protected OfGenericArray(TypeDescription.Generic typeDescription, boolean polymorphic) {
-&nbsp;                super(typeDescription, polymorphic);
-&nbsp;            }
-&nbsp;
-&nbsp;            @SuppressFBWarnings(
-&nbsp;                value = {&quot;NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE&quot;},
-&nbsp;                justification = &quot;Assuming component type for array type.&quot;
-&nbsp;            )
-&nbsp;            public Boolean onGenericArray(TypeDescription.Generic genericArray) {
-&nbsp;                TypeDescription.Generic source = this.typeDescription.getComponentType();
-&nbsp;
-&nbsp;                TypeDescription.Generic target;
-&nbsp;                for(target = genericArray.getComponentType(); source.getSort().isGenericArray() &amp;&amp; target.getSort().isGenericArray(); target = target.getComponentType()) {
-&nbsp;                    source = source.getComponentType();
-&nbsp;                }
-&nbsp;
-&nbsp;                return !source.getSort().isGenericArray() &amp;&amp; !target.getSort().isGenericArray() &amp;&amp; (Boolean)source.accept(new IsAssignableToVisitor(target));
-&nbsp;            }
-&nbsp;
-&nbsp;            public Boolean onParameterizedType(TypeDescription.Generic parameterizedType) {
-&nbsp;                return false;
-&nbsp;            }
-&nbsp;
-&nbsp;            public Boolean onNonGenericType(TypeDescription.Generic typeDescription) {
-&nbsp;                return this.polymorphic ? this.typeDescription.asErasure().isAssignableTo(typeDescription.asErasure()) : this.typeDescription.asErasure().equals(typeDescription.asErasure());
-&nbsp;            }
-&nbsp;        }
-&nbsp;
-&nbsp;        @Enhance
-&nbsp;        protected static class OfWildcard implements TypeDescription.Generic.Visitor&lt;Boolean&gt; {
-&nbsp;            private final TypeDescription.Generic wildcard;
-&nbsp;
-&nbsp;            protected OfWildcard(TypeDescription.Generic wildcard) {
-&nbsp;                this.wildcard = wildcard;
-&nbsp;            }
-&nbsp;
-&nbsp;            public Boolean onGenericArray(TypeDescription.Generic genericArray) {
-&nbsp;                return false;
-&nbsp;            }
-&nbsp;
-&nbsp;            public Boolean onWildcard(TypeDescription.Generic wildcard) {
-&nbsp;                boolean hasUpperBounds = false;
-&nbsp;                boolean hasLowerBounds = false;
-&nbsp;
-&nbsp;                for(TypeDescription.Generic target : wildcard.getUpperBounds()) {
-&nbsp;                    for(TypeDescription.Generic source : this.wildcard.getUpperBounds()) {
-&nbsp;                        if (!(Boolean)source.accept(new IsAssignableToVisitor(target))) {
-&nbsp;                            return false;
-&nbsp;                        }
-&nbsp;                    }
-&nbsp;
-&nbsp;                    hasUpperBounds = hasUpperBounds || !target.represents(Object.class);
-&nbsp;                }
-&nbsp;
-&nbsp;                for(TypeDescription.Generic target : wildcard.getLowerBounds()) {
-&nbsp;                    for(TypeDescription.Generic source : this.wildcard.getLowerBounds()) {
-&nbsp;                        if (!(Boolean)target.accept(new IsAssignableToVisitor(source))) {
-&nbsp;                            return false;
-&nbsp;                        }
-&nbsp;                    }
-&nbsp;
-&nbsp;                    hasLowerBounds = true;
-&nbsp;                }
-&nbsp;
-&nbsp;                if (hasUpperBounds) {
-&nbsp;                    return this.wildcard.getLowerBounds().isEmpty();
-&nbsp;                } else if (!hasLowerBounds) {
-&nbsp;                    return true;
-&nbsp;                } else {
-&nbsp;                    TypeList.Generic upperBounds = this.wildcard.getUpperBounds();
-&nbsp;                    return upperBounds.size() == 0 || upperBounds.size() == 1 &amp;&amp; ((TypeDescription.Generic)upperBounds.getOnly()).represents(Object.class);
-&nbsp;                }
-&nbsp;            }
-&nbsp;
-&nbsp;            public Boolean onParameterizedType(TypeDescription.Generic parameterizedType) {
-&nbsp;                return false;
-&nbsp;            }
-&nbsp;
-&nbsp;            public Boolean onTypeVariable(TypeDescription.Generic typeVariable) {
-&nbsp;                return false;
-&nbsp;            }
-&nbsp;
-&nbsp;            public Boolean onNonGenericType(TypeDescription.Generic typeDescription) {
-&nbsp;                return false;
-&nbsp;            }
-&nbsp;
-&nbsp;            public boolean equals(@MaybeNull Object var1) {
-&nbsp;                if (this == var1) {
-&nbsp;                    return true;
-&nbsp;                } else if (var1 == null) {
-&nbsp;                    return false;
-&nbsp;                } else if (this.getClass() != var1.getClass()) {
-&nbsp;                    return false;
-&nbsp;                } else {
-&nbsp;                    return this.wildcard.equals(((OfWildcard)var1).wildcard);
-&nbsp;                }
-&nbsp;            }
-&nbsp;
-&nbsp;            public int hashCode() {
-&nbsp;                return this.getClass().hashCode() * 31 + this.wildcard.hashCode();
-&nbsp;            }
-&nbsp;        }
-&nbsp;
-&nbsp;        protected static class OfParameterizedType extends OfSimpleType {
-&nbsp;            protected OfParameterizedType(TypeDescription.Generic typeDescription, boolean polymorphic) {
-&nbsp;                super(typeDescription, polymorphic);
-&nbsp;            }
-&nbsp;
-&nbsp;            public Boolean onGenericArray(TypeDescription.Generic genericArray) {
-&nbsp;                return false;
-&nbsp;            }
-&nbsp;        }
-&nbsp;
-&nbsp;        protected static class OfNonGenericType extends OfSimpleType {
-&nbsp;            protected OfNonGenericType(TypeDescription.Generic typeDescription, boolean polymorphic) {
-&nbsp;                super(typeDescription, polymorphic);
-&nbsp;            }
-&nbsp;
-&nbsp;            public Boolean onGenericArray(TypeDescription.Generic genericArray) {
-&nbsp;                return this.polymorphic ? this.typeDescription.asErasure().isAssignableTo(genericArray.asErasure()) : this.typeDescription.asErasure().equals(genericArray.asErasure());
-&nbsp;            }
+&nbsp;    private void _allocMore() {
+&nbsp;        int newPastLen = this._pastLen + this._currBlock.length;
+&nbsp;        if (newPastLen &lt; 0) {
+&nbsp;            throw new IllegalStateException(&quot;Maximum Java array size (2GB) exceeded by `ByteArrayBuilder`&quot;);
+&nbsp;        } else {
+&nbsp;            this._pastLen = newPastLen;
+&nbsp;            int newSize = Math.max(this._pastLen &gt;&gt; 1, 1000);
+&nbsp;            if (newSize &gt; 131072) {
+&nbsp;                newSize = 131072;
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            this._pastBlocks.add(this._currBlock);
+&nbsp;            this._currBlock = new byte[newSize];
+&nbsp;            this._currBlockPtr = 0;
 &nbsp;        }
 &nbsp;    }
 &nbsp;}
@@ -459,7 +348,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2025-03-20 13:42</div>
+    <div style="float:right;">generated on 2025-03-31 20:58</div>
 </div>
 </body>
 </html>

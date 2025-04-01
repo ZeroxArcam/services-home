@@ -1,0 +1,513 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > DefaultLoadEventListener</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.event.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: DefaultLoadEventListener (org.hibernate.event.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DefaultLoadEventListener</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    7.4%
+  </span>
+  <span class="absValue">
+    (2/27)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/140)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0.9%
+  </span>
+  <span class="absValue">
+    (2/215)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.event.internal;
+&nbsp;
+&nbsp;import org.hibernate.HibernateException;
+&nbsp;import org.hibernate.LockMode;
+&nbsp;import org.hibernate.NonUniqueObjectException;
+&nbsp;import org.hibernate.PersistentObjectException;
+&nbsp;import org.hibernate.TypeMismatchException;
+&nbsp;import org.hibernate.action.internal.DelayedPostInsertIdentifier;
+&nbsp;import org.hibernate.bytecode.enhance.spi.interceptor.EnhancementAsProxyLazinessInterceptor;
+&nbsp;import org.hibernate.cache.spi.access.EntityDataAccess;
+&nbsp;import org.hibernate.cache.spi.access.SoftLock;
+&nbsp;import org.hibernate.engine.internal.ManagedTypeHelper;
+&nbsp;import org.hibernate.engine.spi.EntityHolder;
+&nbsp;import org.hibernate.engine.spi.EntityKey;
+&nbsp;import org.hibernate.engine.spi.PersistenceContext;
+&nbsp;import org.hibernate.engine.spi.PersistentAttributeInterceptable;
+&nbsp;import org.hibernate.engine.spi.PersistentAttributeInterceptor;
+&nbsp;import org.hibernate.engine.spi.SessionImplementor;
+&nbsp;import org.hibernate.event.spi.EventSource;
+&nbsp;import org.hibernate.event.spi.LoadEvent;
+&nbsp;import org.hibernate.event.spi.LoadEventListener;
+&nbsp;import org.hibernate.internal.CoreLogging;
+&nbsp;import org.hibernate.internal.CoreMessageLogger;
+&nbsp;import org.hibernate.loader.ast.internal.CacheEntityLoaderHelper;
+&nbsp;import org.hibernate.metamodel.mapping.AttributeMapping;
+&nbsp;import org.hibernate.metamodel.mapping.CompositeIdentifierMapping;
+&nbsp;import org.hibernate.metamodel.mapping.EmbeddableMappingType;
+&nbsp;import org.hibernate.metamodel.mapping.EntityIdentifierMapping;
+&nbsp;import org.hibernate.metamodel.mapping.EntityMappingType;
+&nbsp;import org.hibernate.metamodel.mapping.MappingType;
+&nbsp;import org.hibernate.metamodel.mapping.NonAggregatedIdentifierMapping;
+&nbsp;import org.hibernate.persister.entity.EntityPersister;
+&nbsp;import org.hibernate.pretty.MessageHelper;
+&nbsp;import org.hibernate.proxy.HibernateProxy;
+&nbsp;import org.hibernate.proxy.LazyInitializer;
+&nbsp;import org.hibernate.stat.spi.StatisticsImplementor;
+&nbsp;
+&nbsp;public class DefaultLoadEventListener implements LoadEventListener {
+&nbsp;    private static final CoreMessageLogger LOG = CoreLogging.messageLogger(DefaultLoadEventListener.class);
+&nbsp;
+&nbsp;    public DefaultLoadEventListener() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public void onLoad(LoadEvent event, LoadEventListener.LoadType loadType) throws HibernateException {
+&nbsp;        EntityPersister persister = this.getPersister(event);
+&nbsp;        if (persister == null) {
+&nbsp;            throw new HibernateException(&quot;Unable to locate persister: &quot; + event.getEntityClassName());
+<b class="fc">&nbsp;        } else {</b>
+&nbsp;            this.checkId(event, loadType, persister);
+<b class="fc">&nbsp;            this.doOnLoad(persister, event, loadType);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void checkId(LoadEvent event, LoadEventListener.LoadType loadType, EntityPersister persister) {
+&nbsp;        Object id = event.getEntityId();
+&nbsp;        if (!persister.getIdentifierMapping().getJavaType().isInstance(id) &amp;&amp; !(id instanceof DelayedPostInsertIdentifier)) {
+&nbsp;            Class&lt;?&gt; idClass = persister.getIdentifierType().getReturnedClass();
+&nbsp;            if (this.handleIdType(persister, event, loadType, idClass)) {
+<b class="nc">&nbsp;                throw new TypeMismatchException(&quot;Supplied id had wrong type: entity &#39;&quot; + persister.getEntityName() + &quot;&#39; has id type &#39;&quot; + idClass + &quot;&#39; but supplied id was of type &#39;&quot; + event.getEntityId().getClass() + &quot;&#39;&quot;);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    protected EntityPersister getPersister(LoadEvent event) {
+&nbsp;        Object instanceToLoad = event.getInstanceToLoad();
+&nbsp;        if (instanceToLoad != null) {
+<b class="nc">&nbsp;            event.setEntityClassName(instanceToLoad.getClass().getName());</b>
+<b class="nc">&nbsp;            return event.getSession().getEntityPersister((String)null, instanceToLoad);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            return event.getFactory().getMappingMetamodel().getEntityDescriptor(event.getEntityClassName());</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private void doOnLoad(EntityPersister persister, LoadEvent event, LoadEventListener.LoadType loadType) {
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            EntityKey keyToLoad = event.getSession().generateEntityKey(event.getEntityId(), persister);
+&nbsp;            if (loadType.isNakedEntityReturned()) {
+&nbsp;                event.setResult(this.load(event, persister, keyToLoad, loadType));
+&nbsp;            } else {
+&nbsp;                Object result = event.getLockMode() == LockMode.NONE ? this.proxyOrLoad(event, persister, keyToLoad, loadType) : this.lockAndLoad(event, persister, keyToLoad, loadType);
+&nbsp;                event.setResult(result);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        } catch (HibernateException e) {
+<b class="nc">&nbsp;            LOG.unableToLoadCommand(e);</b>
+<b class="nc">&nbsp;            throw e;</b>
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private boolean handleIdType(EntityPersister persister, LoadEvent event, LoadEventListener.LoadType loadType, Class&lt;?&gt; idClass) {
+&nbsp;        EntityIdentifierMapping idMapping = persister.getIdentifierMapping();
+&nbsp;        if (idMapping instanceof CompositeIdentifierMapping) {
+&nbsp;            CompositeIdentifierMapping compositeIdMapping = (CompositeIdentifierMapping)idMapping;
+&nbsp;            EmbeddableMappingType partMappingType = compositeIdMapping.getPartMappingType();
+<b class="nc">&nbsp;            if (partMappingType.getNumberOfAttributeMappings() == 1) {</b>
+<b class="nc">&nbsp;                AttributeMapping singleIdAttribute = partMappingType.getAttributeMapping(0);</b>
+&nbsp;                if (singleIdAttribute.getMappedType() instanceof EntityMappingType) {
+&nbsp;                    EntityMappingType parentIdTargetMapping = (EntityMappingType)singleIdAttribute.getMappedType();
+<b class="nc">&nbsp;                    EntityIdentifierMapping parentIdTargetIdMapping = parentIdTargetMapping.getIdentifierMapping();</b>
+&nbsp;                    MappingType parentIdType = (MappingType)(parentIdTargetIdMapping instanceof CompositeIdentifierMapping ? ((CompositeIdentifierMapping)parentIdTargetIdMapping).getMappedIdEmbeddableTypeDescriptor() : parentIdTargetIdMapping.getMappedType());
+&nbsp;                    if (parentIdType.getMappedJavaType().getJavaTypeClass().isInstance(event.getEntityId())) {
+&nbsp;                        this.loadByDerivedIdentitySimplePkValue(event, loadType, persister, compositeIdMapping, (EntityPersister)parentIdTargetMapping);
+<b class="nc">&nbsp;                        return false;</b>
+<b class="nc">&nbsp;                    } else {</b>
+<b class="nc">&nbsp;                        return !idClass.isInstance(event.getEntityId());</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                } else {
+&nbsp;                    return !idClass.isInstance(event.getEntityId());
+&nbsp;                }
+<b class="nc">&nbsp;            } else if (idMapping instanceof NonAggregatedIdentifierMapping) {</b>
+&nbsp;                return !idClass.isInstance(event.getEntityId());
+&nbsp;            } else {
+&nbsp;                return true;
+&nbsp;            }
+&nbsp;        } else {
+&nbsp;            return true;
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private void loadByDerivedIdentitySimplePkValue(LoadEvent event, LoadEventListener.LoadType options, EntityPersister dependentPersister, CompositeIdentifierMapping dependentIdType, EntityPersister parentPersister) {</b>
+<b class="nc">&nbsp;        EventSource session = event.getSession();</b>
+<b class="nc">&nbsp;        EntityKey parentEntityKey = session.generateEntityKey(event.getEntityId(), parentPersister);</b>
+<b class="nc">&nbsp;        Object parent = this.doLoad(event, parentPersister, parentEntityKey, options);</b>
+<b class="nc">&nbsp;        Object dependent = dependentIdType.instantiate();</b>
+<b class="nc">&nbsp;        dependentIdType.getPartMappingType().setValues(dependent, new Object[]{parent});</b>
+<b class="nc">&nbsp;        EntityKey dependentEntityKey = session.generateEntityKey(dependent, dependentPersister);</b>
+<b class="nc">&nbsp;        event.setEntityId(dependent);</b>
+<b class="nc">&nbsp;        event.setResult(this.doLoad(event, dependentPersister, dependentEntityKey, options));</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private Object load(LoadEvent event, EntityPersister persister, EntityKey keyToLoad, LoadEventListener.LoadType options) {</b>
+&nbsp;        if (event.getInstanceToLoad() != null) {
+<b class="nc">&nbsp;            EventSource session = event.getSession();</b>
+&nbsp;            if (session.getPersistenceContextInternal().getEntry(event.getInstanceToLoad()) != null) {
+&nbsp;                String var10002 = MessageHelper.infoString(persister, event.getEntityId(), event.getFactory());
+&nbsp;                throw new PersistentObjectException(&quot;attempted to load into an instance that was already associated with the session: &quot; + var10002);
+&nbsp;            }
+&nbsp;
+&nbsp;            persister.setIdentifier(event.getInstanceToLoad(), event.getEntityId(), session);
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        Object entity = this.doLoad(event, persister, keyToLoad, options);
+<b class="nc">&nbsp;        boolean isOptionalInstance = event.getInstanceToLoad() != null;</b>
+&nbsp;        if (entity != null || options.isAllowNulls() &amp;&amp; !isOptionalInstance) {
+&nbsp;            if (isOptionalInstance &amp;&amp; entity != event.getInstanceToLoad()) {
+&nbsp;                throw new NonUniqueObjectException(event.getEntityId(), event.getEntityClassName());
+<b class="nc">&nbsp;            }</b>
+&nbsp;        } else {
+&nbsp;            event.getFactory().getEntityNotFoundDelegate().handleEntityNotFound(event.getEntityClassName(), event.getEntityId());
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return entity;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private Object proxyOrLoad(LoadEvent event, EntityPersister persister, EntityKey keyToLoad, LoadEventListener.LoadType options) {
+&nbsp;        if (LOG.isTraceEnabled()) {
+&nbsp;            LOG.tracev(&quot;Loading entity: {0}&quot;, MessageHelper.infoString(persister, event.getEntityId(), persister.getFactory()));
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        if (hasBytecodeProxy(persister, options)) {
+&nbsp;            return this.loadWithBytecodeProxy(event, persister, keyToLoad, options);
+&nbsp;        } else {
+&nbsp;            return persister.hasProxy() ? this.loadWithRegularProxy(event, persister, keyToLoad, options) : this.load(event, persister, keyToLoad, options);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private Object loadWithBytecodeProxy(LoadEvent event, EntityPersister persister, EntityKey keyToLoad, LoadEventListener.LoadType options) {
+<b class="nc">&nbsp;        EventSource session = event.getSession();</b>
+<b class="nc">&nbsp;        PersistenceContext persistenceContext = session.getPersistenceContextInternal();</b>
+<b class="nc">&nbsp;        EntityHolder holder = persistenceContext.getEntityHolder(keyToLoad);</b>
+<b class="nc">&nbsp;        Object managed = holder == null ? null : holder.getEntity();</b>
+<b class="nc">&nbsp;        if (managed == null) {</b>
+<b class="nc">&nbsp;            if (persister.getRepresentationStrategy().getProxyFactory() != null) {</b>
+<b class="nc">&nbsp;                return loadWithProxyFactory(event, persister, keyToLoad, holder);</b>
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                return persister.hasSubclasses() ? this.load(event, persister, keyToLoad, options) : createBatchLoadableEnhancedProxy(persister, keyToLoad, session);
+&nbsp;            }
+&nbsp;        } else {
+&nbsp;            return options.isCheckDeleted() &amp;&amp; wasDeleted(persistenceContext, managed) ? null : managed;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private Object loadWithRegularProxy(LoadEvent event, EntityPersister persister, EntityKey keyToLoad, LoadEventListener.LoadType options) {
+&nbsp;        PersistenceContext persistenceContext = event.getSession().getPersistenceContextInternal();
+&nbsp;        EntityHolder holder = persistenceContext.getEntityHolder(keyToLoad);
+&nbsp;        Object proxy = holder == null ? null : holder.getProxy();
+&nbsp;        if (proxy != null) {
+&nbsp;            return this.narrowedProxy(event, persister, keyToLoad, options, proxy);
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            return options.isAllowProxyCreation() ? createProxyIfNecessary(event, persister, keyToLoad, options, holder) : this.load(event, persister, keyToLoad, options);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private static boolean hasBytecodeProxy(EntityPersister persister, LoadEventListener.LoadType options) {</b>
+&nbsp;        return options.isAllowProxyCreation() &amp;&amp; persister.getEntityPersister().getBytecodeEnhancementMetadata().isEnhancedForLazyLoading();
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private static Object loadWithProxyFactory(LoadEvent event, EntityPersister persister, EntityKey keyToLoad, EntityHolder holder) {
+&nbsp;        EventSource session = event.getSession();
+<b class="nc">&nbsp;        PersistenceContext persistenceContext = session.getPersistenceContextInternal();</b>
+<b class="nc">&nbsp;        Object proxy;</b>
+<b class="nc">&nbsp;        if (holder != null &amp;&amp; (proxy = holder.getProxy()) != null) {</b>
+<b class="nc">&nbsp;            LOG.trace(&quot;Entity proxy found in session cache&quot;);</b>
+<b class="nc">&nbsp;            if (LOG.isDebugEnabled() &amp;&amp; HibernateProxy.extractLazyInitializer(proxy).isUnwrap()) {</b>
+<b class="nc">&nbsp;                LOG.debug(&quot;Ignoring NO_PROXY to honor laziness&quot;);</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            return persistenceContext.narrowProxy(proxy, persister, keyToLoad, (Object)null);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            return persister.hasSubclasses() ? proxyOrCached(event, persister, keyToLoad) : createBatchLoadableEnhancedProxy(persister, keyToLoad, session);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static PersistentAttributeInterceptable createBatchLoadableEnhancedProxy(EntityPersister persister, EntityKey keyToLoad, EventSource session) {
+&nbsp;        if (keyToLoad.isBatchLoadable(session.getLoadQueryInfluencers())) {
+&nbsp;            session.getPersistenceContextInternal().getBatchFetchQueue().addBatchLoadableEntityKey(keyToLoad);
+&nbsp;        }
+&nbsp;
+&nbsp;        return persister.getBytecodeEnhancementMetadata().createEnhancedProxy(keyToLoad, true, session);
+&nbsp;    }
+&nbsp;
+&nbsp;    private static Object proxyOrCached(LoadEvent event, EntityPersister persister, EntityKey keyToLoad) {
+&nbsp;        Object cachedEntity = CacheEntityLoaderHelper.INSTANCE.loadFromSecondLevelCache(event.getSession(), (Object)null, LockMode.NONE, persister, keyToLoad);
+&nbsp;        return cachedEntity != null ? cachedEntity : createProxy(event, persister, keyToLoad);
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private Object narrowedProxy(LoadEvent event, EntityPersister persister, EntityKey keyToLoad, LoadEventListener.LoadType options, Object proxy) {
+<b class="nc">&nbsp;        if (LOG.isTraceEnabled()) {</b>
+&nbsp;            LOG.trace(&quot;Entity proxy found in session cache&quot;);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        LazyInitializer li = HibernateProxy.extractLazyInitializer(proxy);</b>
+&nbsp;        if (li.isUnwrap()) {
+<b class="nc">&nbsp;            return li.getImplementation();</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            PersistenceContext persistenceContext = event.getSession().getPersistenceContextInternal();
+&nbsp;            if (options.isAllowProxyCreation()) {
+&nbsp;                return persistenceContext.narrowProxy(proxy, persister, keyToLoad, (Object)null);
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                Object impl = this.proxyImplementation(event, persister, keyToLoad, options);
+&nbsp;                return impl == null ? null : persistenceContext.narrowProxy(proxy, persister, keyToLoad, impl);
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private Object proxyImplementation(LoadEvent event, EntityPersister persister, EntityKey keyToLoad, LoadEventListener.LoadType options) {</b>
+<b class="nc">&nbsp;        Object entity = this.load(event, persister, keyToLoad, options);</b>
+<b class="nc">&nbsp;        if (entity != null) {</b>
+<b class="nc">&nbsp;            return entity;</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            if (options != LoadEventListener.INTERNAL_LOAD_NULLABLE) {</b>
+&nbsp;                event.getFactory().getEntityNotFoundDelegate().handleEntityNotFound(persister.getEntityName(), keyToLoad.getIdentifier());
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private static Object createProxyIfNecessary(LoadEvent event, EntityPersister persister, EntityKey keyToLoad, LoadEventListener.LoadType options, EntityHolder holder) {</b>
+&nbsp;        Object existing = holder == null ? null : holder.getEntity();
+&nbsp;        if (existing != null) {
+&nbsp;            if (LOG.isTraceEnabled()) {
+<b class="nc">&nbsp;                LOG.trace(&quot;Entity found in session cache&quot;);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            return options.isCheckDeleted() &amp;&amp; wasDeleted(event.getSession().getPersistenceContextInternal(), existing) ? null : existing;
+&nbsp;        } else {
+&nbsp;            if (LOG.isTraceEnabled()) {
+&nbsp;                LOG.trace(&quot;Creating new proxy for entity&quot;);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            return createProxy(event, persister, keyToLoad);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private static boolean wasDeleted(PersistenceContext persistenceContext, Object existing) {
+<b class="nc">&nbsp;        return persistenceContext.getEntry(existing).getStatus().isDeletedOrGone();</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private static Object createProxy(LoadEvent event, EntityPersister persister, EntityKey keyToLoad) {
+&nbsp;        EventSource session = event.getSession();
+&nbsp;        Object proxy = persister.createProxy(event.getEntityId(), session);
+<b class="nc">&nbsp;        PersistenceContext persistenceContext = session.getPersistenceContextInternal();</b>
+&nbsp;        persistenceContext.getBatchFetchQueue().addBatchLoadableEntityKey(keyToLoad);
+&nbsp;        persistenceContext.addProxy(keyToLoad, proxy);
+&nbsp;        return proxy;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private Object lockAndLoad(LoadEvent event, EntityPersister persister, EntityKey keyToLoad, LoadEventListener.LoadType options) {</b>
+&nbsp;        SessionImplementor source = event.getSession();
+&nbsp;        EntityDataAccess cache = persister.getCacheAccessStrategy();
+&nbsp;        boolean canWriteToCache = persister.canWriteToCache();
+&nbsp;        SoftLock lock;
+&nbsp;        Object ck;
+&nbsp;        if (canWriteToCache) {
+&nbsp;            ck = cache.generateCacheKey(event.getEntityId(), persister, event.getFactory(), source.getTenantIdentifier());
+<b class="nc">&nbsp;            lock = cache.lockItem(source, ck, (Object)null);</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            lock = null;
+&nbsp;            ck = null;
+&nbsp;        }
+&nbsp;
+&nbsp;        Object entity;
+&nbsp;        try {
+&nbsp;            entity = this.load(event, persister, keyToLoad, options);
+&nbsp;        } finally {
+<b class="nc">&nbsp;            if (canWriteToCache) {</b>
+<b class="nc">&nbsp;                cache.unlockItem(source, ck, lock);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        return source.getPersistenceContextInternal().proxyFor(persister, keyToLoad, entity);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private Object doLoad(LoadEvent event, EntityPersister persister, EntityKey keyToLoad, LoadEventListener.LoadType options) {</b>
+&nbsp;        EventSource session = event.getSession();
+&nbsp;        if (LOG.isTraceEnabled()) {
+&nbsp;            LOG.tracev(&quot;Attempting to resolve: {0}&quot;, MessageHelper.infoString(persister, event.getEntityId(), event.getFactory()));
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        if (session.getPersistenceContextInternal().containsDeletedUnloadedEntityKey(keyToLoad)) {
+&nbsp;            return null;
+&nbsp;        } else {
+&nbsp;            CacheEntityLoaderHelper.PersistenceContextEntry persistenceContextEntry = CacheEntityLoaderHelper.INSTANCE.loadFromSessionCache(event, keyToLoad, options);
+&nbsp;            Object entity = persistenceContextEntry.getEntity();
+&nbsp;            if (entity != null) {
+&nbsp;                if (persistenceContextEntry.isManaged()) {
+<b class="nc">&nbsp;                    initializeIfNecessary(entity);</b>
+&nbsp;                    return entity;
+<b class="nc">&nbsp;                } else {</b>
+&nbsp;                    return null;
+&nbsp;                }
+&nbsp;            } else {
+<b class="nc">&nbsp;                return this.load(event, persister, keyToLoad);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private static void initializeIfNecessary(Object entity) {</b>
+&nbsp;        if (ManagedTypeHelper.isPersistentAttributeInterceptable(entity)) {
+&nbsp;            PersistentAttributeInterceptable interceptable = ManagedTypeHelper.asPersistentAttributeInterceptable(entity);
+&nbsp;            PersistentAttributeInterceptor interceptor = interceptable.$$_hibernate_getInterceptor();
+&nbsp;            if (interceptor instanceof EnhancementAsProxyLazinessInterceptor) {
+&nbsp;                ((EnhancementAsProxyLazinessInterceptor)interceptor).forceInitialize(entity, (String)null);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private Object load(LoadEvent event, EntityPersister persister, EntityKey keyToLoad) {
+&nbsp;        Object entity = this.loadFromCacheOrDatasource(event, persister, keyToLoad);
+&nbsp;        if (entity != null &amp;&amp; persister.hasNaturalIdentifier()) {
+&nbsp;            event.getSession().getPersistenceContextInternal().getNaturalIdResolutions().cacheResolutionFromLoad(event.getEntityId(), persister.getNaturalIdMapping().extractNaturalIdFromEntity(entity), persister);
+&nbsp;        }
+&nbsp;
+&nbsp;        return entity;
+&nbsp;    }
+&nbsp;
+&nbsp;    private Object loadFromCacheOrDatasource(LoadEvent event, EntityPersister persister, EntityKey keyToLoad) {
+&nbsp;        Object entity = CacheEntityLoaderHelper.INSTANCE.loadFromSecondLevelCache(event, persister, keyToLoad);
+&nbsp;        if (entity != null) {
+&nbsp;            if (LOG.isTraceEnabled()) {
+&nbsp;                LOG.tracev(&quot;Resolved object in second-level cache: {0}&quot;, MessageHelper.infoString(persister, event.getEntityId(), event.getFactory()));
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            return entity;</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            if (LOG.isTraceEnabled()) {</b>
+<b class="nc">&nbsp;                LOG.tracev(&quot;Object not resolved in any cache: {0}&quot;, MessageHelper.infoString(persister, event.getEntityId(), event.getFactory()));</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            return this.loadFromDatasource(event, persister);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    protected Object loadFromDatasource(LoadEvent event, EntityPersister persister) {
+&nbsp;        Object entity = persister.load(event.getEntityId(), event.getInstanceToLoad(), event.getLockOptions(), event.getSession(), event.getReadOnly());
+<b class="nc">&nbsp;        LazyInitializer lazyInitializer = HibernateProxy.extractLazyInitializer(entity);</b>
+<b class="nc">&nbsp;        if (lazyInitializer != null) {</b>
+&nbsp;            entity = lazyInitializer.getImplementation();
+&nbsp;        }
+&nbsp;
+&nbsp;        StatisticsImplementor statistics = event.getFactory().getStatistics();
+&nbsp;        if (event.isAssociationFetch() &amp;&amp; statistics.isStatisticsEnabled()) {
+<b class="nc">&nbsp;            statistics.fetchEntity(event.getEntityClassName());</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return entity;
+&nbsp;    }
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:57</div>
+</div>
+</body>
+</html>

@@ -5,7 +5,7 @@
 <html id="htmlId">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
-  <title>Coverage Report > KryoBackedMessageSerializer</title>
+  <title>Coverage Report > ExecutorServiceMetrics</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -19,10 +19,10 @@
 <div class="breadCrumbs">
 Current scope:     <a href="../../index.html">all classes</a>
     <span class="separator">|</span>
-    <a href="../index.html">org.gradle.internal.remote.internal</a>
+    <a href="../index.html">io.micrometer.core.instrument.binder.jvm</a>
 </div>
 
-<h1>Coverage Summary for Class: KryoBackedMessageSerializer (org.gradle.internal.remote.internal)</h1>
+<h1>Coverage Summary for Class: ExecutorServiceMetrics (io.micrometer.core.instrument.binder.jvm)</h1>
 
 <table class="coverageStats">
 <tr>
@@ -37,33 +37,45 @@ Current scope:     <a href="../../index.html">all classes</a>
 </th>
 <th class="coverageStat 
 ">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
   Line, %
 </th>
 </tr>
 <tr>
-  <td class="name">KryoBackedMessageSerializer</td>
+  <td class="name">ExecutorServiceMetrics</td>
 <td class="coverageStat">
   <span class="percent">
-    100%
+    0%
   </span>
   <span class="absValue">
-    (1/1)
+    (0/1)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    100%
+    0%
   </span>
   <span class="absValue">
-    (3/3)
+    (0/23)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    100%
+    0%
   </span>
   <span class="absValue">
-    (3/3)
+    (0/22)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/121)
   </span>
 </td>
 </tr>
@@ -73,7 +85,183 @@ Current scope:     <a href="../../index.html">all classes</a>
 <br/>
 <br/>
 
-  <code class="sourceCode">Source code is not available<br /></code>
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package io.micrometer.core.instrument.binder.jvm;
+&nbsp;
+&nbsp;import io.micrometer.common.lang.NonNullApi;
+&nbsp;import io.micrometer.common.lang.NonNullFields;
+&nbsp;import io.micrometer.common.lang.Nullable;
+&nbsp;import io.micrometer.common.util.StringUtils;
+&nbsp;import io.micrometer.common.util.internal.logging.InternalLogger;
+&nbsp;import io.micrometer.common.util.internal.logging.InternalLoggerFactory;
+&nbsp;import io.micrometer.core.instrument.FunctionCounter;
+&nbsp;import io.micrometer.core.instrument.Gauge;
+&nbsp;import io.micrometer.core.instrument.Meter;
+&nbsp;import io.micrometer.core.instrument.MeterRegistry;
+&nbsp;import io.micrometer.core.instrument.Tag;
+&nbsp;import io.micrometer.core.instrument.Tags;
+&nbsp;import io.micrometer.core.instrument.binder.MeterBinder;
+&nbsp;import io.micrometer.core.instrument.internal.TimedExecutor;
+&nbsp;import io.micrometer.core.instrument.internal.TimedExecutorService;
+&nbsp;import io.micrometer.core.instrument.internal.TimedScheduledExecutorService;
+&nbsp;import java.lang.reflect.Field;
+&nbsp;import java.util.Arrays;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import java.util.concurrent.Executor;
+&nbsp;import java.util.concurrent.ExecutorService;
+&nbsp;import java.util.concurrent.ForkJoinPool;
+&nbsp;import java.util.concurrent.ScheduledExecutorService;
+&nbsp;import java.util.concurrent.ThreadPoolExecutor;
+&nbsp;import java.util.stream.Collectors;
+&nbsp;
+&nbsp;@NonNullApi
+&nbsp;@NonNullFields
+&nbsp;public class ExecutorServiceMetrics implements MeterBinder {
+&nbsp;    private static boolean allowIllegalReflectiveAccess = true;
+&nbsp;    private static final InternalLogger log = InternalLoggerFactory.getInstance(ExecutorServiceMetrics.class);
+&nbsp;    private static final String DEFAULT_EXECUTOR_METRIC_PREFIX = &quot;&quot;;
+&nbsp;    private static final String DESCRIPTION_POOL_SIZE = &quot;The current number of threads in the pool&quot;;
+&nbsp;    private final Set&lt;Meter.Id&gt; registeredMeterIds;
+&nbsp;    @Nullable
+&nbsp;    private final ExecutorService executorService;
+&nbsp;    private final Iterable&lt;Tag&gt; tags;
+&nbsp;    private final String metricPrefix;
+&nbsp;
+&nbsp;    public ExecutorServiceMetrics(@Nullable ExecutorService executorService, String executorServiceName, Iterable&lt;Tag&gt; tags) {
+&nbsp;        this(executorService, executorServiceName, &quot;&quot;, tags);
+&nbsp;    }
+&nbsp;
+&nbsp;    public ExecutorServiceMetrics(@Nullable ExecutorService executorService, String executorServiceName, String metricPrefix, Iterable&lt;Tag&gt; tags) {
+&nbsp;        this.registeredMeterIds = ConcurrentHashMap.newKeySet();
+&nbsp;        this.executorService = executorService;
+&nbsp;        this.tags = Tags.concat(tags, new String[]{&quot;name&quot;, executorServiceName});
+&nbsp;        this.metricPrefix = sanitizePrefix(metricPrefix);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public static Executor monitor(MeterRegistry registry, Executor executor, String executorName, Iterable&lt;Tag&gt; tags) {</b>
+&nbsp;        return monitor(registry, executor, executorName, &quot;&quot;, tags);
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Executor monitor(MeterRegistry registry, Executor executor, String executorName, String metricPrefix, Iterable&lt;Tag&gt; tags) {
+&nbsp;        return (Executor)(executor instanceof ExecutorService ? monitor(registry, (ExecutorService)executor, executorName, metricPrefix, tags) : new TimedExecutor(registry, executor, executorName, sanitizePrefix(metricPrefix), tags));
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public static Executor monitor(MeterRegistry registry, Executor executor, String executorName, Tag... tags) {
+&nbsp;        return monitor(registry, executor, executorName, &quot;&quot;, tags);
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Executor monitor(MeterRegistry registry, Executor executor, String executorName, String metricPrefix, Tag... tags) {
+&nbsp;        return monitor(registry, (Executor)executor, executorName, metricPrefix, Arrays.asList(tags));
+&nbsp;    }
+&nbsp;
+&nbsp;    public static ExecutorService monitor(MeterRegistry registry, ExecutorService executor, String executorServiceName, Iterable&lt;Tag&gt; tags) {
+<b class="nc">&nbsp;        return monitor(registry, executor, executorServiceName, &quot;&quot;, tags);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static ExecutorService monitor(MeterRegistry registry, ExecutorService executor, String executorServiceName, String metricPrefix, Iterable&lt;Tag&gt; tags) {
+&nbsp;        if (executor instanceof ScheduledExecutorService) {
+&nbsp;            return monitor(registry, (ScheduledExecutorService)executor, executorServiceName, metricPrefix, tags);
+&nbsp;        } else {
+&nbsp;            ExecutorServiceMetrics executorServiceMetrics = new ExecutorServiceMetrics(executor, executorServiceName, metricPrefix, tags);
+&nbsp;            executorServiceMetrics.bindTo(registry);
+&nbsp;            return new TimedExecutorService(registry, executor, executorServiceName, sanitizePrefix(metricPrefix), tags, executorServiceMetrics.registeredMeterIds);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public static ExecutorService monitor(MeterRegistry registry, ExecutorService executor, String executorServiceName, Tag... tags) {</b>
+<b class="nc">&nbsp;        return monitor(registry, executor, executorServiceName, &quot;&quot;, tags);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public static ExecutorService monitor(MeterRegistry registry, ExecutorService executor, String executorServiceName, String metricPrefix, Tag... tags) {
+&nbsp;        return monitor(registry, (ExecutorService)executor, executorServiceName, metricPrefix, Arrays.asList(tags));
+&nbsp;    }
+&nbsp;
+&nbsp;    public static ScheduledExecutorService monitor(MeterRegistry registry, ScheduledExecutorService executor, String executorServiceName, Iterable&lt;Tag&gt; tags) {
+&nbsp;        return monitor(registry, executor, executorServiceName, &quot;&quot;, tags);
+&nbsp;    }
+&nbsp;
+&nbsp;    public static ScheduledExecutorService monitor(MeterRegistry registry, ScheduledExecutorService executor, String executorServiceName, String metricPrefix, Iterable&lt;Tag&gt; tags) {
+&nbsp;        (new ExecutorServiceMetrics(executor, executorServiceName, metricPrefix, tags)).bindTo(registry);
+&nbsp;        return new TimedScheduledExecutorService(registry, executor, executorServiceName, sanitizePrefix(metricPrefix), tags);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public static ScheduledExecutorService monitor(MeterRegistry registry, ScheduledExecutorService executor, String executorServiceName, Tag... tags) {
+&nbsp;        return monitor(registry, executor, executorServiceName, &quot;&quot;, tags);
+&nbsp;    }
+&nbsp;
+&nbsp;    public static ScheduledExecutorService monitor(MeterRegistry registry, ScheduledExecutorService executor, String executorServiceName, String metricPrefix, Tag... tags) {
+&nbsp;        return monitor(registry, (ScheduledExecutorService)executor, executorServiceName, metricPrefix, Arrays.asList(tags));
+&nbsp;    }
+&nbsp;
+&nbsp;    private static String sanitizePrefix(String metricPrefix) {
+&nbsp;        if (StringUtils.isBlank(metricPrefix)) {
+&nbsp;            return &quot;&quot;;
+&nbsp;        } else {
+&nbsp;            return !metricPrefix.endsWith(&quot;.&quot;) ? metricPrefix + &quot;.&quot; : metricPrefix;
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public void bindTo(MeterRegistry registry) {
+<b class="nc">&nbsp;        if (this.executorService != null) {</b>
+&nbsp;            String className = this.executorService.getClass().getName();
+&nbsp;            if (this.executorService instanceof ThreadPoolExecutor) {
+&nbsp;                this.monitor(registry, (ThreadPoolExecutor)this.executorService);
+&nbsp;            } else if (this.executorService instanceof ForkJoinPool) {
+&nbsp;                this.monitor(registry, (ForkJoinPool)this.executorService);
+&nbsp;            } else if (allowIllegalReflectiveAccess) {
+&nbsp;                if (className.equals(&quot;java.util.concurrent.Executors$DelegatedScheduledExecutorService&quot;)) {
+&nbsp;                    this.monitor(registry, this.unwrapThreadPoolExecutor(this.executorService, this.executorService.getClass()));
+&nbsp;                } else if (className.equals(&quot;java.util.concurrent.Executors$FinalizableDelegatedExecutorService&quot;)) {
+&nbsp;                    this.monitor(registry, this.unwrapThreadPoolExecutor(this.executorService, this.executorService.getClass().getSuperclass()));
+&nbsp;                } else {
+<b class="nc">&nbsp;                    log.warn(&quot;Failed to bind as {} is unsupported.&quot;, className);</b>
+&nbsp;                }
+&nbsp;            } else {
+&nbsp;                log.warn(&quot;Failed to bind as {} is unsupported or reflective access is not allowed.&quot;, className);
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    private ThreadPoolExecutor unwrapThreadPoolExecutor(ExecutorService executor, Class&lt;?&gt; wrapper) {
+&nbsp;        try {
+&nbsp;            Field e = wrapper.getDeclaredField(&quot;e&quot;);
+&nbsp;            e.setAccessible(true);
+&nbsp;            return (ThreadPoolExecutor)e.get(executor);
+&nbsp;        } catch (IllegalAccessException | RuntimeException | NoSuchFieldException e) {
+<b class="nc">&nbsp;            log.info(&quot;Cannot unwrap ThreadPoolExecutor for monitoring from {} due to {}: {}&quot;, new Object[]{wrapper.getName(), e.getClass().getName(), ((Exception)e).getMessage()});</b>
+&nbsp;            return null;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void monitor(MeterRegistry registry, @Nullable ThreadPoolExecutor tp) {
+&nbsp;        if (tp != null) {
+&nbsp;            List&lt;Meter&gt; meters = Arrays.asList(FunctionCounter.builder(this.metricPrefix + &quot;executor.completed&quot;, tp, ThreadPoolExecutor::getCompletedTaskCount).tags(this.tags).description(&quot;The approximate total number of tasks that have completed execution&quot;).baseUnit(&quot;tasks&quot;).register(registry), Gauge.builder(this.metricPrefix + &quot;executor.active&quot;, tp, ThreadPoolExecutor::getActiveCount).tags(this.tags).description(&quot;The approximate number of threads that are actively executing tasks&quot;).baseUnit(&quot;threads&quot;).register(registry), Gauge.builder(this.metricPrefix + &quot;executor.queued&quot;, tp, (tpRef) -&gt; (double)tpRef.getQueue().size()).tags(this.tags).description(&quot;The approximate number of tasks that are queued for execution&quot;).baseUnit(&quot;tasks&quot;).register(registry), Gauge.builder(this.metricPrefix + &quot;executor.queue.remaining&quot;, tp, (tpRef) -&gt; (double)tpRef.getQueue().remainingCapacity()).tags(this.tags).description(&quot;The number of additional elements that this queue can ideally accept without blocking&quot;).baseUnit(&quot;tasks&quot;).register(registry), Gauge.builder(this.metricPrefix + &quot;executor.pool.size&quot;, tp, ThreadPoolExecutor::getPoolSize).tags(this.tags).description(&quot;The current number of threads in the pool&quot;).baseUnit(&quot;threads&quot;).register(registry), Gauge.builder(this.metricPrefix + &quot;executor.pool.core&quot;, tp, ThreadPoolExecutor::getCorePoolSize).tags(this.tags).description(&quot;The core number of threads for the pool&quot;).baseUnit(&quot;threads&quot;).register(registry), Gauge.builder(this.metricPrefix + &quot;executor.pool.max&quot;, tp, ThreadPoolExecutor::getMaximumPoolSize).tags(this.tags).description(&quot;The maximum allowed number of threads in the pool&quot;).baseUnit(&quot;threads&quot;).register(registry));
+&nbsp;            this.registeredMeterIds.addAll((Collection)meters.stream().map(Meter::getId).collect(Collectors.toSet()));
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void monitor(MeterRegistry registry, ForkJoinPool fj) {
+<b class="nc">&nbsp;        List&lt;Meter&gt; meters = Arrays.asList(FunctionCounter.builder(this.metricPrefix + &quot;executor.steals&quot;, fj, ForkJoinPool::getStealCount).tags(this.tags).description(&quot;Estimate of the total number of tasks stolen from one thread&#39;s work queue by another. The reported value underestimates the actual total number of steals when the pool is not quiescent&quot;).register(registry), Gauge.builder(this.metricPrefix + &quot;executor.queued&quot;, fj, (pool) -&gt; (double)(pool.getQueuedTaskCount() + (long)pool.getQueuedSubmissionCount())).tags(this.tags).description(&quot;The approximate number of tasks that are queued for execution&quot;).register(registry), Gauge.builder(this.metricPrefix + &quot;executor.active&quot;, fj, ForkJoinPool::getActiveThreadCount).tags(this.tags).description(&quot;An estimate of the number of threads that are currently stealing or executing tasks&quot;).register(registry), Gauge.builder(this.metricPrefix + &quot;executor.running&quot;, fj, ForkJoinPool::getRunningThreadCount).tags(this.tags).description(&quot;An estimate of the number of worker threads that are not blocked waiting to join tasks or for other managed synchronization threads&quot;).register(registry), Gauge.builder(this.metricPrefix + &quot;executor.parallelism&quot;, fj, ForkJoinPool::getParallelism).tags(this.tags).description(&quot;The targeted parallelism level of this pool&quot;).baseUnit(&quot;threads&quot;).register(registry), Gauge.builder(this.metricPrefix + &quot;executor.pool.size&quot;, fj, ForkJoinPool::getPoolSize).tags(this.tags).description(&quot;The current number of threads in the pool&quot;).baseUnit(&quot;threads&quot;).register(registry));</b>
+&nbsp;        this.registeredMeterIds.addAll((Collection)meters.stream().map(Meter::getId).collect(Collectors.toSet()));
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void disableIllegalReflectiveAccess() {
+&nbsp;        allowIllegalReflectiveAccess = false;
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
 </div>
 
 <script type="text/javascript">
@@ -95,7 +283,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2025-03-20 13:42</div>
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
 </div>
 </body>
 </html>

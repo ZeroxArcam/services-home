@@ -1,0 +1,271 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > DdlTypeRegistry</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.type.descriptor.sql.spi</a>
+</div>
+
+<h1>Coverage Summary for Class: DdlTypeRegistry (org.hibernate.type.descriptor.sql.spi)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DdlTypeRegistry</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    57.1%
+  </span>
+  <span class="absValue">
+    (8/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    30.2%
+  </span>
+  <span class="absValue">
+    (13/43)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    40.4%
+  </span>
+  <span class="absValue">
+    (21/52)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.type.descriptor.sql.spi;
+&nbsp;
+&nbsp;import java.io.Serializable;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.TreeMap;
+&nbsp;import org.hibernate.HibernateException;
+&nbsp;import org.hibernate.dialect.Dialect;
+&nbsp;import org.hibernate.engine.jdbc.Size;
+&nbsp;import org.hibernate.type.Type;
+&nbsp;import org.hibernate.type.descriptor.JdbcTypeNameMapper;
+&nbsp;import org.hibernate.type.descriptor.sql.DdlType;
+&nbsp;import org.hibernate.type.spi.TypeConfiguration;
+&nbsp;import org.jboss.logging.Logger;
+&nbsp;
+&nbsp;public class DdlTypeRegistry implements Serializable {
+&nbsp;    private static final Logger log = Logger.getLogger(DdlTypeRegistry.class);
+&nbsp;    private final Map&lt;Integer, DdlType&gt; ddlTypes = new HashMap();
+&nbsp;    private final Map&lt;String, Integer&gt; sqlTypes;
+&nbsp;
+&nbsp;    public DdlTypeRegistry(TypeConfiguration typeConfiguration) {
+&nbsp;        this.sqlTypes = new TreeMap(String.CASE_INSENSITIVE_ORDER);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void addDescriptor(DdlType ddlType) {
+&nbsp;        this.addDescriptor(ddlType.getSqlTypeCode(), ddlType);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void addDescriptor(int sqlTypeCode, DdlType ddlType) {
+<b class="fc">&nbsp;        DdlType previous = (DdlType)this.ddlTypes.put(sqlTypeCode, ddlType);</b>
+&nbsp;        if (previous != null &amp;&amp; previous != ddlType) {
+<b class="fc">&nbsp;            for(String rawTypeName : previous.getRawTypeNames()) {</b>
+<b class="fc">&nbsp;                this.sqlTypes.remove(rawTypeName);</b>
+&nbsp;            }
+<b class="fc">&nbsp;</b>
+&nbsp;            log.debugf(&quot;addDescriptor(%d, %s) replaced previous registration(%s)&quot;, sqlTypeCode, ddlType, previous);
+&nbsp;        }
+&nbsp;
+&nbsp;        this.addSqlType(ddlType, sqlTypeCode);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void addDescriptorIfAbsent(DdlType ddlType) {
+&nbsp;        this.addDescriptorIfAbsent(ddlType.getSqlTypeCode(), ddlType);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void addDescriptorIfAbsent(int sqlTypeCode, DdlType ddlType) {
+<b class="fc">&nbsp;        if (this.ddlTypes.putIfAbsent(sqlTypeCode, ddlType) == null) {</b>
+&nbsp;            this.addSqlType(ddlType, sqlTypeCode);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private void addSqlType(DdlType ddlType, int sqlTypeCode) {
+<b class="fc">&nbsp;        for(String rawTypeName : ddlType.getRawTypeNames()) {</b>
+<b class="pc">&nbsp;            Integer previousSqlTypeCode = (Integer)this.sqlTypes.put(rawTypeName, sqlTypeCode);</b>
+<b class="fc">&nbsp;            if (previousSqlTypeCode != null &amp;&amp; JdbcTypeNameMapper.isStandardTypeCode(previousSqlTypeCode)) {</b>
+<b class="fc">&nbsp;                this.sqlTypes.put(rawTypeName, previousSqlTypeCode);</b>
+&nbsp;            }
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public Integer getSqlTypeCode(String rawTypeName) {
+&nbsp;        return (Integer)this.sqlTypes.get(rawTypeName);
+&nbsp;    }
+&nbsp;
+&nbsp;    public DdlType getDescriptor(int sqlTypeCode) {
+&nbsp;        DdlType ddlType = (DdlType)this.ddlTypes.get(sqlTypeCode);
+&nbsp;        if (ddlType == null) {
+<b class="fc">&nbsp;            switch (sqlTypeCode) {</b>
+&nbsp;                case -16:
+&nbsp;                    return (DdlType)this.ddlTypes.get(-9);
+&nbsp;                case -4:
+&nbsp;                    return (DdlType)this.ddlTypes.get(-3);
+&nbsp;                case -1:
+&nbsp;                    return (DdlType)this.ddlTypes.get(12);
+&nbsp;            }
+<b class="pc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;        return ddlType;
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getTypeName(int typeCode, Dialect dialect) {
+&nbsp;        switch (typeCode) {
+&nbsp;            case -15:
+&nbsp;            case -9:
+&nbsp;            case -3:
+<b class="fc">&nbsp;            case 1:</b>
+<b class="fc">&nbsp;            case 12:</b>
+&nbsp;                return this.getTypeName(typeCode, Size.length(255L));
+<b class="fc">&nbsp;            case 2:</b>
+<b class="fc">&nbsp;            case 3:</b>
+&nbsp;                return this.getTypeName(typeCode, Size.precision(dialect.getDefaultDecimalPrecision()));
+&nbsp;            case 6:
+&nbsp;            case 7:
+&nbsp;                return this.getTypeName(typeCode, Size.precision(dialect.getFloatPrecision()));
+&nbsp;            case 8:
+&nbsp;                return this.getTypeName(typeCode, Size.precision(dialect.getDoublePrecision()));
+&nbsp;            case 92:
+&nbsp;            case 93:
+&nbsp;            case 2013:
+<b class="nc">&nbsp;            case 2014:</b>
+&nbsp;            case 3003:
+&nbsp;            case 3007:
+&nbsp;                return this.getTypeName(typeCode, Size.precision(dialect.getDefaultTimestampPrecision()));
+&nbsp;            default:
+&nbsp;                return this.getTypeName(typeCode, Size.nil());
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @deprecated */
+&nbsp;    @Deprecated(
+&nbsp;        since = &quot;6.3&quot;
+&nbsp;    )
+&nbsp;    public String getTypeName(int typeCode, Size size) {
+<b class="fc">&nbsp;        return this.getTypeName(typeCode, size.getLength(), size.getPrecision(), size.getScale());</b>
+<b class="pc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public String getTypeName(int typeCode, Size columnSize, Type type) {
+&nbsp;        DdlType descriptor = this.getDescriptor(typeCode);
+&nbsp;        if (descriptor == null) {
+&nbsp;            throw new HibernateException(String.format(&quot;No type mapping for org.hibernate.type.SqlTypes code: %s (%s)&quot;, typeCode, JdbcTypeNameMapper.getTypeName(typeCode)));
+&nbsp;        } else {
+<b class="nc">&nbsp;            return descriptor.getTypeName(columnSize, type, this);</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    /** @deprecated */</b>
+&nbsp;    @Deprecated(
+&nbsp;        since = &quot;6.3&quot;
+<b class="fc">&nbsp;    )</b>
+&nbsp;    public String getTypeName(int typeCode, Long size, Integer precision, Integer scale) {
+&nbsp;        DdlType descriptor = this.getDescriptor(typeCode);
+&nbsp;        if (descriptor == null) {
+&nbsp;            throw new HibernateException(String.format(&quot;No type mapping for org.hibernate.type.SqlTypes code: %s (%s)&quot;, typeCode, JdbcTypeNameMapper.getTypeName(typeCode)));
+&nbsp;        } else {
+&nbsp;            return descriptor.getTypeName(size, precision, scale);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isTypeNameRegistered(String typeName) {
+&nbsp;        for(DdlType value : this.ddlTypes.values()) {
+&nbsp;            if (value.getRawTypeName().equals(typeName)) {
+&nbsp;                return true;
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        return false;
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:54</div>
+</div>
+</body>
+</html>

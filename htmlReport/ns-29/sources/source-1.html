@@ -5,7 +5,7 @@
 <html id="htmlId">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
-  <title>Coverage Report > Assigner</title>
+  <title>Coverage Report > ByteQuadsCanonicalizer</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -19,10 +19,10 @@
 <div class="breadCrumbs">
 Current scope:     <a href="../../index.html">all classes</a>
     <span class="separator">|</span>
-    <a href="../index.html">net.bytebuddy.implementation.bytecode.assign</a>
+    <a href="../index.html">com.fasterxml.jackson.core.sym</a>
 </div>
 
-<h1>Coverage Summary for Class: Assigner (net.bytebuddy.implementation.bytecode.assign)</h1>
+<h1>Coverage Summary for Class: ByteQuadsCanonicalizer (com.fasterxml.jackson.core.sym)</h1>
 
 <table class="coverageStats">
 
@@ -42,48 +42,48 @@ Current scope:     <a href="../../index.html">all classes</a>
 </th>
 </tr>
 <tr>
-  <td class="name">Assigner</td>
+  <td class="name">ByteQuadsCanonicalizer</td>
 <td class="coverageStat">
   <span class="percent">
-    100%
+    8%
   </span>
   <span class="absValue">
-    (1/1)
+    (4/50)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    100%
+    1.1%
   </span>
   <span class="absValue">
-    (2/2)
+    (3/276)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    3.6%
+  </span>
+  <span class="absValue">
+    (17/470)
   </span>
 </td>
 </tr>
   <tr>
-    <td class="name">Assigner$Typing</td>
+    <td class="name">ByteQuadsCanonicalizer$TableInfo</td>
 <td class="coverageStat">
   <span class="percent">
-    100%
+    66.7%
   </span>
   <span class="absValue">
-    (4/4)
+    (2/3)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    100%
+    57.9%
   </span>
   <span class="absValue">
-    (2/2)
-  </span>
-</td>
-<td class="coverageStat">
-  <span class="percent">
-    100%
-  </span>
-  <span class="absValue">
-    (7/7)
+    (11/19)
   </span>
 </td>
   </tr>
@@ -91,26 +91,26 @@ Current scope:     <a href="../../index.html">all classes</a>
   <td class="name"><strong>Total</strong></td>
 <td class="coverageStat">
   <span class="percent">
-    100%
+    11.3%
   </span>
   <span class="absValue">
-    (5/5)
+    (6/53)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    100%
+    1.1%
   </span>
   <span class="absValue">
-    (2/2)
+    (3/276)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    100%
+    5.7%
   </span>
   <span class="absValue">
-    (9/9)
+    (28/489)
   </span>
 </td>
 </tr>
@@ -126,71 +126,859 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;// (powered by FernFlower decompiler)
 &nbsp;//
 &nbsp;
-&nbsp;package net.bytebuddy.implementation.bytecode.assign;
+&nbsp;package com.fasterxml.jackson.core.sym;
 &nbsp;
-&nbsp;import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-&nbsp;import net.bytebuddy.description.type.TypeDescription;
-&nbsp;import net.bytebuddy.implementation.bytecode.StackManipulation;
-&nbsp;import net.bytebuddy.implementation.bytecode.StackManipulation.Illegal;
-&nbsp;import net.bytebuddy.implementation.bytecode.StackManipulation.Trivial;
-&nbsp;import net.bytebuddy.implementation.bytecode.assign.primitive.PrimitiveTypeAwareAssigner;
-&nbsp;import net.bytebuddy.implementation.bytecode.assign.primitive.VoidAwareAssigner;
-&nbsp;import net.bytebuddy.implementation.bytecode.assign.reference.GenericTypeAwareAssigner;
-&nbsp;import net.bytebuddy.implementation.bytecode.assign.reference.ReferenceTypeAwareAssigner;
+&nbsp;import com.fasterxml.jackson.core.JsonFactory.Feature;
+&nbsp;import com.fasterxml.jackson.core.exc.StreamConstraintsException;
+&nbsp;import com.fasterxml.jackson.core.util.InternCache;
+&nbsp;import java.util.Arrays;
+&nbsp;import java.util.concurrent.atomic.AtomicReference;
 &nbsp;
-&nbsp;@SuppressFBWarnings(
-&nbsp;    value = {&quot;IC_SUPERCLASS_USES_SUBCLASS_DURING_INITIALIZATION&quot;},
-&nbsp;    justification = &quot;Safe initialization is implied.&quot;
-&nbsp;)
-&nbsp;public interface Assigner {
-&nbsp;    Assigner DEFAULT = new VoidAwareAssigner(new PrimitiveTypeAwareAssigner(ReferenceTypeAwareAssigner.INSTANCE));
-&nbsp;    Assigner GENERICS_AWARE = new VoidAwareAssigner(new PrimitiveTypeAwareAssigner(GenericTypeAwareAssigner.INSTANCE));
+&nbsp;public final class ByteQuadsCanonicalizer {
+&nbsp;    private static final int DEFAULT_T_SIZE = 64;
+&nbsp;    private static final int MAX_T_SIZE = 65536;
+&nbsp;    private static final int MIN_HASH_SIZE = 16;
+&nbsp;    protected static final int MAX_ENTRIES_FOR_REUSE = 6000;
+&nbsp;    protected final ByteQuadsCanonicalizer _parent;
+&nbsp;    protected final AtomicReference&lt;TableInfo&gt; _tableInfo;
+&nbsp;    protected final int _seed;
+&nbsp;    protected final InternCache _interner;
+&nbsp;    protected final boolean _failOnDoS;
+&nbsp;    protected int[] _hashArea;
+&nbsp;    protected int _hashSize;
+&nbsp;    protected int _secondaryStart;
+&nbsp;    protected int _tertiaryStart;
+&nbsp;    protected int _tertiaryShift;
+&nbsp;    protected int _count;
+&nbsp;    protected String[] _names;
+&nbsp;    protected int _spilloverEnd;
+&nbsp;    protected int _longNameOffset;
+&nbsp;    protected boolean _hashShared;
+&nbsp;    private static final int MULT = 33;
+&nbsp;    private static final int MULT2 = 65599;
+&nbsp;    private static final int MULT3 = 31;
 &nbsp;
-&nbsp;    StackManipulation assign(TypeDescription.Generic var1, TypeDescription.Generic var2, Typing var3);
+&nbsp;    private ByteQuadsCanonicalizer(int sz, int seed) {
+&nbsp;        this._parent = null;
+&nbsp;        this._count = 0;
+&nbsp;        this._hashShared = true;
+&nbsp;        this._seed = seed;
+&nbsp;        this._interner = null;
+&nbsp;        this._failOnDoS = true;
+&nbsp;        if (sz &lt; 16) {
+&nbsp;            sz = 16;
+&nbsp;        } else if ((sz &amp; sz - 1) != 0) {
+&nbsp;            int curr;
+&nbsp;            for(curr = 16; curr &lt; sz; curr += curr) {
+&nbsp;            }
 &nbsp;
-&nbsp;    public static enum Typing {
-&nbsp;        STATIC(false),
-&nbsp;        DYNAMIC(true);
-&nbsp;
-&nbsp;        private final boolean dynamic;
-&nbsp;
-&nbsp;        private Typing(boolean dynamic) {
-&nbsp;            this.dynamic = dynamic;
+&nbsp;            sz = curr;
 &nbsp;        }
 &nbsp;
-<b class="fc">&nbsp;        public static Typing of(boolean dynamic) {</b>
-&nbsp;            return dynamic ? DYNAMIC : STATIC;
+&nbsp;        this._tableInfo = new AtomicReference(ByteQuadsCanonicalizer.TableInfo.createInitial(sz));
+&nbsp;    }
+&nbsp;
+&nbsp;    private ByteQuadsCanonicalizer(ByteQuadsCanonicalizer parent, int seed, TableInfo state, boolean intern, boolean failOnDoS) {
+&nbsp;        this._parent = parent;
+&nbsp;        this._seed = seed;
+&nbsp;        this._interner = intern ? InternCache.instance : null;
+&nbsp;        this._failOnDoS = failOnDoS;
+&nbsp;        this._tableInfo = null;
+&nbsp;        this._count = state.count;
+&nbsp;        this._hashSize = state.size;
+&nbsp;        this._secondaryStart = this._hashSize &lt;&lt; 2;
+&nbsp;        this._tertiaryStart = this._secondaryStart + (this._secondaryStart &gt;&gt; 1);
+&nbsp;        this._tertiaryShift = state.tertiaryShift;
+&nbsp;        this._hashArea = state.mainHash;
+&nbsp;        this._names = state.names;
+&nbsp;        this._spilloverEnd = state.spilloverEnd;
+&nbsp;        this._longNameOffset = state.longNameOffset;
+&nbsp;        this._hashShared = true;
+&nbsp;    }
+&nbsp;
+&nbsp;    private ByteQuadsCanonicalizer(TableInfo state) {
+&nbsp;        this._parent = null;
+&nbsp;        this._seed = 0;
+&nbsp;        this._interner = null;
+&nbsp;        this._failOnDoS = true;
+&nbsp;        this._tableInfo = null;
+&nbsp;        this._count = -1;
+&nbsp;        this._hashArea = state.mainHash;
+&nbsp;        this._names = state.names;
+&nbsp;        this._hashSize = state.size;
+&nbsp;        int end = this._hashArea.length;
+&nbsp;        this._secondaryStart = end;
+&nbsp;        this._tertiaryStart = end;
+&nbsp;        this._tertiaryShift = 1;
+&nbsp;        this._spilloverEnd = end;
+&nbsp;        this._longNameOffset = end;
+&nbsp;        this._hashShared = true;
+&nbsp;    }
+&nbsp;
+&nbsp;    public static ByteQuadsCanonicalizer createRoot() {
+&nbsp;        long now = System.currentTimeMillis();
+&nbsp;        int seed = (int)now + (int)(now &gt;&gt;&gt; 32) | 1;
+&nbsp;        return createRoot(seed);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected static ByteQuadsCanonicalizer createRoot(int seed) {
+&nbsp;        return new ByteQuadsCanonicalizer(64, seed);
+&nbsp;    }
+&nbsp;
+&nbsp;    public ByteQuadsCanonicalizer makeChild(int flags) {
+&nbsp;        return new ByteQuadsCanonicalizer(this, this._seed, (TableInfo)this._tableInfo.get(), Feature.INTERN_FIELD_NAMES.enabledIn(flags), Feature.FAIL_ON_SYMBOL_HASH_OVERFLOW.enabledIn(flags));
+&nbsp;    }
+&nbsp;
+&nbsp;    public ByteQuadsCanonicalizer makeChildOrPlaceholder(int flags) {
+&nbsp;        return Feature.CANONICALIZE_FIELD_NAMES.enabledIn(flags) ? new ByteQuadsCanonicalizer(this, this._seed, (TableInfo)this._tableInfo.get(), Feature.INTERN_FIELD_NAMES.enabledIn(flags), Feature.FAIL_ON_SYMBOL_HASH_OVERFLOW.enabledIn(flags)) : new ByteQuadsCanonicalizer((TableInfo)this._tableInfo.get());
+&nbsp;    }
+&nbsp;
+&nbsp;    public void release() {
+&nbsp;        if (this._parent != null &amp;&amp; this.maybeDirty()) {
+&nbsp;            this._parent.mergeChild(new TableInfo(this));
+&nbsp;            this._hashShared = true;
 &nbsp;        }
 &nbsp;
-&nbsp;        public boolean isDynamic() {
-<b class="fc">&nbsp;            return this.dynamic;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void mergeChild(TableInfo childState) {
+&nbsp;        int childCount = childState.count;
+&nbsp;        TableInfo currState = (TableInfo)this._tableInfo.get();
+&nbsp;        if (childCount != currState.count) {
+&nbsp;            if (childCount &gt; 6000) {
+&nbsp;                childState = ByteQuadsCanonicalizer.TableInfo.createInitial(64);
+&nbsp;            }
+&nbsp;
+&nbsp;            this._tableInfo.compareAndSet(currState, childState);
 &nbsp;        }
 &nbsp;    }
 &nbsp;
-&nbsp;    public static enum EqualTypesOnly implements Assigner {
-&nbsp;        GENERIC {
-&nbsp;            public StackManipulation assign(TypeDescription.Generic source, TypeDescription.Generic target, Typing typing) {
-&nbsp;                return (StackManipulation)(source.equals(target) ? Trivial.INSTANCE : Illegal.INSTANCE);
-&nbsp;            }
-&nbsp;        },
-&nbsp;        ERASURE {
-&nbsp;            public StackManipulation assign(TypeDescription.Generic source, TypeDescription.Generic target, Typing typing) {
-&nbsp;                return (StackManipulation)(source.asErasure().equals(target.asErasure()) ? Trivial.INSTANCE : Illegal.INSTANCE);
-&nbsp;            }
-&nbsp;        };
-&nbsp;
-&nbsp;        private EqualTypesOnly() {
-<b class="fc">&nbsp;        }</b>
+&nbsp;    public int size() {
+&nbsp;        return this._tableInfo != null ? ((TableInfo)this._tableInfo.get()).count : this._count;
 &nbsp;    }
 &nbsp;
-&nbsp;    public static enum Refusing implements Assigner {
-&nbsp;        INSTANCE;
+&nbsp;    public int bucketCount() {
+&nbsp;        return this._hashSize;
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean maybeDirty() {
+&nbsp;        return !this._hashShared;
+&nbsp;    }
+&nbsp;
+&nbsp;    public int hashSeed() {
+&nbsp;        return this._seed;
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isCanonicalizing() {
+&nbsp;        return this._parent != null;
+&nbsp;    }
+&nbsp;
+&nbsp;    public int primaryCount() {
+&nbsp;        int count = 0;
+&nbsp;        int offset = 3;
+&nbsp;
+&nbsp;        for(int end = this._secondaryStart; offset &lt; end; offset += 4) {
+&nbsp;            if (this._hashArea[offset] != 0) {
+&nbsp;                ++count;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return count;
+&nbsp;    }
+&nbsp;
+&nbsp;    public int secondaryCount() {
+&nbsp;        int count = 0;
+&nbsp;        int offset = this._secondaryStart + 3;
+&nbsp;
+&nbsp;        for(int end = this._tertiaryStart; offset &lt; end; offset += 4) {
+&nbsp;            if (this._hashArea[offset] != 0) {
+&nbsp;                ++count;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return count;
+&nbsp;    }
+&nbsp;
+&nbsp;    public int tertiaryCount() {
+&nbsp;        int count = 0;
+&nbsp;        int offset = this._tertiaryStart + 3;
+&nbsp;
+&nbsp;        for(int end = offset + this._hashSize; offset &lt; end; offset += 4) {
+&nbsp;            if (this._hashArea[offset] != 0) {
+&nbsp;                ++count;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return count;
+&nbsp;    }
+&nbsp;
+&nbsp;    public int spilloverCount() {
+&nbsp;        return this._spilloverEnd - this._spilloverStart() &gt;&gt; 2;
+&nbsp;    }
+&nbsp;
+&nbsp;    public int totalCount() {
+&nbsp;        int count = 0;
+&nbsp;        int offset = 3;
+&nbsp;
+&nbsp;        for(int end = this._hashSize &lt;&lt; 3; offset &lt; end; offset += 4) {
+&nbsp;            if (this._hashArea[offset] != 0) {
+&nbsp;                ++count;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return count;
+&nbsp;    }
+&nbsp;
+&nbsp;    public String toString() {
+&nbsp;        int pri = this.primaryCount();
+&nbsp;        int sec = this.secondaryCount();
+&nbsp;        int tert = this.tertiaryCount();
+&nbsp;        int spill = this.spilloverCount();
+&nbsp;        int total = this.totalCount();
+&nbsp;        return String.format(&quot;[%s: size=%d, hashSize=%d, %d/%d/%d/%d pri/sec/ter/spill (=%s), total:%d]&quot;, this.getClass().getName(), this._count, this._hashSize, pri, sec, tert, spill, pri + sec + tert + spill, total);
+&nbsp;    }
+&nbsp;
+&nbsp;    public String findName(int q1) {
+&nbsp;        int offset = this._calcOffset(this.calcHash(q1));
+&nbsp;        int[] hashArea = this._hashArea;
+&nbsp;        int len = hashArea[offset + 3];
+&nbsp;        if (len == 1) {
+&nbsp;            if (hashArea[offset] == q1) {
+&nbsp;                return this._names[offset &gt;&gt; 2];
+&nbsp;            }
+&nbsp;        } else if (len == 0) {
+<b class="fc">&nbsp;            return null;</b>
+&nbsp;        }
 <b class="fc">&nbsp;</b>
-&nbsp;        private Refusing() {
+<b class="fc">&nbsp;        int offset2 = this._secondaryStart + (offset &gt;&gt; 3 &lt;&lt; 2);</b>
+&nbsp;        len = hashArea[offset2 + 3];
+&nbsp;        if (len == 1) {
+<b class="fc">&nbsp;            if (hashArea[offset2] == q1) {</b>
+<b class="fc">&nbsp;                return this._names[offset2 &gt;&gt; 2];</b>
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;        } else if (len == 0) {</b>
+&nbsp;            return null;
+<b class="pc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return this._findSecondary(offset, q1);
+&nbsp;    }
+&nbsp;
+<b class="pc">&nbsp;    public String findName(int q1, int q2) {</b>
+<b class="nc">&nbsp;        int offset = this._calcOffset(this.calcHash(q1, q2));</b>
+<b class="nc">&nbsp;        int[] hashArea = this._hashArea;</b>
+<b class="nc">&nbsp;        int len = hashArea[offset + 3];</b>
+&nbsp;        if (len == 2) {
+<b class="nc">&nbsp;            if (q1 == hashArea[offset] &amp;&amp; q2 == hashArea[offset + 1]) {</b>
+&nbsp;                return this._names[offset &gt;&gt; 2];
+&nbsp;            }
+<b class="fc">&nbsp;        } else if (len == 0) {</b>
+&nbsp;            return null;
 &nbsp;        }
 &nbsp;
-&nbsp;        public StackManipulation assign(TypeDescription.Generic source, TypeDescription.Generic target, Typing typing) {
-<b class="fc">&nbsp;            return Illegal.INSTANCE;</b>
+&nbsp;        int offset2 = this._secondaryStart + (offset &gt;&gt; 3 &lt;&lt; 2);
+&nbsp;        len = hashArea[offset2 + 3];
+&nbsp;        if (len == 2) {
+&nbsp;            if (q1 == hashArea[offset2] &amp;&amp; q2 == hashArea[offset2 + 1]) {
+&nbsp;                return this._names[offset2 &gt;&gt; 2];
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        } else if (len == 0) {</b>
+<b class="nc">&nbsp;            return null;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return this._findSecondary(offset, q1, q2);</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public String findName(int q1, int q2, int q3) {</b>
+<b class="nc">&nbsp;        int offset = this._calcOffset(this.calcHash(q1, q2, q3));</b>
+<b class="nc">&nbsp;        int[] hashArea = this._hashArea;</b>
+<b class="nc">&nbsp;        int len = hashArea[offset + 3];</b>
+<b class="nc">&nbsp;        if (len == 3) {</b>
+&nbsp;            if (q1 == hashArea[offset] &amp;&amp; hashArea[offset + 1] == q2 &amp;&amp; hashArea[offset + 2] == q3) {
+<b class="nc">&nbsp;                return this._names[offset &gt;&gt; 2];</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        } else if (len == 0) {
+<b class="nc">&nbsp;            return null;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        int offset2 = this._secondaryStart + (offset &gt;&gt; 3 &lt;&lt; 2);
+<b class="nc">&nbsp;        len = hashArea[offset2 + 3];</b>
+&nbsp;        if (len == 3) {
+&nbsp;            if (q1 == hashArea[offset2] &amp;&amp; hashArea[offset2 + 1] == q2 &amp;&amp; hashArea[offset2 + 2] == q3) {
+&nbsp;                return this._names[offset2 &gt;&gt; 2];
+&nbsp;            }
+&nbsp;        } else if (len == 0) {
+&nbsp;            return null;
+&nbsp;        }
+&nbsp;
+&nbsp;        return this._findSecondary(offset, q1, q2, q3);
+&nbsp;    }
+&nbsp;
+&nbsp;    public String findName(int[] q, int qlen) {
+<b class="nc">&nbsp;        if (qlen &lt; 4) {</b>
+<b class="nc">&nbsp;            switch (qlen) {</b>
+<b class="nc">&nbsp;                case 1:</b>
+<b class="nc">&nbsp;                    return this.findName(q[0]);</b>
+<b class="nc">&nbsp;                case 2:</b>
+<b class="nc">&nbsp;                    return this.findName(q[0], q[1]);</b>
+&nbsp;                case 3:
+&nbsp;                    return this.findName(q[0], q[1], q[2]);
+&nbsp;                default:
+&nbsp;                    return &quot;&quot;;
+&nbsp;            }
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            int hash = this.calcHash(q, qlen);
+<b class="nc">&nbsp;            int offset = this._calcOffset(hash);</b>
+<b class="nc">&nbsp;            int[] hashArea = this._hashArea;</b>
+&nbsp;            int len = hashArea[offset + 3];
+<b class="nc">&nbsp;            if (hash == hashArea[offset] &amp;&amp; len == qlen &amp;&amp; this._verifyLongName(q, qlen, hashArea[offset + 1])) {</b>
+&nbsp;                return this._names[offset &gt;&gt; 2];
+&nbsp;            } else if (len == 0) {
+&nbsp;                return null;
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                int offset2 = this._secondaryStart + (offset &gt;&gt; 3 &lt;&lt; 2);</b>
+<b class="nc">&nbsp;                int len2 = hashArea[offset2 + 3];</b>
+<b class="nc">&nbsp;                return hash == hashArea[offset2] &amp;&amp; len2 == qlen &amp;&amp; this._verifyLongName(q, qlen, hashArea[offset2 + 1]) ? this._names[offset2 &gt;&gt; 2] : this._findSecondary(offset, hash, q, qlen);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private final int _calcOffset(int hash) {
+<b class="nc">&nbsp;        int ix = hash &amp; this._hashSize - 1;</b>
+&nbsp;        return ix &lt;&lt; 2;
+&nbsp;    }
+&nbsp;
+&nbsp;    private String _findSecondary(int origOffset, int q1) {
+&nbsp;        int offset = this._tertiaryStart + (origOffset &gt;&gt; this._tertiaryShift + 2 &lt;&lt; this._tertiaryShift);
+&nbsp;        int[] hashArea = this._hashArea;
+&nbsp;        int bucketSize = 1 &lt;&lt; this._tertiaryShift;
+&nbsp;
+&nbsp;        for(int end = offset + bucketSize; offset &lt; end; offset += 4) {
+&nbsp;            int len = hashArea[offset + 3];
+&nbsp;            if (q1 == hashArea[offset] &amp;&amp; 1 == len) {
+&nbsp;                return this._names[offset &gt;&gt; 2];
+&nbsp;            }
+&nbsp;
+&nbsp;            if (len == 0) {
+&nbsp;                return null;
+&nbsp;            }
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+<b class="fc">&nbsp;        for(int var8 = this._spilloverStart(); var8 &lt; this._spilloverEnd; var8 += 4) {</b>
+<b class="fc">&nbsp;            if (q1 == hashArea[var8] &amp;&amp; 1 == hashArea[var8 + 3]) {</b>
+&nbsp;                return this._names[var8 &gt;&gt; 2];
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return null;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private String _findSecondary(int origOffset, int q1, int q2) {
+&nbsp;        int offset = this._tertiaryStart + (origOffset &gt;&gt; this._tertiaryShift + 2 &lt;&lt; this._tertiaryShift);
+&nbsp;        int[] hashArea = this._hashArea;
+&nbsp;        int bucketSize = 1 &lt;&lt; this._tertiaryShift;
+&nbsp;
+&nbsp;        for(int end = offset + bucketSize; offset &lt; end; offset += 4) {
+&nbsp;            int len = hashArea[offset + 3];
+&nbsp;            if (q1 == hashArea[offset] &amp;&amp; q2 == hashArea[offset + 1] &amp;&amp; 2 == len) {
+&nbsp;                return this._names[offset &gt;&gt; 2];
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            if (len == 0) {</b>
+<b class="nc">&nbsp;                return null;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        for(int var9 = this._spilloverStart(); var9 &lt; this._spilloverEnd; var9 += 4) {
+&nbsp;            if (q1 == hashArea[var9] &amp;&amp; q2 == hashArea[var9 + 1] &amp;&amp; 2 == hashArea[var9 + 3]) {
+&nbsp;                return this._names[var9 &gt;&gt; 2];
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return null;
+&nbsp;    }
+&nbsp;
+&nbsp;    private String _findSecondary(int origOffset, int q1, int q2, int q3) {
+&nbsp;        int offset = this._tertiaryStart + (origOffset &gt;&gt; this._tertiaryShift + 2 &lt;&lt; this._tertiaryShift);
+&nbsp;        int[] hashArea = this._hashArea;
+&nbsp;        int bucketSize = 1 &lt;&lt; this._tertiaryShift;
+<b class="nc">&nbsp;</b>
+&nbsp;        for(int end = offset + bucketSize; offset &lt; end; offset += 4) {
+<b class="nc">&nbsp;            int len = hashArea[offset + 3];</b>
+<b class="nc">&nbsp;            if (q1 == hashArea[offset] &amp;&amp; q2 == hashArea[offset + 1] &amp;&amp; q3 == hashArea[offset + 2] &amp;&amp; 3 == len) {</b>
+<b class="nc">&nbsp;                return this._names[offset &gt;&gt; 2];</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            if (len == 0) {</b>
+&nbsp;                return null;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        for(int var10 = this._spilloverStart(); var10 &lt; this._spilloverEnd; var10 += 4) {
+&nbsp;            if (q1 == hashArea[var10] &amp;&amp; q2 == hashArea[var10 + 1] &amp;&amp; q3 == hashArea[var10 + 2] &amp;&amp; 3 == hashArea[var10 + 3]) {
+&nbsp;                return this._names[var10 &gt;&gt; 2];
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return null;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private String _findSecondary(int origOffset, int hash, int[] q, int qlen) {</b>
+&nbsp;        int offset = this._tertiaryStart + (origOffset &gt;&gt; this._tertiaryShift + 2 &lt;&lt; this._tertiaryShift);
+&nbsp;        int[] hashArea = this._hashArea;
+<b class="nc">&nbsp;        int bucketSize = 1 &lt;&lt; this._tertiaryShift;</b>
+&nbsp;
+&nbsp;        for(int end = offset + bucketSize; offset &lt; end; offset += 4) {
+&nbsp;            int len = hashArea[offset + 3];
+&nbsp;            if (hash == hashArea[offset] &amp;&amp; qlen == len &amp;&amp; this._verifyLongName(q, qlen, hashArea[offset + 1])) {
+&nbsp;                return this._names[offset &gt;&gt; 2];
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            if (len == 0) {
+&nbsp;                return null;
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        for(int var10 = this._spilloverStart(); var10 &lt; this._spilloverEnd; var10 += 4) {
+&nbsp;            if (hash == hashArea[var10] &amp;&amp; qlen == hashArea[var10 + 3] &amp;&amp; this._verifyLongName(q, qlen, hashArea[var10 + 1])) {
+&nbsp;                return this._names[var10 &gt;&gt; 2];
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private boolean _verifyLongName(int[] q, int qlen, int spillOffset) {
+<b class="nc">&nbsp;        int[] hashArea = this._hashArea;</b>
+&nbsp;        int ix = 0;
+&nbsp;        switch (qlen) {
+&nbsp;            case 8:
+&nbsp;                if (q[ix++] != hashArea[spillOffset++]) {
+&nbsp;                    return false;
+&nbsp;                }
+&nbsp;            case 7:
+&nbsp;                if (q[ix++] != hashArea[spillOffset++]) {
+&nbsp;                    return false;
+&nbsp;                }
+&nbsp;            case 6:
+&nbsp;                if (q[ix++] != hashArea[spillOffset++]) {
+&nbsp;                    return false;
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            case 5:</b>
+&nbsp;                if (q[ix++] != hashArea[spillOffset++]) {
+&nbsp;                    return false;
+<b class="nc">&nbsp;                }</b>
+&nbsp;            case 4:
+&nbsp;                if (q[ix++] != hashArea[spillOffset++]) {
+&nbsp;                    return false;
+&nbsp;                } else if (q[ix++] != hashArea[spillOffset++]) {
+&nbsp;                    return false;
+<b class="nc">&nbsp;                } else if (q[ix++] != hashArea[spillOffset++]) {</b>
+&nbsp;                    return false;
+&nbsp;                } else {
+&nbsp;                    if (q[ix++] != hashArea[spillOffset++]) {
+&nbsp;                        return false;
+&nbsp;                    }
+&nbsp;
+&nbsp;                    return true;
+&nbsp;                }
+<b class="nc">&nbsp;            default:</b>
+&nbsp;                return this._verifyLongName2(q, qlen, spillOffset);
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean _verifyLongName2(int[] q, int qlen, int spillOffset) {
+&nbsp;        int ix = 0;
+&nbsp;
+&nbsp;        while(q[ix++] == this._hashArea[spillOffset++]) {
+&nbsp;            if (ix &gt;= qlen) {
+&nbsp;                return true;
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return false;
+&nbsp;    }
+&nbsp;
+&nbsp;    public String addName(String name, int q1) throws StreamConstraintsException {
+&nbsp;        this._verifySharing();
+&nbsp;        if (this._interner != null) {
+&nbsp;            name = this._interner.intern(name);
+&nbsp;        }
+&nbsp;
+&nbsp;        int offset = this._findOffsetForAdd(this.calcHash(q1));
+<b class="nc">&nbsp;        this._hashArea[offset] = q1;</b>
+<b class="nc">&nbsp;        this._hashArea[offset + 3] = 1;</b>
+<b class="nc">&nbsp;        this._names[offset &gt;&gt; 2] = name;</b>
+<b class="nc">&nbsp;        ++this._count;</b>
+&nbsp;        return name;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public String addName(String name, int q1, int q2) throws StreamConstraintsException {
+&nbsp;        this._verifySharing();
+&nbsp;        if (this._interner != null) {
+&nbsp;            name = this._interner.intern(name);
+&nbsp;        }
+&nbsp;
+&nbsp;        int hash = this.calcHash(q1, q2);
+&nbsp;        int offset = this._findOffsetForAdd(hash);
+&nbsp;        this._hashArea[offset] = q1;
+<b class="nc">&nbsp;        this._hashArea[offset + 1] = q2;</b>
+<b class="nc">&nbsp;        this._hashArea[offset + 3] = 2;</b>
+<b class="nc">&nbsp;        this._names[offset &gt;&gt; 2] = name;</b>
+<b class="nc">&nbsp;        ++this._count;</b>
+<b class="nc">&nbsp;        return name;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public String addName(String name, int q1, int q2, int q3) throws StreamConstraintsException {</b>
+&nbsp;        this._verifySharing();
+&nbsp;        if (this._interner != null) {
+&nbsp;            name = this._interner.intern(name);
+&nbsp;        }
+&nbsp;
+&nbsp;        int offset = this._findOffsetForAdd(this.calcHash(q1, q2, q3));
+&nbsp;        this._hashArea[offset] = q1;
+&nbsp;        this._hashArea[offset + 1] = q2;
+&nbsp;        this._hashArea[offset + 2] = q3;
+<b class="nc">&nbsp;        this._hashArea[offset + 3] = 3;</b>
+<b class="nc">&nbsp;        this._names[offset &gt;&gt; 2] = name;</b>
+<b class="nc">&nbsp;        ++this._count;</b>
+<b class="nc">&nbsp;        return name;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public String addName(String name, int[] q, int qlen) throws StreamConstraintsException {
+<b class="nc">&nbsp;        this._verifySharing();</b>
+&nbsp;        if (this._interner != null) {
+&nbsp;            name = this._interner.intern(name);
+&nbsp;        }
+&nbsp;
+&nbsp;        int offset;
+&nbsp;        switch (qlen) {
+&nbsp;            case 1:
+&nbsp;                offset = this._findOffsetForAdd(this.calcHash(q[0]));
+&nbsp;                this._hashArea[offset] = q[0];
+&nbsp;                this._hashArea[offset + 3] = 1;
+<b class="nc">&nbsp;                break;</b>
+&nbsp;            case 2:
+&nbsp;                offset = this._findOffsetForAdd(this.calcHash(q[0], q[1]));
+&nbsp;                this._hashArea[offset] = q[0];
+&nbsp;                this._hashArea[offset + 1] = q[1];
+<b class="nc">&nbsp;                this._hashArea[offset + 3] = 2;</b>
+<b class="nc">&nbsp;                break;</b>
+<b class="nc">&nbsp;            case 3:</b>
+<b class="nc">&nbsp;                offset = this._findOffsetForAdd(this.calcHash(q[0], q[1], q[2]));</b>
+&nbsp;                this._hashArea[offset] = q[0];
+&nbsp;                this._hashArea[offset + 1] = q[1];
+<b class="nc">&nbsp;                this._hashArea[offset + 2] = q[2];</b>
+&nbsp;                this._hashArea[offset + 3] = 3;
+&nbsp;                break;
+&nbsp;            default:
+&nbsp;                int hash = this.calcHash(q, qlen);
+<b class="nc">&nbsp;                offset = this._findOffsetForAdd(hash);</b>
+<b class="nc">&nbsp;                this._hashArea[offset] = hash;</b>
+<b class="nc">&nbsp;                int longStart = this._appendLongName(q, qlen);</b>
+<b class="nc">&nbsp;                this._hashArea[offset + 1] = longStart;</b>
+<b class="nc">&nbsp;                this._hashArea[offset + 3] = qlen;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        this._names[offset &gt;&gt; 2] = name;</b>
+&nbsp;        ++this._count;
+&nbsp;        return name;
+&nbsp;    }
+&nbsp;
+&nbsp;    private void _verifySharing() {
+&nbsp;        if (this._hashShared) {
+&nbsp;            if (this._parent == null) {
+&nbsp;                if (this._count == 0) {
+&nbsp;                    throw new IllegalStateException(&quot;Internal error: Cannot add names to Root symbol table&quot;);
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+&nbsp;                throw new IllegalStateException(&quot;Internal error: Cannot add names to Placeholder symbol table&quot;);
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            this._hashArea = Arrays.copyOf(this._hashArea, this._hashArea.length);</b>
+&nbsp;            this._names = (String[])Arrays.copyOf(this._names, this._names.length);
+<b class="nc">&nbsp;            this._hashShared = false;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private int _findOffsetForAdd(int hash) throws StreamConstraintsException {</b>
+&nbsp;        int offset = this._calcOffset(hash);
+&nbsp;        int[] hashArea = this._hashArea;
+<b class="nc">&nbsp;        if (hashArea[offset + 3] == 0) {</b>
+&nbsp;            return offset;
+<b class="nc">&nbsp;        } else if (this._checkNeedForRehash()) {</b>
+&nbsp;            return this._resizeAndFindOffsetForAdd(hash);
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            int offset2 = this._secondaryStart + (offset &gt;&gt; 3 &lt;&lt; 2);</b>
+<b class="nc">&nbsp;            if (hashArea[offset2 + 3] == 0) {</b>
+&nbsp;                return offset2;
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                offset2 = this._tertiaryStart + (offset &gt;&gt; this._tertiaryShift + 2 &lt;&lt; this._tertiaryShift);</b>
+&nbsp;                int bucketSize = 1 &lt;&lt; this._tertiaryShift;
+&nbsp;
+&nbsp;                for(int end = offset2 + bucketSize; offset2 &lt; end; offset2 += 4) {
+<b class="nc">&nbsp;                    if (hashArea[offset2 + 3] == 0) {</b>
+&nbsp;                        return offset2;
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                offset = this._spilloverEnd;</b>
+&nbsp;                this._spilloverEnd += 4;
+<b class="nc">&nbsp;                int end = this._hashSize &lt;&lt; 3;</b>
+&nbsp;                if (this._spilloverEnd &gt;= end) {
+<b class="nc">&nbsp;                    if (this._failOnDoS) {</b>
+&nbsp;                        this._reportTooManyCollisions();
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                    return this._resizeAndFindOffsetForAdd(hash);</b>
+&nbsp;                } else {
+<b class="nc">&nbsp;                    return offset;</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private int _resizeAndFindOffsetForAdd(int hash) throws StreamConstraintsException {</b>
+&nbsp;        this.rehash();
+<b class="nc">&nbsp;        int offset = this._calcOffset(hash);</b>
+<b class="nc">&nbsp;        int[] hashArea = this._hashArea;</b>
+<b class="nc">&nbsp;        if (hashArea[offset + 3] == 0) {</b>
+&nbsp;            return offset;
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            int offset2 = this._secondaryStart + (offset &gt;&gt; 3 &lt;&lt; 2);</b>
+&nbsp;            if (hashArea[offset2 + 3] == 0) {
+<b class="nc">&nbsp;                return offset2;</b>
+&nbsp;            } else {
+&nbsp;                offset2 = this._tertiaryStart + (offset &gt;&gt; this._tertiaryShift + 2 &lt;&lt; this._tertiaryShift);
+&nbsp;                int bucketSize = 1 &lt;&lt; this._tertiaryShift;
+&nbsp;
+<b class="nc">&nbsp;                for(int end = offset2 + bucketSize; offset2 &lt; end; offset2 += 4) {</b>
+<b class="nc">&nbsp;                    if (hashArea[offset2 + 3] == 0) {</b>
+<b class="nc">&nbsp;                        return offset2;</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                offset = this._spilloverEnd;</b>
+&nbsp;                this._spilloverEnd += 4;
+<b class="nc">&nbsp;                return offset;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    static int multiplyByFourFifths(int number) {
+<b class="nc">&nbsp;        return (int)((long)number * 3435973837L &gt;&gt;&gt; 32);</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private boolean _checkNeedForRehash() {</b>
+<b class="nc">&nbsp;        if (this._count &gt; this._hashSize &gt;&gt; 1) {</b>
+&nbsp;            int spillCount = this._spilloverEnd - this._spilloverStart() &gt;&gt; 2;
+<b class="nc">&nbsp;            if (spillCount &gt; 1 + this._count &gt;&gt; 7 || this._count &gt; multiplyByFourFifths(this._hashSize)) {</b>
+<b class="nc">&nbsp;                return true;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return false;
+&nbsp;    }
+&nbsp;
+&nbsp;    private int _appendLongName(int[] quads, int qlen) {
+&nbsp;        int start = this._longNameOffset;
+&nbsp;        if (start + qlen &gt; this._hashArea.length) {
+&nbsp;            int toAdd = start + qlen - this._hashArea.length;
+<b class="nc">&nbsp;            int minAdd = Math.min(4096, this._hashSize);</b>
+<b class="nc">&nbsp;            int newSize = this._hashArea.length + Math.max(toAdd, minAdd);</b>
+&nbsp;            this._hashArea = Arrays.copyOf(this._hashArea, newSize);
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        System.arraycopy(quads, 0, this._hashArea, start, qlen);</b>
+&nbsp;        this._longNameOffset += qlen;
+<b class="nc">&nbsp;        return start;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public int calcHash(int q1) {
+&nbsp;        int hash = q1 ^ this._seed;
+<b class="nc">&nbsp;        hash += hash &gt;&gt;&gt; 16;</b>
+<b class="nc">&nbsp;        hash ^= hash &lt;&lt; 3;</b>
+&nbsp;        hash += hash &gt;&gt;&gt; 12;
+<b class="nc">&nbsp;        return hash;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public int calcHash(int q1, int q2) {
+<b class="nc">&nbsp;        int hash = q1 + (q1 &gt;&gt;&gt; 15);</b>
+&nbsp;        hash ^= hash &gt;&gt;&gt; 9;
+<b class="nc">&nbsp;        hash += q2 * 33;</b>
+<b class="nc">&nbsp;        hash ^= this._seed;</b>
+&nbsp;        hash += hash &gt;&gt;&gt; 16;
+&nbsp;        hash ^= hash &gt;&gt;&gt; 4;
+<b class="nc">&nbsp;        hash += hash &lt;&lt; 3;</b>
+<b class="nc">&nbsp;        return hash;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public int calcHash(int q1, int q2, int q3) {</b>
+&nbsp;        int hash = q1 ^ this._seed;
+<b class="nc">&nbsp;        hash += hash &gt;&gt;&gt; 9;</b>
+<b class="nc">&nbsp;        hash *= 31;</b>
+<b class="nc">&nbsp;        hash += q2;</b>
+<b class="nc">&nbsp;        hash *= 33;</b>
+&nbsp;        hash += hash &gt;&gt;&gt; 15;
+&nbsp;        hash ^= q3;
+<b class="nc">&nbsp;        hash += hash &gt;&gt;&gt; 4;</b>
+&nbsp;        hash += hash &gt;&gt;&gt; 15;
+&nbsp;        hash ^= hash &lt;&lt; 9;
+&nbsp;        return hash;
+&nbsp;    }
+&nbsp;
+&nbsp;    public int calcHash(int[] q, int qlen) {
+&nbsp;        if (qlen &lt; 4) {
+<b class="nc">&nbsp;            throw new IllegalArgumentException(&quot;qlen is too short, needs to be at least 4&quot;);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            int hash = q[0] ^ this._seed;</b>
+&nbsp;            hash += hash &gt;&gt;&gt; 9;
+&nbsp;            hash += q[1];
+&nbsp;            hash += hash &gt;&gt;&gt; 15;
+&nbsp;            hash *= 33;
+&nbsp;            hash ^= q[2];
+&nbsp;            hash += hash &gt;&gt;&gt; 4;
+&nbsp;
+&nbsp;            for(int i = 3; i &lt; qlen; ++i) {
+&nbsp;                int next = q[i];
+&nbsp;                next ^= next &gt;&gt; 21;
+&nbsp;                hash += next;
+&nbsp;            }
+&nbsp;
+&nbsp;            hash *= 65599;
+<b class="nc">&nbsp;            hash += hash &gt;&gt;&gt; 19;</b>
+<b class="nc">&nbsp;            hash ^= hash &lt;&lt; 5;</b>
+<b class="nc">&nbsp;            return hash;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private void rehash() throws StreamConstraintsException {</b>
+&nbsp;        this._hashShared = false;
+<b class="nc">&nbsp;        int[] oldHashArea = this._hashArea;</b>
+<b class="nc">&nbsp;        String[] oldNames = this._names;</b>
+&nbsp;        int oldSize = this._hashSize;
+&nbsp;        int oldCount = this._count;
+&nbsp;        int newSize = oldSize + oldSize;
+&nbsp;        int oldEnd = this._spilloverEnd;
+&nbsp;        if (newSize &gt; 65536) {
+<b class="nc">&nbsp;            this.nukeSymbols(true);</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            this._hashArea = new int[oldHashArea.length + (oldSize &lt;&lt; 3)];</b>
+&nbsp;            this._hashSize = newSize;
+&nbsp;            this._secondaryStart = newSize &lt;&lt; 2;
+<b class="nc">&nbsp;            this._tertiaryStart = this._secondaryStart + (this._secondaryStart &gt;&gt; 1);</b>
+&nbsp;            this._tertiaryShift = _calcTertiaryShift(newSize);
+&nbsp;            this._names = new String[oldNames.length &lt;&lt; 1];
+&nbsp;            this.nukeSymbols(false);
+&nbsp;            int copyCount = 0;
+<b class="nc">&nbsp;            int[] q = new int[16];</b>
+<b class="nc">&nbsp;            int offset = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int end = oldEnd; offset &lt; end; offset += 4) {</b>
+<b class="nc">&nbsp;                int len = oldHashArea[offset + 3];</b>
+<b class="nc">&nbsp;                if (len != 0) {</b>
+<b class="nc">&nbsp;                    ++copyCount;</b>
+<b class="nc">&nbsp;                    String name = oldNames[offset &gt;&gt; 2];</b>
+&nbsp;                    switch (len) {
+<b class="nc">&nbsp;                        case 1:</b>
+<b class="nc">&nbsp;                            q[0] = oldHashArea[offset];</b>
+&nbsp;                            this.addName(name, q, 1);
+&nbsp;                            break;
+<b class="nc">&nbsp;                        case 2:</b>
+<b class="nc">&nbsp;                            q[0] = oldHashArea[offset];</b>
+<b class="nc">&nbsp;                            q[1] = oldHashArea[offset + 1];</b>
+&nbsp;                            this.addName(name, q, 2);
+&nbsp;                            break;
+<b class="nc">&nbsp;                        case 3:</b>
+&nbsp;                            q[0] = oldHashArea[offset];
+&nbsp;                            q[1] = oldHashArea[offset + 1];
+&nbsp;                            q[2] = oldHashArea[offset + 2];
+&nbsp;                            this.addName(name, q, 3);
+<b class="nc">&nbsp;                            break;</b>
+<b class="nc">&nbsp;                        default:</b>
+&nbsp;                            if (len &gt; q.length) {
+<b class="nc">&nbsp;                                q = new int[len];</b>
+<b class="nc">&nbsp;                            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                            int qoff = oldHashArea[offset + 1];</b>
+<b class="nc">&nbsp;                            System.arraycopy(oldHashArea, qoff, q, 0, len);</b>
+&nbsp;                            this.addName(name, q, len);
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if (copyCount != oldCount) {</b>
+<b class="nc">&nbsp;                throw new IllegalStateException(&quot;Internal error: Failed rehash(), old count=&quot; + oldCount + &quot;, copyCount=&quot; + copyCount);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private void nukeSymbols(boolean fill) {</b>
+&nbsp;        this._count = 0;
+&nbsp;        this._spilloverEnd = this._spilloverStart();
+&nbsp;        this._longNameOffset = this._hashSize &lt;&lt; 3;
+&nbsp;        if (fill) {
+<b class="nc">&nbsp;            Arrays.fill(this._hashArea, 0);</b>
+<b class="nc">&nbsp;            Arrays.fill(this._names, (Object)null);</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private final int _spilloverStart() {</b>
+<b class="nc">&nbsp;        int offset = this._hashSize;</b>
+<b class="nc">&nbsp;        return (offset &lt;&lt; 3) - offset;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected void _reportTooManyCollisions() throws StreamConstraintsException {</b>
+<b class="nc">&nbsp;        if (this._hashSize &gt; 1024) {</b>
+&nbsp;            throw new StreamConstraintsException(&quot;Spill-over slots in symbol table with &quot; + this._count + &quot; entries, hash area of &quot; + this._hashSize + &quot; slots is now full (all &quot; + (this._hashSize &gt;&gt; 3) + &quot; slots -- suspect a DoS attack based on hash collisions. You can disable the check via `JsonFactory.Feature.FAIL_ON_SYMBOL_HASH_OVERFLOW`&quot;);
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    static int _calcTertiaryShift(int primarySlots) {</b>
+<b class="nc">&nbsp;        int tertSlots = primarySlots &gt;&gt; 2;</b>
+&nbsp;        if (tertSlots &lt; 64) {
+&nbsp;            return 4;
+&nbsp;        } else if (tertSlots &lt;= 256) {
+<b class="nc">&nbsp;            return 5;</b>
+&nbsp;        } else {
+&nbsp;            return tertSlots &lt;= 1024 ? 6 : 7;
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private static final class TableInfo {
+<b class="nc">&nbsp;        public final int size;</b>
+&nbsp;        public final int count;
+<b class="nc">&nbsp;        public final int tertiaryShift;</b>
+&nbsp;        public final int[] mainHash;
+<b class="nc">&nbsp;        public final String[] names;</b>
+&nbsp;        public final int spilloverEnd;
+<b class="nc">&nbsp;        public final int longNameOffset;</b>
+&nbsp;
+<b class="nc">&nbsp;        public TableInfo(int size, int count, int tertiaryShift, int[] mainHash, String[] names, int spilloverEnd, int longNameOffset) {</b>
+&nbsp;            this.size = size;
+<b class="nc">&nbsp;            this.count = count;</b>
+&nbsp;            this.tertiaryShift = tertiaryShift;
+<b class="nc">&nbsp;            this.mainHash = mainHash;</b>
+&nbsp;            this.names = names;
+<b class="nc">&nbsp;            this.spilloverEnd = spilloverEnd;</b>
+<b class="nc">&nbsp;            this.longNameOffset = longNameOffset;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        public TableInfo(ByteQuadsCanonicalizer src) {
+<b class="nc">&nbsp;            this.size = src._hashSize;</b>
+&nbsp;            this.count = src._count;
+&nbsp;            this.tertiaryShift = src._tertiaryShift;
+&nbsp;            this.mainHash = src._hashArea;
+&nbsp;            this.names = src._names;
+<b class="nc">&nbsp;            this.spilloverEnd = src._spilloverEnd;</b>
+&nbsp;            this.longNameOffset = src._longNameOffset;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        public static TableInfo createInitial(int sz) {
+<b class="nc">&nbsp;            int hashAreaSize = sz &lt;&lt; 3;</b>
+<b class="nc">&nbsp;            int tertShift = ByteQuadsCanonicalizer._calcTertiaryShift(sz);</b>
+&nbsp;            return new TableInfo(sz, 0, tertShift, new int[hashAreaSize], new String[sz &lt;&lt; 1], hashAreaSize - sz, hashAreaSize);
 &nbsp;        }
 &nbsp;    }
 &nbsp;}
@@ -217,7 +1005,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2025-03-20 13:42</div>
+    <div style="float:right;">generated on 2025-03-31 21:00</div>
 </div>
 </body>
 </html>

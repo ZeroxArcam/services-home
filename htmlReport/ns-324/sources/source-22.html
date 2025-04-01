@@ -1,0 +1,403 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > StandardConfigDataLocationResolver</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.boot.context.config</a>
+</div>
+
+<h1>Coverage Summary for Class: StandardConfigDataLocationResolver (org.springframework.boot.context.config)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">StandardConfigDataLocationResolver</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    92.9%
+  </span>
+  <span class="absValue">
+    (26/28)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (40/80)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    71%
+  </span>
+  <span class="absValue">
+    (88/124)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.boot.context.config;
+&nbsp;
+&nbsp;import java.io.File;
+&nbsp;import java.util.ArrayDeque;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Arrays;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.Deque;
+&nbsp;import java.util.LinkedHashSet;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.regex.Matcher;
+&nbsp;import java.util.regex.Pattern;
+&nbsp;import java.util.stream.Collectors;
+&nbsp;import org.apache.commons.logging.Log;
+&nbsp;import org.springframework.boot.context.config.LocationResourceLoader.ResourceType;
+&nbsp;import org.springframework.boot.context.properties.bind.Binder;
+&nbsp;import org.springframework.boot.env.PropertySourceLoader;
+&nbsp;import org.springframework.boot.logging.DeferredLogFactory;
+&nbsp;import org.springframework.core.Ordered;
+&nbsp;import org.springframework.core.io.ClassPathResource;
+&nbsp;import org.springframework.core.io.Resource;
+&nbsp;import org.springframework.core.io.ResourceLoader;
+&nbsp;import org.springframework.core.io.support.SpringFactoriesLoader;
+&nbsp;import org.springframework.core.log.LogMessage;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.ObjectUtils;
+&nbsp;import org.springframework.util.StringUtils;
+&nbsp;
+&nbsp;public class StandardConfigDataLocationResolver implements ConfigDataLocationResolver&lt;StandardConfigDataResource&gt;, Ordered {
+&nbsp;    private static final String PREFIX = &quot;resource:&quot;;
+&nbsp;    static final String CONFIG_NAME_PROPERTY = &quot;spring.config.name&quot;;
+&nbsp;    static final String[] DEFAULT_CONFIG_NAMES = new String[]{&quot;application&quot;};
+&nbsp;    private static final Pattern URL_PREFIX = Pattern.compile(&quot;^([a-zA-Z][a-zA-Z0-9*]*?:)(.*$)&quot;);
+&nbsp;    private static final Pattern EXTENSION_HINT_PATTERN = Pattern.compile(&quot;^(.*)\\[(\\.\\w+)](?!\\[)$&quot;);
+&nbsp;    private static final String NO_PROFILE = null;
+&nbsp;    private final Log logger;
+&nbsp;    private final List&lt;PropertySourceLoader&gt; propertySourceLoaders;
+&nbsp;    private final String[] configNames;
+&nbsp;    private final LocationResourceLoader resourceLoader;
+&nbsp;
+&nbsp;    public StandardConfigDataLocationResolver(DeferredLogFactory logFactory, Binder binder, ResourceLoader resourceLoader) {
+&nbsp;        this.logger = logFactory.getLog(StandardConfigDataLocationResolver.class);
+&nbsp;        this.propertySourceLoaders = SpringFactoriesLoader.loadFactories(PropertySourceLoader.class, this.getClass().getClassLoader());
+&nbsp;        this.configNames = this.getConfigNames(binder);
+&nbsp;        this.resourceLoader = new LocationResourceLoader(resourceLoader);
+&nbsp;    }
+&nbsp;
+&nbsp;    private String[] getConfigNames(Binder binder) {
+&nbsp;        String[] configNames = (String[])binder.bind(&quot;spring.config.name&quot;, String[].class).orElse(DEFAULT_CONFIG_NAMES);
+&nbsp;
+&nbsp;        for(String configName : configNames) {
+&nbsp;            this.validateConfigName(configName);
+&nbsp;        }
+&nbsp;
+&nbsp;        return configNames;
+&nbsp;    }
+&nbsp;
+&nbsp;    private void validateConfigName(String name) {
+<b class="fc">&nbsp;        Assert.state(!name.contains(&quot;*&quot;), () -&gt; &quot;Config name &#39;&quot; + name + &quot;&#39; cannot contain &#39;*&#39;&quot;);</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public int getOrder() {
+<b class="fc">&nbsp;        return Integer.MAX_VALUE;</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public boolean isResolvable(ConfigDataLocationResolverContext context, ConfigDataLocation location) {
+&nbsp;        return true;
+&nbsp;    }
+&nbsp;
+&nbsp;    public List&lt;StandardConfigDataResource&gt; resolve(ConfigDataLocationResolverContext context, ConfigDataLocation location) throws ConfigDataNotFoundException {
+&nbsp;        return this.resolve(this.getReferences(context, location.split()));
+&nbsp;    }
+&nbsp;
+&nbsp;    private Set&lt;StandardConfigDataReference&gt; getReferences(ConfigDataLocationResolverContext context, ConfigDataLocation[] configDataLocations) {
+&nbsp;        Set&lt;StandardConfigDataReference&gt; references = new LinkedHashSet();
+&nbsp;
+&nbsp;        for(ConfigDataLocation configDataLocation : configDataLocations) {
+&nbsp;            references.addAll(this.getReferences(context, configDataLocation));
+&nbsp;        }
+&nbsp;
+&nbsp;        return references;
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private Set&lt;StandardConfigDataReference&gt; getReferences(ConfigDataLocationResolverContext context, ConfigDataLocation configDataLocation) {</b>
+<b class="fc">&nbsp;        String resourceLocation = this.getResourceLocation(context, configDataLocation);</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;        try {</b>
+&nbsp;            return this.isDirectory(resourceLocation) ? this.getReferencesForDirectory(configDataLocation, resourceLocation, NO_PROFILE) : this.getReferencesForFile(configDataLocation, resourceLocation, NO_PROFILE);
+&nbsp;        } catch (RuntimeException ex) {
+&nbsp;            throw new IllegalStateException(&quot;Unable to load config data from &#39;&quot; + String.valueOf(configDataLocation) + &quot;&#39;&quot;, ex);
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    public List&lt;StandardConfigDataResource&gt; resolveProfileSpecific(ConfigDataLocationResolverContext context, ConfigDataLocation location, Profiles profiles) {
+<b class="fc">&nbsp;        return this.resolve(this.getProfileSpecificReferences(context, location.split(), profiles));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private Set&lt;StandardConfigDataReference&gt; getProfileSpecificReferences(ConfigDataLocationResolverContext context, ConfigDataLocation[] configDataLocations, Profiles profiles) {
+<b class="fc">&nbsp;        Set&lt;StandardConfigDataReference&gt; references = new LinkedHashSet();</b>
+&nbsp;
+&nbsp;        for(String profile : profiles) {
+&nbsp;            for(ConfigDataLocation configDataLocation : configDataLocations) {
+&nbsp;                String resourceLocation = this.getResourceLocation(context, configDataLocation);
+<b class="fc">&nbsp;                references.addAll(this.getReferences(configDataLocation, resourceLocation, profile));</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return references;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private String getResourceLocation(ConfigDataLocationResolverContext context, ConfigDataLocation configDataLocation) {
+&nbsp;        String resourceLocation = configDataLocation.getNonPrefixedValue(&quot;resource:&quot;);
+&nbsp;        boolean isAbsolute = resourceLocation.startsWith(&quot;/&quot;) || URL_PREFIX.matcher(resourceLocation).matches();
+&nbsp;        if (isAbsolute) {
+<b class="fc">&nbsp;            return resourceLocation;</b>
+&nbsp;        } else {
+&nbsp;            ConfigDataResource parent = context.getParent();
+&nbsp;            if (parent instanceof StandardConfigDataResource) {
+&nbsp;                StandardConfigDataResource resource = (StandardConfigDataResource)parent;
+<b class="fc">&nbsp;                String parentResourceLocation = resource.getReference().getResourceLocation();</b>
+<b class="fc">&nbsp;                String parentDirectory = parentResourceLocation.substring(0, parentResourceLocation.lastIndexOf(&quot;/&quot;) + 1);</b>
+<b class="fc">&nbsp;                return parentDirectory + resourceLocation;</b>
+&nbsp;            } else {
+<b class="fc">&nbsp;                return resourceLocation;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    private Set&lt;StandardConfigDataReference&gt; getReferences(ConfigDataLocation configDataLocation, String resourceLocation, String profile) {</b>
+&nbsp;        return this.isDirectory(resourceLocation) ? this.getReferencesForDirectory(configDataLocation, resourceLocation, profile) : this.getReferencesForFile(configDataLocation, resourceLocation, profile);
+<b class="pc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    private Set&lt;StandardConfigDataReference&gt; getReferencesForDirectory(ConfigDataLocation configDataLocation, String directory, String profile) {
+<b class="nc">&nbsp;        Set&lt;StandardConfigDataReference&gt; references = new LinkedHashSet();</b>
+&nbsp;
+&nbsp;        for(String name : this.configNames) {
+<b class="nc">&nbsp;            Deque&lt;StandardConfigDataReference&gt; referencesForName = this.getReferencesForConfigName(name, configDataLocation, directory, profile);</b>
+&nbsp;            references.addAll(referencesForName);
+&nbsp;        }
+&nbsp;
+&nbsp;        return references;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    private Deque&lt;StandardConfigDataReference&gt; getReferencesForConfigName(String name, ConfigDataLocation configDataLocation, String directory, String profile) {</b>
+&nbsp;        Deque&lt;StandardConfigDataReference&gt; references = new ArrayDeque();
+&nbsp;
+&nbsp;        for(PropertySourceLoader propertySourceLoader : this.propertySourceLoaders) {
+&nbsp;            for(String extension : propertySourceLoader.getFileExtensions()) {
+<b class="fc">&nbsp;                StandardConfigDataReference reference = new StandardConfigDataReference(configDataLocation, directory, directory + name, profile, extension, propertySourceLoader);</b>
+<b class="fc">&nbsp;                if (!references.contains(reference)) {</b>
+<b class="fc">&nbsp;                    references.addFirst(reference);</b>
+<b class="fc">&nbsp;                }</b>
+<b class="fc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        return references;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private Set&lt;StandardConfigDataReference&gt; getReferencesForFile(ConfigDataLocation configDataLocation, String file, String profile) {
+&nbsp;        Matcher extensionHintMatcher = EXTENSION_HINT_PATTERN.matcher(file);
+<b class="fc">&nbsp;        boolean extensionHintLocation = extensionHintMatcher.matches();</b>
+<b class="pc">&nbsp;        if (extensionHintLocation) {</b>
+<b class="pc">&nbsp;            String var10000 = extensionHintMatcher.group(1);</b>
+<b class="fc">&nbsp;            file = var10000 + extensionHintMatcher.group(2);</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        for(PropertySourceLoader propertySourceLoader : this.propertySourceLoaders) {</b>
+<b class="nc">&nbsp;            String extension = this.getLoadableFileExtension(propertySourceLoader, file);</b>
+<b class="nc">&nbsp;            if (extension != null) {</b>
+<b class="nc">&nbsp;                String root = file.substring(0, file.length() - extension.length() - 1);</b>
+&nbsp;                StandardConfigDataReference reference = new StandardConfigDataReference(configDataLocation, (String)null, root, profile, !extensionHintLocation ? extension : null, propertySourceLoader);
+<b class="nc">&nbsp;                return Collections.singleton(reference);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        if (configDataLocation.isOptional()) {
+<b class="pc">&nbsp;            return Collections.emptySet();</b>
+<b class="fc">&nbsp;        } else if (!configDataLocation.hasPrefix(&quot;resource:&quot;) &amp;&amp; !configDataLocation.hasPrefix(&quot;file:&quot;) &amp;&amp; !configDataLocation.hasPrefix(&quot;classpath:&quot;) &amp;&amp; configDataLocation.toString().indexOf(58) != -1) {</b>
+&nbsp;            throw new IllegalStateException(&quot;Incorrect ConfigDataLocationResolver chosen or file extension is not known to any PropertySourceLoader. If the location is meant to reference a directory, it must end in &#39;/&#39; or File.separator. The location is being resolved using the StandardConfigDataLocationResolver, check the location prefix if a different resolver is expected&quot;);
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            throw new IllegalStateException(&quot;File extension is not known to any PropertySourceLoader. If the location is meant to reference a directory, it must end in &#39;/&#39; or File.separator&quot;);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    private String getLoadableFileExtension(PropertySourceLoader loader, String file) {</b>
+<b class="fc">&nbsp;        for(String fileExtension : loader.getFileExtensions()) {</b>
+<b class="fc">&nbsp;            if (StringUtils.endsWithIgnoreCase(file, fileExtension)) {</b>
+&nbsp;                return fileExtension;
+<b class="fc">&nbsp;            }</b>
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+&nbsp;        return null;
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean isDirectory(String resourceLocation) {
+<b class="fc">&nbsp;        return resourceLocation.endsWith(&quot;/&quot;) || resourceLocation.endsWith(File.separator);</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private List&lt;StandardConfigDataResource&gt; resolve(Set&lt;StandardConfigDataReference&gt; references) {</b>
+&nbsp;        List&lt;StandardConfigDataResource&gt; resolved = new ArrayList();
+<b class="pc">&nbsp;</b>
+<b class="fc">&nbsp;        for(StandardConfigDataReference reference : references) {</b>
+&nbsp;            resolved.addAll(this.resolve(reference));
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if (resolved.isEmpty()) {</b>
+&nbsp;            resolved.addAll(this.resolveEmptyDirectories(references));
+&nbsp;        }
+&nbsp;
+&nbsp;        return resolved;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private Collection&lt;StandardConfigDataResource&gt; resolveEmptyDirectories(Set&lt;StandardConfigDataReference&gt; references) {</b>
+<b class="nc">&nbsp;        Set&lt;StandardConfigDataResource&gt; empty = new LinkedHashSet();</b>
+&nbsp;
+<b class="nc">&nbsp;        for(StandardConfigDataReference reference : references) {</b>
+<b class="nc">&nbsp;            if (reference.getDirectory() != null) {</b>
+<b class="nc">&nbsp;                empty.addAll(this.resolveEmptyDirectories(reference));</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return empty;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private Set&lt;StandardConfigDataResource&gt; resolveEmptyDirectories(StandardConfigDataReference reference) {</b>
+<b class="nc">&nbsp;        return !this.resourceLoader.isPattern(reference.getResourceLocation()) ? this.resolveNonPatternEmptyDirectories(reference) : this.resolvePatternEmptyDirectories(reference);</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private Set&lt;StandardConfigDataResource&gt; resolveNonPatternEmptyDirectories(StandardConfigDataReference reference) {</b>
+<b class="nc">&nbsp;        Resource resource = this.resourceLoader.getResource(reference.getDirectory());</b>
+<b class="nc">&nbsp;        return !(resource instanceof ClassPathResource) &amp;&amp; resource.exists() ? Collections.singleton(new StandardConfigDataResource(reference, resource, true)) : Collections.emptySet();</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private Set&lt;StandardConfigDataResource&gt; resolvePatternEmptyDirectories(StandardConfigDataReference reference) {</b>
+&nbsp;        Resource[] subdirectories = this.resourceLoader.getResources(reference.getDirectory(), ResourceType.DIRECTORY);
+&nbsp;        ConfigDataLocation location = reference.getConfigDataLocation();
+&nbsp;        if (!location.isOptional() &amp;&amp; ObjectUtils.isEmpty(subdirectories)) {
+&nbsp;            String message = String.format(&quot;Config data location &#39;%s&#39; contains no subdirectories&quot;, location);
+&nbsp;            throw new ConfigDataLocationNotFoundException(location, message, (Throwable)null);
+&nbsp;        } else {
+&nbsp;            return (Set)Arrays.stream(subdirectories).filter(Resource::exists).map((resource) -&gt; new StandardConfigDataResource(reference, resource, true)).collect(Collectors.toCollection(LinkedHashSet::new));
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private List&lt;StandardConfigDataResource&gt; resolve(StandardConfigDataReference reference) {
+&nbsp;        return !this.resourceLoader.isPattern(reference.getResourceLocation()) ? this.resolveNonPattern(reference) : this.resolvePattern(reference);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private List&lt;StandardConfigDataResource&gt; resolveNonPattern(StandardConfigDataReference reference) {
+&nbsp;        Resource resource = this.resourceLoader.getResource(reference.getResourceLocation());
+<b class="pc">&nbsp;        if (!resource.exists() &amp;&amp; reference.isSkippable()) {</b>
+&nbsp;            this.logSkippingResource(reference);
+&nbsp;            return Collections.emptyList();
+&nbsp;        } else {
+<b class="fc">&nbsp;            return Collections.singletonList(this.createConfigResourceLocation(reference, resource));</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+<b class="fc">&nbsp;    private List&lt;StandardConfigDataResource&gt; resolvePattern(StandardConfigDataReference reference) {</b>
+<b class="fc">&nbsp;        List&lt;StandardConfigDataResource&gt; resolved = new ArrayList();</b>
+&nbsp;
+<b class="fc">&nbsp;        for(Resource resource : this.resourceLoader.getResources(reference.getResourceLocation(), ResourceType.FILE)) {</b>
+&nbsp;            if (!resource.exists() &amp;&amp; reference.isSkippable()) {
+&nbsp;                this.logSkippingResource(reference);
+&nbsp;            } else {
+&nbsp;                resolved.add(this.createConfigResourceLocation(reference, resource));
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;        }</b>
+<b class="pc">&nbsp;</b>
+<b class="fc">&nbsp;        return resolved;</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    private void logSkippingResource(StandardConfigDataReference reference) {</b>
+&nbsp;        this.logger.trace(LogMessage.format(&quot;Skipping missing resource %s&quot;, reference));
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    private StandardConfigDataResource createConfigResourceLocation(StandardConfigDataReference reference, Resource resource) {</b>
+<b class="fc">&nbsp;        return new StandardConfigDataResource(reference, resource);</b>
+&nbsp;    }
+<b class="fc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:54</div>
+</div>
+</body>
+</html>

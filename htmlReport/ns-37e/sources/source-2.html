@@ -1,0 +1,961 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > PathMatchingResourcePatternResolver</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.core.io.support</a>
+</div>
+
+<h1>Coverage Summary for Class: PathMatchingResourcePatternResolver (org.springframework.core.io.support)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PathMatchingResourcePatternResolver</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    61.8%
+  </span>
+  <span class="absValue">
+    (21/34)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    18.3%
+  </span>
+  <span class="absValue">
+    (41/224)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    32.9%
+  </span>
+  <span class="absValue">
+    (107/325)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.core.io.support;
+&nbsp;
+&nbsp;import java.io.File;
+&nbsp;import java.io.FileNotFoundException;
+&nbsp;import java.io.IOException;
+&nbsp;import java.io.UncheckedIOException;
+&nbsp;import java.lang.module.ModuleFinder;
+&nbsp;import java.lang.module.ModuleReader;
+&nbsp;import java.lang.module.ResolvedModule;
+&nbsp;import java.lang.reflect.InvocationHandler;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;import java.net.JarURLConnection;
+&nbsp;import java.net.MalformedURLException;
+&nbsp;import java.net.URI;
+&nbsp;import java.net.URISyntaxException;
+&nbsp;import java.net.URL;
+&nbsp;import java.net.URLClassLoader;
+&nbsp;import java.net.URLConnection;
+&nbsp;import java.nio.file.FileSystemNotFoundException;
+&nbsp;import java.nio.file.FileSystems;
+&nbsp;import java.nio.file.FileVisitOption;
+&nbsp;import java.nio.file.Files;
+&nbsp;import java.nio.file.LinkOption;
+&nbsp;import java.nio.file.Path;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.Enumeration;
+&nbsp;import java.util.HashSet;
+&nbsp;import java.util.Iterator;
+&nbsp;import java.util.LinkedHashSet;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.NavigableSet;
+&nbsp;import java.util.Objects;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.StringTokenizer;
+&nbsp;import java.util.TreeSet;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import java.util.function.Predicate;
+&nbsp;import java.util.jar.Attributes;
+&nbsp;import java.util.jar.JarEntry;
+&nbsp;import java.util.jar.JarFile;
+&nbsp;import java.util.jar.Manifest;
+&nbsp;import java.util.jar.Attributes.Name;
+&nbsp;import java.util.stream.Collectors;
+&nbsp;import java.util.stream.Stream;
+&nbsp;import java.util.zip.ZipEntry;
+&nbsp;import java.util.zip.ZipException;
+&nbsp;import org.apache.commons.logging.Log;
+&nbsp;import org.apache.commons.logging.LogFactory;
+&nbsp;import org.springframework.core.NativeDetector;
+&nbsp;import org.springframework.core.io.DefaultResourceLoader;
+&nbsp;import org.springframework.core.io.FileSystemResource;
+&nbsp;import org.springframework.core.io.Resource;
+&nbsp;import org.springframework.core.io.ResourceLoader;
+&nbsp;import org.springframework.core.io.UrlResource;
+&nbsp;import org.springframework.core.io.VfsResource;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.AntPathMatcher;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.ClassUtils;
+&nbsp;import org.springframework.util.PathMatcher;
+&nbsp;import org.springframework.util.ReflectionUtils;
+&nbsp;import org.springframework.util.ResourceUtils;
+&nbsp;import org.springframework.util.StringUtils;
+&nbsp;
+&nbsp;public class PathMatchingResourcePatternResolver implements ResourcePatternResolver {
+&nbsp;    private static final Log logger = LogFactory.getLog(PathMatchingResourcePatternResolver.class);
+&nbsp;    private static final Set&lt;String&gt; systemModuleNames = NativeDetector.inNativeImage() ? Collections.emptySet() : (Set)ModuleFinder.ofSystem().findAll().stream().map((moduleReference) -&gt; moduleReference.descriptor().name()).collect(Collectors.toSet());
+&nbsp;    private static final Predicate&lt;ResolvedModule&gt; isNotSystemModule = (resolvedModule) -&gt; !systemModuleNames.contains(resolvedModule.name());
+&nbsp;    @Nullable
+&nbsp;    private static Method equinoxResolveMethod;
+&nbsp;    private final ResourceLoader resourceLoader;
+&nbsp;    private PathMatcher pathMatcher = new AntPathMatcher();
+&nbsp;    private final Map&lt;String, Resource[]&gt; rootDirCache = new ConcurrentHashMap();
+&nbsp;    private final Map&lt;String, NavigableSet&lt;String&gt;&gt; jarEntriesCache = new ConcurrentHashMap();
+&nbsp;    @Nullable
+&nbsp;    private volatile Set&lt;ClassPathManifestEntry&gt; manifestEntriesCache;
+&nbsp;
+&nbsp;    public PathMatchingResourcePatternResolver() {
+&nbsp;        this.resourceLoader = new DefaultResourceLoader();
+&nbsp;    }
+&nbsp;
+&nbsp;    public PathMatchingResourcePatternResolver(ResourceLoader resourceLoader) {
+&nbsp;        Assert.notNull(resourceLoader, &quot;ResourceLoader must not be null&quot;);
+&nbsp;        this.resourceLoader = resourceLoader;
+&nbsp;    }
+&nbsp;
+&nbsp;    public PathMatchingResourcePatternResolver(@Nullable ClassLoader classLoader) {
+&nbsp;        this.resourceLoader = new DefaultResourceLoader(classLoader);
+&nbsp;    }
+&nbsp;
+&nbsp;    public ResourceLoader getResourceLoader() {
+&nbsp;        return this.resourceLoader;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public ClassLoader getClassLoader() {
+&nbsp;        return this.getResourceLoader().getClassLoader();
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setPathMatcher(PathMatcher pathMatcher) {
+&nbsp;        Assert.notNull(pathMatcher, &quot;PathMatcher must not be null&quot;);
+&nbsp;        this.pathMatcher = pathMatcher;
+&nbsp;    }
+&nbsp;
+&nbsp;    public PathMatcher getPathMatcher() {
+&nbsp;        return this.pathMatcher;
+&nbsp;    }
+&nbsp;
+&nbsp;    public Resource getResource(String location) {
+&nbsp;        return this.getResourceLoader().getResource(location);
+&nbsp;    }
+&nbsp;
+&nbsp;    public Resource[] getResources(String locationPattern) throws IOException {
+&nbsp;        Assert.notNull(locationPattern, &quot;Location pattern must not be null&quot;);
+&nbsp;        if (locationPattern.startsWith(&quot;classpath*:&quot;)) {
+&nbsp;            String locationPatternWithoutPrefix = locationPattern.substring(&quot;classpath*:&quot;.length());
+&nbsp;            Set&lt;Resource&gt; resources = this.findAllModulePathResources(locationPatternWithoutPrefix);
+&nbsp;            if (this.getPathMatcher().isPattern(locationPatternWithoutPrefix)) {
+&nbsp;                Collections.addAll(resources, this.findPathMatchingResources(locationPattern));
+&nbsp;            } else {
+&nbsp;                Collections.addAll(resources, this.findAllClassPathResources(locationPatternWithoutPrefix));
+&nbsp;            }
+&nbsp;
+&nbsp;            return (Resource[])resources.toArray(new Resource[0]);
+&nbsp;        } else {
+&nbsp;            int prefixEnd = locationPattern.startsWith(&quot;war:&quot;) ? locationPattern.indexOf(&quot;*/&quot;) + 1 : locationPattern.indexOf(58) + 1;
+&nbsp;            return this.getPathMatcher().isPattern(locationPattern.substring(prefixEnd)) ? this.findPathMatchingResources(locationPattern) : new Resource[]{this.getResourceLoader().getResource(locationPattern)};
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void clearCache() {
+&nbsp;        this.rootDirCache.clear();
+&nbsp;        this.jarEntriesCache.clear();
+&nbsp;        this.manifestEntriesCache = null;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Resource[] findAllClassPathResources(String location) throws IOException {
+&nbsp;        String path = stripLeadingSlash(location);
+&nbsp;        Set&lt;Resource&gt; result = this.doFindAllClassPathResources(path);
+&nbsp;        if (logger.isTraceEnabled()) {
+&nbsp;            logger.trace(&quot;Resolved class path location [&quot; + path + &quot;] to resources &quot; + String.valueOf(result));
+&nbsp;        }
+&nbsp;
+&nbsp;        return (Resource[])result.toArray(new Resource[0]);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Set&lt;Resource&gt; doFindAllClassPathResources(String path) throws IOException {
+&nbsp;        Set&lt;Resource&gt; result = new LinkedHashSet(16);
+&nbsp;        ClassLoader cl = this.getClassLoader();
+&nbsp;        Enumeration&lt;URL&gt; resourceUrls = cl != null ? cl.getResources(path) : ClassLoader.getSystemResources(path);
+&nbsp;
+&nbsp;        while(resourceUrls.hasMoreElements()) {
+&nbsp;            URL url = (URL)resourceUrls.nextElement();
+&nbsp;            result.add(this.convertClassLoaderURL(url));
+&nbsp;        }
+&nbsp;
+&nbsp;        if (!StringUtils.hasLength(path)) {
+&nbsp;            this.addAllClassLoaderJarRoots(cl, result);
+&nbsp;        }
+&nbsp;
+&nbsp;        return result;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Resource convertClassLoaderURL(URL url) {
+&nbsp;        if (&quot;file&quot;.equals(url.getProtocol())) {
+&nbsp;            try {
+&nbsp;                return new FileSystemResource(ResourceUtils.toURI(url).getSchemeSpecificPart());
+&nbsp;            } catch (URISyntaxException var5) {
+&nbsp;                return new FileSystemResource(url.getFile());
+&nbsp;            }
+&nbsp;        } else {
+&nbsp;            String urlString = url.toString();
+&nbsp;            String cleanedPath = StringUtils.cleanPath(urlString);
+&nbsp;            if (!cleanedPath.equals(urlString)) {
+&nbsp;                try {
+&nbsp;                    return new UrlResource(new URL(url, cleanedPath));
+&nbsp;                } catch (MalformedURLException var6) {
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            return new UrlResource(url);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void addAllClassLoaderJarRoots(@Nullable ClassLoader classLoader, Set&lt;Resource&gt; result) {
+&nbsp;        if (classLoader instanceof URLClassLoader urlClassLoader) {
+&nbsp;            try {
+&nbsp;                for(URL url : urlClassLoader.getURLs()) {
+&nbsp;                    try {
+&nbsp;                        UrlResource jarResource = &quot;jar&quot;.equals(url.getProtocol()) ? new UrlResource(url) : new UrlResource(&quot;jar:&quot; + String.valueOf(url) + &quot;!/&quot;);
+&nbsp;                        if (jarResource.exists()) {
+&nbsp;                            result.add(jarResource);
+&nbsp;                        }
+&nbsp;                    } catch (MalformedURLException ex) {
+&nbsp;                        if (logger.isDebugEnabled()) {
+&nbsp;                            Log var12 = logger;
+&nbsp;                            String var14 = String.valueOf(url);
+&nbsp;                            var12.debug(&quot;Cannot search for matching files underneath [&quot; + var14 + &quot;] because it cannot be converted to a valid &#39;jar:&#39; URL: &quot; + ex.getMessage());
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            } catch (Exception ex) {
+&nbsp;                if (logger.isDebugEnabled()) {
+&nbsp;                    Log var10000 = logger;
+&nbsp;                    String var10001 = String.valueOf(classLoader);
+&nbsp;                    var10000.debug(&quot;Cannot introspect jar files since ClassLoader [&quot; + var10001 + &quot;] does not support &#39;getURLs()&#39;: &quot; + String.valueOf(ex));
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        if (classLoader == ClassLoader.getSystemClassLoader()) {
+&nbsp;            this.addClassPathManifestEntries(result);
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        if (classLoader != null) {
+&nbsp;            try {
+&nbsp;                this.addAllClassLoaderJarRoots(classLoader.getParent(), result);
+&nbsp;            } catch (Exception ex) {
+&nbsp;                if (logger.isDebugEnabled()) {
+<b class="pc">&nbsp;                    Log var13 = logger;</b>
+<b class="fc">&nbsp;                    String var15 = String.valueOf(classLoader);</b>
+<b class="fc">&nbsp;                    var13.debug(&quot;Cannot introspect jar files in parent ClassLoader since [&quot; + var15 + &quot;] does not support &#39;getParent()&#39;: &quot; + String.valueOf(ex));</b>
+<b class="fc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void addClassPathManifestEntries(Set&lt;Resource&gt; result) {
+&nbsp;        Set&lt;ClassPathManifestEntry&gt; entries = this.manifestEntriesCache;
+<b class="fc">&nbsp;        if (entries == null) {</b>
+<b class="fc">&nbsp;            entries = this.getClassPathManifestEntries();</b>
+&nbsp;            this.manifestEntriesCache = entries;
+&nbsp;        }
+&nbsp;
+&nbsp;        for(ClassPathManifestEntry entry : entries) {
+&nbsp;            if (!result.contains(entry.resource()) &amp;&amp; entry.alternative() != null &amp;&amp; !result.contains(entry.alternative())) {
+&nbsp;                result.add(entry.resource());
+&nbsp;            }
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private Set&lt;ClassPathManifestEntry&gt; getClassPathManifestEntries() {
+&nbsp;        Set&lt;ClassPathManifestEntry&gt; manifestEntries = new LinkedHashSet();
+<b class="fc">&nbsp;        Set&lt;File&gt; seen = new HashSet();</b>
+&nbsp;
+&nbsp;        try {
+&nbsp;            String paths = System.getProperty(&quot;java.class.path&quot;);
+&nbsp;
+&nbsp;            for(String path : StringUtils.delimitedListToStringArray(paths, File.pathSeparator)) {
+&nbsp;                try {
+<b class="fc">&nbsp;                    File jar = (new File(path)).getAbsoluteFile();</b>
+&nbsp;                    if (jar.isFile() &amp;&amp; seen.add(jar)) {
+<b class="fc">&nbsp;                        manifestEntries.add(PathMatchingResourcePatternResolver.ClassPathManifestEntry.of(jar));</b>
+&nbsp;                        manifestEntries.addAll(this.getClassPathManifestEntriesFromJar(jar));
+<b class="fc">&nbsp;                    }</b>
+&nbsp;                } catch (MalformedURLException ex) {
+&nbsp;                    if (logger.isDebugEnabled()) {
+&nbsp;                        logger.debug(&quot;Cannot search for matching files underneath [&quot; + path + &quot;] because it cannot be converted to a valid &#39;jar:&#39; URL: &quot; + ex.getMessage());
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            return Collections.unmodifiableSet(manifestEntries);
+&nbsp;        } catch (Exception ex) {
+&nbsp;            if (logger.isDebugEnabled()) {
+&nbsp;                logger.debug(&quot;Failed to evaluate &#39;java.class.path&#39; manifest entries: &quot; + String.valueOf(ex));
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;            return Collections.emptySet();
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private Set&lt;ClassPathManifestEntry&gt; getClassPathManifestEntriesFromJar(File jar) throws IOException {
+&nbsp;        URL base = jar.toURI().toURL();
+&nbsp;        File parent = jar.getAbsoluteFile().getParentFile();
+&nbsp;
+&nbsp;        try (JarFile jarFile = new JarFile(jar)) {
+<b class="fc">&nbsp;            Manifest manifest = jarFile.getManifest();</b>
+<b class="fc">&nbsp;            Attributes attributes = manifest != null ? manifest.getMainAttributes() : null;</b>
+<b class="fc">&nbsp;            String classPath = attributes != null ? attributes.getValue(Name.CLASS_PATH) : null;</b>
+&nbsp;            Set&lt;ClassPathManifestEntry&gt; manifestEntries = new LinkedHashSet();
+&nbsp;            if (StringUtils.hasLength(classPath)) {
+&nbsp;                StringTokenizer tokenizer = new StringTokenizer(classPath);
+&nbsp;
+&nbsp;                while(tokenizer.hasMoreTokens()) {
+&nbsp;                    String path = tokenizer.nextToken();
+&nbsp;                    if (path.indexOf(58) &lt; 0 || &quot;file&quot;.equalsIgnoreCase((new URL(base, path)).getProtocol())) {
+&nbsp;                        File candidate = new File(parent, path);
+&nbsp;                        if (candidate.isFile() &amp;&amp; candidate.getCanonicalPath().contains(parent.getCanonicalPath())) {
+&nbsp;                            manifestEntries.add(PathMatchingResourcePatternResolver.ClassPathManifestEntry.of(candidate));
+<b class="fc">&nbsp;                        }</b>
+<b class="fc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            return Collections.unmodifiableSet(manifestEntries);
+&nbsp;        } catch (Exception ex) {
+&nbsp;            if (logger.isDebugEnabled()) {
+&nbsp;                Log var10000 = logger;
+<b class="fc">&nbsp;                String var10001 = String.valueOf(jar);</b>
+&nbsp;                var10000.debug(&quot;Failed to load manifest entries from jar file &#39;&quot; + var10001 + &quot;&#39;: &quot; + String.valueOf(ex));
+&nbsp;            }
+&nbsp;
+&nbsp;            return Collections.emptySet();
+&nbsp;        }
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected Resource[] findPathMatchingResources(String locationPattern) throws IOException {
+&nbsp;        String rootDirPath = this.determineRootDir(locationPattern);
+&nbsp;        String subPattern = locationPattern.substring(rootDirPath.length());
+&nbsp;        Resource[] rootDirResources = (Resource[])this.rootDirCache.get(rootDirPath);
+&nbsp;        String actualRootPath = null;
+&nbsp;        if (rootDirResources == null) {
+&nbsp;            String commonPrefix = null;
+&nbsp;            String existingPath = null;
+<b class="nc">&nbsp;            boolean commonUnique = true;</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            for(String path : this.rootDirCache.keySet()) {
+&nbsp;                String currentPrefix = null;
+&nbsp;
+&nbsp;                for(int i = 0; i &lt; path.length(); ++i) {
+&nbsp;                    if (i == rootDirPath.length() || path.charAt(i) != rootDirPath.charAt(i)) {
+&nbsp;                        currentPrefix = path.substring(0, path.lastIndexOf(47, i - 1) + 1);
+<b class="fc">&nbsp;                        break;</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                if (currentPrefix != null) {
+&nbsp;                    if (checkPathWithinPackage(path.substring(currentPrefix.length()))) {
+<b class="nc">&nbsp;                        if (commonPrefix != null &amp;&amp; commonUnique &amp;&amp; currentPrefix.length() &lt;= commonPrefix.length()) {</b>
+&nbsp;                            if (currentPrefix.equals(commonPrefix)) {
+&nbsp;                                commonUnique = false;
+&nbsp;                            }
+&nbsp;                        } else {
+<b class="fc">&nbsp;                            commonPrefix = currentPrefix;</b>
+<b class="pc">&nbsp;                            existingPath = path;</b>
+&nbsp;                        }
+<b class="fc">&nbsp;                    }</b>
+&nbsp;                } else if (actualRootPath == null || path.length() &gt; actualRootPath.length()) {
+<b class="fc">&nbsp;                    rootDirResources = (Resource[])this.rootDirCache.get(path);</b>
+&nbsp;                    actualRootPath = path;
+<b class="fc">&nbsp;                }</b>
+&nbsp;            }
+<b class="fc">&nbsp;</b>
+&nbsp;            if (rootDirResources == null &amp;&amp; StringUtils.hasLength(commonPrefix)) {
+&nbsp;                rootDirResources = this.getResources(commonPrefix);
+&nbsp;                Resource[] existingResources = (Resource[])this.rootDirCache.get(existingPath);
+<b class="fc">&nbsp;                if (existingResources != null &amp;&amp; rootDirResources.length == existingResources.length) {</b>
+&nbsp;                    this.rootDirCache.remove(existingPath);
+<b class="fc">&nbsp;                    this.rootDirCache.put(commonPrefix, rootDirResources);</b>
+&nbsp;                    actualRootPath = commonPrefix;
+&nbsp;                } else if (commonPrefix.equals(rootDirPath)) {
+&nbsp;                    this.rootDirCache.put(rootDirPath, rootDirResources);
+&nbsp;                } else {
+<b class="nc">&nbsp;                    rootDirResources = null;</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            if (rootDirResources == null) {</b>
+&nbsp;                rootDirResources = this.getResources(rootDirPath);
+&nbsp;                this.rootDirCache.put(rootDirPath, rootDirResources);
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        Set&lt;Resource&gt; result = new LinkedHashSet(64);
+&nbsp;
+&nbsp;        for(Resource rootDirResource : rootDirResources) {
+&nbsp;            if (actualRootPath != null &amp;&amp; actualRootPath.length() &lt; rootDirPath.length()) {
+&nbsp;                rootDirResource = rootDirResource.createRelative(rootDirPath.substring(actualRootPath.length()));
+&nbsp;            }
+&nbsp;
+&nbsp;            rootDirResource = this.resolveRootDirResource(rootDirResource);
+<b class="nc">&nbsp;            URL rootDirUrl = rootDirResource.getURL();</b>
+<b class="nc">&nbsp;            if (equinoxResolveMethod != null &amp;&amp; rootDirUrl.getProtocol().startsWith(&quot;bundle&quot;)) {</b>
+<b class="nc">&nbsp;                URL resolvedUrl = (URL)ReflectionUtils.invokeMethod(equinoxResolveMethod, (Object)null, new Object[]{rootDirUrl});</b>
+&nbsp;                if (resolvedUrl != null) {
+&nbsp;                    rootDirUrl = resolvedUrl;
+&nbsp;                }
+&nbsp;
+&nbsp;                rootDirResource = new UrlResource(rootDirUrl);
+&nbsp;            }
+&nbsp;
+&nbsp;            if (rootDirUrl.getProtocol().startsWith(&quot;vfs&quot;)) {
+&nbsp;                result.addAll(PathMatchingResourcePatternResolver.VfsResourceMatchingDelegate.findMatchingResources(rootDirUrl, subPattern, this.getPathMatcher()));
+&nbsp;            } else if (!ResourceUtils.isJarURL(rootDirUrl) &amp;&amp; !this.isJarResource(rootDirResource)) {
+&nbsp;                result.addAll(this.doFindPathMatchingFileResources(rootDirResource, subPattern));
+&nbsp;            } else {
+&nbsp;                result.addAll(this.doFindPathMatchingJarResources(rootDirResource, rootDirUrl, subPattern));
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;        }</b>
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;        if (logger.isTraceEnabled()) {</b>
+&nbsp;            logger.trace(&quot;Resolved location pattern [&quot; + locationPattern + &quot;] to resources &quot; + String.valueOf(result));
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return (Resource[])result.toArray(new Resource[0]);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected String determineRootDir(String location) {
+&nbsp;        int prefixEnd = location.indexOf(58) + 1;
+&nbsp;
+&nbsp;        int rootDirEnd;
+&nbsp;        for(rootDirEnd = location.length(); rootDirEnd &gt; prefixEnd &amp;&amp; this.getPathMatcher().isPattern(location.substring(prefixEnd, rootDirEnd)); rootDirEnd = location.lastIndexOf(47, rootDirEnd - 2) + 1) {
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if (rootDirEnd == 0) {</b>
+<b class="fc">&nbsp;            rootDirEnd = prefixEnd;</b>
+<b class="pc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;        return location.substring(0, rootDirEnd);</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+<b class="pc">&nbsp;    protected Resource resolveRootDirResource(Resource original) throws IOException {</b>
+&nbsp;        return original;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected boolean isJarResource(Resource resource) throws IOException {
+<b class="fc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Set&lt;Resource&gt; doFindPathMatchingJarResources(Resource rootDirResource, URL rootDirUrl, String subPattern) throws IOException {
+&nbsp;        String jarFileUrl = null;
+&nbsp;        String rootEntryPath = &quot;&quot;;
+&nbsp;        String urlFile = rootDirUrl.getFile();
+&nbsp;        int separatorIndex = urlFile.indexOf(&quot;*/&quot;);
+&nbsp;        if (separatorIndex == -1) {
+&nbsp;            separatorIndex = urlFile.indexOf(&quot;!/&quot;);
+&nbsp;        }
+&nbsp;
+&nbsp;        if (separatorIndex &gt;= 0) {
+&nbsp;            jarFileUrl = urlFile.substring(0, separatorIndex);
+&nbsp;            rootEntryPath = urlFile.substring(separatorIndex + 2);
+&nbsp;            NavigableSet&lt;String&gt; entriesCache = (NavigableSet)this.jarEntriesCache.get(jarFileUrl);
+&nbsp;            if (entriesCache != null) {
+&nbsp;                Set&lt;Resource&gt; result = new LinkedHashSet(64);
+&nbsp;                rootEntryPath = rootEntryPath.replace(&quot;!/&quot;, &quot;/&quot;);
+<b class="pc">&nbsp;</b>
+&nbsp;                for(String entryPath : entriesCache.tailSet(rootEntryPath, false)) {
+&nbsp;                    if (!entryPath.startsWith(rootEntryPath)) {
+<b class="fc">&nbsp;                        break;</b>
+&nbsp;                    }
+&nbsp;
+&nbsp;                    String relativePath = entryPath.substring(rootEntryPath.length());
+<b class="nc">&nbsp;                    if (this.getPathMatcher().match(subPattern, relativePath)) {</b>
+&nbsp;                        result.add(rootDirResource.createRelative(relativePath));
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                return result;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        URLConnection con = rootDirUrl.openConnection();
+<b class="nc">&nbsp;        JarFile jarFile;</b>
+&nbsp;        boolean closeJarFile;
+&nbsp;        if (con instanceof JarURLConnection jarCon) {
+&nbsp;            try {
+&nbsp;                jarFile = jarCon.getJarFile();
+&nbsp;                jarFileUrl = jarCon.getJarFileURL().toExternalForm();
+&nbsp;                JarEntry jarEntry = jarCon.getJarEntry();
+<b class="nc">&nbsp;                rootEntryPath = jarEntry != null ? jarEntry.getName() : &quot;&quot;;</b>
+&nbsp;                closeJarFile = !jarCon.getUseCaches();
+&nbsp;            } catch (FileNotFoundException | ZipException var21) {
+&nbsp;                return Collections.emptySet();
+&nbsp;            }
+&nbsp;        } else {
+&nbsp;            try {
+&nbsp;                if (jarFileUrl != null) {
+&nbsp;                    jarFile = this.getJarFile(jarFileUrl);
+&nbsp;                } else {
+&nbsp;                    jarFile = new JarFile(urlFile);
+&nbsp;                    jarFileUrl = urlFile;
+<b class="nc">&nbsp;                    rootEntryPath = &quot;&quot;;</b>
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+&nbsp;                closeJarFile = true;
+<b class="nc">&nbsp;            } catch (ZipException var22) {</b>
+<b class="nc">&nbsp;                if (logger.isDebugEnabled()) {</b>
+<b class="nc">&nbsp;                    logger.debug(&quot;Skipping invalid jar class path entry [&quot; + urlFile + &quot;]&quot;);</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                return Collections.emptySet();
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        Object var32;</b>
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            if (logger.isTraceEnabled()) {
+&nbsp;                logger.trace(&quot;Looking for matching resources in jar file [&quot; + jarFileUrl + &quot;]&quot;);
+&nbsp;            }
+&nbsp;
+&nbsp;            if (StringUtils.hasLength(rootEntryPath) &amp;&amp; !rootEntryPath.endsWith(&quot;/&quot;)) {
+<b class="nc">&nbsp;                rootEntryPath = rootEntryPath + &quot;/&quot;;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            Set&lt;Resource&gt; result = new LinkedHashSet(64);
+&nbsp;            NavigableSet&lt;String&gt; entriesCache = new TreeSet();
+&nbsp;            Iterator&lt;String&gt; entryIterator = jarFile.stream().map(ZipEntry::getName).sorted().iterator();
+&nbsp;
+<b class="nc">&nbsp;            while(entryIterator.hasNext()) {</b>
+&nbsp;                String entryPath = (String)entryIterator.next();
+<b class="nc">&nbsp;                int entrySeparatorIndex = entryPath.indexOf(&quot;!/&quot;);</b>
+&nbsp;                if (entrySeparatorIndex &gt;= 0) {
+&nbsp;                    entryPath = entryPath.substring(entrySeparatorIndex + &quot;!/&quot;.length());
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                entriesCache.add(entryPath);
+<b class="nc">&nbsp;                if (entryPath.startsWith(rootEntryPath)) {</b>
+&nbsp;                    String relativePath = entryPath.substring(rootEntryPath.length());
+&nbsp;                    if (this.getPathMatcher().match(subPattern, relativePath)) {
+<b class="nc">&nbsp;                        result.add(rootDirResource.createRelative(relativePath));</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            this.jarEntriesCache.put(jarFileUrl, entriesCache);
+&nbsp;            var32 = result;
+&nbsp;        } finally {
+&nbsp;            if (closeJarFile) {
+&nbsp;                jarFile.close();
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;
+&nbsp;        return (Set&lt;Resource&gt;)var32;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected JarFile getJarFile(String jarFileUrl) throws IOException {</b>
+<b class="nc">&nbsp;        if (jarFileUrl.startsWith(&quot;file:&quot;)) {</b>
+<b class="nc">&nbsp;            try {</b>
+<b class="nc">&nbsp;                return new JarFile(ResourceUtils.toURI(jarFileUrl).getSchemeSpecificPart());</b>
+&nbsp;            } catch (URISyntaxException var3) {
+<b class="nc">&nbsp;                return new JarFile(jarFileUrl.substring(&quot;file:&quot;.length()));</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            return new JarFile(jarFileUrl);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Set&lt;Resource&gt; doFindPathMatchingFileResources(Resource rootDirResource, String subPattern) throws IOException {
+&nbsp;        Set&lt;Resource&gt; result = new LinkedHashSet(64);
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        URI rootDirUri;</b>
+&nbsp;        try {
+<b class="nc">&nbsp;            rootDirUri = rootDirResource.getURI();</b>
+<b class="nc">&nbsp;        } catch (Exception ex) {</b>
+&nbsp;            if (logger.isWarnEnabled()) {
+<b class="nc">&nbsp;                logger.warn(&quot;Failed to resolve directory [%s] as URI: %s&quot;.formatted(rootDirResource, ex));</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            return result;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        Path rootPath = null;
+<b class="nc">&nbsp;        if (rootDirUri.isAbsolute() &amp;&amp; !rootDirUri.isOpaque()) {</b>
+<b class="nc">&nbsp;            try {</b>
+<b class="nc">&nbsp;                try {</b>
+&nbsp;                    rootPath = Path.of(rootDirUri);
+&nbsp;                } catch (FileSystemNotFoundException var14) {
+&nbsp;                    FileSystems.newFileSystem(rootDirUri, Map.of(), ClassUtils.getDefaultClassLoader());
+<b class="nc">&nbsp;                    rootPath = Path.of(rootDirUri);</b>
+&nbsp;                }
+&nbsp;            } catch (Exception ex) {
+<b class="nc">&nbsp;                if (logger.isDebugEnabled()) {</b>
+<b class="nc">&nbsp;                    logger.debug(&quot;Failed to resolve %s in file system: %s&quot;.formatted(rootDirUri, ex));</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        if (rootPath == null) {
+&nbsp;            try {
+<b class="nc">&nbsp;                rootPath = Path.of(rootDirResource.getFile().getAbsolutePath());</b>
+<b class="nc">&nbsp;            } catch (FileNotFoundException ex) {</b>
+<b class="nc">&nbsp;                if (logger.isDebugEnabled()) {</b>
+<b class="nc">&nbsp;                    Log var21 = logger;</b>
+<b class="nc">&nbsp;                    String var23 = String.valueOf(rootDirResource);</b>
+<b class="nc">&nbsp;                    var21.debug(&quot;Cannot search for matching files underneath &quot; + var23 + &quot; in the file system: &quot; + ex.getMessage());</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                return result;</b>
+<b class="nc">&nbsp;            } catch (Exception ex) {</b>
+<b class="nc">&nbsp;                if (logger.isInfoEnabled()) {</b>
+<b class="nc">&nbsp;                    Log var10000 = logger;</b>
+&nbsp;                    String var10001 = String.valueOf(rootDirResource);
+&nbsp;                    var10000.info(&quot;Failed to resolve &quot; + var10001 + &quot; in the file system: &quot; + String.valueOf(ex));
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                return result;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        if (!Files.exists(rootPath, new LinkOption[0])) {
+<b class="nc">&nbsp;            if (logger.isDebugEnabled()) {</b>
+&nbsp;                logger.debug(&quot;Skipping search for files matching pattern [%s]: directory [%s] does not exist&quot;.formatted(subPattern, rootPath.toAbsolutePath()));
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            return result;</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            String rootDir = StringUtils.cleanPath(rootPath.toString());</b>
+&nbsp;            if (!rootDir.endsWith(&quot;/&quot;)) {
+&nbsp;                rootDir = rootDir + &quot;/&quot;;
+&nbsp;            }
+&nbsp;
+&nbsp;            String resourcePattern = rootDir + StringUtils.cleanPath(subPattern);
+&nbsp;            Predicate&lt;Path&gt; isMatchingFile = (path) -&gt; !path.equals(rootPath) &amp;&amp; this.getPathMatcher().match(resourcePattern, StringUtils.cleanPath(path.toString()));
+&nbsp;            if (logger.isTraceEnabled()) {
+&nbsp;                logger.trace(&quot;Searching directory [%s] for files matching pattern [%s]&quot;.formatted(rootPath.toAbsolutePath(), subPattern));
+&nbsp;            }
+&nbsp;
+&nbsp;            try (Stream&lt;Path&gt; files = Files.walk(rootPath, FileVisitOption.FOLLOW_LINKS)) {
+&nbsp;                Stream var22 = files.filter(isMatchingFile).sorted().map(FileSystemResource::new);
+&nbsp;                Objects.requireNonNull(result);
+&nbsp;                var22.forEach(result::add);
+&nbsp;            } catch (Exception ex) {
+&nbsp;                if (logger.isWarnEnabled()) {
+&nbsp;                    logger.warn(&quot;Failed to search in directory [%s] for files matching pattern [%s]: %s&quot;.formatted(rootPath.toAbsolutePath(), subPattern, ex));
+&nbsp;                }
+&nbsp;            }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;            return result;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    protected Set&lt;Resource&gt; findAllModulePathResources(String locationPattern) throws IOException {</b>
+<b class="fc">&nbsp;        Set&lt;Resource&gt; result = new LinkedHashSet(64);</b>
+<b class="fc">&nbsp;        if (NativeDetector.inNativeImage()) {</b>
+&nbsp;            return result;
+&nbsp;        } else {
+&nbsp;            String resourcePattern = stripLeadingSlash(locationPattern);
+<b class="fc">&nbsp;            Predicate var10000;</b>
+<b class="fc">&nbsp;            if (this.getPathMatcher().isPattern(resourcePattern)) {</b>
+<b class="fc">&nbsp;                var10000 = (path) -&gt; this.getPathMatcher().match(resourcePattern, path);</b>
+<b class="pc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                Objects.requireNonNull(resourcePattern);</b>
+<b class="nc">&nbsp;                var10000 = resourcePattern::equals;</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            Predicate&lt;String&gt; resourcePatternMatches = var10000;
+&nbsp;
+&nbsp;            try {
+<b class="nc">&nbsp;                ModuleLayer.boot().configuration().modules().stream().filter(isNotSystemModule).forEach((resolvedModule) -&gt; {</b>
+<b class="nc">&nbsp;                    try {</b>
+&nbsp;                        try (
+<b class="nc">&nbsp;                            ModuleReader moduleReader = resolvedModule.reference().open();</b>
+<b class="nc">&nbsp;                            Stream&lt;String&gt; names = moduleReader.list();</b>
+<b class="nc">&nbsp;                        ) {</b>
+&nbsp;                            Stream var10000 = names.filter(resourcePatternMatches).map((name) -&gt; this.findResource(moduleReader, name)).filter(Objects::nonNull);
+<b class="nc">&nbsp;                            Objects.requireNonNull(result);</b>
+<b class="nc">&nbsp;                            var10000.forEach(result::add);</b>
+&nbsp;                        }
+&nbsp;
+&nbsp;                    } catch (IOException var12) {
+<b class="nc">&nbsp;                        if (logger.isDebugEnabled()) {</b>
+&nbsp;                            logger.debug(&quot;Failed to read contents of module [%s]&quot;.formatted(resolvedModule), var12);
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                        throw new UncheckedIOException(var12);
+&nbsp;                    }
+<b class="pc">&nbsp;                });</b>
+&nbsp;            } catch (UncheckedIOException ex) {
+<b class="nc">&nbsp;                throw ex.getCause();</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            if (logger.isTraceEnabled()) {
+&nbsp;                logger.trace(&quot;Resolved module-path location pattern [%s] to resources %s&quot;.formatted(resourcePattern, result));
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            return result;</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    @Nullable
+<b class="nc">&nbsp;    private Resource findResource(ModuleReader moduleReader, String name) {</b>
+&nbsp;        try {
+&nbsp;            return (Resource)moduleReader.find(name).map(this::convertModuleSystemURI).orElse((Object)null);
+&nbsp;        } catch (Exception ex) {
+<b class="nc">&nbsp;            if (logger.isDebugEnabled()) {</b>
+&nbsp;                logger.debug(&quot;Failed to find resource [%s] in module path&quot;.formatted(name), ex);
+&nbsp;            }
+<b class="pc">&nbsp;</b>
+&nbsp;            return null;
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private Resource convertModuleSystemURI(URI uri) {
+&nbsp;        return (Resource)(&quot;file&quot;.equals(uri.getScheme()) ? new FileSystemResource(uri.getPath()) : UrlResource.from(uri));
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="pc">&nbsp;    private static String stripLeadingSlash(String path) {</b>
+&nbsp;        return path.startsWith(&quot;/&quot;) ? path.substring(1) : path;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="fc">&nbsp;    private static boolean checkPathWithinPackage(String path) {</b>
+<b class="fc">&nbsp;        return path.contains(&quot;/&quot;) &amp;&amp; !path.contains(&quot;!/&quot;);</b>
+<b class="pc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    static {</b>
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            Class&lt;?&gt; fileLocatorClass = ClassUtils.forName(&quot;org.eclipse.core.runtime.FileLocator&quot;, PathMatchingResourcePatternResolver.class.getClassLoader());
+<b class="nc">&nbsp;            equinoxResolveMethod = fileLocatorClass.getMethod(&quot;resolve&quot;, URL.class);</b>
+&nbsp;            logger.trace(&quot;Found Equinox FileLocator for OSGi bundle URL resolution&quot;);
+<b class="pc">&nbsp;        } catch (Throwable var1) {</b>
+<b class="nc">&nbsp;            equinoxResolveMethod = null;</b>
+&nbsp;        }
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private static class VfsResourceMatchingDelegate {
+<b class="fc">&nbsp;        private VfsResourceMatchingDelegate() {</b>
+&nbsp;        }
+&nbsp;
+<b class="pc">&nbsp;        public static Set&lt;Resource&gt; findMatchingResources(URL rootDirUrl, String locationPattern, PathMatcher pathMatcher) throws IOException {</b>
+<b class="nc">&nbsp;            Object root = VfsPatternUtils.findRoot(rootDirUrl);</b>
+&nbsp;            PatternVirtualFileVisitor visitor = new PatternVirtualFileVisitor(VfsPatternUtils.getPath(root), locationPattern, pathMatcher);
+<b class="fc">&nbsp;            VfsPatternUtils.visit(root, visitor);</b>
+&nbsp;            return visitor.getResources();
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static class PatternVirtualFileVisitor implements InvocationHandler {
+&nbsp;        private final String subPattern;
+&nbsp;        private final PathMatcher pathMatcher;
+&nbsp;        private final String rootPath;
+&nbsp;        private final Set&lt;Resource&gt; resources = new LinkedHashSet(64);
+&nbsp;
+&nbsp;        public PatternVirtualFileVisitor(String rootPath, String subPattern, PathMatcher pathMatcher) {
+&nbsp;            this.subPattern = subPattern;
+&nbsp;            this.pathMatcher = pathMatcher;
+<b class="fc">&nbsp;            this.rootPath = !rootPath.isEmpty() &amp;&amp; !rootPath.endsWith(&quot;/&quot;) ? rootPath + &quot;/&quot; : rootPath;</b>
+<b class="fc">&nbsp;        }</b>
+<b class="pc">&nbsp;</b>
+<b class="fc">&nbsp;        @Nullable</b>
+&nbsp;        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+<b class="pc">&nbsp;            String methodName = method.getName();</b>
+<b class="nc">&nbsp;            if (Object.class == method.getDeclaringClass()) {</b>
+&nbsp;                switch (methodName) {
+<b class="fc">&nbsp;                    case &quot;equals&quot; -&gt; {</b>
+&nbsp;                        return proxy == args[0];
+&nbsp;                    }
+&nbsp;                    case &quot;hashCode&quot; -&gt; {
+&nbsp;                        return System.identityHashCode(proxy);
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            Object var10000;
+&nbsp;            switch (methodName) {
+&nbsp;                case &quot;getAttributes&quot;:
+&nbsp;                    var10000 = this.getAttributes();
+&nbsp;                    break;
+&nbsp;                case &quot;visit&quot;:
+&nbsp;                    this.visit(args[0]);
+&nbsp;                    var10000 = null;
+&nbsp;                    break;
+<b class="fc">&nbsp;                case &quot;toString&quot;:</b>
+&nbsp;                    var10000 = this.toString();
+&nbsp;                    break;
+&nbsp;                default:
+&nbsp;                    throw new IllegalStateException(&quot;Unexpected method invocation: &quot; + String.valueOf(method));
+&nbsp;            }
+&nbsp;
+&nbsp;            return var10000;
+&nbsp;        }
+&nbsp;
+&nbsp;        public void visit(Object vfsResource) {
+&nbsp;            if (this.pathMatcher.match(this.subPattern, VfsPatternUtils.getPath(vfsResource).substring(this.rootPath.length()))) {
+&nbsp;                this.resources.add(new VfsResource(vfsResource));
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;
+&nbsp;        @Nullable
+&nbsp;        public Object getAttributes() {
+&nbsp;            return VfsPatternUtils.getVisitorAttributes();
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        public Set&lt;Resource&gt; getResources() {</b>
+&nbsp;            return this.resources;
+&nbsp;        }
+&nbsp;
+&nbsp;        public int size() {
+&nbsp;            return this.resources.size();
+&nbsp;        }
+&nbsp;
+&nbsp;        public String toString() {
+&nbsp;            String var10000 = this.subPattern;
+&nbsp;            return &quot;sub-pattern: &quot; + var10000 + &quot;, resources: &quot; + String.valueOf(this.resources);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static record ClassPathManifestEntry(Resource resource, Resource alternative) {
+&nbsp;        private static final String JARFILE_URL_PREFIX = &quot;jar:file:&quot;;
+&nbsp;
+&nbsp;        private ClassPathManifestEntry(Resource resource, @Nullable Resource alternative) {
+<b class="nc">&nbsp;            this.resource = resource;</b>
+<b class="nc">&nbsp;            this.alternative = alternative;</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        static ClassPathManifestEntry of(File file) throws MalformedURLException {</b>
+<b class="nc">&nbsp;            String path = fixPath(file.getAbsolutePath());</b>
+<b class="nc">&nbsp;            Resource resource = asJarFileResource(path);</b>
+&nbsp;            Resource alternative = createAlternative(path);
+<b class="nc">&nbsp;            return new ClassPathManifestEntry(resource, alternative);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        private static String fixPath(String path) {</b>
+<b class="nc">&nbsp;            int prefixIndex = path.indexOf(58);</b>
+<b class="nc">&nbsp;            if (prefixIndex == 1) {</b>
+&nbsp;                path = &quot;/&quot; + StringUtils.capitalize(path);
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            return StringUtils.replace(path, &quot;#&quot;, &quot;%23&quot;);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        @Nullable
+&nbsp;        private static Resource createAlternative(String path) {
+<b class="nc">&nbsp;            try {</b>
+<b class="nc">&nbsp;                String alternativePath = path.startsWith(&quot;/&quot;) ? path.substring(1) : &quot;/&quot; + path;</b>
+<b class="nc">&nbsp;                return asJarFileResource(alternativePath);</b>
+&nbsp;            } catch (MalformedURLException var2) {
+&nbsp;                return null;
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        private static Resource asJarFileResource(String path) throws MalformedURLException {
+<b class="nc">&nbsp;            return new UrlResource(&quot;jar:file:&quot; + path + &quot;!/&quot;);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public Resource resource() {
+<b class="nc">&nbsp;            return this.resource;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        @Nullable</b>
+<b class="nc">&nbsp;        public Resource alternative() {</b>
+<b class="nc">&nbsp;            return this.alternative;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,177 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > GroupedSchemaMigratorImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.tool.schema.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: GroupedSchemaMigratorImpl (org.hibernate.tool.schema.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">GroupedSchemaMigratorImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    3.8%
+  </span>
+  <span class="absValue">
+    (1/26)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    23.1%
+  </span>
+  <span class="absValue">
+    (6/26)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.tool.schema.internal;
+&nbsp;
+&nbsp;import java.util.Set;
+&nbsp;import org.hibernate.boot.Metadata;
+&nbsp;import org.hibernate.boot.model.naming.Identifier;
+&nbsp;import org.hibernate.boot.model.relational.Namespace;
+&nbsp;import org.hibernate.boot.model.relational.SqlStringGenerationContext;
+&nbsp;import org.hibernate.dialect.Dialect;
+&nbsp;import org.hibernate.engine.jdbc.internal.Formatter;
+&nbsp;import org.hibernate.mapping.Table;
+&nbsp;import org.hibernate.tool.schema.extract.spi.DatabaseInformation;
+&nbsp;import org.hibernate.tool.schema.extract.spi.NameSpaceTablesInformation;
+&nbsp;import org.hibernate.tool.schema.extract.spi.TableInformation;
+&nbsp;import org.hibernate.tool.schema.internal.exec.GenerationTarget;
+&nbsp;import org.hibernate.tool.schema.spi.ContributableMatcher;
+&nbsp;import org.hibernate.tool.schema.spi.ExecutionOptions;
+&nbsp;import org.hibernate.tool.schema.spi.SchemaFilter;
+&nbsp;
+&nbsp;public class GroupedSchemaMigratorImpl extends AbstractSchemaMigrator {
+&nbsp;    public GroupedSchemaMigratorImpl(HibernateSchemaManagementTool tool, SchemaFilter schemaFilter) {
+&nbsp;        super(tool, schemaFilter);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected NameSpaceTablesInformation performTablesMigration(Metadata metadata, DatabaseInformation existingDatabase, ExecutionOptions options, ContributableMatcher contributableInclusionFilter, Dialect dialect, Formatter formatter, Set&lt;String&gt; exportIdentifiers, boolean tryToCreateCatalogs, boolean tryToCreateSchemas, Set&lt;Identifier&gt; exportedCatalogs, Namespace namespace, SqlStringGenerationContext context, GenerationTarget[] targets) {
+&nbsp;        NameSpaceTablesInformation tablesInformation = new NameSpaceTablesInformation(metadata.getDatabase().getJdbcEnvironment().getIdentifierHelper());
+&nbsp;        if (this.schemaFilter.includeNamespace(namespace)) {
+&nbsp;            this.createSchemaAndCatalog(existingDatabase, options, dialect, formatter, tryToCreateCatalogs, tryToCreateSchemas, exportedCatalogs, namespace, context, targets);
+&nbsp;            NameSpaceTablesInformation tables = existingDatabase.getTablesInformation(namespace);
+&nbsp;
+&nbsp;            for(Table table : namespace.getTables()) {
+&nbsp;                if (this.schemaFilter.includeTable(table) &amp;&amp; table.isPhysicalTable() &amp;&amp; contributableInclusionFilter.matches(table)) {
+<b class="fc">&nbsp;                    this.checkExportIdentifier(table, exportIdentifiers);</b>
+&nbsp;                    TableInformation tableInformation = tables.getTableInformation(table);
+&nbsp;                    if (tableInformation == null) {
+&nbsp;                        this.createTable(table, dialect, metadata, formatter, options, context, targets);
+&nbsp;                    } else if (tableInformation.isPhysicalTable()) {
+&nbsp;                        tablesInformation.addTableInformation(tableInformation);
+&nbsp;                        this.migrateTable(table, tableInformation, dialect, metadata, formatter, options, context, targets);
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            for(Table table : namespace.getTables()) {
+&nbsp;                if (this.schemaFilter.includeTable(table) &amp;&amp; table.isPhysicalTable() &amp;&amp; contributableInclusionFilter.matches(table)) {
+&nbsp;                    TableInformation tableInformation = tablesInformation.getTableInformation(table);
+&nbsp;                    if (tableInformation == null || tableInformation.isPhysicalTable()) {
+&nbsp;                        this.applyIndexes(table, tableInformation, dialect, metadata, formatter, options, context, targets);
+&nbsp;                        this.applyUniqueKeys(table, tableInformation, dialect, metadata, formatter, options, context, targets);
+&nbsp;                    }
+<b class="fc">&nbsp;                }</b>
+<b class="fc">&nbsp;            }</b>
+&nbsp;        }
+<b class="pc">&nbsp;</b>
+<b class="fc">&nbsp;        return tablesInformation;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 21:00</div>
+</div>
+</body>
+</html>

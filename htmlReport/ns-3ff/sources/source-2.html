@@ -1,0 +1,256 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > FormContentFilter</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.web.filter</a>
+</div>
+
+<h1>Coverage Summary for Class: FormContentFilter (org.springframework.web.filter)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">FormContentFilter</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/20)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.web.filter;
+&nbsp;
+&nbsp;import jakarta.servlet.FilterChain;
+&nbsp;import jakarta.servlet.ServletException;
+&nbsp;import jakarta.servlet.http.HttpServletRequest;
+&nbsp;import jakarta.servlet.http.HttpServletRequestWrapper;
+&nbsp;import jakarta.servlet.http.HttpServletResponse;
+&nbsp;import java.io.IOException;
+&nbsp;import java.io.InputStream;
+&nbsp;import java.nio.charset.Charset;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Arrays;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.Enumeration;
+&nbsp;import java.util.LinkedHashMap;
+&nbsp;import java.util.LinkedHashSet;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Set;
+&nbsp;import org.springframework.http.HttpInputMessage;
+&nbsp;import org.springframework.http.MediaType;
+&nbsp;import org.springframework.http.converter.FormHttpMessageConverter;
+&nbsp;import org.springframework.http.converter.support.AllEncompassingFormHttpMessageConverter;
+&nbsp;import org.springframework.http.server.ServletServerHttpRequest;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.CollectionUtils;
+&nbsp;import org.springframework.util.MultiValueMap;
+&nbsp;import org.springframework.util.StringUtils;
+&nbsp;
+&nbsp;public class FormContentFilter extends OncePerRequestFilter {
+&nbsp;    private static final List&lt;String&gt; HTTP_METHODS = Arrays.asList(&quot;PUT&quot;, &quot;PATCH&quot;, &quot;DELETE&quot;);
+&nbsp;    private FormHttpMessageConverter formConverter = new AllEncompassingFormHttpMessageConverter();
+&nbsp;
+&nbsp;    public FormContentFilter() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setFormConverter(FormHttpMessageConverter converter) {
+&nbsp;        Assert.notNull(converter, &quot;FormHttpMessageConverter is required&quot;);
+&nbsp;        this.formConverter = converter;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setCharset(Charset charset) {
+&nbsp;        this.formConverter.setCharset(charset);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+&nbsp;        MultiValueMap&lt;String, String&gt; params = this.parseIfNecessary(request);
+&nbsp;        if (!CollectionUtils.isEmpty(params)) {
+&nbsp;            filterChain.doFilter(new FormContentRequestWrapper(request, params), response);
+&nbsp;        } else {
+<b class="nc">&nbsp;            filterChain.doFilter(request, response);</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    @Nullable
+&nbsp;    private MultiValueMap&lt;String, String&gt; parseIfNecessary(final HttpServletRequest request) throws IOException {
+&nbsp;        if (!this.shouldParse(request)) {
+&nbsp;            return null;
+&nbsp;        } else {
+&nbsp;            HttpInputMessage inputMessage = new ServletServerHttpRequest(request) {
+&nbsp;                public InputStream getBody() throws IOException {
+<b class="nc">&nbsp;                    return request.getInputStream();</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            };
+&nbsp;            return this.formConverter.read((Class)null, inputMessage);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean shouldParse(HttpServletRequest request) {
+&nbsp;        String contentType = request.getContentType();
+&nbsp;        String method = request.getMethod();
+<b class="nc">&nbsp;        if (StringUtils.hasLength(contentType) &amp;&amp; HTTP_METHODS.contains(method)) {</b>
+&nbsp;            try {
+&nbsp;                MediaType mediaType = MediaType.parseMediaType(contentType);
+&nbsp;                return MediaType.APPLICATION_FORM_URLENCODED.includes(mediaType);
+&nbsp;            } catch (IllegalArgumentException var5) {
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return false;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private static class FormContentRequestWrapper extends HttpServletRequestWrapper {</b>
+&nbsp;        private final MultiValueMap&lt;String, String&gt; formParams;
+&nbsp;
+<b class="nc">&nbsp;        public FormContentRequestWrapper(HttpServletRequest request, MultiValueMap&lt;String, String&gt; params) {</b>
+&nbsp;            super(request);
+&nbsp;            this.formParams = params;
+&nbsp;        }
+&nbsp;
+&nbsp;        @Nullable
+<b class="nc">&nbsp;        public String getParameter(String name) {</b>
+<b class="nc">&nbsp;            String queryStringValue = super.getParameter(name);</b>
+&nbsp;            String formValue = (String)this.formParams.getFirst(name);
+&nbsp;            return queryStringValue != null ? queryStringValue : formValue;
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        public Map&lt;String, String[]&gt; getParameterMap() {
+&nbsp;            Map&lt;String, String[]&gt; result = new LinkedHashMap();
+&nbsp;            Enumeration&lt;String&gt; names = this.getParameterNames();
+&nbsp;
+<b class="nc">&nbsp;            while(names.hasMoreElements()) {</b>
+&nbsp;                String name = (String)names.nextElement();
+&nbsp;                result.put(name, this.getParameterValues(name));
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            return result;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        public Enumeration&lt;String&gt; getParameterNames() {</b>
+<b class="nc">&nbsp;            Set&lt;String&gt; names = new LinkedHashSet();</b>
+&nbsp;            names.addAll(Collections.list(super.getParameterNames()));
+&nbsp;            names.addAll(this.formParams.keySet());
+&nbsp;            return Collections.enumeration(names);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        @Nullable
+&nbsp;        public String[] getParameterValues(String name) {
+&nbsp;            String[] parameterValues = super.getParameterValues(name);
+&nbsp;            List&lt;String&gt; formParam = (List)this.formParams.get(name);
+&nbsp;            if (formParam == null) {
+&nbsp;                return parameterValues;
+&nbsp;            } else if (parameterValues != null &amp;&amp; this.getQueryString() != null) {
+&nbsp;                List&lt;String&gt; result = new ArrayList(parameterValues.length + formParam.size());
+&nbsp;                result.addAll(Arrays.asList(parameterValues));
+&nbsp;                result.addAll(formParam);
+&nbsp;                return StringUtils.toStringArray(result);
+&nbsp;            } else {
+&nbsp;                return StringUtils.toStringArray(formParam);
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:58</div>
+</div>
+</body>
+</html>

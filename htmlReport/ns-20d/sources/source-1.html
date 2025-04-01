@@ -1,0 +1,246 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > INNValidator</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.validator.internal.constraintvalidators.hv.ru</a>
+</div>
+
+<h1>Coverage Summary for Class: INNValidator (org.hibernate.validator.internal.constraintvalidators.hv.ru)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">INNValidator</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/13)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.validator.internal.constraintvalidators.hv.ru;
+&nbsp;
+&nbsp;import jakarta.validation.ConstraintValidator;
+&nbsp;import jakarta.validation.ConstraintValidatorContext;
+&nbsp;import java.util.regex.Pattern;
+&nbsp;import org.hibernate.validator.constraints.ru.INN;
+&nbsp;import org.hibernate.validator.internal.util.Contracts;
+&nbsp;
+&nbsp;public class INNValidator implements ConstraintValidator&lt;INN, CharSequence&gt; {
+&nbsp;    private static final Pattern NUMBERS_ONLY_PATTERN = Pattern.compile(&quot;[0-9]+&quot;);
+&nbsp;    private static final int RADIX = 10;
+&nbsp;    private INNValidationAlgorithm innValidationAlgorithm;
+&nbsp;
+&nbsp;    public INNValidator() {
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void initialize(INN constraintAnnotation) {</b>
+&nbsp;        this.innValidationAlgorithm = INNValidator.INNValidationAlgorithm.from(constraintAnnotation.type());
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public boolean isValid(CharSequence innCharSeq, ConstraintValidatorContext context) {
+&nbsp;        if (innCharSeq == null) {
+&nbsp;            return true;
+&nbsp;        } else {
+&nbsp;            String inn = innCharSeq.toString();
+<b class="nc">&nbsp;            boolean hasOnlyNumbers = NUMBERS_ONLY_PATTERN.matcher(inn).matches();</b>
+&nbsp;            if (!hasOnlyNumbers) {
+&nbsp;                return false;
+&nbsp;            } else if (!this.innValidationAlgorithm.isValidLength(inn.length())) {
+&nbsp;                return false;
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                int[] digits = inn.codePoints().map((symbol) -&gt; Character.digit(symbol, 10)).toArray();</b>
+&nbsp;                return this.innValidationAlgorithm.isValidChecksum(digits);
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private interface INNValidationAlgorithm {</b>
+<b class="nc">&nbsp;        boolean isValidLength(int var1);</b>
+&nbsp;
+&nbsp;        boolean isValidChecksum(int[] var1);
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        static INNValidationAlgorithm from(INN.Type type) {</b>
+&nbsp;            Contracts.assertNotNull(type);
+&nbsp;            switch (type) {
+<b class="nc">&nbsp;                case JURIDICAL:</b>
+&nbsp;                    return INNValidator.INNValidationAlgorithmImpl.JURIDICAL;
+<b class="nc">&nbsp;                case INDIVIDUAL:</b>
+&nbsp;                    return INNValidator.INNValidationAlgorithmImpl.INDIVIDUAL;
+&nbsp;                case ANY:
+&nbsp;                default:
+&nbsp;                    return INNValidator.INNValidationAlgorithmImpl.ANY;
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static enum INNValidationAlgorithmImpl implements INNValidationAlgorithm {
+&nbsp;        INDIVIDUAL {
+&nbsp;            public boolean isValidLength(int length) {
+&nbsp;                return 12 == length;
+&nbsp;            }
+&nbsp;
+&nbsp;            public boolean isValidChecksum(int[] digits) {
+&nbsp;                return INNValidator.INNValidationAlgorithmImpl.checkChecksumPersonalINN(digits);
+&nbsp;            }
+&nbsp;        },
+&nbsp;        JURIDICAL {
+&nbsp;            public boolean isValidLength(int length) {
+&nbsp;                return 10 == length;
+&nbsp;            }
+&nbsp;
+&nbsp;            public boolean isValidChecksum(int[] digits) {
+&nbsp;                return INNValidator.INNValidationAlgorithmImpl.checkChecksumJuridicalINN(digits);
+&nbsp;            }
+&nbsp;        },
+&nbsp;        ANY {
+&nbsp;            public boolean isValidLength(int length) {
+&nbsp;                return 10 == length || 12 == length;
+&nbsp;            }
+&nbsp;
+&nbsp;            public boolean isValidChecksum(int[] digits) {
+&nbsp;                int length = digits.length;
+&nbsp;                if (length == 12) {
+&nbsp;                    return INNValidator.INNValidationAlgorithmImpl.checkChecksumPersonalINN(digits);
+&nbsp;                } else if (length == 10) {
+&nbsp;                    return INNValidator.INNValidationAlgorithmImpl.checkChecksumJuridicalINN(digits);
+&nbsp;                } else {
+&nbsp;                    throw new IllegalStateException(&quot;Invalid/unsupported inn value length&quot;);
+&nbsp;                }
+&nbsp;            }
+&nbsp;        };
+&nbsp;
+&nbsp;        private static final int[] INDIVIDUAL_WEIGHTS_11 = new int[]{7, 2, 4, 10, 3, 5, 9, 4, 6, 8};
+&nbsp;        private static final int[] INDIVIDUAL_WEIGHTS_12 = new int[]{3, 7, 2, 4, 10, 3, 5, 9, 4, 6, 8};
+&nbsp;        private static final int[] JURIDICAL_WEIGHTS = new int[]{2, 4, 10, 3, 5, 9, 4, 6, 8};
+&nbsp;        private static final int MOD_11 = 11;
+&nbsp;        private static final int MOD_10 = 10;
+&nbsp;
+&nbsp;        private INNValidationAlgorithmImpl() {
+&nbsp;        }
+&nbsp;
+&nbsp;        private static boolean checkChecksumPersonalINN(int[] digits) {
+&nbsp;            int checkSum11 = getCheckSum(digits, INDIVIDUAL_WEIGHTS_11);
+&nbsp;            int checkSum12 = getCheckSum(digits, INDIVIDUAL_WEIGHTS_12);
+&nbsp;            boolean isCheckSum11Correct = checkSum11 == digits[digits.length - 2];
+&nbsp;            boolean isCheckSum12Correct = checkSum12 == digits[digits.length - 1];
+&nbsp;            return isCheckSum11Correct &amp;&amp; isCheckSum12Correct;
+&nbsp;        }
+&nbsp;
+&nbsp;        private static boolean checkChecksumJuridicalINN(int[] digits) {
+&nbsp;            int checkSum = getCheckSum(digits, JURIDICAL_WEIGHTS);
+&nbsp;            return digits[digits.length - 1] == checkSum;
+&nbsp;        }
+&nbsp;
+&nbsp;        private static int getCheckSum(int[] digits, int[] weights) {
+&nbsp;            int sum = 0;
+&nbsp;
+&nbsp;            for(int i = 0; i &lt; weights.length; ++i) {
+&nbsp;                sum += digits[i] * weights[i];
+&nbsp;            }
+&nbsp;
+&nbsp;            return sum % 11 % 10;
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

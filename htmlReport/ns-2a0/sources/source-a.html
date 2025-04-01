@@ -1,0 +1,360 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > CachedIntrospectionResults</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.beans</a>
+</div>
+
+<h1>Coverage Summary for Class: CachedIntrospectionResults (org.springframework.beans)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">CachedIntrospectionResults</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    70%
+  </span>
+  <span class="absValue">
+    (14/20)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    46.6%
+  </span>
+  <span class="absValue">
+    (54/116)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    60.2%
+  </span>
+  <span class="absValue">
+    (74/123)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.beans;
+&nbsp;
+&nbsp;import java.beans.BeanInfo;
+&nbsp;import java.beans.IntrospectionException;
+&nbsp;import java.beans.PropertyDescriptor;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;import java.lang.reflect.Modifier;
+&nbsp;import java.net.URL;
+&nbsp;import java.security.ProtectionDomain;
+&nbsp;import java.util.HashSet;
+&nbsp;import java.util.LinkedHashMap;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import java.util.concurrent.ConcurrentMap;
+&nbsp;import org.apache.commons.logging.Log;
+&nbsp;import org.apache.commons.logging.LogFactory;
+&nbsp;import org.springframework.core.io.support.SpringFactoriesLoader;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.ClassUtils;
+&nbsp;import org.springframework.util.ConcurrentReferenceHashMap;
+&nbsp;import org.springframework.util.StringUtils;
+&nbsp;
+&nbsp;public final class CachedIntrospectionResults {
+&nbsp;    private static final List&lt;BeanInfoFactory&gt; beanInfoFactories = SpringFactoriesLoader.loadFactories(BeanInfoFactory.class, CachedIntrospectionResults.class.getClassLoader());
+&nbsp;    private static final SimpleBeanInfoFactory simpleBeanInfoFactory = new SimpleBeanInfoFactory();
+&nbsp;    private static final Log logger = LogFactory.getLog(CachedIntrospectionResults.class);
+&nbsp;    static final Set&lt;ClassLoader&gt; acceptedClassLoaders = ConcurrentHashMap.newKeySet(16);
+&nbsp;    static final ConcurrentMap&lt;Class&lt;?&gt;, CachedIntrospectionResults&gt; strongClassCache = new ConcurrentHashMap(64);
+&nbsp;    static final ConcurrentMap&lt;Class&lt;?&gt;, CachedIntrospectionResults&gt; softClassCache = new ConcurrentReferenceHashMap(64);
+&nbsp;    private final BeanInfo beanInfo;
+&nbsp;    private final Map&lt;String, PropertyDescriptor&gt; propertyDescriptors;
+&nbsp;
+&nbsp;    public static void acceptClassLoader(@Nullable ClassLoader classLoader) {
+&nbsp;        if (classLoader != null) {
+&nbsp;            acceptedClassLoaders.add(classLoader);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void clearClassLoader(@Nullable ClassLoader classLoader) {
+&nbsp;        acceptedClassLoaders.removeIf((registeredLoader) -&gt; isUnderneathClassLoader(registeredLoader, classLoader));
+&nbsp;        strongClassCache.keySet().removeIf((beanClass) -&gt; isUnderneathClassLoader(beanClass.getClassLoader(), classLoader));
+&nbsp;        softClassCache.keySet().removeIf((beanClass) -&gt; isUnderneathClassLoader(beanClass.getClassLoader(), classLoader));
+&nbsp;    }
+&nbsp;
+&nbsp;    static CachedIntrospectionResults forClass(Class&lt;?&gt; beanClass) throws BeansException {
+&nbsp;        CachedIntrospectionResults results = (CachedIntrospectionResults)strongClassCache.get(beanClass);
+&nbsp;        if (results != null) {
+&nbsp;            return results;
+&nbsp;        } else {
+&nbsp;            results = (CachedIntrospectionResults)softClassCache.get(beanClass);
+&nbsp;            if (results != null) {
+&nbsp;                return results;
+&nbsp;            } else {
+&nbsp;                results = new CachedIntrospectionResults(beanClass);
+&nbsp;                ConcurrentMap&lt;Class&lt;?&gt;, CachedIntrospectionResults&gt; classCacheToUse;
+&nbsp;                if (!ClassUtils.isCacheSafe(beanClass, CachedIntrospectionResults.class.getClassLoader()) &amp;&amp; !isClassLoaderAccepted(beanClass.getClassLoader())) {
+&nbsp;                    if (logger.isDebugEnabled()) {
+&nbsp;                        logger.debug(&quot;Not strongly caching class [&quot; + beanClass.getName() + &quot;] because it is not cache-safe&quot;);
+&nbsp;                    }
+&nbsp;
+&nbsp;                    classCacheToUse = softClassCache;
+&nbsp;                } else {
+&nbsp;                    classCacheToUse = strongClassCache;
+&nbsp;                }
+&nbsp;
+&nbsp;                CachedIntrospectionResults existing = (CachedIntrospectionResults)classCacheToUse.putIfAbsent(beanClass, results);
+&nbsp;                return existing != null ? existing : results;
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    private static boolean isClassLoaderAccepted(ClassLoader classLoader) {
+<b class="fc">&nbsp;        for(ClassLoader acceptedLoader : acceptedClassLoaders) {</b>
+&nbsp;            if (isUnderneathClassLoader(classLoader, acceptedLoader)) {
+<b class="fc">&nbsp;                return true;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return false;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    private static boolean isUnderneathClassLoader(@Nullable ClassLoader candidate, @Nullable ClassLoader parent) {
+&nbsp;        if (candidate == parent) {
+&nbsp;            return true;
+&nbsp;        } else if (candidate == null) {
+&nbsp;            return false;
+<b class="fc">&nbsp;        } else {</b>
+&nbsp;            ClassLoader classLoaderToCheck = candidate;
+&nbsp;
+&nbsp;            while(classLoaderToCheck != null) {
+&nbsp;                classLoaderToCheck = classLoaderToCheck.getParent();
+&nbsp;                if (classLoaderToCheck == parent) {
+&nbsp;                    return true;
+<b class="fc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            return false;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static BeanInfo getBeanInfo(Class&lt;?&gt; beanClass) throws IntrospectionException {
+&nbsp;        for(BeanInfoFactory beanInfoFactory : beanInfoFactories) {
+&nbsp;            BeanInfo beanInfo = beanInfoFactory.getBeanInfo(beanClass);
+&nbsp;            if (beanInfo != null) {
+&nbsp;                return beanInfo;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return simpleBeanInfoFactory.getBeanInfo(beanClass);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private CachedIntrospectionResults(Class&lt;?&gt; beanClass) throws BeansException {</b>
+&nbsp;        try {
+&nbsp;            if (logger.isTraceEnabled()) {
+&nbsp;                logger.trace(&quot;Getting BeanInfo for class [&quot; + beanClass.getName() + &quot;]&quot;);
+&nbsp;            }
+&nbsp;
+&nbsp;            this.beanInfo = getBeanInfo(beanClass);
+&nbsp;            if (logger.isTraceEnabled()) {
+&nbsp;                logger.trace(&quot;Caching PropertyDescriptors for class [&quot; + beanClass.getName() + &quot;]&quot;);
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            this.propertyDescriptors = new LinkedHashMap();</b>
+<b class="nc">&nbsp;            Set&lt;String&gt; readMethodNames = new HashSet();</b>
+<b class="fc">&nbsp;            PropertyDescriptor[] pds = this.beanInfo.getPropertyDescriptors();</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;            for(PropertyDescriptor pd : pds) {</b>
+<b class="nc">&nbsp;                if ((Class.class != beanClass || &quot;name&quot;.equals(pd.getName()) || pd.getName().endsWith(&quot;Name&quot;) &amp;&amp; String.class == pd.getPropertyType()) &amp;&amp; (URL.class != beanClass || !&quot;content&quot;.equals(pd.getName())) &amp;&amp; (pd.getWriteMethod() != null || !this.isInvalidReadOnlyPropertyType(pd.getPropertyType(), beanClass))) {</b>
+&nbsp;                    if (logger.isTraceEnabled()) {
+&nbsp;                        Log var10000 = logger;
+&nbsp;                        String var10001 = pd.getName();
+&nbsp;                        var10000.trace(&quot;Found bean property &#39;&quot; + var10001 + &quot;&#39;&quot; + (pd.getPropertyType() != null ? &quot; of type [&quot; + pd.getPropertyType().getName() + &quot;]&quot; : &quot;&quot;) + (pd.getPropertyEditorClass() != null ? &quot;; editor [&quot; + pd.getPropertyEditorClass().getName() + &quot;]&quot; : &quot;&quot;));
+&nbsp;                    }
+&nbsp;
+&nbsp;                    pd = this.buildGenericTypeAwarePropertyDescriptor(beanClass, pd);
+&nbsp;                    this.propertyDescriptors.put(pd.getName(), pd);
+&nbsp;                    Method readMethod = pd.getReadMethod();
+<b class="fc">&nbsp;                    if (readMethod != null) {</b>
+<b class="pc">&nbsp;                        readMethodNames.add(readMethod.getName());</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+<b class="fc">&nbsp;            }</b>
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;            for(Class&lt;?&gt; currClass = beanClass; currClass != null &amp;&amp; currClass != Object.class; currClass = currClass.getSuperclass()) {</b>
+&nbsp;                this.introspectInterfaces(beanClass, currClass, readMethodNames);
+&nbsp;            }
+<b class="fc">&nbsp;</b>
+&nbsp;            this.introspectPlainAccessors(beanClass, readMethodNames);
+&nbsp;        } catch (IntrospectionException ex) {
+<b class="pc">&nbsp;            throw new FatalBeanException(&quot;Failed to obtain BeanInfo for class [&quot; + beanClass.getName() + &quot;]&quot;, ex);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private void introspectInterfaces(Class&lt;?&gt; beanClass, Class&lt;?&gt; currClass, Set&lt;String&gt; readMethodNames) throws IntrospectionException {
+<b class="nc">&nbsp;        for(Class&lt;?&gt; ifc : currClass.getInterfaces()) {</b>
+<b class="nc">&nbsp;            if (!ClassUtils.isJavaLanguageInterface(ifc)) {</b>
+&nbsp;                for(PropertyDescriptor pd : getBeanInfo(ifc).getPropertyDescriptors()) {
+<b class="nc">&nbsp;                    PropertyDescriptor existingPd = (PropertyDescriptor)this.propertyDescriptors.get(pd.getName());</b>
+&nbsp;                    if (existingPd == null || existingPd.getReadMethod() == null &amp;&amp; pd.getReadMethod() != null) {
+&nbsp;                        pd = this.buildGenericTypeAwarePropertyDescriptor(beanClass, pd);
+<b class="fc">&nbsp;                        if (pd.getWriteMethod() != null || !this.isInvalidReadOnlyPropertyType(pd.getPropertyType(), beanClass)) {</b>
+<b class="pc">&nbsp;                            this.propertyDescriptors.put(pd.getName(), pd);</b>
+&nbsp;                            Method readMethod = pd.getReadMethod();
+&nbsp;                            if (readMethod != null) {
+&nbsp;                                readMethodNames.add(readMethod.getName());
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                this.introspectInterfaces(ifc, ifc, readMethodNames);
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private void introspectPlainAccessors(Class&lt;?&gt; beanClass, Set&lt;String&gt; readMethodNames) throws IntrospectionException {
+<b class="nc">&nbsp;        for(Method method : beanClass.getMethods()) {</b>
+&nbsp;            if (!this.propertyDescriptors.containsKey(method.getName()) &amp;&amp; !readMethodNames.contains(method.getName()) &amp;&amp; this.isPlainAccessor(method)) {
+&nbsp;                this.propertyDescriptors.put(method.getName(), new GenericTypeAwarePropertyDescriptor(beanClass, method.getName(), method, (Method)null, (Class)null));
+&nbsp;                readMethodNames.add(method.getName());
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean isPlainAccessor(Method method) {
+<b class="pc">&nbsp;        if (!Modifier.isStatic(method.getModifiers()) &amp;&amp; method.getDeclaringClass() != Object.class &amp;&amp; method.getDeclaringClass() != Class.class &amp;&amp; method.getParameterCount() &lt;= 0 &amp;&amp; method.getReturnType() != Void.TYPE &amp;&amp; !this.isInvalidReadOnlyPropertyType(method.getReturnType(), method.getDeclaringClass())) {</b>
+<b class="fc">&nbsp;            try {</b>
+&nbsp;                method.getDeclaringClass().getDeclaredField(method.getName());
+<b class="nc">&nbsp;                return true;</b>
+<b class="nc">&nbsp;            } catch (Exception var3) {</b>
+&nbsp;                return false;
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            return false;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private boolean isInvalidReadOnlyPropertyType(@Nullable Class&lt;?&gt; returnType, Class&lt;?&gt; beanClass) {
+<b class="nc">&nbsp;        return returnType != null &amp;&amp; (ClassLoader.class.isAssignableFrom(returnType) || ProtectionDomain.class.isAssignableFrom(returnType) || AutoCloseable.class.isAssignableFrom(returnType) &amp;&amp; !AutoCloseable.class.isAssignableFrom(beanClass));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    BeanInfo getBeanInfo() {
+&nbsp;        return this.beanInfo;
+&nbsp;    }
+&nbsp;
+&nbsp;    Class&lt;?&gt; getBeanClass() {
+&nbsp;        return this.beanInfo.getBeanDescriptor().getBeanClass();
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    @Nullable</b>
+<b class="pc">&nbsp;    PropertyDescriptor getPropertyDescriptor(String name) {</b>
+<b class="nc">&nbsp;        PropertyDescriptor pd = (PropertyDescriptor)this.propertyDescriptors.get(name);</b>
+&nbsp;        if (pd == null &amp;&amp; StringUtils.hasLength(name)) {
+&nbsp;            pd = (PropertyDescriptor)this.propertyDescriptors.get(StringUtils.uncapitalize(name));
+<b class="fc">&nbsp;            if (pd == null) {</b>
+&nbsp;                pd = (PropertyDescriptor)this.propertyDescriptors.get(StringUtils.capitalize(name));
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return pd;
+&nbsp;    }
+&nbsp;
+&nbsp;    PropertyDescriptor[] getPropertyDescriptors() {
+&nbsp;        return (PropertyDescriptor[])this.propertyDescriptors.values().toArray(PropertyDescriptorUtils.EMPTY_PROPERTY_DESCRIPTOR_ARRAY);
+&nbsp;    }
+&nbsp;
+&nbsp;    private PropertyDescriptor buildGenericTypeAwarePropertyDescriptor(Class&lt;?&gt; beanClass, PropertyDescriptor pd) {
+&nbsp;        try {
+&nbsp;            return new GenericTypeAwarePropertyDescriptor(beanClass, pd.getName(), pd.getReadMethod(), pd.getWriteMethod(), pd.getPropertyEditorClass());
+&nbsp;        } catch (IntrospectionException ex) {
+<b class="fc">&nbsp;            throw new FatalBeanException(&quot;Failed to re-introspect class [&quot; + beanClass.getName() + &quot;]&quot;, ex);</b>
+&nbsp;        }
+<b class="pc">&nbsp;    }</b>
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
+</div>
+</body>
+</html>

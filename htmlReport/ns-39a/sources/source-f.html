@@ -1,0 +1,365 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > RepositoryConfigurationDelegate</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.data.repository.config</a>
+</div>
+
+<h1>Coverage Summary for Class: RepositoryConfigurationDelegate (org.springframework.data.repository.config)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">RepositoryConfigurationDelegate</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    90%
+  </span>
+  <span class="absValue">
+    (9/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    44.4%
+  </span>
+  <span class="absValue">
+    (24/54)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    76.1%
+  </span>
+  <span class="absValue">
+    (89/117)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.data.repository.config;
+&nbsp;
+&nbsp;import java.lang.reflect.TypeVariable;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Arrays;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.stream.Collectors;
+&nbsp;import org.apache.commons.logging.Log;
+&nbsp;import org.apache.commons.logging.LogFactory;
+&nbsp;import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+&nbsp;import org.springframework.beans.factory.config.DependencyDescriptor;
+&nbsp;import org.springframework.beans.factory.parsing.BeanComponentDefinition;
+&nbsp;import org.springframework.beans.factory.support.AutowireCandidateResolver;
+&nbsp;import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+&nbsp;import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
+&nbsp;import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+&nbsp;import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+&nbsp;import org.springframework.beans.factory.support.RootBeanDefinition;
+&nbsp;import org.springframework.context.annotation.ContextAnnotationAutowireCandidateResolver;
+&nbsp;import org.springframework.context.support.GenericApplicationContext;
+&nbsp;import org.springframework.core.ResolvableType;
+&nbsp;import org.springframework.core.env.Environment;
+&nbsp;import org.springframework.core.env.EnvironmentCapable;
+&nbsp;import org.springframework.core.env.StandardEnvironment;
+&nbsp;import org.springframework.core.io.ResourceLoader;
+&nbsp;import org.springframework.core.io.support.SpringFactoriesLoader;
+&nbsp;import org.springframework.core.log.LogMessage;
+&nbsp;import org.springframework.core.metrics.ApplicationStartup;
+&nbsp;import org.springframework.core.metrics.StartupStep;
+&nbsp;import org.springframework.data.repository.core.RepositoryMetadata;
+&nbsp;import org.springframework.data.repository.core.support.AbstractRepositoryMetadata;
+&nbsp;import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
+&nbsp;import org.springframework.data.repository.core.support.RepositoryFactorySupport;
+&nbsp;import org.springframework.data.util.ReflectionUtils;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.ClassUtils;
+&nbsp;import org.springframework.util.StopWatch;
+&nbsp;
+&nbsp;public class RepositoryConfigurationDelegate {
+&nbsp;    private static final String REPOSITORY_REGISTRATION = &quot;Spring Data %s - Registering repository: %s - Interface: %s - Factory: %s&quot;;
+&nbsp;    private static final String MULTIPLE_MODULES = &quot;Multiple Spring Data modules found, entering strict repository configuration mode&quot;;
+&nbsp;    private static final String NON_DEFAULT_AUTOWIRE_CANDIDATE_RESOLVER = &quot;Non-default AutowireCandidateResolver (%s) detected. Skipping the registration of LazyRepositoryInjectionPointResolver. Lazy repository injection will not be working&quot;;
+&nbsp;    private static final Log logger = LogFactory.getLog(RepositoryConfigurationDelegate.class);
+&nbsp;    private final RepositoryConfigurationSource configurationSource;
+&nbsp;    private final ResourceLoader resourceLoader;
+&nbsp;    private final Environment environment;
+&nbsp;    private final boolean isXml;
+&nbsp;    private final boolean inMultiStoreMode;
+&nbsp;
+&nbsp;    public RepositoryConfigurationDelegate(RepositoryConfigurationSource configurationSource, ResourceLoader resourceLoader, Environment environment) {
+&nbsp;        this.isXml = configurationSource instanceof XmlRepositoryConfigurationSource;
+&nbsp;        boolean isAnnotation = configurationSource instanceof AnnotationRepositoryConfigurationSource;
+&nbsp;        Assert.isTrue(this.isXml || isAnnotation, &quot;Configuration source must either be an Xml- or an AnnotationBasedConfigurationSource&quot;);
+&nbsp;        Assert.notNull(resourceLoader, &quot;ResourceLoader must not be null&quot;);
+&nbsp;        this.configurationSource = configurationSource;
+&nbsp;        this.resourceLoader = resourceLoader;
+&nbsp;        this.environment = defaultEnvironment(environment, resourceLoader);
+&nbsp;        this.inMultiStoreMode = this.multipleStoresDetected();
+&nbsp;    }
+&nbsp;
+&nbsp;    private static Environment defaultEnvironment(@Nullable Environment environment, @Nullable ResourceLoader resourceLoader) {
+&nbsp;        if (environment != null) {
+&nbsp;            return environment;
+&nbsp;        } else {
+&nbsp;            Object var10000;
+&nbsp;            if (resourceLoader instanceof EnvironmentCapable) {
+&nbsp;                EnvironmentCapable capable = (EnvironmentCapable)resourceLoader;
+&nbsp;                var10000 = capable.getEnvironment();
+<b class="fc">&nbsp;            } else {</b>
+&nbsp;                var10000 = new StandardEnvironment();
+&nbsp;            }
+&nbsp;
+&nbsp;            return (Environment)var10000;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public List&lt;BeanComponentDefinition&gt; registerRepositoriesIn(BeanDefinitionRegistry registry, RepositoryConfigurationExtension extension) {
+&nbsp;        if (logger.isInfoEnabled()) {
+&nbsp;            logger.info(LogMessage.format(&quot;Bootstrapping Spring Data %s repositories in %s mode.&quot;, extension.getModuleName(), this.configurationSource.getBootstrapMode().name()));
+&nbsp;        }
+&nbsp;
+&nbsp;        extension.registerBeansForRoot(registry, this.configurationSource);
+&nbsp;        RepositoryBeanDefinitionBuilder builder = new RepositoryBeanDefinitionBuilder(registry, extension, this.configurationSource, this.resourceLoader, this.environment);
+&nbsp;        if (logger.isDebugEnabled()) {
+&nbsp;            logger.debug(LogMessage.format(&quot;Scanning for %s repositories in packages %s.&quot;, extension.getModuleName(), this.configurationSource.getBasePackages().stream().collect(Collectors.joining(&quot;, &quot;))));
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+<b class="fc">&nbsp;        StopWatch watch = new StopWatch();</b>
+<b class="fc">&nbsp;        ApplicationStartup startup = getStartup(registry);</b>
+&nbsp;        StartupStep repoScan = startup.start(&quot;spring.data.repository.scanning&quot;);
+<b class="pc">&nbsp;        repoScan.tag(&quot;dataModule&quot;, extension.getModuleName());</b>
+&nbsp;        repoScan.tag(&quot;basePackages&quot;, () -&gt; (String)this.configurationSource.getBasePackages().stream().collect(Collectors.joining(&quot;, &quot;)));
+<b class="fc">&nbsp;        watch.start();</b>
+&nbsp;        Collection&lt;RepositoryConfiguration&lt;RepositoryConfigurationSource&gt;&gt; configurations = extension.getRepositoryConfigurations(this.configurationSource, this.resourceLoader, this.inMultiStoreMode);
+<b class="fc">&nbsp;        List&lt;BeanComponentDefinition&gt; definitions = new ArrayList();</b>
+<b class="fc">&nbsp;        Map&lt;String, RepositoryConfiguration&lt;?&gt;&gt; configurationsByRepositoryName = new HashMap(configurations.size());</b>
+<b class="fc">&nbsp;        Map&lt;String, RepositoryConfigurationAdapter&lt;?&gt;&gt; metadataByRepositoryBeanName = new HashMap(configurations.size());</b>
+<b class="fc">&nbsp;</b>
+&nbsp;        for(RepositoryConfiguration&lt;? extends RepositoryConfigurationSource&gt; configuration : configurations) {
+&nbsp;            configurationsByRepositoryName.put(configuration.getRepositoryInterface(), configuration);
+&nbsp;            BeanDefinitionBuilder definitionBuilder = builder.build(configuration);
+&nbsp;            extension.postProcess(definitionBuilder, this.configurationSource);
+&nbsp;            if (this.isXml) {
+&nbsp;                extension.postProcess(definitionBuilder, (XmlRepositoryConfigurationSource)this.configurationSource);
+&nbsp;            } else {
+&nbsp;                extension.postProcess(definitionBuilder, (AnnotationRepositoryConfigurationSource)this.configurationSource);
+&nbsp;            }
+&nbsp;
+&nbsp;            RootBeanDefinition beanDefinition = (RootBeanDefinition)definitionBuilder.getBeanDefinition();
+&nbsp;            beanDefinition.setTargetType(this.getRepositoryFactoryBeanType(configuration));
+&nbsp;            beanDefinition.setResourceDescription(configuration.getResourceDescription());
+&nbsp;            String beanName = this.configurationSource.generateBeanName(beanDefinition);
+<b class="pc">&nbsp;            if (logger.isTraceEnabled()) {</b>
+<b class="fc">&nbsp;                logger.trace(LogMessage.format(&quot;Spring Data %s - Registering repository: %s - Interface: %s - Factory: %s&quot;, extension.getModuleName(), beanName, configuration.getRepositoryInterface(), configuration.getRepositoryFactoryBeanClassName()));</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            metadataByRepositoryBeanName.put(beanName, builder.buildMetadata(configuration));</b>
+<b class="nc">&nbsp;            registry.registerBeanDefinition(beanName, beanDefinition);</b>
+&nbsp;            definitions.add(new BeanComponentDefinition(beanDefinition, beanName));
+&nbsp;        }
+&nbsp;
+&nbsp;        potentiallyLazifyRepositories(configurationsByRepositoryName, registry, this.configurationSource.getBootstrapMode());
+&nbsp;        watch.stop();
+&nbsp;        repoScan.tag(&quot;repository.count&quot;, Integer.toString(configurations.size()));
+&nbsp;        repoScan.end();
+&nbsp;        if (logger.isInfoEnabled()) {
+&nbsp;            logger.info(LogMessage.format(&quot;Finished Spring Data repository scanning in %s ms. Found %s %s repository interface%s.&quot;, watch.lastTaskInfo().getTimeMillis(), configurations.size(), extension.getModuleName(), configurations.size() == 1 ? &quot;&quot; : &quot;s&quot;));
+&nbsp;        }
+&nbsp;
+&nbsp;        this.registerAotComponents(registry, extension, metadataByRepositoryBeanName);
+&nbsp;        return definitions;
+&nbsp;    }
+<b class="pc">&nbsp;</b>
+<b class="fc">&nbsp;    private void registerAotComponents(BeanDefinitionRegistry registry, RepositoryConfigurationExtension extension, Map&lt;String, RepositoryConfigurationAdapter&lt;?&gt;&gt; metadataByRepositoryBeanName) {</b>
+<b class="fc">&nbsp;        BeanDefinitionBuilder repositoryAotProcessor = BeanDefinitionBuilder.rootBeanDefinition(extension.getRepositoryAotProcessor()).setRole(2);</b>
+&nbsp;        repositoryAotProcessor.addPropertyValue(&quot;configMap&quot;, metadataByRepositoryBeanName);
+&nbsp;        String repositoryAotProcessorBeanName = String.format(&quot;data-%s.repository-aot-processor&quot;, extension.getModuleIdentifier());
+<b class="fc">&nbsp;        registry.registerBeanDefinition(BeanDefinitionReaderUtils.uniqueBeanName(repositoryAotProcessorBeanName, registry), repositoryAotProcessor.getBeanDefinition());</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    private static void potentiallyLazifyRepositories(Map&lt;String, RepositoryConfiguration&lt;?&gt;&gt; configurations, BeanDefinitionRegistry registry, BootstrapMode mode) {
+&nbsp;        if (DefaultListableBeanFactory.class.isInstance(registry) &amp;&amp; !BootstrapMode.DEFAULT.equals(mode)) {
+<b class="pc">&nbsp;            DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory)DefaultListableBeanFactory.class.cast(registry);</b>
+<b class="nc">&nbsp;            AutowireCandidateResolver resolver = beanFactory.getAutowireCandidateResolver();</b>
+<b class="nc">&nbsp;            if (!Arrays.asList(ContextAnnotationAutowireCandidateResolver.class, LazyRepositoryInjectionPointResolver.class).contains(resolver.getClass())) {</b>
+<b class="nc">&nbsp;                logger.warn(LogMessage.format(&quot;Non-default AutowireCandidateResolver (%s) detected. Skipping the registration of LazyRepositoryInjectionPointResolver. Lazy repository injection will not be working&quot;, resolver.getClass().getName()));</b>
+&nbsp;            } else {
+&nbsp;                AutowireCandidateResolver newResolver = LazyRepositoryInjectionPointResolver.class.isInstance(resolver) ? ((LazyRepositoryInjectionPointResolver)LazyRepositoryInjectionPointResolver.class.cast(resolver)).withAdditionalConfigurations(configurations) : new LazyRepositoryInjectionPointResolver(configurations);
+<b class="fc">&nbsp;                beanFactory.setAutowireCandidateResolver(newResolver);</b>
+<b class="fc">&nbsp;                if (mode.equals(BootstrapMode.DEFERRED)) {</b>
+<b class="fc">&nbsp;                    logger.debug(&quot;Registering deferred repository initialization listener.&quot;);</b>
+&nbsp;                    beanFactory.registerSingleton(DeferredRepositoryInitializationListener.class.getName(), new DeferredRepositoryInitializationListener(beanFactory));
+<b class="fc">&nbsp;                }</b>
+<b class="fc">&nbsp;</b>
+<b class="nc">&nbsp;            }</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private boolean multipleStoresDetected() {</b>
+&nbsp;        boolean multipleModulesFound = SpringFactoriesLoader.loadFactoryNames(RepositoryFactorySupport.class, this.resourceLoader.getClassLoader()).size() &gt; 1;
+<b class="fc">&nbsp;        if (multipleModulesFound) {</b>
+&nbsp;            logger.info(&quot;Multiple Spring Data modules found, entering strict repository configuration mode&quot;);
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;        return multipleModulesFound;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+<b class="fc">&nbsp;    private static ApplicationStartup getStartup(BeanDefinitionRegistry registry) {</b>
+&nbsp;        if (registry instanceof ConfigurableBeanFactory) {
+<b class="fc">&nbsp;            return ((ConfigurableBeanFactory)registry).getApplicationStartup();</b>
+<b class="fc">&nbsp;        } else {</b>
+&nbsp;            return registry instanceof GenericApplicationContext ? ((GenericApplicationContext)registry).getDefaultListableBeanFactory().getApplicationStartup() : ApplicationStartup.DEFAULT;
+<b class="pc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="fc">&nbsp;    @Nullable</b>
+&nbsp;    private ResolvableType getRepositoryFactoryBeanType(RepositoryConfiguration&lt;?&gt; configuration) {
+&nbsp;        String interfaceName = configuration.getRepositoryInterface();
+<b class="fc">&nbsp;        ClassLoader classLoader = this.resourceLoader.getClassLoader() == null ? ClassUtils.getDefaultClassLoader() : this.resourceLoader.getClassLoader();</b>
+<b class="fc">&nbsp;        classLoader = classLoader != null ? classLoader : this.getClass().getClassLoader();</b>
+<b class="fc">&nbsp;        Class&lt;?&gt; repositoryInterface = ReflectionUtils.loadIfPresent(interfaceName, classLoader);</b>
+&nbsp;        if (repositoryInterface == null) {
+<b class="fc">&nbsp;            return null;</b>
+&nbsp;        } else {
+<b class="pc">&nbsp;            Class&lt;?&gt; factoryBean = ReflectionUtils.loadIfPresent(configuration.getRepositoryFactoryBeanClassName(), classLoader);</b>
+<b class="nc">&nbsp;            if (factoryBean == null) {</b>
+<b class="nc">&nbsp;                return null;</b>
+&nbsp;            } else {
+&nbsp;                RepositoryMetadata metadata = AbstractRepositoryMetadata.getMetadata(repositoryInterface);
+<b class="fc">&nbsp;                List&lt;Class&lt;?&gt;&gt; types = List.of(repositoryInterface, metadata.getDomainType(), metadata.getIdType());</b>
+<b class="fc">&nbsp;                ResolvableType[] declaredGenerics = ResolvableType.forClass(factoryBean).getGenerics();</b>
+<b class="fc">&nbsp;                ResolvableType[] parentGenerics = ResolvableType.forClass(RepositoryFactoryBeanSupport.class, factoryBean).getGenerics();</b>
+&nbsp;                List&lt;ResolvableType&gt; resolvedGenerics = new ArrayList(factoryBean.getTypeParameters().length);
+&nbsp;
+<b class="fc">&nbsp;                for(int i = 0; i &lt; parentGenerics.length; ++i) {</b>
+&nbsp;                    ResolvableType parameter = parentGenerics[i];
+<b class="fc">&nbsp;                    if (parameter.getType() instanceof TypeVariable) {</b>
+<b class="fc">&nbsp;                        resolvedGenerics.add(i &lt; types.size() ? ResolvableType.forClass((Class)types.get(i)) : parameter);</b>
+<b class="fc">&nbsp;                    }</b>
+&nbsp;                }
+<b class="pc">&nbsp;</b>
+<b class="fc">&nbsp;                if (resolvedGenerics.size() &lt; declaredGenerics.length) {</b>
+<b class="fc">&nbsp;                    resolvedGenerics.addAll(Arrays.asList(declaredGenerics).subList(parentGenerics.length, declaredGenerics.length));</b>
+<b class="fc">&nbsp;                }</b>
+<b class="pc">&nbsp;</b>
+&nbsp;                return ResolvableType.forClassWithGenerics(factoryBean, (ResolvableType[])resolvedGenerics.subList(0, declaredGenerics.length).toArray((x$0) -&gt; new ResolvableType[x$0]));
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    static class LazyRepositoryInjectionPointResolver extends ContextAnnotationAutowireCandidateResolver {</b>
+&nbsp;        private static final Log logger = LogFactory.getLog(LazyRepositoryInjectionPointResolver.class);
+<b class="fc">&nbsp;        private final Map&lt;String, RepositoryConfiguration&lt;?&gt;&gt; configurations;</b>
+&nbsp;
+&nbsp;        public LazyRepositoryInjectionPointResolver(Map&lt;String, RepositoryConfiguration&lt;?&gt;&gt; configurations) {
+&nbsp;            this.configurations = configurations;
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        LazyRepositoryInjectionPointResolver withAdditionalConfigurations(Map&lt;String, RepositoryConfiguration&lt;?&gt;&gt; configurations) {</b>
+<b class="fc">&nbsp;            Map&lt;String, RepositoryConfiguration&lt;?&gt;&gt; map = new HashMap(this.configurations);</b>
+&nbsp;            map.putAll(configurations);
+<b class="fc">&nbsp;            return new LazyRepositoryInjectionPointResolver(map);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        protected boolean isLazy(DependencyDescriptor descriptor) {</b>
+<b class="fc">&nbsp;            Class&lt;?&gt; type = descriptor.getDependencyType();</b>
+<b class="fc">&nbsp;            RepositoryConfiguration&lt;?&gt; configuration = (RepositoryConfiguration)this.configurations.get(type.getName());</b>
+<b class="fc">&nbsp;            if (configuration == null) {</b>
+&nbsp;                return super.isLazy(descriptor);
+&nbsp;            } else {
+&nbsp;                boolean lazyInit = configuration.isLazyInit();
+&nbsp;                if (lazyInit) {
+&nbsp;                    logger.debug(LogMessage.format(&quot;Creating lazy injection proxy for %s…&quot;, configuration.getRepositoryInterface()));
+&nbsp;                }
+&nbsp;
+&nbsp;                return lazyInit;
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 21:00</div>
+</div>
+</body>
+</html>

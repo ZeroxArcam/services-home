@@ -1,0 +1,243 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > DataSourceHealthContributorAutoConfiguration</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.boot.actuate.autoconfigure.jdbc</a>
+</div>
+
+<h1>Coverage Summary for Class: DataSourceHealthContributorAutoConfiguration (org.springframework.boot.actuate.autoconfigure.jdbc)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DataSourceHealthContributorAutoConfiguration</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/28)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.boot.actuate.autoconfigure.jdbc;
+&nbsp;
+&nbsp;import java.sql.SQLException;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.Iterator;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Objects;
+&nbsp;import java.util.function.Function;
+&nbsp;import java.util.stream.Collectors;
+&nbsp;import javax.sql.DataSource;
+&nbsp;import org.springframework.beans.factory.InitializingBean;
+&nbsp;import org.springframework.beans.factory.ObjectProvider;
+&nbsp;import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+&nbsp;import org.springframework.beans.factory.support.SimpleAutowireCandidateResolver;
+&nbsp;import org.springframework.boot.actuate.autoconfigure.health.ConditionalOnEnabledHealthIndicator;
+&nbsp;import org.springframework.boot.actuate.health.CompositeHealthContributor;
+&nbsp;import org.springframework.boot.actuate.health.HealthContributor;
+&nbsp;import org.springframework.boot.actuate.health.NamedContributor;
+&nbsp;import org.springframework.boot.actuate.jdbc.DataSourceHealthIndicator;
+&nbsp;import org.springframework.boot.autoconfigure.AutoConfiguration;
+&nbsp;import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+&nbsp;import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+&nbsp;import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+&nbsp;import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+&nbsp;import org.springframework.boot.context.properties.EnableConfigurationProperties;
+&nbsp;import org.springframework.boot.jdbc.metadata.CompositeDataSourcePoolMetadataProvider;
+&nbsp;import org.springframework.boot.jdbc.metadata.DataSourcePoolMetadata;
+&nbsp;import org.springframework.boot.jdbc.metadata.DataSourcePoolMetadataProvider;
+&nbsp;import org.springframework.context.annotation.Bean;
+&nbsp;import org.springframework.jdbc.core.JdbcTemplate;
+&nbsp;import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;
+&nbsp;@AutoConfiguration(
+&nbsp;    after = {DataSourceAutoConfiguration.class}
+&nbsp;)
+&nbsp;@ConditionalOnClass({JdbcTemplate.class, AbstractRoutingDataSource.class})
+&nbsp;@ConditionalOnBean({DataSource.class})
+&nbsp;@ConditionalOnEnabledHealthIndicator(&quot;db&quot;)
+&nbsp;@EnableConfigurationProperties({DataSourceHealthIndicatorProperties.class})
+&nbsp;public class DataSourceHealthContributorAutoConfiguration implements InitializingBean {
+&nbsp;    private final Collection&lt;DataSourcePoolMetadataProvider&gt; metadataProviders;
+&nbsp;    private DataSourcePoolMetadataProvider poolMetadataProvider;
+&nbsp;
+&nbsp;    public DataSourceHealthContributorAutoConfiguration(ObjectProvider&lt;DataSourcePoolMetadataProvider&gt; metadataProviders) {
+&nbsp;        this.metadataProviders = metadataProviders.orderedStream().toList();
+&nbsp;    }
+&nbsp;
+&nbsp;    public void afterPropertiesSet() {
+&nbsp;        this.poolMetadataProvider = new CompositeDataSourcePoolMetadataProvider(this.metadataProviders);
+&nbsp;    }
+&nbsp;
+&nbsp;    @Bean
+&nbsp;    @ConditionalOnMissingBean(
+&nbsp;        name = {&quot;dbHealthIndicator&quot;, &quot;dbHealthContributor&quot;}
+&nbsp;    )
+&nbsp;    public HealthContributor dbHealthContributor(ConfigurableListableBeanFactory beanFactory, DataSourceHealthIndicatorProperties dataSourceHealthIndicatorProperties) {
+&nbsp;        Map&lt;String, DataSource&gt; dataSources = SimpleAutowireCandidateResolver.resolveAutowireCandidates(beanFactory, DataSource.class);
+&nbsp;        if (dataSourceHealthIndicatorProperties.isIgnoreRoutingDataSources()) {
+&nbsp;            Map&lt;String, DataSource&gt; filteredDatasources = (Map)dataSources.entrySet().stream().filter((e) -&gt; !isRoutingDataSource((DataSource)e.getValue())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+&nbsp;            return this.createContributor(filteredDatasources);
+&nbsp;        } else {
+&nbsp;            return this.createContributor(dataSources);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private HealthContributor createContributor(Map&lt;String, DataSource&gt; beans) {
+&nbsp;        Assert.notEmpty(beans, &quot;Beans must not be empty&quot;);
+&nbsp;        return (HealthContributor)(beans.size() == 1 ? this.createContributor((DataSource)beans.values().iterator().next()) : CompositeHealthContributor.fromMap(beans, this::createContributor));
+&nbsp;    }
+&nbsp;
+&nbsp;    private HealthContributor createContributor(DataSource source) {
+<b class="nc">&nbsp;        return (HealthContributor)(isRoutingDataSource(source) ? new RoutingDataSourceHealthContributor(extractRoutingDataSource(source), this::createContributor) : new DataSourceHealthIndicator(source, this.getValidationQuery(source)));</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private String getValidationQuery(DataSource source) {
+&nbsp;        DataSourcePoolMetadata poolMetadata = this.poolMetadataProvider.getDataSourcePoolMetadata(source);
+&nbsp;        return poolMetadata != null ? poolMetadata.getValidationQuery() : null;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private static boolean isRoutingDataSource(DataSource dataSource) {
+&nbsp;        if (dataSource instanceof AbstractRoutingDataSource) {
+&nbsp;            return true;
+&nbsp;        } else {
+&nbsp;            try {
+<b class="nc">&nbsp;                return dataSource.isWrapperFor(AbstractRoutingDataSource.class);</b>
+&nbsp;            } catch (SQLException var2) {
+<b class="nc">&nbsp;                return false;</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private static AbstractRoutingDataSource extractRoutingDataSource(DataSource dataSource) {</b>
+&nbsp;        if (dataSource instanceof AbstractRoutingDataSource routingDataSource) {
+<b class="nc">&nbsp;            return routingDataSource;</b>
+&nbsp;        } else {
+&nbsp;            try {
+&nbsp;                return (AbstractRoutingDataSource)dataSource.unwrap(AbstractRoutingDataSource.class);
+<b class="nc">&nbsp;            } catch (SQLException ex) {</b>
+<b class="nc">&nbsp;                throw new IllegalStateException(&quot;Failed to unwrap AbstractRoutingDataSource from &quot; + String.valueOf(dataSource), ex);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    static class RoutingDataSourceHealthContributor implements CompositeHealthContributor {
+&nbsp;        private final CompositeHealthContributor delegate;
+<b class="nc">&nbsp;        private static final String UNNAMED_DATASOURCE_KEY = &quot;unnamed&quot;;</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        RoutingDataSourceHealthContributor(AbstractRoutingDataSource routingDataSource, Function&lt;DataSource, HealthContributor&gt; contributorFunction) {
+<b class="nc">&nbsp;            Map&lt;String, DataSource&gt; routedDataSources = (Map)routingDataSource.getResolvedDataSources().entrySet().stream().collect(Collectors.toMap((e) -&gt; Objects.toString(e.getKey(), &quot;unnamed&quot;), Map.Entry::getValue));</b>
+&nbsp;            this.delegate = CompositeHealthContributor.fromMap(routedDataSources, contributorFunction);
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        public HealthContributor getContributor(String name) {</b>
+<b class="nc">&nbsp;            return (HealthContributor)this.delegate.getContributor(name);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public Iterator&lt;NamedContributor&lt;HealthContributor&gt;&gt; iterator() {
+<b class="nc">&nbsp;            return this.delegate.iterator();</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
+</div>
+</body>
+</html>

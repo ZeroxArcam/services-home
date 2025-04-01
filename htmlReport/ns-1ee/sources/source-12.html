@@ -1,0 +1,415 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > JdbcType</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.type.descriptor.jdbc</a>
+</div>
+
+<h1>Coverage Summary for Class: JdbcType (org.hibernate.type.descriptor.jdbc)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">JdbcType</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    23.8%
+  </span>
+  <span class="absValue">
+    (10/42)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    4.5%
+  </span>
+  <span class="absValue">
+    (3/66)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    19.2%
+  </span>
+  <span class="absValue">
+    (15/78)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.type.descriptor.jdbc;
+&nbsp;
+&nbsp;import java.io.Serializable;
+&nbsp;import java.sql.CallableStatement;
+&nbsp;import java.sql.SQLException;
+&nbsp;import org.hibernate.Incubating;
+&nbsp;import org.hibernate.boot.model.relational.Database;
+&nbsp;import org.hibernate.dialect.Dialect;
+&nbsp;import org.hibernate.engine.jdbc.Size;
+&nbsp;import org.hibernate.query.sqm.CastType;
+&nbsp;import org.hibernate.sql.ast.spi.SqlAppender;
+&nbsp;import org.hibernate.sql.ast.spi.StringBuilderSqlAppender;
+&nbsp;import org.hibernate.sql.ast.tree.expression.Expression;
+&nbsp;import org.hibernate.type.SqlTypes;
+&nbsp;import org.hibernate.type.descriptor.ValueBinder;
+&nbsp;import org.hibernate.type.descriptor.ValueExtractor;
+&nbsp;import org.hibernate.type.descriptor.WrapperOptions;
+&nbsp;import org.hibernate.type.descriptor.converter.spi.BasicValueConverter;
+&nbsp;import org.hibernate.type.descriptor.java.JavaType;
+&nbsp;import org.hibernate.type.spi.TypeConfiguration;
+&nbsp;
+&nbsp;public interface JdbcType extends Serializable {
+&nbsp;    default String getFriendlyName() {
+&nbsp;        return Integer.toString(this.getDefaultSqlTypeCode());
+&nbsp;    }
+&nbsp;
+&nbsp;    int getJdbcTypeCode();
+&nbsp;
+&nbsp;    default int getDefaultSqlTypeCode() {
+&nbsp;        return this.getJdbcTypeCode();
+&nbsp;    }
+&nbsp;
+&nbsp;    default int getDdlTypeCode() {
+&nbsp;        return this.getDefaultSqlTypeCode();
+&nbsp;    }
+&nbsp;
+&nbsp;    default &lt;T&gt; JavaType&lt;T&gt; getJdbcRecommendedJavaTypeMapping(Integer precision, Integer scale, TypeConfiguration typeConfiguration) {
+&nbsp;        return typeConfiguration.getJavaTypeRegistry().getDescriptor(JdbcTypeJavaClassMappings.INSTANCE.determineJavaClassForJdbcTypeCode(this.getDefaultSqlTypeCode()));
+&nbsp;    }
+&nbsp;
+&nbsp;    default &lt;T&gt; JdbcLiteralFormatter&lt;T&gt; getJdbcLiteralFormatter(JavaType&lt;T&gt; javaType) {
+&nbsp;        return (appender, value, dialect, wrapperOptions) -&gt; appender.appendSql(value.toString());
+&nbsp;    }
+&nbsp;
+&nbsp;    &lt;X&gt; ValueBinder&lt;X&gt; getBinder(JavaType&lt;X&gt; var1);
+&nbsp;
+&nbsp;    &lt;X&gt; ValueExtractor&lt;X&gt; getExtractor(JavaType&lt;X&gt; var1);
+&nbsp;
+&nbsp;    @Incubating
+&nbsp;    default Class&lt;?&gt; getPreferredJavaTypeClass(WrapperOptions options) {
+&nbsp;        return null;
+&nbsp;    }
+&nbsp;
+&nbsp;    default String getCheckCondition(String columnName, JavaType&lt;?&gt; javaType, BasicValueConverter&lt;?, ?&gt; converter, Dialect dialect) {
+&nbsp;        return null;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Incubating
+&nbsp;    default Expression wrapTopLevelSelectionExpression(Expression expression) {
+&nbsp;        return expression;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    @Incubating</b>
+&nbsp;    default String wrapWriteExpression(String writeExpression, Dialect dialect) {
+&nbsp;        StringBuilder sb = new StringBuilder(writeExpression.length());
+&nbsp;        this.appendWriteExpression(writeExpression, new StringBuilderSqlAppender(sb), dialect);
+&nbsp;        return sb.toString();
+&nbsp;    }
+&nbsp;
+&nbsp;    @Incubating
+&nbsp;    default void appendWriteExpression(String writeExpression, SqlAppender appender, Dialect dialect) {
+&nbsp;        appender.append(writeExpression);
+&nbsp;    }
+&nbsp;
+&nbsp;    default boolean isInteger() {
+&nbsp;        int typeCode = this.getDdlTypeCode();
+&nbsp;        return SqlTypes.isIntegral(typeCode) || typeCode == -7;
+&nbsp;    }
+&nbsp;
+&nbsp;    default boolean isFloat() {
+&nbsp;        return SqlTypes.isFloatOrRealOrDouble(this.getDdlTypeCode());
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    default boolean isDecimal() {</b>
+&nbsp;        return SqlTypes.isNumericOrDecimal(this.getDdlTypeCode());
+&nbsp;    }
+&nbsp;
+&nbsp;    default boolean isNumber() {
+&nbsp;        return SqlTypes.isNumericType(this.getDdlTypeCode());
+&nbsp;    }
+&nbsp;
+&nbsp;    default boolean isBinary() {
+&nbsp;        return SqlTypes.isBinaryType(this.getDdlTypeCode());
+&nbsp;    }
+&nbsp;
+&nbsp;    default boolean isString() {
+&nbsp;        return SqlTypes.isCharacterOrClobType(this.getDdlTypeCode());
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    default boolean isStringLike() {
+&nbsp;        int ddlTypeCode = this.getDdlTypeCode();
+&nbsp;        return SqlTypes.isCharacterOrClobType(ddlTypeCode) || SqlTypes.isEnumType(ddlTypeCode);
+&nbsp;    }
+&nbsp;
+&nbsp;    default boolean isTemporal() {
+<b class="nc">&nbsp;        return SqlTypes.isTemporalType(this.getDdlTypeCode());</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    default boolean isLob() {
+&nbsp;        return isLob(this.getDdlTypeCode());
+&nbsp;    }
+&nbsp;
+&nbsp;    static boolean isLob(int jdbcTypeCode) {
+&nbsp;        switch (jdbcTypeCode) {
+&nbsp;            case 2004:
+&nbsp;            case 2005:
+&nbsp;            case 2011:
+<b class="fc">&nbsp;                return true;</b>
+&nbsp;            default:
+&nbsp;                return false;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    default boolean isLobOrLong() {
+&nbsp;        return isLobOrLong(this.getDdlTypeCode());
+&nbsp;    }
+&nbsp;
+&nbsp;    static boolean isLobOrLong(int jdbcTypeCode) {
+&nbsp;        switch (jdbcTypeCode) {
+&nbsp;            case 2004:
+&nbsp;            case 2005:
+&nbsp;            case 2011:
+&nbsp;            case 4001:
+&nbsp;            case 4002:
+&nbsp;            case 4003:
+&nbsp;                return true;
+&nbsp;            default:
+&nbsp;                return false;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    default boolean isNationalized() {
+&nbsp;        return isNationalized(this.getDdlTypeCode());
+&nbsp;    }
+&nbsp;
+&nbsp;    static boolean isNationalized(int jdbcTypeCode) {
+&nbsp;        switch (jdbcTypeCode) {
+<b class="nc">&nbsp;            case -16:</b>
+&nbsp;            case -15:
+&nbsp;            case -9:
+&nbsp;            case 2011:
+&nbsp;            case 4002:
+&nbsp;                return true;
+&nbsp;            default:
+&nbsp;                return false;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    default boolean isInterval() {
+&nbsp;        return SqlTypes.isIntervalType(this.getDdlTypeCode());
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    default boolean isDuration() {</b>
+&nbsp;        int ddlTypeCode = this.getDefaultSqlTypeCode();
+&nbsp;        return SqlTypes.isDurationType(ddlTypeCode) || SqlTypes.isIntervalType(ddlTypeCode);
+&nbsp;    }
+&nbsp;
+&nbsp;    default boolean isArray() {
+&nbsp;        return isArray(this.getDdlTypeCode());
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    static boolean isArray(int jdbcTypeCode) {</b>
+&nbsp;        switch (jdbcTypeCode) {
+&nbsp;            case 2003:
+&nbsp;            case 3016:
+&nbsp;            case 3018:
+&nbsp;            case 3019:
+&nbsp;                return true;
+&nbsp;            default:
+&nbsp;                return false;
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    default CastType getCastType() {
+&nbsp;        return getCastType(this.getDdlTypeCode());
+&nbsp;    }
+&nbsp;
+&nbsp;    static CastType getCastType(int typeCode) {
+&nbsp;        switch (typeCode) {
+&nbsp;            case -16:
+&nbsp;            case -15:
+<b class="fc">&nbsp;            case -9:</b>
+&nbsp;            case -1:
+&nbsp;            case 1:
+&nbsp;            case 12:
+<b class="nc">&nbsp;                return CastType.STRING;</b>
+<b class="nc">&nbsp;            case -6:</b>
+&nbsp;            case 4:
+&nbsp;            case 5:
+&nbsp;                return CastType.INTEGER;
+&nbsp;            case -5:
+<b class="nc">&nbsp;                return CastType.LONG;</b>
+&nbsp;            case 0:
+&nbsp;                return CastType.NULL;
+&nbsp;            case 2:
+<b class="nc">&nbsp;            case 3:</b>
+&nbsp;                return CastType.FIXED;
+&nbsp;            case 6:
+&nbsp;            case 7:
+<b class="nc">&nbsp;                return CastType.FLOAT;</b>
+&nbsp;            case 8:
+&nbsp;                return CastType.DOUBLE;
+&nbsp;            case 16:
+<b class="nc">&nbsp;                return CastType.BOOLEAN;</b>
+&nbsp;            case 91:
+&nbsp;                return CastType.DATE;
+&nbsp;            case 92:
+<b class="nc">&nbsp;            case 2013:</b>
+&nbsp;            case 3007:
+&nbsp;                return CastType.TIME;
+&nbsp;            case 93:
+<b class="nc">&nbsp;                return CastType.TIMESTAMP;</b>
+<b class="nc">&nbsp;            case 2005:</b>
+<b class="nc">&nbsp;                return CastType.CLOB;</b>
+&nbsp;            case 2014:
+&nbsp;                return CastType.OFFSET_TIMESTAMP;
+&nbsp;            default:
+<b class="nc">&nbsp;                return CastType.OTHER;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    default void registerOutParameter(CallableStatement callableStatement, String name) throws SQLException {</b>
+&nbsp;        callableStatement.registerOutParameter(name, this.getJdbcTypeCode());
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    default void registerOutParameter(CallableStatement callableStatement, int index) throws SQLException {</b>
+&nbsp;        callableStatement.registerOutParameter(index, this.getJdbcTypeCode());
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    /** @deprecated */</b>
+&nbsp;    @Incubating
+&nbsp;    @Deprecated(
+<b class="fc">&nbsp;        forRemoval = true</b>
+&nbsp;    )
+&nbsp;    default void addAuxiliaryDatabaseObjects(JavaType&lt;?&gt; javaType, Size columnSize, Database database, TypeConfiguration typeConfiguration) {
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    @Incubating
+&nbsp;    default void addAuxiliaryDatabaseObjects(JavaType&lt;?&gt; javaType, Size columnSize, Database database, JdbcTypeIndicators context) {
+&nbsp;        this.addAuxiliaryDatabaseObjects(javaType, columnSize, database, context.getTypeConfiguration());
+<b class="pc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    @Incubating
+&nbsp;    default String getExtraCreateTableInfo(JavaType&lt;?&gt; javaType, String columnName, String tableName, Database database) {
+&nbsp;        return &quot;&quot;;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    @Incubating</b>
+&nbsp;    default boolean isComparable() {
+&nbsp;        int code = this.getDefaultSqlTypeCode();
+<b class="fc">&nbsp;        return SqlTypes.isCharacterType(code) || SqlTypes.isTemporalType(code) || SqlTypes.isNumericType(code) || SqlTypes.isEnumType(code) || this.isBoolean() || code == 3000;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Incubating
+<b class="nc">&nbsp;    default boolean hasDatePart() {</b>
+&nbsp;        return SqlTypes.hasDatePart(this.getDefaultSqlTypeCode());
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    @Incubating</b>
+&nbsp;    default boolean hasTimePart() {
+&nbsp;        return SqlTypes.hasTimePart(this.getDefaultSqlTypeCode());
+&nbsp;    }
+&nbsp;
+&nbsp;    @Incubating
+<b class="nc">&nbsp;    default boolean isStringLikeExcludingClob() {</b>
+&nbsp;        int code = this.getDefaultSqlTypeCode();
+&nbsp;        return SqlTypes.isCharacterType(code) || SqlTypes.isEnumType(code);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    @Incubating
+&nbsp;    default boolean isSpatial() {
+<b class="nc">&nbsp;        return SqlTypes.isSpatialType(this.getDefaultSqlTypeCode());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Incubating
+<b class="nc">&nbsp;    default boolean isBoolean() {</b>
+<b class="nc">&nbsp;        return this.getDefaultSqlTypeCode() == 16;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    @Incubating
+&nbsp;    default boolean isSmallInteger() {
+<b class="nc">&nbsp;        return SqlTypes.isSmallOrTinyInt(this.getDefaultSqlTypeCode());</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
+</div>
+</body>
+</html>

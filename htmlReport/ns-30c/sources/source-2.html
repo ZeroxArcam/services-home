@@ -1,0 +1,205 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ConnectionFactoryOptionsInitializer</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.boot.autoconfigure.r2dbc</a>
+</div>
+
+<h1>Coverage Summary for Class: ConnectionFactoryOptionsInitializer (org.springframework.boot.autoconfigure.r2dbc)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+  <tr>
+    <td class="name">ConnectionFactoryOptionsInitializer$ConnectionFactoryBeanCreationException</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/5)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/5)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.boot.autoconfigure.r2dbc;
+&nbsp;
+&nbsp;import io.r2dbc.spi.ConnectionFactoryOptions;
+&nbsp;import java.util.function.Supplier;
+&nbsp;import org.springframework.beans.factory.BeanCreationException;
+&nbsp;import org.springframework.boot.r2dbc.EmbeddedDatabaseConnection;
+&nbsp;import org.springframework.util.StringUtils;
+&nbsp;
+&nbsp;class ConnectionFactoryOptionsInitializer {
+&nbsp;    ConnectionFactoryOptionsInitializer() {
+&nbsp;    }
+&nbsp;
+&nbsp;    ConnectionFactoryOptions.Builder initialize(R2dbcProperties properties, R2dbcConnectionDetails connectionDetails, Supplier&lt;EmbeddedDatabaseConnection&gt; embeddedDatabaseConnection) {
+&nbsp;        if (connectionDetails != null) {
+&nbsp;            return connectionDetails.getConnectionFactoryOptions().mutate();
+&nbsp;        } else {
+&nbsp;            EmbeddedDatabaseConnection embeddedConnection = (EmbeddedDatabaseConnection)embeddedDatabaseConnection.get();
+&nbsp;            if (embeddedConnection != EmbeddedDatabaseConnection.NONE) {
+&nbsp;                return this.initializeEmbeddedOptions(properties, embeddedConnection);
+&nbsp;            } else {
+&nbsp;                throw this.connectionFactoryBeanCreationException(&quot;Failed to determine a suitable R2DBC Connection URL&quot;, (String)null, embeddedConnection);
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private ConnectionFactoryOptions.Builder initializeEmbeddedOptions(R2dbcProperties properties, EmbeddedDatabaseConnection embeddedDatabaseConnection) {
+&nbsp;        String url = embeddedDatabaseConnection.getUrl(this.determineEmbeddedDatabaseName(properties));
+&nbsp;        if (url == null) {
+&nbsp;            throw this.connectionFactoryBeanCreationException(&quot;Failed to determine a suitable R2DBC Connection URL&quot;, url, embeddedDatabaseConnection);
+&nbsp;        } else {
+&nbsp;            ConnectionFactoryOptions.Builder builder = ConnectionFactoryOptions.parse(url).mutate();
+&nbsp;            String username = this.determineEmbeddedUsername(properties);
+&nbsp;            if (StringUtils.hasText(username)) {
+&nbsp;                builder.option(ConnectionFactoryOptions.USER, username);
+&nbsp;            }
+&nbsp;
+&nbsp;            if (StringUtils.hasText(properties.getPassword())) {
+&nbsp;                builder.option(ConnectionFactoryOptions.PASSWORD, properties.getPassword());
+&nbsp;            }
+&nbsp;
+&nbsp;            return builder;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private String determineEmbeddedDatabaseName(R2dbcProperties properties) {
+&nbsp;        String databaseName = this.determineDatabaseName(properties);
+&nbsp;        return databaseName != null ? databaseName : &quot;testdb&quot;;
+&nbsp;    }
+&nbsp;
+&nbsp;    private String determineDatabaseName(R2dbcProperties properties) {
+&nbsp;        if (properties.isGenerateUniqueName()) {
+&nbsp;            return properties.determineUniqueName();
+&nbsp;        } else {
+&nbsp;            return StringUtils.hasLength(properties.getName()) ? properties.getName() : null;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private String determineEmbeddedUsername(R2dbcProperties properties) {
+&nbsp;        String username = this.ifHasText(properties.getUsername());
+&nbsp;        return username != null ? username : &quot;sa&quot;;
+&nbsp;    }
+&nbsp;
+&nbsp;    private ConnectionFactoryBeanCreationException connectionFactoryBeanCreationException(String message, String r2dbcUrl, EmbeddedDatabaseConnection embeddedDatabaseConnection) {
+&nbsp;        return new ConnectionFactoryBeanCreationException(message, r2dbcUrl, embeddedDatabaseConnection);
+&nbsp;    }
+&nbsp;
+&nbsp;    private String ifHasText(String candidate) {
+&nbsp;        return StringUtils.hasText(candidate) ? candidate : null;
+&nbsp;    }
+&nbsp;
+&nbsp;    static class ConnectionFactoryBeanCreationException extends BeanCreationException {
+&nbsp;        private final String url;
+&nbsp;        private final EmbeddedDatabaseConnection embeddedDatabaseConnection;
+&nbsp;
+&nbsp;        ConnectionFactoryBeanCreationException(String message, String url, EmbeddedDatabaseConnection embeddedDatabaseConnection) {
+&nbsp;            super(message);
+&nbsp;            this.url = url;
+&nbsp;            this.embeddedDatabaseConnection = embeddedDatabaseConnection;
+&nbsp;        }
+&nbsp;
+&nbsp;        String getUrl() {
+&nbsp;            return this.url;
+&nbsp;        }
+&nbsp;
+&nbsp;        EmbeddedDatabaseConnection getEmbeddedDatabaseConnection() {
+&nbsp;            return this.embeddedDatabaseConnection;
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:54</div>
+</div>
+</body>
+</html>

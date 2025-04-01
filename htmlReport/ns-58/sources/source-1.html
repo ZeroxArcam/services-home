@@ -5,7 +5,7 @@
 <html id="htmlId">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
-  <title>Coverage Report > OutputEventListenerManager</title>
+  <title>Coverage Report > CategoryPersistenceAdapter</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -19,15 +19,18 @@
 <div class="breadCrumbs">
 Current scope:     <a href="../../index.html">all classes</a>
     <span class="separator">|</span>
-    <a href="../index.html">org.gradle.internal.logging.sink</a>
+    <a href="../index.html">com.pragma.hogar360.serviceshome.infrastructure.adapters.persistence</a>
 </div>
 
-<h1>Coverage Summary for Class: OutputEventListenerManager (org.gradle.internal.logging.sink)</h1>
+<h1>Coverage Summary for Class: CategoryPersistenceAdapter (com.pragma.hogar360.serviceshome.infrastructure.adapters.persistence)</h1>
 
 <table class="coverageStats">
-
 <tr>
   <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
 <th class="coverageStat 
 ">
   Method, %
@@ -42,67 +45,13 @@ Current scope:     <a href="../../index.html">all classes</a>
 </th>
 </tr>
 <tr>
-  <td class="name">OutputEventListenerManager</td>
-<td class="coverageStat">
-  <span class="percent">
-    40%
-  </span>
-  <span class="absValue">
-    (2/5)
-  </span>
-</td>
+  <td class="name">CategoryPersistenceAdapter</td>
 <td class="coverageStat">
   <span class="percent">
     0%
   </span>
   <span class="absValue">
-    (0/2)
-  </span>
-</td>
-<td class="coverageStat">
-  <span class="percent">
-    50%
-  </span>
-  <span class="absValue">
-    (4/8)
-  </span>
-</td>
-</tr>
-  <tr>
-    <td class="name">OutputEventListenerManager$1</td>
-<td class="coverageStat">
-  <span class="percent">
-    50%
-  </span>
-  <span class="absValue">
-    (1/2)
-  </span>
-</td>
-<td class="coverageStat">
-  <span class="percent">
-    0%
-  </span>
-  <span class="absValue">
-    (0/2)
-  </span>
-</td>
-<td class="coverageStat">
-  <span class="percent">
-    20%
-  </span>
-  <span class="absValue">
-    (1/5)
-  </span>
-</td>
-  </tr>
-<tr>
-  <td class="name"><strong>Total</strong></td>
-<td class="coverageStat">
-  <span class="percent">
-    42.9%
-  </span>
-  <span class="absValue">
-    (3/7)
+    (0/1)
   </span>
 </td>
 <td class="coverageStat">
@@ -115,19 +64,88 @@ Current scope:     <a href="../../index.html">all classes</a>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    38.5%
+    0%
   </span>
   <span class="absValue">
-    (5/13)
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/13)
   </span>
 </td>
 </tr>
+
 </table>
 
 <br/>
 <br/>
 
-  <code class="sourceCode">Source code is not available<br /></code>
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.pragma.hogar360.serviceshome.infrastructure.adapters.persistence;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.model.CategoryModel;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.ports.out.CategoryPersistencePort;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.utils.constants.Pagination;
+&nbsp;import com.pragma.hogar360.serviceshome.infrastructure.entities.CategoryEntity;
+&nbsp;import com.pragma.hogar360.serviceshome.infrastructure.repositories.mysql.CategoryRepository;
+&nbsp;import com.pragma.hogar360.serviceshome.infrastructure.mappers.CategoryEntityMapper;
+&nbsp;import com.pragma.hogar360.serviceshome.commons.configurations.utils.Constants;
+&nbsp;import lombok.RequiredArgsConstructor;
+&nbsp;import org.springframework.data.domain.Page;
+&nbsp;import org.springframework.data.domain.PageRequest;
+&nbsp;import org.springframework.data.domain.Pageable;
+&nbsp;import org.springframework.data.domain.Sort;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;import org.springframework.transaction.annotation.Transactional;
+&nbsp;import lombok.extern.slf4j.Slf4j;
+&nbsp;
+&nbsp;@Service
+&nbsp;@Transactional
+&nbsp;@RequiredArgsConstructor
+<b class="nc">&nbsp;@Slf4j</b>
+&nbsp;public class CategoryPersistenceAdapter implements CategoryPersistencePort {
+&nbsp;
+&nbsp;    private final CategoryRepository categoryRepository;
+&nbsp;    private final CategoryEntityMapper categoryEntityMapper;
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void save(CategoryModel categoryModel) {
+<b class="nc">&nbsp;        categoryRepository.save(categoryEntityMapper.categoryModelToCategoryEntity(categoryModel));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public CategoryModel getCategoryByName(String categoryName) {
+<b class="nc">&nbsp;        return categoryEntityMapper.categoryEntityToCategoryModel(categoryRepository.findByName(categoryName).orElse(null));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public Pagination&lt;CategoryModel&gt; getCategories(Integer page, Integer size, boolean orderAsc) {
+&nbsp;        Pageable pagination;
+<b class="nc">&nbsp;        if (orderAsc) {</b>
+<b class="nc">&nbsp;            pagination = PageRequest.of(page, size, Sort.by(Constants.PAGEABLE_FIELD_NAME).ascending());</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            pagination = PageRequest.of(page, size, Sort.by(Constants.PAGEABLE_FIELD_NAME).descending());</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        log.info(&quot;Fetching categories from DB - Page: {}, Size: {}, OrderAsc: {}&quot;, page, size, orderAsc);</b>
+<b class="nc">&nbsp;        Page&lt;CategoryEntity&gt; categoryPage = categoryRepository.findAll(pagination);</b>
+<b class="nc">&nbsp;        log.info(&quot;Categories fetched. Total Elements: {}, Total Pages: {}&quot;, categoryPage.getTotalElements(), categoryPage.getTotalPages());</b>
+&nbsp;
+<b class="nc">&nbsp;        Pagination&lt;CategoryModel&gt; result = categoryEntityMapper.categoryEntityPageToCategoryModelPagination(categoryPage);</b>
+<b class="nc">&nbsp;        log.info(&quot;Mapped Categories: {}&quot;, result.getItems());</b>
+&nbsp;
+<b class="nc">&nbsp;        log.info(&quot;Pagination mapped successfully. Returning response...&quot;);</b>
+<b class="nc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;}
+</code>
+</pre>
 </div>
 
 <script type="text/javascript">
@@ -149,7 +167,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2025-03-20 13:41</div>
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
 </div>
 </body>
 </html>

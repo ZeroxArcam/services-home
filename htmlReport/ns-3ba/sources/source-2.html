@@ -1,0 +1,244 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ShadowingClassLoader</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.instrument.classloading</a>
+</div>
+
+<h1>Coverage Summary for Class: ShadowingClassLoader (org.springframework.instrument.classloading)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ShadowingClassLoader</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/22)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/47)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.instrument.classloading;
+&nbsp;
+&nbsp;import java.io.IOException;
+&nbsp;import java.io.InputStream;
+&nbsp;import java.lang.instrument.ClassFileTransformer;
+&nbsp;import java.lang.instrument.IllegalClassFormatException;
+&nbsp;import java.net.URL;
+&nbsp;import java.security.ProtectionDomain;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Enumeration;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import org.springframework.core.DecoratingClassLoader;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.FileCopyUtils;
+&nbsp;import org.springframework.util.StringUtils;
+&nbsp;
+&nbsp;public class ShadowingClassLoader extends DecoratingClassLoader {
+&nbsp;    public static final String[] DEFAULT_EXCLUDED_PACKAGES = new String[]{&quot;java.&quot;, &quot;javax.&quot;, &quot;jdk.&quot;, &quot;sun.&quot;, &quot;oracle.&quot;, &quot;com.sun.&quot;, &quot;com.ibm.&quot;, &quot;COM.ibm.&quot;, &quot;org.w3c.&quot;, &quot;org.xml.&quot;, &quot;org.dom4j.&quot;, &quot;org.eclipse&quot;, &quot;org.aspectj.&quot;, &quot;net.sf.cglib&quot;, &quot;org.springframework.cglib&quot;, &quot;org.apache.xerces.&quot;, &quot;org.apache.commons.logging.&quot;};
+&nbsp;    private final ClassLoader enclosingClassLoader;
+&nbsp;    private final List&lt;ClassFileTransformer&gt; classFileTransformers;
+&nbsp;    private final Map&lt;String, Class&lt;?&gt;&gt; classCache;
+&nbsp;
+&nbsp;    public ShadowingClassLoader(ClassLoader enclosingClassLoader) {
+&nbsp;        this(enclosingClassLoader, true);
+&nbsp;    }
+&nbsp;
+&nbsp;    public ShadowingClassLoader(ClassLoader enclosingClassLoader, boolean defaultExcludes) {
+&nbsp;        this.classFileTransformers = new ArrayList(1);
+&nbsp;        this.classCache = new HashMap();
+&nbsp;        Assert.notNull(enclosingClassLoader, &quot;Enclosing ClassLoader must not be null&quot;);
+&nbsp;        this.enclosingClassLoader = enclosingClassLoader;
+&nbsp;        if (defaultExcludes) {
+&nbsp;            for(String excludedPackage : DEFAULT_EXCLUDED_PACKAGES) {
+&nbsp;                this.excludePackage(excludedPackage);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void addTransformer(ClassFileTransformer transformer) {
+&nbsp;        Assert.notNull(transformer, &quot;Transformer must not be null&quot;);
+<b class="nc">&nbsp;        this.classFileTransformers.add(transformer);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void copyTransformers(ShadowingClassLoader other) {
+&nbsp;        Assert.notNull(other, &quot;Other ClassLoader must not be null&quot;);
+&nbsp;        this.classFileTransformers.addAll(other.classFileTransformers);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public Class&lt;?&gt; loadClass(String name) throws ClassNotFoundException {</b>
+&nbsp;        if (this.shouldShadow(name)) {
+<b class="nc">&nbsp;            Class&lt;?&gt; cls = (Class)this.classCache.get(name);</b>
+&nbsp;            return cls != null ? cls : this.doLoadClass(name);
+&nbsp;        } else {
+&nbsp;            return this.enclosingClassLoader.loadClass(name);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean shouldShadow(String className) {
+&nbsp;        return !className.equals(this.getClass().getName()) &amp;&amp; !className.endsWith(&quot;ShadowingClassLoader&quot;) &amp;&amp; this.isEligibleForShadowing(className);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected boolean isEligibleForShadowing(String className) {
+&nbsp;        return !this.isExcluded(className);
+&nbsp;    }
+&nbsp;
+&nbsp;    private Class&lt;?&gt; doLoadClass(String name) throws ClassNotFoundException {
+&nbsp;        String internalName = StringUtils.replace(name, &quot;.&quot;, &quot;/&quot;) + &quot;.class&quot;;
+&nbsp;        InputStream is = this.enclosingClassLoader.getResourceAsStream(internalName);
+&nbsp;        if (is == null) {
+<b class="nc">&nbsp;            throw new ClassNotFoundException(name);</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            try {</b>
+<b class="nc">&nbsp;                byte[] bytes = FileCopyUtils.copyToByteArray(is);</b>
+<b class="nc">&nbsp;                bytes = this.applyTransformers(name, bytes);</b>
+<b class="nc">&nbsp;                Class&lt;?&gt; cls = this.defineClass(name, bytes, 0, bytes.length);</b>
+&nbsp;                if (cls.getPackage() == null) {
+&nbsp;                    int packageSeparator = name.lastIndexOf(46);
+&nbsp;                    if (packageSeparator != -1) {
+&nbsp;                        String packageName = name.substring(0, packageSeparator);
+&nbsp;                        this.definePackage(packageName, (String)null, (String)null, (String)null, (String)null, (String)null, (String)null, (URL)null);
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                this.classCache.put(name, cls);
+&nbsp;                return cls;
+&nbsp;            } catch (IOException ex) {
+<b class="nc">&nbsp;                throw new ClassNotFoundException(&quot;Cannot load resource for class [&quot; + name + &quot;]&quot;, ex);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private byte[] applyTransformers(String name, byte[] bytes) {
+&nbsp;        String internalName = StringUtils.replace(name, &quot;.&quot;, &quot;/&quot;);
+&nbsp;
+&nbsp;        try {
+&nbsp;            for(ClassFileTransformer transformer : this.classFileTransformers) {
+<b class="nc">&nbsp;                byte[] transformed = transformer.transform(this, internalName, (Class)null, (ProtectionDomain)null, bytes);</b>
+<b class="nc">&nbsp;                bytes = transformed != null ? transformed : bytes;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            return bytes;
+&nbsp;        } catch (IllegalClassFormatException ex) {
+&nbsp;            throw new IllegalStateException(ex);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public URL getResource(String name) {</b>
+&nbsp;        return this.enclosingClassLoader.getResource(name);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    @Nullable
+<b class="nc">&nbsp;    public InputStream getResourceAsStream(String name) {</b>
+&nbsp;        return this.enclosingClassLoader.getResourceAsStream(name);
+&nbsp;    }
+&nbsp;
+&nbsp;    public Enumeration&lt;URL&gt; getResources(String name) throws IOException {
+&nbsp;        return this.enclosingClassLoader.getResources(name);
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
+</div>
+</body>
+</html>

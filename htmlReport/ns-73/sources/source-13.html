@@ -5,7 +5,7 @@
 <html id="htmlId">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
-  <title>Coverage Report > TestInstanceFactoryContext</title>
+  <title>Coverage Report > ClassOrderer</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -19,17 +19,17 @@
 <div class="breadCrumbs">
 Current scope:     <a href="../../index.html">all classes</a>
     <span class="separator">|</span>
-    <a href="../index.html">org.junit.jupiter.api.extension</a>
+    <a href="../index.html">org.junit.jupiter.api</a>
 </div>
 
-<h1>Coverage Summary for Class: TestInstanceFactoryContext (org.junit.jupiter.api.extension)</h1>
+<h1>Coverage Summary for Class: ClassOrderer (org.junit.jupiter.api)</h1>
 
 <table class="coverageStats">
 <tr>
   <th class="name">Class</th>
 </tr>
 <tr>
-  <td class="name">TestInstanceFactoryContext</td>
+  <td class="name">ClassOrderer</td>
 </tr>
 
 </table>
@@ -44,20 +44,82 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;// (powered by FernFlower decompiler)
 &nbsp;//
 &nbsp;
-&nbsp;package org.junit.jupiter.api.extension;
+&nbsp;package org.junit.jupiter.api;
 &nbsp;
-&nbsp;import java.util.Optional;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.Comparator;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Objects;
 &nbsp;import org.apiguardian.api.API;
 &nbsp;import org.apiguardian.api.API.Status;
+&nbsp;import org.junit.platform.commons.logging.Logger;
+&nbsp;import org.junit.platform.commons.logging.LoggerFactory;
 &nbsp;
 &nbsp;@API(
 &nbsp;    status = Status.STABLE,
-&nbsp;    since = &quot;5.7&quot;
+&nbsp;    since = &quot;5.10&quot;
 &nbsp;)
-&nbsp;public interface TestInstanceFactoryContext {
-&nbsp;    Class&lt;?&gt; getTestClass();
+&nbsp;public interface ClassOrderer {
+&nbsp;    @API(
+&nbsp;        status = Status.STABLE,
+&nbsp;        since = &quot;5.9&quot;
+&nbsp;    )
+&nbsp;    String DEFAULT_ORDER_PROPERTY_NAME = &quot;junit.jupiter.testclass.order.default&quot;;
 &nbsp;
-&nbsp;    Optional&lt;Object&gt; getOuterInstance();
+&nbsp;    void orderClasses(ClassOrdererContext context);
+&nbsp;
+&nbsp;    public static class ClassName implements ClassOrderer {
+&nbsp;        private static final Comparator&lt;ClassDescriptor&gt; comparator = Comparator.comparing((descriptor) -&gt; descriptor.getTestClass().getName());
+&nbsp;
+&nbsp;        public ClassName() {
+&nbsp;        }
+&nbsp;
+&nbsp;        public void orderClasses(ClassOrdererContext context) {
+&nbsp;            context.getClassDescriptors().sort(comparator);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static class DisplayName implements ClassOrderer {
+&nbsp;        private static final Comparator&lt;ClassDescriptor&gt; comparator = Comparator.comparing(ClassDescriptor::getDisplayName);
+&nbsp;
+&nbsp;        public DisplayName() {
+&nbsp;        }
+&nbsp;
+&nbsp;        public void orderClasses(ClassOrdererContext context) {
+&nbsp;            context.getClassDescriptors().sort(comparator);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static class OrderAnnotation implements ClassOrderer {
+&nbsp;        public OrderAnnotation() {
+&nbsp;        }
+&nbsp;
+&nbsp;        public void orderClasses(ClassOrdererContext context) {
+&nbsp;            context.getClassDescriptors().sort(Comparator.comparingInt(OrderAnnotation::getOrder));
+&nbsp;        }
+&nbsp;
+&nbsp;        private static int getOrder(ClassDescriptor descriptor) {
+&nbsp;            return (Integer)descriptor.findAnnotation(Order.class).map(Order::value).orElse(1073741823);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static class Random implements ClassOrderer {
+&nbsp;        private static final Logger logger = LoggerFactory.getLogger(Random.class);
+&nbsp;        public static final String RANDOM_SEED_PROPERTY_NAME = &quot;junit.jupiter.execution.order.random.seed&quot;;
+&nbsp;
+&nbsp;        public Random() {
+&nbsp;        }
+&nbsp;
+&nbsp;        public void orderClasses(ClassOrdererContext context) {
+&nbsp;            List var10000 = context.getClassDescriptors();
+&nbsp;            Objects.requireNonNull(context);
+&nbsp;            Collections.shuffle(var10000, new java.util.Random(RandomOrdererUtils.getSeed(context::getConfigurationParameter, logger)));
+&nbsp;        }
+&nbsp;
+&nbsp;        static {
+&nbsp;            logger.config(() -&gt; &quot;ClassOrderer.Random default seed: &quot; + RandomOrdererUtils.DEFAULT_SEED);
+&nbsp;        }
+&nbsp;    }
 &nbsp;}
 </code>
 </pre>
@@ -82,7 +144,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2025-03-20 13:41</div>
+    <div style="float:right;">generated on 2025-03-31 20:44</div>
 </div>
 </body>
 </html>

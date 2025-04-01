@@ -1,0 +1,220 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > FastHttpDateFormat</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.apache.tomcat.util.http</a>
+</div>
+
+<h1>Coverage Summary for Class: FastHttpDateFormat (org.apache.tomcat.util.http)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">FastHttpDateFormat</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    42.9%
+  </span>
+  <span class="absValue">
+    (3/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    16.7%
+  </span>
+  <span class="absValue">
+    (3/18)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (20/40)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.apache.tomcat.util.http;
+&nbsp;
+&nbsp;import java.text.ParseException;
+&nbsp;import java.util.Date;
+&nbsp;import java.util.Locale;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.TimeZone;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;
+&nbsp;public final class FastHttpDateFormat {
+&nbsp;    private static final int CACHE_SIZE = Integer.getInteger(&quot;org.apache.tomcat.util.http.FastHttpDateFormat.CACHE_SIZE&quot;, 1000);
+&nbsp;    private static final String DATE_RFC5322 = &quot;EEE, dd MMM yyyy HH:mm:ss z&quot;;
+&nbsp;    private static final String DATE_OBSOLETE_RFC850 = &quot;EEEEEE, dd-MMM-yy HH:mm:ss zzz&quot;;
+&nbsp;    private static final String DATE_OBSOLETE_ASCTIME = &quot;EEE MMMM d HH:mm:ss yyyy&quot;;
+&nbsp;    private static final ConcurrentDateFormat FORMAT_RFC5322;
+&nbsp;    private static final ConcurrentDateFormat FORMAT_OBSOLETE_RFC850;
+&nbsp;    private static final ConcurrentDateFormat FORMAT_OBSOLETE_ASCTIME;
+&nbsp;    private static final ConcurrentDateFormat[] httpParseFormats;
+&nbsp;    private static volatile long currentDateGeneratedInSeconds;
+&nbsp;    private static String currentDate;
+&nbsp;    private static final Map&lt;Long, String&gt; formatCache;
+&nbsp;    private static final Map&lt;String, Long&gt; parseCache;
+&nbsp;
+&nbsp;    public FastHttpDateFormat() {
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public static String getCurrentDate() {
+&nbsp;        long nowInSeconds = System.currentTimeMillis() / 1000L;
+&nbsp;        if (nowInSeconds != currentDateGeneratedInSeconds) {
+&nbsp;            currentDate = FORMAT_RFC5322.format(new Date(nowInSeconds * 1000L));
+&nbsp;            currentDateGeneratedInSeconds = nowInSeconds;
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;        return currentDate;
+&nbsp;    }
+&nbsp;
+&nbsp;    public static String formatDate(long value) {
+&nbsp;        Long longValue = value;
+&nbsp;        String cachedDate = (String)formatCache.get(longValue);
+&nbsp;        if (cachedDate != null) {
+&nbsp;            return cachedDate;
+&nbsp;        } else {
+&nbsp;            String newDate = FORMAT_RFC5322.format(new Date(value));
+&nbsp;            updateFormatCache(longValue, newDate);
+&nbsp;            return newDate;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public static long parseDate(String value) {</b>
+&nbsp;        Long cachedDate = (Long)parseCache.get(value);
+<b class="fc">&nbsp;        if (cachedDate != null) {</b>
+<b class="fc">&nbsp;            return cachedDate;</b>
+<b class="fc">&nbsp;        } else {</b>
+&nbsp;            long date = -1L;
+<b class="fc">&nbsp;</b>
+&nbsp;            for(int i = 0; date == -1L &amp;&amp; i &lt; httpParseFormats.length; ++i) {
+&nbsp;                try {
+&nbsp;                    date = httpParseFormats[i].parse(value).getTime();
+&nbsp;                    updateParseCache(value, date);
+&nbsp;                } catch (ParseException var6) {
+&nbsp;                }
+<b class="fc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            return date;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    private static void updateFormatCache(Long key, String value) {</b>
+&nbsp;        if (value != null) {
+&nbsp;            if (formatCache.size() &gt; CACHE_SIZE) {
+&nbsp;                formatCache.clear();
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            formatCache.put(key, value);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static void updateParseCache(String key, Long value) {
+&nbsp;        if (value != null) {
+<b class="fc">&nbsp;            if (parseCache.size() &gt; CACHE_SIZE) {</b>
+&nbsp;                parseCache.clear();
+&nbsp;            }
+&nbsp;
+&nbsp;            parseCache.put(key, value);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    static {
+&nbsp;        TimeZone tz = TimeZone.getTimeZone(&quot;GMT&quot;);
+&nbsp;        FORMAT_RFC5322 = new ConcurrentDateFormat(&quot;EEE, dd MMM yyyy HH:mm:ss z&quot;, Locale.US, tz);
+&nbsp;        FORMAT_OBSOLETE_RFC850 = new ConcurrentDateFormat(&quot;EEEEEE, dd-MMM-yy HH:mm:ss zzz&quot;, Locale.US, tz);
+&nbsp;        FORMAT_OBSOLETE_ASCTIME = new ConcurrentDateFormat(&quot;EEE MMMM d HH:mm:ss yyyy&quot;, Locale.US, tz);
+<b class="nc">&nbsp;        httpParseFormats = new ConcurrentDateFormat[]{FORMAT_RFC5322, FORMAT_OBSOLETE_RFC850, FORMAT_OBSOLETE_ASCTIME};</b>
+<b class="nc">&nbsp;        currentDateGeneratedInSeconds = 0L;</b>
+<b class="nc">&nbsp;        currentDate = null;</b>
+<b class="nc">&nbsp;        formatCache = new ConcurrentHashMap(CACHE_SIZE);</b>
+&nbsp;        parseCache = new ConcurrentHashMap(CACHE_SIZE);
+<b class="nc">&nbsp;    }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 21:00</div>
+</div>
+</body>
+</html>

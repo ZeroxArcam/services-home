@@ -5,7 +5,7 @@
 <html id="htmlId">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
-  <title>Coverage Report > FieldReader</title>
+  <title>Coverage Report > SessionIdGeneratorBase</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -19,10 +19,10 @@
 <div class="breadCrumbs">
 Current scope:     <a href="../../index.html">all classes</a>
     <span class="separator">|</span>
-    <a href="../index.html">org.mockito.internal.util.reflection</a>
+    <a href="../index.html">org.apache.catalina.util</a>
 </div>
 
-<h1>Coverage Summary for Class: FieldReader (org.mockito.internal.util.reflection)</h1>
+<h1>Coverage Summary for Class: SessionIdGeneratorBase (org.apache.catalina.util)</h1>
 
 <table class="coverageStats">
 <tr>
@@ -45,7 +45,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 </th>
 </tr>
 <tr>
-  <td class="name">FieldReader</td>
+  <td class="name">SessionIdGeneratorBase</td>
 <td class="coverageStat">
   <span class="percent">
     100%
@@ -56,26 +56,26 @@ Current scope:     <a href="../../index.html">all classes</a>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    100%
+    5.3%
   </span>
   <span class="absValue">
-    (3/3)
+    (1/19)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    100%
+    3.8%
   </span>
   <span class="absValue">
-    (2/2)
+    (1/26)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    85.7%
+    6.3%
   </span>
   <span class="absValue">
-    (6/7)
+    (4/63)
   </span>
 </td>
 </tr>
@@ -92,33 +92,170 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;// (powered by FernFlower decompiler)
 &nbsp;//
 &nbsp;
-&nbsp;package org.mockito.internal.util.reflection;
+&nbsp;package org.apache.catalina.util;
 &nbsp;
-&nbsp;import java.lang.reflect.Field;
-&nbsp;import org.mockito.exceptions.base.MockitoException;
-&nbsp;import org.mockito.internal.configuration.plugins.Plugins;
-&nbsp;import org.mockito.plugins.MemberAccessor;
+&nbsp;import java.security.NoSuchAlgorithmException;
+&nbsp;import java.security.NoSuchProviderException;
+&nbsp;import java.security.SecureRandom;
+&nbsp;import java.security.Security;
+&nbsp;import java.util.Queue;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.concurrent.ConcurrentLinkedQueue;
+&nbsp;import org.apache.catalina.LifecycleException;
+&nbsp;import org.apache.catalina.LifecycleState;
+&nbsp;import org.apache.catalina.SessionIdGenerator;
+&nbsp;import org.apache.juli.logging.Log;
+&nbsp;import org.apache.juli.logging.LogFactory;
+&nbsp;import org.apache.tomcat.util.res.StringManager;
 &nbsp;
-&nbsp;public class FieldReader {
-&nbsp;    final Object target;
-&nbsp;    final Field field;
-&nbsp;    final MemberAccessor accessor = Plugins.getMemberAccessor();
-<b class="fc">&nbsp;</b>
-&nbsp;    public FieldReader(Object target, Field field) {
-<b class="fc">&nbsp;        this.target = target;</b>
-<b class="fc">&nbsp;        this.field = field;</b>
+&nbsp;public abstract class SessionIdGeneratorBase extends LifecycleBase implements SessionIdGenerator {
+&nbsp;    private final Log log = LogFactory.getLog(SessionIdGeneratorBase.class);
+&nbsp;    private static final StringManager sm = StringManager.getManager(&quot;org.apache.catalina.util&quot;);
+&nbsp;    public static final String DEFAULT_SECURE_RANDOM_ALGORITHM;
+&nbsp;    private final Queue&lt;SecureRandom&gt; randoms = new ConcurrentLinkedQueue();
+&nbsp;    private String secureRandomClass = null;
+&nbsp;    private String secureRandomAlgorithm;
+&nbsp;    private String secureRandomProvider;
+&nbsp;    private String jvmRoute;
+&nbsp;    private int sessionIdLength;
+&nbsp;
+&nbsp;    public SessionIdGeneratorBase() {
+<b class="nc">&nbsp;        this.secureRandomAlgorithm = DEFAULT_SECURE_RANDOM_ALGORITHM;</b>
+&nbsp;        this.secureRandomProvider = null;
+<b class="nc">&nbsp;        this.jvmRoute = &quot;&quot;;</b>
+&nbsp;        this.sessionIdLength = 16;
 <b class="fc">&nbsp;    }</b>
 &nbsp;
-&nbsp;    public boolean isNull() {
-&nbsp;        return this.read() == null;
+&nbsp;    public String getSecureRandomClass() {
+&nbsp;        return this.secureRandomClass;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setSecureRandomClass(String secureRandomClass) {
+&nbsp;        this.secureRandomClass = secureRandomClass;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public String getSecureRandomAlgorithm() {</b>
+<b class="pc">&nbsp;        return this.secureRandomAlgorithm;</b>
 <b class="fc">&nbsp;    }</b>
 &nbsp;
-&nbsp;    public Object read() {
-&nbsp;        try {
-&nbsp;            return this.accessor.get(this.field, this.target);
-<b class="fc">&nbsp;        } catch (Exception e) {</b>
-&nbsp;            throw new MockitoException(&quot;Cannot read state from field: &quot; + String.valueOf(this.field) + &quot;, on instance: &quot; + String.valueOf(this.target), e);
-<b class="nc">&nbsp;        }</b>
+&nbsp;    public void setSecureRandomAlgorithm(String secureRandomAlgorithm) {
+<b class="nc">&nbsp;        this.secureRandomAlgorithm = secureRandomAlgorithm;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public String getSecureRandomProvider() {
+&nbsp;        return this.secureRandomProvider;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setSecureRandomProvider(String secureRandomProvider) {
+&nbsp;        this.secureRandomProvider = secureRandomProvider;
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getJvmRoute() {
+<b class="nc">&nbsp;        return this.jvmRoute;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void setJvmRoute(String jvmRoute) {
+<b class="nc">&nbsp;        this.jvmRoute = jvmRoute;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public int getSessionIdLength() {
+&nbsp;        return this.sessionIdLength;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void setSessionIdLength(int sessionIdLength) {
+&nbsp;        this.sessionIdLength = sessionIdLength;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public String generateSessionId() {
+&nbsp;        return this.generateSessionId(this.jvmRoute);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void getRandomBytes(byte[] bytes) {
+&nbsp;        SecureRandom random = (SecureRandom)this.randoms.poll();
+&nbsp;        if (random == null) {
+&nbsp;            random = this.createSecureRandom();
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        random.nextBytes(bytes);
+&nbsp;        this.randoms.add(random);
+&nbsp;    }
+&nbsp;
+&nbsp;    private SecureRandom createSecureRandom() {
+&nbsp;        SecureRandom result = null;
+&nbsp;        long t1 = System.currentTimeMillis();
+&nbsp;        if (this.secureRandomClass != null) {
+&nbsp;            try {
+&nbsp;                Class&lt;?&gt; clazz = Class.forName(this.secureRandomClass);
+<b class="nc">&nbsp;                result = (SecureRandom)clazz.getConstructor().newInstance();</b>
+&nbsp;            } catch (Exception e) {
+&nbsp;                this.log.error(sm.getString(&quot;sessionIdGeneratorBase.random&quot;, new Object[]{this.secureRandomClass}), e);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        boolean error = false;
+&nbsp;        if (result == null) {
+&nbsp;            try {
+&nbsp;                if (this.secureRandomProvider != null &amp;&amp; this.secureRandomProvider.length() &gt; 0) {
+<b class="nc">&nbsp;                    result = SecureRandom.getInstance(this.secureRandomAlgorithm, this.secureRandomProvider);</b>
+&nbsp;                } else if (this.secureRandomAlgorithm != null &amp;&amp; this.secureRandomAlgorithm.length() &gt; 0) {
+&nbsp;                    result = SecureRandom.getInstance(this.secureRandomAlgorithm);
+&nbsp;                }
+&nbsp;            } catch (NoSuchAlgorithmException e) {
+&nbsp;                error = true;
+&nbsp;                this.log.error(sm.getString(&quot;sessionIdGeneratorBase.randomAlgorithm&quot;, new Object[]{this.secureRandomAlgorithm}), e);
+&nbsp;            } catch (NoSuchProviderException e) {
+&nbsp;                error = true;
+&nbsp;                this.log.error(sm.getString(&quot;sessionIdGeneratorBase.randomProvider&quot;, new Object[]{this.secureRandomProvider}), e);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        if (result == null &amp;&amp; error &amp;&amp; !DEFAULT_SECURE_RANDOM_ALGORITHM.equals(this.secureRandomAlgorithm)) {
+&nbsp;            try {
+<b class="nc">&nbsp;                result = SecureRandom.getInstance(DEFAULT_SECURE_RANDOM_ALGORITHM);</b>
+&nbsp;            } catch (NoSuchAlgorithmException e) {
+&nbsp;                this.log.error(sm.getString(&quot;sessionIdGeneratorBase.randomAlgorithm&quot;, new Object[]{this.secureRandomAlgorithm}), e);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        if (result == null) {
+&nbsp;            result = new SecureRandom();
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        result.nextInt();</b>
+&nbsp;        long t2 = System.currentTimeMillis();
+&nbsp;        if (t2 - t1 &gt; 100L) {
+&nbsp;            this.log.warn(sm.getString(&quot;sessionIdGeneratorBase.createRandom&quot;, new Object[]{result.getAlgorithm(), t2 - t1}));
+&nbsp;        }
+&nbsp;
+&nbsp;        return result;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void initInternal() throws LifecycleException {
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void startInternal() throws LifecycleException {
+&nbsp;        this.generateSessionId();
+<b class="nc">&nbsp;        this.setState(LifecycleState.STARTING);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void stopInternal() throws LifecycleException {
+&nbsp;        this.setState(LifecycleState.STOPPING);
+&nbsp;        this.randoms.clear();
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected void destroyInternal() throws LifecycleException {
+&nbsp;    }
+&nbsp;
+&nbsp;    static {
+<b class="nc">&nbsp;        Set&lt;String&gt; algorithmNames = Security.getAlgorithms(&quot;SecureRandom&quot;);</b>
+&nbsp;        if (algorithmNames.contains(&quot;SHA1PRNG&quot;)) {
+&nbsp;            DEFAULT_SECURE_RANDOM_ALGORITHM = &quot;SHA1PRNG&quot;;
+&nbsp;        } else {
+&nbsp;            DEFAULT_SECURE_RANDOM_ALGORITHM = &quot;&quot;;
+&nbsp;            Log log = LogFactory.getLog(SessionIdGeneratorBase.class);
+<b class="nc">&nbsp;            log.warn(sm.getString(&quot;sessionIdGeneratorBase.noSHA1PRNG&quot;));</b>
+&nbsp;        }
+&nbsp;
 &nbsp;    }
 &nbsp;}
 </code>
@@ -144,7 +281,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2025-03-20 13:41</div>
+    <div style="float:right;">generated on 2025-03-31 20:54</div>
 </div>
 </body>
 </html>

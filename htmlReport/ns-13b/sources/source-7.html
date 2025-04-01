@@ -1,0 +1,906 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > H2Dialect</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.dialect</a>
+</div>
+
+<h1>Coverage Summary for Class: H2Dialect (org.hibernate.dialect)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">H2Dialect</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/102)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/87)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/315)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.dialect;
+&nbsp;
+&nbsp;import jakarta.persistence.TemporalType;
+&nbsp;import java.sql.CallableStatement;
+&nbsp;import java.sql.SQLException;
+&nbsp;import java.time.temporal.ChronoField;
+&nbsp;import java.time.temporal.TemporalAccessor;
+&nbsp;import java.util.Calendar;
+&nbsp;import java.util.Date;
+&nbsp;import java.util.List;
+&nbsp;import java.util.TimeZone;
+&nbsp;import org.hibernate.JDBCException;
+&nbsp;import org.hibernate.PessimisticLockException;
+&nbsp;import org.hibernate.QueryTimeoutException;
+&nbsp;import org.hibernate.boot.model.FunctionContributions;
+&nbsp;import org.hibernate.boot.model.TypeContributions;
+&nbsp;import org.hibernate.dialect.function.CommonFunctionFactory;
+&nbsp;import org.hibernate.dialect.hint.IndexQueryHintHandler;
+&nbsp;import org.hibernate.dialect.identity.H2FinalTableIdentityColumnSupport;
+&nbsp;import org.hibernate.dialect.identity.IdentityColumnSupport;
+&nbsp;import org.hibernate.dialect.pagination.LimitHandler;
+&nbsp;import org.hibernate.dialect.pagination.OffsetFetchLimitHandler;
+&nbsp;import org.hibernate.dialect.sequence.H2V1SequenceSupport;
+&nbsp;import org.hibernate.dialect.sequence.H2V2SequenceSupport;
+&nbsp;import org.hibernate.dialect.sequence.SequenceSupport;
+&nbsp;import org.hibernate.dialect.temptable.TemporaryTable;
+&nbsp;import org.hibernate.dialect.temptable.TemporaryTableKind;
+&nbsp;import org.hibernate.dialect.unique.CreateTableUniqueDelegate;
+&nbsp;import org.hibernate.dialect.unique.UniqueDelegate;
+&nbsp;import org.hibernate.engine.jdbc.dialect.spi.DialectResolutionInfo;
+&nbsp;import org.hibernate.engine.spi.SessionFactoryImplementor;
+&nbsp;import org.hibernate.exception.ConstraintViolationException;
+&nbsp;import org.hibernate.exception.LockAcquisitionException;
+&nbsp;import org.hibernate.exception.ConstraintViolationException.ConstraintKind;
+&nbsp;import org.hibernate.exception.spi.SQLExceptionConversionDelegate;
+&nbsp;import org.hibernate.exception.spi.TemplatedViolatedConstraintNameExtractor;
+&nbsp;import org.hibernate.exception.spi.ViolatedConstraintNameExtractor;
+&nbsp;import org.hibernate.internal.util.JdbcExceptionHelper;
+&nbsp;import org.hibernate.metamodel.mapping.EntityMappingType;
+&nbsp;import org.hibernate.metamodel.spi.RuntimeModelCreationContext;
+&nbsp;import org.hibernate.persister.entity.mutation.EntityMutationTarget;
+&nbsp;import org.hibernate.query.sqm.CastType;
+&nbsp;import org.hibernate.query.sqm.FetchClauseType;
+&nbsp;import org.hibernate.query.sqm.IntervalType;
+&nbsp;import org.hibernate.query.sqm.TemporalUnit;
+&nbsp;import org.hibernate.query.sqm.mutation.internal.temptable.GlobalTemporaryTableInsertStrategy;
+&nbsp;import org.hibernate.query.sqm.mutation.internal.temptable.GlobalTemporaryTableMutationStrategy;
+&nbsp;import org.hibernate.query.sqm.mutation.spi.SqmMultiTableInsertStrategy;
+&nbsp;import org.hibernate.query.sqm.mutation.spi.SqmMultiTableMutationStrategy;
+&nbsp;import org.hibernate.service.ServiceRegistry;
+&nbsp;import org.hibernate.sql.ast.SqlAstNodeRenderingMode;
+&nbsp;import org.hibernate.sql.ast.SqlAstTranslator;
+&nbsp;import org.hibernate.sql.ast.SqlAstTranslatorFactory;
+&nbsp;import org.hibernate.sql.ast.spi.ParameterMarkerStrategy;
+&nbsp;import org.hibernate.sql.ast.spi.SqlAppender;
+&nbsp;import org.hibernate.sql.ast.spi.StandardSqlAstTranslatorFactory;
+&nbsp;import org.hibernate.sql.ast.tree.Statement;
+&nbsp;import org.hibernate.sql.exec.spi.JdbcOperation;
+&nbsp;import org.hibernate.sql.model.MutationOperation;
+&nbsp;import org.hibernate.sql.model.internal.OptionalTableUpdate;
+&nbsp;import org.hibernate.tool.schema.extract.internal.SequenceInformationExtractorLegacyImpl;
+&nbsp;import org.hibernate.tool.schema.extract.spi.SequenceInformationExtractor;
+&nbsp;import org.hibernate.type.descriptor.DateTimeUtils;
+&nbsp;import org.hibernate.type.descriptor.jdbc.EnumJdbcType;
+&nbsp;import org.hibernate.type.descriptor.jdbc.JdbcType;
+&nbsp;import org.hibernate.type.descriptor.jdbc.OrdinalEnumJdbcType;
+&nbsp;import org.hibernate.type.descriptor.jdbc.TimeUtcAsOffsetTimeJdbcType;
+&nbsp;import org.hibernate.type.descriptor.jdbc.TimestampUtcAsInstantJdbcType;
+&nbsp;import org.hibernate.type.descriptor.jdbc.UUIDJdbcType;
+&nbsp;import org.hibernate.type.descriptor.jdbc.spi.JdbcTypeRegistry;
+&nbsp;import org.hibernate.type.descriptor.sql.internal.DdlTypeImpl;
+&nbsp;import org.hibernate.type.descriptor.sql.internal.NativeEnumDdlTypeImpl;
+&nbsp;import org.hibernate.type.descriptor.sql.internal.NativeOrdinalEnumDdlTypeImpl;
+&nbsp;import org.hibernate.type.descriptor.sql.spi.DdlTypeRegistry;
+&nbsp;import org.hibernate.type.spi.TypeConfiguration;
+&nbsp;
+&nbsp;public class H2Dialect extends Dialect {
+&nbsp;    private static final DatabaseVersion MINIMUM_VERSION = DatabaseVersion.make(2, 1, 214);
+&nbsp;    private final boolean ansiSequence;
+&nbsp;    private final boolean cascadeConstraints;
+&nbsp;    private final boolean useLocalTime;
+&nbsp;    private final SequenceInformationExtractor sequenceInformationExtractor;
+&nbsp;    private final String querySequenceString;
+&nbsp;    private final UniqueDelegate uniqueDelegate;
+&nbsp;    private final OptionalTableUpdateStrategy optionalTableUpdateStrategy;
+&nbsp;    private static final ViolatedConstraintNameExtractor EXTRACTOR = new TemplatedViolatedConstraintNameExtractor((sqle) -&gt; {
+&nbsp;        if (sqle.getSQLState().startsWith(&quot;23&quot;)) {
+&nbsp;            String message = sqle.getMessage();
+&nbsp;            int i = message.indexOf(&quot;violation: &quot;);
+&nbsp;            if (i &gt; 0) {
+&nbsp;                String constraintDescription = message.substring(i + &quot;violation: &quot;.length()).replace(&quot;\&quot;&quot;, &quot;&quot;);
+&nbsp;                if (sqle.getSQLState().equals(&quot;23506&quot;)) {
+&nbsp;                    constraintDescription = constraintDescription.substring(1, constraintDescription.indexOf(58));
+&nbsp;                }
+&nbsp;
+&nbsp;                int j = constraintDescription.indexOf(&quot; ON &quot;);
+&nbsp;                return j &gt; 0 ? constraintDescription.substring(0, j) : constraintDescription;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return null;
+&nbsp;    });
+&nbsp;
+&nbsp;    public H2Dialect(DialectResolutionInfo info) {
+&nbsp;        this(parseVersion(info));
+&nbsp;        this.registerKeywords(info);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public H2Dialect() {</b>
+&nbsp;        this(MINIMUM_VERSION);
+&nbsp;    }
+&nbsp;
+&nbsp;    public H2Dialect(DatabaseVersion version) {
+&nbsp;        super(version);
+&nbsp;        this.uniqueDelegate = new CreateTableUniqueDelegate(this);
+&nbsp;        this.ansiSequence = true;
+<b class="nc">&nbsp;        this.cascadeConstraints = true;</b>
+&nbsp;        this.useLocalTime = true;
+&nbsp;        this.sequenceInformationExtractor = SequenceInformationExtractorLegacyImpl.INSTANCE;
+&nbsp;        this.querySequenceString = &quot;select * from INFORMATION_SCHEMA.SEQUENCES&quot;;
+&nbsp;        this.optionalTableUpdateStrategy = H2Dialect::usingMerge;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private static DatabaseVersion parseVersion(DialectResolutionInfo info) {
+&nbsp;        DatabaseVersion version = info.makeCopyOrDefault(MINIMUM_VERSION);
+&nbsp;        if (info.getDatabaseVersion() != null) {
+<b class="nc">&nbsp;            version = DatabaseVersion.make(version.getMajor(), version.getMinor(), parseBuildId(info));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        return version;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private static int parseBuildId(DialectResolutionInfo info) {
+&nbsp;        String databaseVersion = info.getDatabaseVersion();
+<b class="nc">&nbsp;        if (databaseVersion == null) {</b>
+&nbsp;            return 0;
+&nbsp;        } else {
+<b class="nc">&nbsp;            String[] bits = databaseVersion.split(&quot;[. \\-]&quot;);</b>
+&nbsp;            return bits.length &gt; 2 ? Integer.parseInt(bits[2]) : 0;
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected DatabaseVersion getMinimumSupportedVersion() {</b>
+<b class="nc">&nbsp;        return MINIMUM_VERSION;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean getDefaultNonContextualLobCreation() {
+<b class="nc">&nbsp;        return true;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public boolean supportsStandardArrays() {
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean useArrayForMultiValuedParameters() {
+<b class="nc">&nbsp;        return false;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    protected String columnType(int sqlTypeCode) {
+&nbsp;        switch (sqlTypeCode) {
+<b class="nc">&nbsp;            case -15:</b>
+<b class="nc">&nbsp;                return this.columnType(1);</b>
+&nbsp;            case -9:
+&nbsp;                return this.columnType(12);
+&nbsp;            default:
+&nbsp;                return super.columnType(sqlTypeCode);
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected String castType(int sqlTypeCode) {
+&nbsp;        switch (sqlTypeCode) {
+&nbsp;            case -15:
+<b class="nc">&nbsp;            case 1:</b>
+&nbsp;                return &quot;char&quot;;
+&nbsp;            case -9:
+&nbsp;            case 12:
+&nbsp;            case 4001:
+<b class="nc">&nbsp;            case 4002:</b>
+&nbsp;                return &quot;varchar&quot;;
+&nbsp;            case -3:
+&nbsp;            case -2:
+&nbsp;            case 4003:
+&nbsp;                return &quot;varbinary&quot;;
+<b class="nc">&nbsp;            default:</b>
+&nbsp;                return super.castType(sqlTypeCode);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected void registerColumnTypes(TypeContributions typeContributions, ServiceRegistry serviceRegistry) {</b>
+&nbsp;        super.registerColumnTypes(typeContributions, serviceRegistry);
+<b class="nc">&nbsp;        DdlTypeRegistry ddlTypeRegistry = typeContributions.getTypeConfiguration().getDdlTypeRegistry();</b>
+&nbsp;        ddlTypeRegistry.addDescriptor(new DdlTypeImpl(3000, &quot;uuid&quot;, this));
+<b class="nc">&nbsp;        ddlTypeRegistry.addDescriptor(new DdlTypeImpl(3200, &quot;geometry&quot;, this));</b>
+&nbsp;        ddlTypeRegistry.addDescriptor(new DdlTypeImpl(3100, &quot;interval second($p,$s)&quot;, this));
+<b class="nc">&nbsp;        ddlTypeRegistry.addDescriptor(new DdlTypeImpl(3001, &quot;json&quot;, this));</b>
+&nbsp;        ddlTypeRegistry.addDescriptor(new NativeEnumDdlTypeImpl(this));
+&nbsp;        ddlTypeRegistry.addDescriptor(new NativeOrdinalEnumDdlTypeImpl(this));
+&nbsp;    }
+&nbsp;
+&nbsp;    public void contributeTypes(TypeContributions typeContributions, ServiceRegistry serviceRegistry) {
+<b class="nc">&nbsp;        super.contributeTypes(typeContributions, serviceRegistry);</b>
+&nbsp;        JdbcTypeRegistry jdbcTypeRegistry = typeContributions.getTypeConfiguration().getJdbcTypeRegistry();
+&nbsp;        jdbcTypeRegistry.addDescriptor(TimeUtcAsOffsetTimeJdbcType.INSTANCE);
+<b class="nc">&nbsp;        jdbcTypeRegistry.addDescriptor(TimestampUtcAsInstantJdbcType.INSTANCE);</b>
+&nbsp;        jdbcTypeRegistry.addDescriptorIfAbsent(UUIDJdbcType.INSTANCE);
+&nbsp;        jdbcTypeRegistry.addDescriptorIfAbsent(H2DurationIntervalSecondJdbcType.INSTANCE);
+&nbsp;        jdbcTypeRegistry.addDescriptorIfAbsent(H2JsonJdbcType.INSTANCE);
+&nbsp;        jdbcTypeRegistry.addDescriptor(EnumJdbcType.INSTANCE);
+<b class="nc">&nbsp;        jdbcTypeRegistry.addDescriptor(OrdinalEnumJdbcType.INSTANCE);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getDefaultStatementBatchSize() {
+<b class="nc">&nbsp;        return 15;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public boolean hasOddDstBehavior() {
+&nbsp;        return true;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void initializeFunctionRegistry(FunctionContributions functionContributions) {</b>
+<b class="nc">&nbsp;        super.initializeFunctionRegistry(functionContributions);</b>
+&nbsp;        CommonFunctionFactory functionFactory = new CommonFunctionFactory(functionContributions);
+<b class="nc">&nbsp;        functionFactory.aggregates(this, SqlAstNodeRenderingMode.NO_PLAIN_PARAMETER);</b>
+<b class="nc">&nbsp;        functionFactory.avg_castingNonDoubleArguments(this, SqlAstNodeRenderingMode.NO_PLAIN_PARAMETER);</b>
+<b class="nc">&nbsp;        functionFactory.pi();</b>
+<b class="nc">&nbsp;        functionFactory.cot();</b>
+<b class="nc">&nbsp;        functionFactory.radians();</b>
+<b class="nc">&nbsp;        functionFactory.degrees();</b>
+&nbsp;        functionFactory.log10();
+&nbsp;        functionFactory.mod_operator();
+&nbsp;        functionFactory.rand();
+&nbsp;        functionFactory.soundex();
+<b class="nc">&nbsp;        functionFactory.translate();</b>
+&nbsp;        functionFactory.bitand();
+<b class="nc">&nbsp;        functionFactory.bitor();</b>
+<b class="nc">&nbsp;        functionFactory.bitxor();</b>
+&nbsp;        functionFactory.bitnot();
+<b class="nc">&nbsp;        functionFactory.bitAndOr();</b>
+<b class="nc">&nbsp;        functionFactory.yearMonthDay();</b>
+<b class="nc">&nbsp;        functionFactory.hourMinuteSecond();</b>
+<b class="nc">&nbsp;        functionFactory.dayOfWeekMonthYear();</b>
+<b class="nc">&nbsp;        functionFactory.weekQuarter();</b>
+<b class="nc">&nbsp;        functionFactory.daynameMonthname();</b>
+<b class="nc">&nbsp;        if (this.useLocalTime) {</b>
+&nbsp;            functionFactory.localtimeLocaltimestamp();
+&nbsp;        }
+&nbsp;
+&nbsp;        functionFactory.trunc_dateTrunc();
+<b class="nc">&nbsp;        functionFactory.dateTrunc();</b>
+&nbsp;        functionFactory.bitLength();
+&nbsp;        functionFactory.octetLength();
+&nbsp;        functionFactory.ascii();
+&nbsp;        functionFactory.octetLength();
+<b class="nc">&nbsp;        functionFactory.space();</b>
+&nbsp;        functionFactory.repeat();
+&nbsp;        functionFactory.chr_char();
+&nbsp;        functionFactory.instr();
+&nbsp;        functionFactory.substr();
+<b class="nc">&nbsp;        functionFactory.position();</b>
+&nbsp;        functionFactory.trim1();
+<b class="nc">&nbsp;        functionFactory.concat_pipeOperator();</b>
+&nbsp;        functionFactory.nowCurdateCurtime();
+&nbsp;        functionFactory.sysdate();
+<b class="nc">&nbsp;        functionFactory.insert();</b>
+&nbsp;        functionFactory.everyAny_boolAndOr();
+<b class="nc">&nbsp;        functionFactory.median();</b>
+&nbsp;        functionFactory.stddevPopSamp();
+<b class="nc">&nbsp;        functionFactory.varPopSamp();</b>
+<b class="nc">&nbsp;        functionFactory.format_formatdatetime();</b>
+<b class="nc">&nbsp;        functionFactory.rownum();</b>
+<b class="nc">&nbsp;        functionFactory.windowFunctions();</b>
+<b class="nc">&nbsp;        functionFactory.listagg((String)null);</b>
+<b class="nc">&nbsp;        functionFactory.inverseDistributionOrderedSetAggregates();</b>
+<b class="nc">&nbsp;        functionFactory.hypotheticalOrderedSetAggregates();</b>
+<b class="nc">&nbsp;        functionFactory.array();</b>
+<b class="nc">&nbsp;        functionFactory.arrayAggregate();</b>
+<b class="nc">&nbsp;        functionFactory.arrayPosition_h2(this.getMaximumArraySize());</b>
+<b class="nc">&nbsp;        functionFactory.arrayPositions_h2(this.getMaximumArraySize());</b>
+<b class="nc">&nbsp;        functionFactory.arrayLength_cardinality();</b>
+<b class="nc">&nbsp;        functionFactory.arrayConcat_operator();</b>
+<b class="nc">&nbsp;        functionFactory.arrayPrepend_operator();</b>
+<b class="nc">&nbsp;        functionFactory.arrayAppend_operator();</b>
+<b class="nc">&nbsp;        functionFactory.arrayContains_h2(this.getMaximumArraySize());</b>
+<b class="nc">&nbsp;        functionFactory.arrayIntersects_h2(this.getMaximumArraySize());</b>
+<b class="nc">&nbsp;        functionFactory.arrayGet_h2();</b>
+<b class="nc">&nbsp;        functionFactory.arraySet_h2(this.getMaximumArraySize());</b>
+<b class="nc">&nbsp;        functionFactory.arrayRemove_h2(this.getMaximumArraySize());</b>
+<b class="nc">&nbsp;        functionFactory.arrayRemoveIndex_h2(this.getMaximumArraySize());</b>
+&nbsp;        functionFactory.arraySlice();
+<b class="nc">&nbsp;        functionFactory.arrayReplace_h2(this.getMaximumArraySize());</b>
+<b class="nc">&nbsp;        functionFactory.arrayTrim_trim_array();</b>
+<b class="nc">&nbsp;        functionFactory.arrayFill_h2();</b>
+<b class="nc">&nbsp;        functionFactory.arrayToString_h2(this.getMaximumArraySize());</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected int getMaximumArraySize() {</b>
+<b class="nc">&nbsp;        return 1000;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void augmentPhysicalTableTypes(List&lt;String&gt; tableTypesList) {</b>
+&nbsp;        tableTypesList.add(&quot;BASE TABLE&quot;);
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected Integer resolveSqlTypeCode(String columnTypeName, TypeConfiguration typeConfiguration) {</b>
+<b class="nc">&nbsp;        switch (columnTypeName) {</b>
+<b class="nc">&nbsp;            case &quot;FLOAT(24)&quot;:</b>
+<b class="nc">&nbsp;                return 7;</b>
+&nbsp;            default:
+<b class="nc">&nbsp;                return super.resolveSqlTypeCode(columnTypeName, typeConfiguration);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public JdbcType resolveSqlTypeDescriptor(String columnTypeName, int jdbcTypeCode, int precision, int scale, JdbcTypeRegistry jdbcTypeRegistry) {</b>
+<b class="nc">&nbsp;        switch (jdbcTypeCode) {</b>
+<b class="nc">&nbsp;            case 6:</b>
+<b class="nc">&nbsp;                if (&quot;DOUBLE PRECISION&quot;.equals(columnTypeName)) {</b>
+<b class="nc">&nbsp;                    return jdbcTypeRegistry.getDescriptor(8);</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;                break;</b>
+<b class="nc">&nbsp;            case 1111:</b>
+<b class="nc">&nbsp;                if (&quot;GEOMETRY&quot;.equals(columnTypeName)) {</b>
+<b class="nc">&nbsp;                    return jdbcTypeRegistry.getDescriptor(3200);</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                if (&quot;JSON&quot;.equals(columnTypeName)) {</b>
+<b class="nc">&nbsp;                    return jdbcTypeRegistry.getDescriptor(3001);</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return super.resolveSqlTypeDescriptor(columnTypeName, jdbcTypeCode, precision, scale, jdbcTypeRegistry);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected Integer resolveSqlTypeCode(String typeName, String baseTypeName, TypeConfiguration typeConfiguration) {</b>
+<b class="nc">&nbsp;        switch (baseTypeName) {</b>
+<b class="nc">&nbsp;            case &quot;CHARACTER VARYING&quot;:</b>
+<b class="nc">&nbsp;                return 12;</b>
+<b class="nc">&nbsp;            default:</b>
+&nbsp;                return super.resolveSqlTypeCode(typeName, baseTypeName, typeConfiguration);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getMaxVarcharLength() {
+&nbsp;        return 1048576;
+&nbsp;    }
+&nbsp;
+&nbsp;    public String currentTime() {
+<b class="nc">&nbsp;        return this.useLocalTime ? &quot;localtime&quot; : super.currentTime();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String currentTimestamp() {
+&nbsp;        return this.useLocalTime ? &quot;localtimestamp&quot; : super.currentTimestamp();
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public String currentTimestampWithTimeZone() {
+&nbsp;        return &quot;current_timestamp&quot;;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public SqlAstTranslatorFactory getSqlAstTranslatorFactory() {
+&nbsp;        return new StandardSqlAstTranslatorFactory() {
+<b class="nc">&nbsp;            protected &lt;T extends JdbcOperation&gt; SqlAstTranslator&lt;T&gt; buildTranslator(SessionFactoryImplementor sessionFactory, Statement statement) {</b>
+&nbsp;                return new H2SqlAstTranslator(sessionFactory, statement);
+<b class="nc">&nbsp;            }</b>
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    public String extractPattern(TemporalUnit unit) {
+&nbsp;        return unit == TemporalUnit.SECOND ? &quot;(&quot; + super.extractPattern(unit) + &quot;+extract(nanosecond from ?2)/1e9)&quot; : super.extractPattern(unit);
+&nbsp;    }
+&nbsp;
+&nbsp;    public String castPattern(CastType from, CastType to) {
+&nbsp;        return from == CastType.STRING &amp;&amp; to == CastType.BOOLEAN ? &quot;cast(?1 as ?2)&quot; : super.castPattern(from, to);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public String timestampaddPattern(TemporalUnit unit, TemporalType temporalType, IntervalType intervalType) {
+<b class="nc">&nbsp;        if (intervalType != null) {</b>
+<b class="nc">&nbsp;            return &quot;(?2+?3)&quot;;</b>
+&nbsp;        } else {
+&nbsp;            return unit == TemporalUnit.SECOND ? &quot;dateadd(nanosecond,?2*1e9,?3)&quot; : &quot;dateadd(?1,?2,?3)&quot;;
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public String timestampdiffPattern(TemporalUnit unit, TemporalType fromTemporalType, TemporalType toTemporalType) {
+<b class="nc">&nbsp;        return unit == null ? &quot;(?3-?2)&quot; : &quot;datediff(?1,?2,?3)&quot;;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void appendDateTimeLiteral(SqlAppender appender, TemporalAccessor temporalAccessor, TemporalType precision, TimeZone jdbcTimeZone) {
+&nbsp;        switch (precision) {
+<b class="nc">&nbsp;            case DATE:</b>
+&nbsp;                appender.appendSql(&quot;date &#39;&quot;);
+&nbsp;                DateTimeUtils.appendAsDate(appender, temporalAccessor);
+&nbsp;                appender.appendSql(&#39;\&#39;&#39;);
+&nbsp;                break;
+<b class="nc">&nbsp;            case TIME:</b>
+&nbsp;                if (this.supportsTimeLiteralOffset() &amp;&amp; temporalAccessor.isSupported(ChronoField.OFFSET_SECONDS)) {
+<b class="nc">&nbsp;                    appender.appendSql(&quot;time with time zone &#39;&quot;);</b>
+&nbsp;                    DateTimeUtils.appendAsTime(appender, temporalAccessor, this.supportsTemporalLiteralOffset(), jdbcTimeZone);
+<b class="nc">&nbsp;                } else {</b>
+&nbsp;                    appender.appendSql(&quot;time &#39;&quot;);
+&nbsp;                    DateTimeUtils.appendAsLocalTime(appender, temporalAccessor);
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                appender.appendSql(&#39;\&#39;&#39;);</b>
+&nbsp;                break;
+&nbsp;            case TIMESTAMP:
+&nbsp;                if (this.supportsTemporalLiteralOffset() &amp;&amp; temporalAccessor.isSupported(ChronoField.OFFSET_SECONDS)) {
+&nbsp;                    appender.appendSql(&quot;timestamp with time zone &#39;&quot;);
+<b class="nc">&nbsp;                    DateTimeUtils.appendAsTimestampWithNanos(appender, temporalAccessor, true, jdbcTimeZone);</b>
+&nbsp;                    appender.appendSql(&#39;\&#39;&#39;);
+&nbsp;                } else {
+&nbsp;                    appender.appendSql(&quot;timestamp &#39;&quot;);
+&nbsp;                    DateTimeUtils.appendAsTimestampWithNanos(appender, temporalAccessor, false, jdbcTimeZone);
+<b class="nc">&nbsp;                    appender.appendSql(&#39;\&#39;&#39;);</b>
+&nbsp;                }
+&nbsp;                break;
+&nbsp;            default:
+&nbsp;                throw new IllegalArgumentException();
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void appendDateTimeLiteral(SqlAppender appender, Date date, TemporalType precision, TimeZone jdbcTimeZone) {
+<b class="nc">&nbsp;        switch (precision) {</b>
+&nbsp;            case DATE:
+&nbsp;                appender.appendSql(&quot;date &#39;&quot;);
+&nbsp;                DateTimeUtils.appendAsDate(appender, date);
+&nbsp;                appender.appendSql(&#39;\&#39;&#39;);
+&nbsp;                break;
+&nbsp;            case TIME:
+&nbsp;                if (this.supportsTimeLiteralOffset()) {
+&nbsp;                    appender.appendSql(&quot;time with time zone &#39;&quot;);
+&nbsp;                    DateTimeUtils.appendAsTime(appender, date, jdbcTimeZone);
+&nbsp;                } else {
+&nbsp;                    appender.appendSql(&quot;time &#39;&quot;);
+&nbsp;                    DateTimeUtils.appendAsLocalTime(appender, date);
+&nbsp;                }
+&nbsp;
+&nbsp;                appender.appendSql(&#39;\&#39;&#39;);
+&nbsp;                break;
+<b class="nc">&nbsp;            case TIMESTAMP:</b>
+<b class="nc">&nbsp;                appender.appendSql(&quot;timestamp with time zone &#39;&quot;);</b>
+<b class="nc">&nbsp;                DateTimeUtils.appendAsTimestampWithNanos(appender, date, jdbcTimeZone);</b>
+&nbsp;                appender.appendSql(&#39;\&#39;&#39;);
+&nbsp;                break;
+&nbsp;            default:
+&nbsp;                throw new IllegalArgumentException();
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void appendDateTimeLiteral(SqlAppender appender, Calendar calendar, TemporalType precision, TimeZone jdbcTimeZone) {</b>
+&nbsp;        switch (precision) {
+&nbsp;            case DATE:
+&nbsp;                appender.appendSql(&quot;date &#39;&quot;);
+&nbsp;                DateTimeUtils.appendAsDate(appender, calendar);
+&nbsp;                appender.appendSql(&#39;\&#39;&#39;);
+<b class="nc">&nbsp;                break;</b>
+<b class="nc">&nbsp;            case TIME:</b>
+&nbsp;                if (this.supportsTimeLiteralOffset()) {
+<b class="nc">&nbsp;                    appender.appendSql(&quot;time with time zone &#39;&quot;);</b>
+&nbsp;                    DateTimeUtils.appendAsTime(appender, calendar, jdbcTimeZone);
+&nbsp;                } else {
+<b class="nc">&nbsp;                    appender.appendSql(&quot;time &#39;&quot;);</b>
+<b class="nc">&nbsp;                    DateTimeUtils.appendAsLocalTime(appender, calendar);</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                appender.appendSql(&#39;\&#39;&#39;);
+&nbsp;                break;
+<b class="nc">&nbsp;            case TIMESTAMP:</b>
+<b class="nc">&nbsp;                appender.appendSql(&quot;timestamp with time zone &#39;&quot;);</b>
+&nbsp;                DateTimeUtils.appendAsTimestampWithMillis(appender, calendar, jdbcTimeZone);
+<b class="nc">&nbsp;                appender.appendSql(&#39;\&#39;&#39;);</b>
+&nbsp;                break;
+&nbsp;            default:
+&nbsp;                throw new IllegalArgumentException();
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean supportsTimeLiteralOffset() {
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public boolean supportsTemporalLiteralOffset() {</b>
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public TimeZoneSupport getTimeZoneSupport() {</b>
+<b class="nc">&nbsp;        return TimeZoneSupport.NATIVE;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public boolean supportsIsTrue() {
+<b class="nc">&nbsp;        return true;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public void appendBooleanValueString(SqlAppender appender, boolean bool) {</b>
+&nbsp;        appender.appendSql(bool);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public LimitHandler getLimitHandler() {</b>
+<b class="nc">&nbsp;        return OffsetFetchLimitHandler.INSTANCE;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public boolean supportsDistinctFromPredicate() {
+<b class="nc">&nbsp;        return true;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public boolean supportsIfExistsAfterTableName() {
+&nbsp;        return !this.supportsIfExistsBeforeTableName();
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public boolean supportsIfExistsBeforeTableName() {
+&nbsp;        return this.cascadeConstraints;
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean supportsIfExistsAfterAlterTable() {
+<b class="nc">&nbsp;        return this.cascadeConstraints;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public boolean supportsIfExistsBeforeConstraintName() {</b>
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public String getCascadeConstraintsString() {</b>
+<b class="nc">&nbsp;        return this.cascadeConstraints ? &quot; cascade &quot; : super.getCascadeConstraintsString();</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public boolean supportsAlterColumnType() {
+<b class="nc">&nbsp;        return true;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public String getAlterColumnTypeString(String columnName, String columnType, String columnDefinition) {</b>
+&nbsp;        return &quot;alter column &quot; + columnName + &quot; set data type &quot; + columnType;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public boolean supportsCommentOn() {</b>
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public boolean dropConstraints() {</b>
+&nbsp;        return false;
+&nbsp;    }
+&nbsp;
+&nbsp;    public SequenceSupport getSequenceSupport() {
+&nbsp;        return this.ansiSequence ? H2V2SequenceSupport.INSTANCE : H2V1SequenceSupport.INSTANCE;
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getQuerySequencesString() {
+&nbsp;        return this.querySequenceString;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public SequenceInformationExtractor getSequenceInformationExtractor() {</b>
+<b class="nc">&nbsp;        return this.sequenceInformationExtractor;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public NullOrdering getNullOrdering() {
+<b class="nc">&nbsp;        return NullOrdering.SMALLEST;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public SqmMultiTableMutationStrategy getFallbackSqmMutationStrategy(EntityMappingType entityDescriptor, RuntimeModelCreationContext runtimeModelCreationContext) {
+&nbsp;        return new GlobalTemporaryTableMutationStrategy(TemporaryTable.createIdTable(entityDescriptor, (basename) -&gt; &quot;HT_&quot; + basename, this, runtimeModelCreationContext), runtimeModelCreationContext.getSessionFactory());
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public SqmMultiTableInsertStrategy getFallbackSqmInsertStrategy(EntityMappingType entityDescriptor, RuntimeModelCreationContext runtimeModelCreationContext) {
+<b class="nc">&nbsp;        return new GlobalTemporaryTableInsertStrategy(TemporaryTable.createEntityTable(entityDescriptor, (name) -&gt; &quot;HTE_&quot; + name, this, runtimeModelCreationContext), runtimeModelCreationContext.getSessionFactory());</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public String getTemporaryTableCreateOptions() {</b>
+<b class="nc">&nbsp;        return &quot;TRANSACTIONAL&quot;;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public TemporaryTableKind getSupportedTemporaryTableKind() {
+<b class="nc">&nbsp;        return TemporaryTableKind.GLOBAL;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public ViolatedConstraintNameExtractor getViolatedConstraintNameExtractor() {
+&nbsp;        return EXTRACTOR;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public SQLExceptionConversionDelegate buildSQLExceptionConversionDelegate() {
+&nbsp;        return (sqlException, message, sql) -&gt; {
+&nbsp;            int errorCode = JdbcExceptionHelper.extractErrorCode(sqlException);
+<b class="nc">&nbsp;            switch (errorCode) {</b>
+&nbsp;                case 23505:
+&nbsp;                    String constraintName = this.getViolatedConstraintNameExtractor().extractConstraintName(sqlException);
+&nbsp;                    return new ConstraintViolationException(message, sqlException, sql, ConstraintKind.UNIQUE, constraintName);
+&nbsp;                case 40001:
+<b class="nc">&nbsp;                    return new LockAcquisitionException(message, sqlException, sql);</b>
+&nbsp;                case 50200:
+&nbsp;                    return new PessimisticLockException(message, sqlException, sql);
+&nbsp;                case 57014:
+&nbsp;                    return new QueryTimeoutException(message, sqlException, sql);
+<b class="nc">&nbsp;                case 90006:</b>
+&nbsp;                    String constraintName = this.getViolatedConstraintNameExtractor().extractConstraintName(sqlException);
+&nbsp;                    return new ConstraintViolationException(message, sqlException, sql, constraintName);
+&nbsp;                default:
+&nbsp;                    return null;
+<b class="nc">&nbsp;            }</b>
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean supportsCurrentTimestampSelection() {
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isCurrentTimestampSelectStringCallable() {
+&nbsp;        return false;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public String getCurrentTimestampSelectString() {
+&nbsp;        return &quot;call current_timestamp()&quot;;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public boolean supportsLobValueChangePropagation() {
+&nbsp;        return false;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public boolean supportsTupleCounts() {</b>
+&nbsp;        return true;
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean requiresParensForTupleDistinctCounts() {
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean doesReadCommittedCauseWritersToBlockReaders() {
+&nbsp;        return true;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public SelectItemReferenceStrategy getGroupBySelectItemReferenceStrategy() {
+&nbsp;        return SelectItemReferenceStrategy.ALIAS;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public boolean supportsOffsetInSubquery() {</b>
+&nbsp;        return true;
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean supportsWindowFunctions() {
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean supportsRecursiveCTE() {
+&nbsp;        return true;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public boolean supportsFetchClause(FetchClauseType type) {
+&nbsp;        return true;
+&nbsp;    }
+&nbsp;
+&nbsp;    public FunctionalDependencyAnalysisSupport getFunctionalDependencyAnalysisSupport() {
+<b class="nc">&nbsp;        return FunctionalDependencyAnalysisSupportImpl.TABLE_GROUP_AND_CONSTANTS;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public IdentityColumnSupport getIdentityColumnSupport() {
+&nbsp;        return H2FinalTableIdentityColumnSupport.INSTANCE;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public boolean supportsInsertReturning() {
+&nbsp;        return true;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public boolean supportsInsertReturningRowId() {
+&nbsp;        return false;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public boolean supportsInsertReturningGeneratedKeys() {</b>
+&nbsp;        return true;
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean unquoteGetGeneratedKeys() {
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int registerResultSetOutParameter(CallableStatement statement, int position) throws SQLException {
+&nbsp;        return position;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public String getQueryHintString(String query, String hints) {
+&nbsp;        return IndexQueryHintHandler.INSTANCE.addQueryHints(query, hints);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void appendDatetimeFormat(SqlAppender appender, String format) {
+<b class="nc">&nbsp;        appender.appendSql((new Replacer(format, &quot;&#39;&quot;, &quot;&#39;&#39;&quot;)).replace(&quot;e&quot;, &quot;u&quot;).replace(&quot;xxx&quot;, &quot;XXX&quot;).replace(&quot;xx&quot;, &quot;XX&quot;).replace(&quot;x&quot;, &quot;X&quot;).result());</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public String translateExtractField(TemporalUnit unit) {</b>
+&nbsp;        switch (unit) {
+&nbsp;            case DAY_OF_MONTH:
+&nbsp;                return &quot;day&quot;;
+<b class="nc">&nbsp;            case WEEK:</b>
+&nbsp;                return &quot;iso_week&quot;;
+&nbsp;            default:
+&nbsp;                return unit.toString();
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public String generatedAs(String generatedAs) {
+<b class="nc">&nbsp;        return &quot; generated always as (&quot; + generatedAs + &quot;)&quot;;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public boolean canDisableConstraints() {</b>
+&nbsp;        return true;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public String getEnableConstraintsStatement() {</b>
+&nbsp;        return &quot;set referential_integrity true&quot;;
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getEnumTypeDeclaration(String name, String[] values) {
+&nbsp;        StringBuilder type = new StringBuilder();
+<b class="nc">&nbsp;        type.append(&quot;enum (&quot;);</b>
+&nbsp;        String separator = &quot;&quot;;
+&nbsp;
+&nbsp;        for(String value : values) {
+&nbsp;            type.append(separator).append(&#39;\&#39;&#39;).append(value).append(&#39;\&#39;&#39;);
+<b class="nc">&nbsp;            separator = &quot;,&quot;;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        return type.append(&#39;)&#39;).toString();
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public String getDisableConstraintsStatement() {
+&nbsp;        return &quot;set referential_integrity false&quot;;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public UniqueDelegate getUniqueDelegate() {
+&nbsp;        return this.uniqueDelegate;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public String rowId(String rowId) {</b>
+<b class="nc">&nbsp;        return &quot;_rowid_&quot;;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public int rowIdSqlType() {</b>
+<b class="nc">&nbsp;        return -5;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public MutationOperation createOptionalTableUpdateOperation(EntityMutationTarget mutationTarget, OptionalTableUpdate optionalTableUpdate, SessionFactoryImplementor factory) {</b>
+<b class="nc">&nbsp;        return this.optionalTableUpdateStrategy.buildMutationOperation(mutationTarget, optionalTableUpdate, factory);</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private static MutationOperation usingMerge(EntityMutationTarget mutationTarget, OptionalTableUpdate optionalTableUpdate, SessionFactoryImplementor factory) {</b>
+&nbsp;        H2SqlAstTranslator&lt;?&gt; translator = new H2SqlAstTranslator(factory, optionalTableUpdate);
+&nbsp;        return translator.createMergeOperation(optionalTableUpdate);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public ParameterMarkerStrategy getNativeParameterMarkerStrategy() {</b>
+<b class="nc">&nbsp;        return H2Dialect.OrdinalParameterMarkerStrategy.INSTANCE;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public DmlTargetColumnQualifierSupport getDmlTargetColumnQualifierSupport() {</b>
+&nbsp;        return DmlTargetColumnQualifierSupport.TABLE_ALIAS;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public String getCaseInsensitiveLike() {</b>
+&nbsp;        return &quot;ilike&quot;;
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean supportsCaseInsensitiveLike() {
+&nbsp;        return true;
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean supportsValuesList() {
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public String getDual() {</b>
+&nbsp;        return &quot;dual&quot;;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public static class OrdinalParameterMarkerStrategy implements ParameterMarkerStrategy {</b>
+&nbsp;        public static final OrdinalParameterMarkerStrategy INSTANCE = new OrdinalParameterMarkerStrategy();
+<b class="nc">&nbsp;</b>
+&nbsp;        public OrdinalParameterMarkerStrategy() {
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        public String createMarker(int position, JdbcType jdbcType) {
+&nbsp;            return &quot;?&quot; + position;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    @FunctionalInterface</b>
+&nbsp;    private interface OptionalTableUpdateStrategy {
+&nbsp;        MutationOperation buildMutationOperation(EntityMutationTarget var1, OptionalTableUpdate var2, SessionFactoryImplementor var3);
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

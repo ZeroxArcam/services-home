@@ -5,7 +5,7 @@
 <html id="htmlId">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
-  <title>Coverage Report > Logger</title>
+  <title>Coverage Report > LogFactory</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -19,17 +19,65 @@
 <div class="breadCrumbs">
 Current scope:     <a href="../../index.html">all classes</a>
     <span class="separator">|</span>
-    <a href="../index.html">org.slf4j</a>
+    <a href="../index.html">org.apache.juli.logging</a>
 </div>
 
-<h1>Coverage Summary for Class: Logger (org.slf4j)</h1>
+<h1>Coverage Summary for Class: LogFactory (org.apache.juli.logging)</h1>
 
 <table class="coverageStats">
 <tr>
   <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
 </tr>
 <tr>
-  <td class="name">Logger</td>
+  <td class="name">LogFactory</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    75%
+  </span>
+  <span class="absValue">
+    (6/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (2/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    60%
+  </span>
+  <span class="absValue">
+    (12/20)
+  </span>
+</td>
 </tr>
 
 </table>
@@ -44,189 +92,72 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;// (powered by FernFlower decompiler)
 &nbsp;//
 &nbsp;
-&nbsp;package org.slf4j;
+&nbsp;package org.apache.juli.logging;
 &nbsp;
-&nbsp;import org.slf4j.event.Level;
-&nbsp;import org.slf4j.helpers.CheckReturnValue;
-&nbsp;import org.slf4j.spi.DefaultLoggingEventBuilder;
-&nbsp;import org.slf4j.spi.LoggingEventBuilder;
-&nbsp;import org.slf4j.spi.NOPLoggingEventBuilder;
+&nbsp;import aQute.bnd.annotation.spi.ServiceConsumer;
+&nbsp;import java.lang.reflect.Constructor;
+&nbsp;import java.nio.file.FileSystems;
+&nbsp;import java.util.Iterator;
+&nbsp;import java.util.ServiceLoader;
+&nbsp;import java.util.logging.LogManager;
 &nbsp;
-&nbsp;public interface Logger {
-&nbsp;    String ROOT_LOGGER_NAME = &quot;ROOT&quot;;
+&nbsp;@ServiceConsumer(Log.class)
+&nbsp;public class LogFactory {
+&nbsp;    private static final LogFactory singleton = new LogFactory();
+&nbsp;    private final Constructor&lt;? extends Log&gt; discoveredLogConstructor;
 &nbsp;
-&nbsp;    String getName();
+&nbsp;    private LogFactory() {
+&nbsp;        FileSystems.getDefault();
+&nbsp;        ServiceLoader&lt;Log&gt; logLoader = ServiceLoader.load(Log.class);
+&nbsp;        Constructor&lt;? extends Log&gt; m = null;
+&nbsp;        Iterator var3 = logLoader.iterator();
+&nbsp;        if (var3.hasNext()) {
+&nbsp;            Log log = (Log)var3.next();
+&nbsp;            Class&lt;? extends Log&gt; c = log.getClass();
 &nbsp;
-&nbsp;    default LoggingEventBuilder makeLoggingEventBuilder(Level level) {
-&nbsp;        return new DefaultLoggingEventBuilder(this, level);
+&nbsp;            try {
+&nbsp;                m = c.getConstructor(String.class);
+&nbsp;            } catch (SecurityException | NoSuchMethodException e) {
+&nbsp;                throw new Error(e);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        this.discoveredLogConstructor = m;
 &nbsp;    }
 &nbsp;
-&nbsp;    @CheckReturnValue
-&nbsp;    default LoggingEventBuilder atLevel(Level level) {
-&nbsp;        return this.isEnabledForLevel(level) ? this.makeLoggingEventBuilder(level) : NOPLoggingEventBuilder.singleton();
-&nbsp;    }
-&nbsp;
-&nbsp;    default boolean isEnabledForLevel(Level level) {
-&nbsp;        int levelInt = level.toInt();
-&nbsp;        switch (levelInt) {
-&nbsp;            case 0:
-&nbsp;                return this.isTraceEnabled();
-&nbsp;            case 10:
-&nbsp;                return this.isDebugEnabled();
-&nbsp;            case 20:
-&nbsp;                return this.isInfoEnabled();
-&nbsp;            case 30:
-&nbsp;                return this.isWarnEnabled();
-&nbsp;            case 40:
-&nbsp;                return this.isErrorEnabled();
-&nbsp;            default:
-&nbsp;                throw new IllegalArgumentException(&quot;Level [&quot; + level + &quot;] not recognized.&quot;);
+&nbsp;    public Log getInstance(String name) throws LogConfigurationException {
+&nbsp;        if (this.discoveredLogConstructor == null) {
+&nbsp;            return DirectJDKLog.getInstance(name);
+&nbsp;        } else {
+&nbsp;            try {
+&nbsp;                return (Log)this.discoveredLogConstructor.newInstance(name);
+&nbsp;            } catch (IllegalArgumentException | ReflectiveOperationException e) {
+&nbsp;                throw new LogConfigurationException(e);
+&nbsp;            }
 &nbsp;        }
 &nbsp;    }
 &nbsp;
-&nbsp;    boolean isTraceEnabled();
-&nbsp;
-&nbsp;    void trace(String var1);
-&nbsp;
-&nbsp;    void trace(String var1, Object var2);
-&nbsp;
-&nbsp;    void trace(String var1, Object var2, Object var3);
-&nbsp;
-&nbsp;    void trace(String var1, Object... var2);
-&nbsp;
-&nbsp;    void trace(String var1, Throwable var2);
-&nbsp;
-&nbsp;    boolean isTraceEnabled(Marker var1);
-&nbsp;
-&nbsp;    @CheckReturnValue
-&nbsp;    default LoggingEventBuilder atTrace() {
-&nbsp;        return this.isTraceEnabled() ? this.makeLoggingEventBuilder(Level.TRACE) : NOPLoggingEventBuilder.singleton();
+&nbsp;    public Log getInstance(Class&lt;?&gt; clazz) throws LogConfigurationException {
+&nbsp;        return this.getInstance(clazz.getName());
 &nbsp;    }
 &nbsp;
-&nbsp;    void trace(Marker var1, String var2);
-&nbsp;
-&nbsp;    void trace(Marker var1, String var2, Object var3);
-&nbsp;
-&nbsp;    void trace(Marker var1, String var2, Object var3, Object var4);
-&nbsp;
-&nbsp;    void trace(Marker var1, String var2, Object... var3);
-&nbsp;
-&nbsp;    void trace(Marker var1, String var2, Throwable var3);
-&nbsp;
-&nbsp;    boolean isDebugEnabled();
-&nbsp;
-&nbsp;    void debug(String var1);
-&nbsp;
-&nbsp;    void debug(String var1, Object var2);
-&nbsp;
-&nbsp;    void debug(String var1, Object var2, Object var3);
-&nbsp;
-&nbsp;    void debug(String var1, Object... var2);
-&nbsp;
-&nbsp;    void debug(String var1, Throwable var2);
-&nbsp;
-&nbsp;    boolean isDebugEnabled(Marker var1);
-&nbsp;
-&nbsp;    void debug(Marker var1, String var2);
-&nbsp;
-&nbsp;    void debug(Marker var1, String var2, Object var3);
-&nbsp;
-&nbsp;    void debug(Marker var1, String var2, Object var3, Object var4);
-&nbsp;
-&nbsp;    void debug(Marker var1, String var2, Object... var3);
-&nbsp;
-&nbsp;    void debug(Marker var1, String var2, Throwable var3);
-&nbsp;
-&nbsp;    @CheckReturnValue
-&nbsp;    default LoggingEventBuilder atDebug() {
-&nbsp;        return this.isDebugEnabled() ? this.makeLoggingEventBuilder(Level.DEBUG) : NOPLoggingEventBuilder.singleton();
+&nbsp;    public static LogFactory getFactory() throws LogConfigurationException {
+&nbsp;        return singleton;
 &nbsp;    }
 &nbsp;
-&nbsp;    boolean isInfoEnabled();
-&nbsp;
-&nbsp;    void info(String var1);
-&nbsp;
-&nbsp;    void info(String var1, Object var2);
-&nbsp;
-&nbsp;    void info(String var1, Object var2, Object var3);
-&nbsp;
-&nbsp;    void info(String var1, Object... var2);
-&nbsp;
-&nbsp;    void info(String var1, Throwable var2);
-&nbsp;
-&nbsp;    boolean isInfoEnabled(Marker var1);
-&nbsp;
-&nbsp;    void info(Marker var1, String var2);
-&nbsp;
-&nbsp;    void info(Marker var1, String var2, Object var3);
-&nbsp;
-&nbsp;    void info(Marker var1, String var2, Object var3, Object var4);
-&nbsp;
-&nbsp;    void info(Marker var1, String var2, Object... var3);
-&nbsp;
-&nbsp;    void info(Marker var1, String var2, Throwable var3);
-&nbsp;
-&nbsp;    @CheckReturnValue
-&nbsp;    default LoggingEventBuilder atInfo() {
-&nbsp;        return this.isInfoEnabled() ? this.makeLoggingEventBuilder(Level.INFO) : NOPLoggingEventBuilder.singleton();
+&nbsp;    public static Log getLog(Class&lt;?&gt; clazz) throws LogConfigurationException {
+&nbsp;        return getFactory().getInstance(clazz);
 &nbsp;    }
 &nbsp;
-&nbsp;    boolean isWarnEnabled();
-&nbsp;
-&nbsp;    void warn(String var1);
-&nbsp;
-&nbsp;    void warn(String var1, Object var2);
-&nbsp;
-&nbsp;    void warn(String var1, Object... var2);
-&nbsp;
-&nbsp;    void warn(String var1, Object var2, Object var3);
-&nbsp;
-&nbsp;    void warn(String var1, Throwable var2);
-&nbsp;
-&nbsp;    boolean isWarnEnabled(Marker var1);
-&nbsp;
-&nbsp;    void warn(Marker var1, String var2);
-&nbsp;
-&nbsp;    void warn(Marker var1, String var2, Object var3);
-&nbsp;
-&nbsp;    void warn(Marker var1, String var2, Object var3, Object var4);
-&nbsp;
-&nbsp;    void warn(Marker var1, String var2, Object... var3);
-&nbsp;
-&nbsp;    void warn(Marker var1, String var2, Throwable var3);
-&nbsp;
-&nbsp;    @CheckReturnValue
-&nbsp;    default LoggingEventBuilder atWarn() {
-&nbsp;        return this.isWarnEnabled() ? this.makeLoggingEventBuilder(Level.WARN) : NOPLoggingEventBuilder.singleton();
+&nbsp;    public static Log getLog(String name) throws LogConfigurationException {
+&nbsp;        return getFactory().getInstance(name);
 &nbsp;    }
 &nbsp;
-&nbsp;    boolean isErrorEnabled();
+&nbsp;    public static void release(ClassLoader classLoader) {
+&nbsp;        if (!LogManager.getLogManager().getClass().getName().equals(&quot;java.util.logging.LogManager&quot;)) {
+<b class="fc">&nbsp;            LogManager.getLogManager().reset();</b>
+&nbsp;        }
 &nbsp;
-&nbsp;    void error(String var1);
-&nbsp;
-&nbsp;    void error(String var1, Object var2);
-&nbsp;
-&nbsp;    void error(String var1, Object var2, Object var3);
-&nbsp;
-&nbsp;    void error(String var1, Object... var2);
-&nbsp;
-&nbsp;    void error(String var1, Throwable var2);
-&nbsp;
-&nbsp;    boolean isErrorEnabled(Marker var1);
-&nbsp;
-&nbsp;    void error(Marker var1, String var2);
-&nbsp;
-&nbsp;    void error(Marker var1, String var2, Object var3);
-&nbsp;
-&nbsp;    void error(Marker var1, String var2, Object var3, Object var4);
-&nbsp;
-&nbsp;    void error(Marker var1, String var2, Object... var3);
-&nbsp;
-&nbsp;    void error(Marker var1, String var2, Throwable var3);
-&nbsp;
-&nbsp;    @CheckReturnValue
-&nbsp;    default LoggingEventBuilder atError() {
-&nbsp;        return this.isErrorEnabled() ? this.makeLoggingEventBuilder(Level.ERROR) : NOPLoggingEventBuilder.singleton();
 &nbsp;    }
 &nbsp;}
 </code>
@@ -252,7 +183,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2025-03-20 13:41</div>
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
 </div>
 </body>
 </html>

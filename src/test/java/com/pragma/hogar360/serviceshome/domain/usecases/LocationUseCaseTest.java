@@ -62,6 +62,23 @@ class LocationUseCaseTest {
         assertThrows(CityNotFoundException.class, () -> locationUseCase.save(location));
         verify(locationPersistencePort, never()).save(location);
     }
+    @Test
+    void testSave_CityNullOrIdNull() {
+        // Arrange
+        LocationModel location = LocationModelFactory.createDefaultLocationModel();
+        location.setCity(null);
+
+        // Act & Assert
+        assertThrows(CityNotFoundException.class, () -> locationUseCase.save(location));
+
+        // Arrange 2
+        location.setCity(CityModelFactory.createDefaultCityModel());
+        location.getCity().setId(null);
+
+        // Act & Assert 2
+        assertThrows(CityNotFoundException.class, () -> locationUseCase.save(location));
+        verify(locationPersistencePort, never()).save(location);
+    }
 
     @Test
     void testSave_DuplicateLocation() {

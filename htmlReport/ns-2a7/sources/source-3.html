@@ -1,0 +1,405 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > XmlBeanDefinitionReader</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.beans.factory.xml</a>
+</div>
+
+<h1>Coverage Summary for Class: XmlBeanDefinitionReader (org.springframework.beans.factory.xml)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">XmlBeanDefinitionReader</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    6.5%
+  </span>
+  <span class="absValue">
+    (2/31)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/34)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    16%
+  </span>
+  <span class="absValue">
+    (16/100)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.beans.factory.xml;
+&nbsp;
+&nbsp;import java.io.IOException;
+&nbsp;import java.io.InputStream;
+&nbsp;import java.util.HashSet;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Set;
+&nbsp;import javax.xml.parsers.ParserConfigurationException;
+&nbsp;import org.springframework.beans.BeanUtils;
+&nbsp;import org.springframework.beans.factory.BeanDefinitionStoreException;
+&nbsp;import org.springframework.beans.factory.parsing.EmptyReaderEventListener;
+&nbsp;import org.springframework.beans.factory.parsing.FailFastProblemReporter;
+&nbsp;import org.springframework.beans.factory.parsing.NullSourceExtractor;
+&nbsp;import org.springframework.beans.factory.parsing.ProblemReporter;
+&nbsp;import org.springframework.beans.factory.parsing.ReaderEventListener;
+&nbsp;import org.springframework.beans.factory.parsing.SourceExtractor;
+&nbsp;import org.springframework.beans.factory.support.AbstractBeanDefinitionReader;
+&nbsp;import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+&nbsp;import org.springframework.core.NamedThreadLocal;
+&nbsp;import org.springframework.core.io.DescriptiveResource;
+&nbsp;import org.springframework.core.io.Resource;
+&nbsp;import org.springframework.core.io.ResourceLoader;
+&nbsp;import org.springframework.core.io.support.EncodedResource;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.xml.SimpleSaxErrorHandler;
+&nbsp;import org.springframework.util.xml.XmlValidationModeDetector;
+&nbsp;import org.w3c.dom.Document;
+&nbsp;import org.xml.sax.EntityResolver;
+&nbsp;import org.xml.sax.ErrorHandler;
+&nbsp;import org.xml.sax.InputSource;
+&nbsp;import org.xml.sax.SAXException;
+&nbsp;import org.xml.sax.SAXParseException;
+&nbsp;
+&nbsp;public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
+&nbsp;    public static final int VALIDATION_NONE = 0;
+&nbsp;    public static final int VALIDATION_AUTO = 1;
+&nbsp;    public static final int VALIDATION_DTD = 2;
+&nbsp;    public static final int VALIDATION_XSD = 3;
+&nbsp;    private static final Map&lt;String, Integer&gt; constants = Map.of(&quot;VALIDATION_NONE&quot;, 0, &quot;VALIDATION_AUTO&quot;, 1, &quot;VALIDATION_DTD&quot;, 2, &quot;VALIDATION_XSD&quot;, 3);
+&nbsp;    private int validationMode = 1;
+&nbsp;    private boolean namespaceAware = false;
+&nbsp;    private Class&lt;? extends BeanDefinitionDocumentReader&gt; documentReaderClass = DefaultBeanDefinitionDocumentReader.class;
+&nbsp;    private ProblemReporter problemReporter = new FailFastProblemReporter();
+&nbsp;    private ReaderEventListener eventListener = new EmptyReaderEventListener();
+&nbsp;    private SourceExtractor sourceExtractor = new NullSourceExtractor();
+&nbsp;    @Nullable
+&nbsp;    private NamespaceHandlerResolver namespaceHandlerResolver;
+&nbsp;    private DocumentLoader documentLoader = new DefaultDocumentLoader();
+&nbsp;    @Nullable
+&nbsp;    private EntityResolver entityResolver;
+&nbsp;    private ErrorHandler errorHandler;
+&nbsp;    private final XmlValidationModeDetector validationModeDetector;
+&nbsp;    private final ThreadLocal&lt;Set&lt;EncodedResource&gt;&gt; resourcesCurrentlyBeingLoaded;
+&nbsp;
+&nbsp;    public XmlBeanDefinitionReader(BeanDefinitionRegistry registry) {
+&nbsp;        super(registry);
+&nbsp;        this.errorHandler = new SimpleSaxErrorHandler(this.logger);
+&nbsp;        this.validationModeDetector = new XmlValidationModeDetector();
+&nbsp;        this.resourcesCurrentlyBeingLoaded = NamedThreadLocal.withInitial(&quot;XML bean definition resources currently being loaded&quot;, () -&gt; new HashSet(4));
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setValidating(boolean validating) {
+&nbsp;        this.validationMode = validating ? 1 : 0;
+&nbsp;        this.namespaceAware = !validating;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setValidationModeName(String validationModeName) {
+&nbsp;        Assert.hasText(validationModeName, &quot;&#39;validationModeName&#39; must not be null or blank&quot;);
+&nbsp;        Integer validationMode = (Integer)constants.get(validationModeName);
+&nbsp;        Assert.notNull(validationMode, &quot;Only validation mode constants allowed&quot;);
+&nbsp;        this.validationMode = validationMode;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setValidationMode(int validationMode) {
+&nbsp;        Assert.isTrue(constants.containsValue(validationMode), &quot;Only values of validation mode constants allowed&quot;);
+&nbsp;        this.validationMode = validationMode;
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getValidationMode() {
+&nbsp;        return this.validationMode;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setNamespaceAware(boolean namespaceAware) {
+&nbsp;        this.namespaceAware = namespaceAware;
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isNamespaceAware() {
+&nbsp;        return this.namespaceAware;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setProblemReporter(@Nullable ProblemReporter problemReporter) {
+&nbsp;        this.problemReporter = (ProblemReporter)(problemReporter != null ? problemReporter : new FailFastProblemReporter());
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setEventListener(@Nullable ReaderEventListener eventListener) {
+&nbsp;        this.eventListener = (ReaderEventListener)(eventListener != null ? eventListener : new EmptyReaderEventListener());
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setSourceExtractor(@Nullable SourceExtractor sourceExtractor) {
+&nbsp;        this.sourceExtractor = (SourceExtractor)(sourceExtractor != null ? sourceExtractor : new NullSourceExtractor());
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public void setNamespaceHandlerResolver(@Nullable NamespaceHandlerResolver namespaceHandlerResolver) {</b>
+<b class="fc">&nbsp;        this.namespaceHandlerResolver = namespaceHandlerResolver;</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void setDocumentLoader(@Nullable DocumentLoader documentLoader) {
+<b class="fc">&nbsp;        this.documentLoader = (DocumentLoader)(documentLoader != null ? documentLoader : new DefaultDocumentLoader());</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public void setEntityResolver(@Nullable EntityResolver entityResolver) {
+<b class="fc">&nbsp;        this.entityResolver = entityResolver;</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    protected EntityResolver getEntityResolver() {</b>
+&nbsp;        if (this.entityResolver == null) {
+<b class="fc">&nbsp;            ResourceLoader resourceLoader = this.getResourceLoader();</b>
+&nbsp;            if (resourceLoader != null) {
+<b class="fc">&nbsp;                this.entityResolver = new ResourceEntityResolver(resourceLoader);</b>
+&nbsp;            } else {
+&nbsp;                this.entityResolver = new DelegatingEntityResolver(this.getBeanClassLoader());
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+&nbsp;        return this.entityResolver;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setErrorHandler(ErrorHandler errorHandler) {
+<b class="fc">&nbsp;        this.errorHandler = errorHandler;</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public void setDocumentReaderClass(Class&lt;? extends BeanDefinitionDocumentReader&gt; documentReaderClass) {
+<b class="fc">&nbsp;        this.documentReaderClass = documentReaderClass;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public int loadBeanDefinitions(Resource resource) throws BeanDefinitionStoreException {
+&nbsp;        return this.loadBeanDefinitions(new EncodedResource(resource));
+&nbsp;    }
+&nbsp;
+&nbsp;    public int loadBeanDefinitions(EncodedResource encodedResource) throws BeanDefinitionStoreException {
+&nbsp;        Assert.notNull(encodedResource, &quot;EncodedResource must not be null&quot;);
+&nbsp;        if (this.logger.isTraceEnabled()) {
+<b class="fc">&nbsp;            this.logger.trace(&quot;Loading XML bean definitions from &quot; + String.valueOf(encodedResource));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        Set&lt;EncodedResource&gt; currentResources = (Set)this.resourcesCurrentlyBeingLoaded.get();
+&nbsp;        if (!currentResources.add(encodedResource)) {
+&nbsp;            throw new BeanDefinitionStoreException(&quot;Detected cyclic loading of &quot; + String.valueOf(encodedResource) + &quot; - check your import definitions!&quot;);
+&nbsp;        } else {
+&nbsp;            int var5;
+&nbsp;            try {
+&nbsp;                InputStream inputStream = encodedResource.getResource().getInputStream();
+&nbsp;
+&nbsp;                try {
+<b class="nc">&nbsp;                    InputSource inputSource = new InputSource(inputStream);</b>
+<b class="nc">&nbsp;                    if (encodedResource.getEncoding() != null) {</b>
+&nbsp;                        inputSource.setEncoding(encodedResource.getEncoding());
+&nbsp;                    }
+&nbsp;
+&nbsp;                    var5 = this.doLoadBeanDefinitions(inputSource, encodedResource.getResource());
+&nbsp;                } catch (Throwable var12) {
+&nbsp;                    if (inputStream != null) {
+&nbsp;                        try {
+<b class="nc">&nbsp;                            inputStream.close();</b>
+<b class="nc">&nbsp;                        } catch (Throwable var11) {</b>
+<b class="nc">&nbsp;                            var12.addSuppressed(var11);</b>
+<b class="nc">&nbsp;                        }</b>
+&nbsp;                    }
+&nbsp;
+&nbsp;                    throw var12;
+&nbsp;                }
+&nbsp;
+&nbsp;                if (inputStream != null) {
+&nbsp;                    inputStream.close();
+&nbsp;                }
+&nbsp;            } catch (IOException ex) {
+<b class="nc">&nbsp;                throw new BeanDefinitionStoreException(&quot;IOException parsing XML document from &quot; + String.valueOf(encodedResource.getResource()), ex);</b>
+&nbsp;            } finally {
+<b class="nc">&nbsp;                currentResources.remove(encodedResource);</b>
+&nbsp;                if (currentResources.isEmpty()) {
+&nbsp;                    this.resourcesCurrentlyBeingLoaded.remove();
+&nbsp;                }
+&nbsp;
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            return var5;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public int loadBeanDefinitions(InputSource inputSource) throws BeanDefinitionStoreException {
+&nbsp;        return this.loadBeanDefinitions(inputSource, &quot;resource loaded through SAX InputSource&quot;);
+&nbsp;    }
+&nbsp;
+&nbsp;    public int loadBeanDefinitions(InputSource inputSource, @Nullable String resourceDescription) throws BeanDefinitionStoreException {
+&nbsp;        return this.doLoadBeanDefinitions(inputSource, new DescriptiveResource(resourceDescription));
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected int doLoadBeanDefinitions(InputSource inputSource, Resource resource) throws BeanDefinitionStoreException {
+&nbsp;        try {
+&nbsp;            Document doc = this.doLoadDocument(inputSource, resource);
+&nbsp;            int count = this.registerBeanDefinitions(doc, resource);
+&nbsp;            if (this.logger.isDebugEnabled()) {
+&nbsp;                this.logger.debug(&quot;Loaded &quot; + count + &quot; bean definitions from &quot; + String.valueOf(resource));
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            return count;
+&nbsp;        } catch (BeanDefinitionStoreException ex) {
+&nbsp;            throw ex;
+&nbsp;        } catch (SAXParseException ex) {
+&nbsp;            throw new XmlBeanDefinitionStoreException(resource.getDescription(), &quot;Line &quot; + ex.getLineNumber() + &quot; in XML document from &quot; + String.valueOf(resource) + &quot; is invalid&quot;, ex);
+&nbsp;        } catch (SAXException ex) {
+&nbsp;            throw new XmlBeanDefinitionStoreException(resource.getDescription(), &quot;XML document from &quot; + String.valueOf(resource) + &quot; is invalid&quot;, ex);
+&nbsp;        } catch (ParserConfigurationException ex) {
+<b class="nc">&nbsp;            throw new BeanDefinitionStoreException(resource.getDescription(), &quot;Parser configuration exception parsing XML from &quot; + String.valueOf(resource), ex);</b>
+&nbsp;        } catch (IOException ex) {
+&nbsp;            throw new BeanDefinitionStoreException(resource.getDescription(), &quot;IOException parsing XML document from &quot; + String.valueOf(resource), ex);
+&nbsp;        } catch (Throwable ex) {
+&nbsp;            throw new BeanDefinitionStoreException(resource.getDescription(), &quot;Unexpected exception parsing XML document from &quot; + String.valueOf(resource), ex);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Document doLoadDocument(InputSource inputSource, Resource resource) throws Exception {
+&nbsp;        return this.documentLoader.loadDocument(inputSource, this.getEntityResolver(), this.errorHandler, this.getValidationModeForResource(resource), this.isNamespaceAware());
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected int getValidationModeForResource(Resource resource) {
+&nbsp;        int validationModeToUse = this.getValidationMode();
+&nbsp;        if (validationModeToUse != 1) {
+&nbsp;            return validationModeToUse;
+&nbsp;        } else {
+&nbsp;            int detectedMode = this.detectValidationMode(resource);
+&nbsp;            return detectedMode != 1 ? detectedMode : 3;
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected int detectValidationMode(Resource resource) {
+&nbsp;        if (resource.isOpen()) {
+&nbsp;            throw new BeanDefinitionStoreException(&quot;Passed-in Resource [&quot; + String.valueOf(resource) + &quot;] contains an open stream: cannot determine validation mode automatically. Either pass in a Resource that is able to create fresh streams, or explicitly specify the validationMode on your XmlBeanDefinitionReader instance.&quot;);
+&nbsp;        } else {
+&nbsp;            InputStream inputStream;
+&nbsp;            try {
+&nbsp;                inputStream = resource.getInputStream();
+<b class="nc">&nbsp;            } catch (IOException ex) {</b>
+&nbsp;                throw new BeanDefinitionStoreException(&quot;Unable to determine validation mode for [&quot; + String.valueOf(resource) + &quot;]: cannot open InputStream. Did you attempt to load directly from a SAX InputSource without specifying the validationMode on your XmlBeanDefinitionReader instance?&quot;, ex);
+&nbsp;            }
+&nbsp;
+&nbsp;            try {
+&nbsp;                return this.validationModeDetector.detectValidationMode(inputStream);
+&nbsp;            } catch (IOException ex) {
+&nbsp;                throw new BeanDefinitionStoreException(&quot;Unable to determine validation mode for [&quot; + String.valueOf(resource) + &quot;]: an error occurred whilst reading from the InputStream.&quot;, ex);
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int registerBeanDefinitions(Document doc, Resource resource) throws BeanDefinitionStoreException {
+&nbsp;        BeanDefinitionDocumentReader documentReader = this.createBeanDefinitionDocumentReader();
+&nbsp;        int countBefore = this.getRegistry().getBeanDefinitionCount();
+&nbsp;        documentReader.registerBeanDefinitions(doc, this.createReaderContext(resource));
+&nbsp;        return this.getRegistry().getBeanDefinitionCount() - countBefore;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected BeanDefinitionDocumentReader createBeanDefinitionDocumentReader() {
+&nbsp;        return (BeanDefinitionDocumentReader)BeanUtils.instantiateClass(this.documentReaderClass);
+&nbsp;    }
+&nbsp;
+&nbsp;    public XmlReaderContext createReaderContext(Resource resource) {
+&nbsp;        return new XmlReaderContext(resource, this.problemReporter, this.eventListener, this.sourceExtractor, this, this.getNamespaceHandlerResolver());
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public NamespaceHandlerResolver getNamespaceHandlerResolver() {
+<b class="nc">&nbsp;        if (this.namespaceHandlerResolver == null) {</b>
+<b class="nc">&nbsp;            this.namespaceHandlerResolver = this.createDefaultNamespaceHandlerResolver();</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return this.namespaceHandlerResolver;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected NamespaceHandlerResolver createDefaultNamespaceHandlerResolver() {
+<b class="nc">&nbsp;        ResourceLoader resourceLoader = this.getResourceLoader();</b>
+&nbsp;        ClassLoader cl = resourceLoader != null ? resourceLoader.getClassLoader() : this.getBeanClassLoader();
+&nbsp;        return new DefaultNamespaceHandlerResolver(cl);
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
+</div>
+</body>
+</html>

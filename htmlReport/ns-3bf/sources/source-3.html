@@ -1,0 +1,381 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > DataSourceTransactionManager</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.jdbc.datasource</a>
+</div>
+
+<h1>Coverage Summary for Class: DataSourceTransactionManager (org.springframework.jdbc.datasource)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DataSourceTransactionManager</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/20)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/42)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/93)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.jdbc.datasource;
+&nbsp;
+&nbsp;import java.sql.Connection;
+&nbsp;import java.sql.SQLException;
+&nbsp;import java.sql.Statement;
+&nbsp;import javax.sql.DataSource;
+&nbsp;import org.springframework.beans.factory.InitializingBean;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.transaction.CannotCreateTransactionException;
+&nbsp;import org.springframework.transaction.TransactionDefinition;
+&nbsp;import org.springframework.transaction.TransactionSystemException;
+&nbsp;import org.springframework.transaction.support.AbstractPlatformTransactionManager;
+&nbsp;import org.springframework.transaction.support.DefaultTransactionStatus;
+&nbsp;import org.springframework.transaction.support.ResourceTransactionManager;
+&nbsp;import org.springframework.transaction.support.TransactionSynchronizationManager;
+&nbsp;import org.springframework.transaction.support.TransactionSynchronizationUtils;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;
+&nbsp;public class DataSourceTransactionManager extends AbstractPlatformTransactionManager implements ResourceTransactionManager, InitializingBean {
+&nbsp;    @Nullable
+&nbsp;    private DataSource dataSource;
+&nbsp;    private boolean enforceReadOnly;
+&nbsp;
+&nbsp;    public DataSourceTransactionManager() {
+&nbsp;        this.enforceReadOnly = false;
+&nbsp;        this.setNestedTransactionAllowed(true);
+&nbsp;    }
+&nbsp;
+&nbsp;    public DataSourceTransactionManager(DataSource dataSource) {
+&nbsp;        this();
+&nbsp;        this.setDataSource(dataSource);
+&nbsp;        this.afterPropertiesSet();
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setDataSource(@Nullable DataSource dataSource) {
+&nbsp;        if (dataSource instanceof TransactionAwareDataSourceProxy tadsp) {
+&nbsp;            this.dataSource = tadsp.getTargetDataSource();
+&nbsp;        } else {
+&nbsp;            this.dataSource = dataSource;
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public DataSource getDataSource() {
+&nbsp;        return this.dataSource;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected DataSource obtainDataSource() {
+&nbsp;        DataSource dataSource = this.getDataSource();
+&nbsp;        Assert.state(dataSource != null, &quot;No DataSource set&quot;);
+&nbsp;        return dataSource;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setEnforceReadOnly(boolean enforceReadOnly) {
+&nbsp;        this.enforceReadOnly = enforceReadOnly;
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isEnforceReadOnly() {
+&nbsp;        return this.enforceReadOnly;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void afterPropertiesSet() {
+&nbsp;        if (this.getDataSource() == null) {
+&nbsp;            throw new IllegalArgumentException(&quot;Property &#39;dataSource&#39; is required&quot;);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public Object getResourceFactory() {
+&nbsp;        return this.obtainDataSource();
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Object doGetTransaction() {
+&nbsp;        DataSourceTransactionObject txObject = new DataSourceTransactionObject();
+&nbsp;        txObject.setSavepointAllowed(this.isNestedTransactionAllowed());
+&nbsp;        ConnectionHolder conHolder = (ConnectionHolder)TransactionSynchronizationManager.getResource(this.obtainDataSource());
+&nbsp;        txObject.setConnectionHolder(conHolder, false);
+&nbsp;        return txObject;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected boolean isExistingTransaction(Object transaction) {
+&nbsp;        DataSourceTransactionObject txObject = (DataSourceTransactionObject)transaction;
+&nbsp;        return txObject.hasConnectionHolder() &amp;&amp; txObject.getConnectionHolder().isTransactionActive();
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void doBegin(Object transaction, TransactionDefinition definition) {
+&nbsp;        DataSourceTransactionObject txObject = (DataSourceTransactionObject)transaction;
+&nbsp;        Connection con = null;
+&nbsp;
+&nbsp;        try {
+&nbsp;            if (!txObject.hasConnectionHolder() || txObject.getConnectionHolder().isSynchronizedWithTransaction()) {
+&nbsp;                Connection newCon = this.obtainDataSource().getConnection();
+&nbsp;                if (this.logger.isDebugEnabled()) {
+&nbsp;                    this.logger.debug(&quot;Acquired Connection [&quot; + String.valueOf(newCon) + &quot;] for JDBC transaction&quot;);
+&nbsp;                }
+&nbsp;
+&nbsp;                txObject.setConnectionHolder(new ConnectionHolder(newCon), true);
+&nbsp;            }
+&nbsp;
+&nbsp;            txObject.getConnectionHolder().setSynchronizedWithTransaction(true);
+&nbsp;            con = txObject.getConnectionHolder().getConnection();
+&nbsp;            Integer previousIsolationLevel = DataSourceUtils.prepareConnectionForTransaction(con, definition);
+&nbsp;            txObject.setPreviousIsolationLevel(previousIsolationLevel);
+&nbsp;            txObject.setReadOnly(definition.isReadOnly());
+&nbsp;            if (con.getAutoCommit()) {
+&nbsp;                txObject.setMustRestoreAutoCommit(true);
+&nbsp;                if (this.logger.isDebugEnabled()) {
+&nbsp;                    this.logger.debug(&quot;Switching JDBC Connection [&quot; + String.valueOf(con) + &quot;] to manual commit&quot;);
+&nbsp;                }
+&nbsp;
+&nbsp;                con.setAutoCommit(false);
+&nbsp;            }
+&nbsp;
+&nbsp;            this.prepareTransactionalConnection(con, definition);
+&nbsp;            txObject.getConnectionHolder().setTransactionActive(true);
+&nbsp;            int timeout = this.determineTimeout(definition);
+&nbsp;            if (timeout != -1) {
+&nbsp;                txObject.getConnectionHolder().setTimeoutInSeconds(timeout);
+&nbsp;            }
+&nbsp;
+&nbsp;            if (txObject.isNewConnectionHolder()) {
+<b class="nc">&nbsp;                TransactionSynchronizationManager.bindResource(this.obtainDataSource(), txObject.getConnectionHolder());</b>
+&nbsp;            }
+&nbsp;
+&nbsp;        } catch (Throwable ex) {
+&nbsp;            if (txObject.isNewConnectionHolder()) {
+&nbsp;                DataSourceUtils.releaseConnection(con, this.obtainDataSource());
+&nbsp;                txObject.setConnectionHolder((ConnectionHolder)null, false);
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            throw new CannotCreateTransactionException(&quot;Could not open JDBC Connection for transaction&quot;, ex);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Object doSuspend(Object transaction) {
+&nbsp;        DataSourceTransactionObject txObject = (DataSourceTransactionObject)transaction;
+&nbsp;        txObject.setConnectionHolder((ConnectionHolder)null);
+&nbsp;        return TransactionSynchronizationManager.unbindResource(this.obtainDataSource());
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected void doResume(@Nullable Object transaction, Object suspendedResources) {</b>
+&nbsp;        TransactionSynchronizationManager.bindResource(this.obtainDataSource(), suspendedResources);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void doCommit(DefaultTransactionStatus status) {
+&nbsp;        DataSourceTransactionObject txObject = (DataSourceTransactionObject)status.getTransaction();
+&nbsp;        Connection con = txObject.getConnectionHolder().getConnection();
+&nbsp;        if (status.isDebug()) {
+&nbsp;            this.logger.debug(&quot;Committing JDBC transaction on Connection [&quot; + String.valueOf(con) + &quot;]&quot;);
+&nbsp;        }
+&nbsp;
+&nbsp;        try {
+&nbsp;            con.commit();
+&nbsp;        } catch (SQLException ex) {
+&nbsp;            throw this.translateException(&quot;JDBC commit&quot;, ex);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void doRollback(DefaultTransactionStatus status) {
+&nbsp;        DataSourceTransactionObject txObject = (DataSourceTransactionObject)status.getTransaction();
+&nbsp;        Connection con = txObject.getConnectionHolder().getConnection();
+&nbsp;        if (status.isDebug()) {
+&nbsp;            this.logger.debug(&quot;Rolling back JDBC transaction on Connection [&quot; + String.valueOf(con) + &quot;]&quot;);
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        try {
+&nbsp;            con.rollback();
+<b class="nc">&nbsp;        } catch (SQLException ex) {</b>
+&nbsp;            throw this.translateException(&quot;JDBC rollback&quot;, ex);
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected void doSetRollbackOnly(DefaultTransactionStatus status) {
+&nbsp;        DataSourceTransactionObject txObject = (DataSourceTransactionObject)status.getTransaction();
+&nbsp;        if (status.isDebug()) {
+&nbsp;            this.logger.debug(&quot;Setting JDBC transaction [&quot; + String.valueOf(txObject.getConnectionHolder().getConnection()) + &quot;] rollback-only&quot;);
+&nbsp;        }
+&nbsp;
+&nbsp;        txObject.setRollbackOnly();
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected void doCleanupAfterCompletion(Object transaction) {
+&nbsp;        DataSourceTransactionObject txObject = (DataSourceTransactionObject)transaction;
+&nbsp;        if (txObject.isNewConnectionHolder()) {
+&nbsp;            TransactionSynchronizationManager.unbindResource(this.obtainDataSource());
+&nbsp;        }
+&nbsp;
+&nbsp;        Connection con = txObject.getConnectionHolder().getConnection();
+&nbsp;
+<b class="nc">&nbsp;        try {</b>
+<b class="nc">&nbsp;            if (txObject.isMustRestoreAutoCommit()) {</b>
+<b class="nc">&nbsp;                con.setAutoCommit(true);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            DataSourceUtils.resetConnectionAfterTransaction(con, txObject.getPreviousIsolationLevel(), txObject.isReadOnly());
+&nbsp;        } catch (Throwable ex) {
+&nbsp;            this.logger.debug(&quot;Could not reset JDBC Connection after transaction&quot;, ex);
+&nbsp;        }
+&nbsp;
+&nbsp;        if (txObject.isNewConnectionHolder()) {
+&nbsp;            if (this.logger.isDebugEnabled()) {
+&nbsp;                this.logger.debug(&quot;Releasing JDBC Connection [&quot; + String.valueOf(con) + &quot;] after transaction&quot;);
+&nbsp;            }
+&nbsp;
+&nbsp;            DataSourceUtils.releaseConnection(con, this.dataSource);
+&nbsp;        }
+&nbsp;
+&nbsp;        txObject.getConnectionHolder().clear();
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void prepareTransactionalConnection(Connection con, TransactionDefinition definition) throws SQLException {
+&nbsp;        if (this.isEnforceReadOnly() &amp;&amp; definition.isReadOnly()) {
+&nbsp;            try (Statement stmt = con.createStatement()) {
+<b class="nc">&nbsp;                stmt.executeUpdate(&quot;SET TRANSACTION READ ONLY&quot;);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected RuntimeException translateException(String task, SQLException ex) {
+&nbsp;        return new TransactionSystemException(task + &quot; failed&quot;, ex);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private static class DataSourceTransactionObject extends JdbcTransactionObjectSupport {</b>
+&nbsp;        private boolean newConnectionHolder;
+&nbsp;        private boolean mustRestoreAutoCommit;
+&nbsp;
+&nbsp;        private DataSourceTransactionObject() {
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        public void setConnectionHolder(@Nullable ConnectionHolder connectionHolder, boolean newConnectionHolder) {
+&nbsp;            super.setConnectionHolder(connectionHolder);
+&nbsp;            this.newConnectionHolder = newConnectionHolder;
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean isNewConnectionHolder() {
+<b class="nc">&nbsp;            return this.newConnectionHolder;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void setMustRestoreAutoCommit(boolean mustRestoreAutoCommit) {
+&nbsp;            this.mustRestoreAutoCommit = mustRestoreAutoCommit;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        public boolean isMustRestoreAutoCommit() {</b>
+<b class="nc">&nbsp;            return this.mustRestoreAutoCommit;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        public void setRollbackOnly() {
+&nbsp;            this.getConnectionHolder().setRollbackOnly();
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        public boolean isRollbackOnly() {</b>
+<b class="nc">&nbsp;            return this.getConnectionHolder().isRollbackOnly();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void flush() {
+&nbsp;            TransactionSynchronizationUtils.triggerFlush();
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
+</div>
+</body>
+</html>

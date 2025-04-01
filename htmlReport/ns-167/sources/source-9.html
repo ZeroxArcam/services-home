@@ -1,0 +1,696 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > IdentifierGeneratorHelper</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.id</a>
+</div>
+
+<h1>Coverage Summary for Class: IdentifierGeneratorHelper (org.hibernate.id)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">IdentifierGeneratorHelper</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/36)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/58)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.id;
+&nbsp;
+&nbsp;import java.io.Serializable;
+&nbsp;import java.math.BigDecimal;
+&nbsp;import java.math.BigInteger;
+&nbsp;import java.math.RoundingMode;
+&nbsp;import java.sql.PreparedStatement;
+&nbsp;import java.sql.ResultSet;
+&nbsp;import java.sql.ResultSetMetaData;
+&nbsp;import java.sql.SQLException;
+&nbsp;import java.util.Objects;
+&nbsp;import org.hibernate.HibernateException;
+&nbsp;import org.hibernate.Internal;
+&nbsp;import org.hibernate.dialect.Dialect;
+&nbsp;import org.hibernate.internal.CoreLogging;
+&nbsp;import org.hibernate.internal.CoreMessageLogger;
+&nbsp;import org.hibernate.internal.util.StringHelper;
+&nbsp;import org.hibernate.metamodel.mapping.JdbcMapping;
+&nbsp;import org.hibernate.metamodel.mapping.SqlTypedMapping;
+&nbsp;import org.hibernate.type.descriptor.WrapperOptions;
+&nbsp;
+&nbsp;@Internal
+&nbsp;public final class IdentifierGeneratorHelper {
+&nbsp;    private static final CoreMessageLogger LOG = CoreLogging.messageLogger(IdentifierGeneratorHelper.class);
+&nbsp;    /** @deprecated */
+&nbsp;    @Deprecated(
+&nbsp;        forRemoval = true,
+&nbsp;        since = &quot;6.2&quot;
+&nbsp;    )
+&nbsp;    public static final Serializable SHORT_CIRCUIT_INDICATOR = new Serializable() {
+&nbsp;        public String toString() {
+&nbsp;            return &quot;SHORT_CIRCUIT_INDICATOR&quot;;
+&nbsp;        }
+<b class="nc">&nbsp;    };</b>
+&nbsp;    /** @deprecated */
+&nbsp;    @Deprecated(
+&nbsp;        forRemoval = true,
+&nbsp;        since = &quot;6.2&quot;
+&nbsp;    )
+&nbsp;    public static final Serializable POST_INSERT_INDICATOR = new Serializable() {
+&nbsp;        public String toString() {
+&nbsp;            return &quot;POST_INSERT_INDICATOR&quot;;
+&nbsp;        }
+&nbsp;    };
+<b class="nc">&nbsp;</b>
+&nbsp;    /** @deprecated */
+&nbsp;    @Deprecated(
+&nbsp;        since = &quot;6.5&quot;,
+&nbsp;        forRemoval = true
+&nbsp;    )
+&nbsp;    public static Object getGeneratedIdentity(String path, ResultSet resultSet, PostInsertIdentityPersister persister, WrapperOptions wrapperOptions) throws SQLException {
+&nbsp;        if (!resultSet.next()) {
+&nbsp;            throw new HibernateException(&quot;The database returned no natively generated identity value : &quot; + path);
+&nbsp;        } else {
+&nbsp;            JdbcMapping identifierType = ((SqlTypedMapping)persister.getIdentifierMapping()).getJdbcMapping();
+&nbsp;            Object id = identifierType.getJdbcValueExtractor().extract(resultSet, columnIndex(resultSet, persister), wrapperOptions);
+&nbsp;            LOG.debugf(&quot;Natively generated identity (%s) : %s&quot;, path, id);
+&nbsp;            return id;
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static int columnIndex(ResultSet resultSet, PostInsertIdentityPersister persister) {
+&nbsp;        try {
+&nbsp;            ResultSetMetaData metaData = resultSet.getMetaData();
+&nbsp;            String keyColumnName = persister.getRootTableKeyColumnNames()[0];
+&nbsp;            Dialect dialect = persister.getFactory().getJdbcServices().getDialect();
+&nbsp;
+&nbsp;            for(int i = 1; i &lt;= metaData.getColumnCount(); ++i) {
+&nbsp;                if (equal(keyColumnName, metaData.getColumnName(i), dialect)) {
+&nbsp;                    return i;
+&nbsp;                }
+&nbsp;            }
+&nbsp;        } catch (SQLException e) {
+&nbsp;            LOG.debugf(&quot;Could not determine column index from JDBC metadata&quot;, e);
+&nbsp;        }
+&nbsp;
+&nbsp;        return 1;
+&nbsp;    }
+&nbsp;
+&nbsp;    private static boolean equal(String keyColumnName, String alias, Dialect dialect) {
+&nbsp;        return alias.equalsIgnoreCase(keyColumnName) || alias.equalsIgnoreCase(StringHelper.unquote(keyColumnName, dialect));
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public static IntegralDataTypeHolder getIntegralDataTypeHolder(Class&lt;?&gt; integralType) {</b>
+<b class="nc">&nbsp;        if (integralType != Long.class &amp;&amp; integralType != Integer.class &amp;&amp; integralType != Short.class) {</b>
+&nbsp;            if (integralType == BigInteger.class) {
+&nbsp;                return new BigIntegerHolder();
+<b class="nc">&nbsp;            } else if (integralType == BigDecimal.class) {</b>
+<b class="nc">&nbsp;                return new BigDecimalHolder();</b>
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                throw new IdentifierGenerationException(&quot;Unknown integral data type for ids : &quot; + integralType.getName());</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        } else {
+&nbsp;            return new BasicHolder(integralType);
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public static long extractLong(IntegralDataTypeHolder holder) {</b>
+<b class="nc">&nbsp;        if (holder.getClass() == BasicHolder.class) {</b>
+<b class="nc">&nbsp;            ((BasicHolder)holder).checkInitialized();</b>
+<b class="nc">&nbsp;            return ((BasicHolder)holder).value;</b>
+<b class="nc">&nbsp;        } else if (holder.getClass() == BigIntegerHolder.class) {</b>
+&nbsp;            ((BigIntegerHolder)holder).checkInitialized();
+&nbsp;            return ((BigIntegerHolder)holder).value.longValue();
+&nbsp;        } else if (holder.getClass() == BigDecimalHolder.class) {
+&nbsp;            ((BigDecimalHolder)holder).checkInitialized();
+<b class="nc">&nbsp;            return ((BigDecimalHolder)holder).value.longValue();</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            throw new IdentifierGenerationException(&quot;Unknown IntegralDataTypeHolder impl [&quot; + holder + &quot;]&quot;);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public static BigInteger extractBigInteger(IntegralDataTypeHolder holder) {</b>
+<b class="nc">&nbsp;        if (holder.getClass() == BasicHolder.class) {</b>
+&nbsp;            ((BasicHolder)holder).checkInitialized();
+&nbsp;            return BigInteger.valueOf(((BasicHolder)holder).value);
+&nbsp;        } else if (holder.getClass() == BigIntegerHolder.class) {
+<b class="nc">&nbsp;            ((BigIntegerHolder)holder).checkInitialized();</b>
+&nbsp;            return ((BigIntegerHolder)holder).value;
+&nbsp;        } else if (holder.getClass() == BigDecimalHolder.class) {
+<b class="nc">&nbsp;            ((BigDecimalHolder)holder).checkInitialized();</b>
+&nbsp;            return ((BigDecimalHolder)holder).value.toBigInteger();
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            throw new IdentifierGenerationException(&quot;Unknown IntegralDataTypeHolder impl [&quot; + holder + &quot;]&quot;);</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public static BigDecimal extractBigDecimal(IntegralDataTypeHolder holder) {
+&nbsp;        if (holder.getClass() == BasicHolder.class) {
+<b class="nc">&nbsp;            ((BasicHolder)holder).checkInitialized();</b>
+<b class="nc">&nbsp;            return BigDecimal.valueOf(((BasicHolder)holder).value);</b>
+&nbsp;        } else if (holder.getClass() == BigIntegerHolder.class) {
+&nbsp;            ((BigIntegerHolder)holder).checkInitialized();
+&nbsp;            return new BigDecimal(((BigIntegerHolder)holder).value);
+&nbsp;        } else if (holder.getClass() == BigDecimalHolder.class) {
+&nbsp;            ((BigDecimalHolder)holder).checkInitialized();
+<b class="nc">&nbsp;            return ((BigDecimalHolder)holder).value;</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            throw new IdentifierGenerationException(&quot;Unknown IntegralDataTypeHolder impl [&quot; + holder + &quot;]&quot;);</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private IdentifierGeneratorHelper() {</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    @Internal</b>
+<b class="nc">&nbsp;    public static class BasicHolder implements IntegralDataTypeHolder {</b>
+&nbsp;        private final Class&lt;?&gt; exactType;
+<b class="nc">&nbsp;        private long value = Long.MIN_VALUE;</b>
+&nbsp;
+&nbsp;        public BasicHolder(Class&lt;?&gt; exactType) {
+&nbsp;            this.exactType = exactType;
+<b class="nc">&nbsp;            if (exactType != Long.class &amp;&amp; exactType != Integer.class &amp;&amp; exactType != Short.class) {</b>
+<b class="nc">&nbsp;                throw new IdentifierGenerationException(&quot;Invalid type for basic integral holder : &quot; + exactType);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        public long getActualLongValue() {</b>
+<b class="nc">&nbsp;            return this.value;</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        public IntegralDataTypeHolder initialize(long value) {</b>
+&nbsp;            this.value = value;
+<b class="nc">&nbsp;            return this;</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        public IntegralDataTypeHolder initialize(ResultSet resultSet, long defaultValue) throws SQLException {
+&nbsp;            long value = resultSet.getLong(1);
+&nbsp;            if (resultSet.wasNull()) {
+<b class="nc">&nbsp;                value = defaultValue;</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            return this.initialize(value);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        public void bind(PreparedStatement preparedStatement, int position) throws SQLException {</b>
+&nbsp;            IdentifierGeneratorHelper.LOG.tracef(&quot;binding parameter [%s] - [%s]&quot;, (long)position, this.value);
+<b class="nc">&nbsp;            preparedStatement.setLong(position, this.value);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        public IntegralDataTypeHolder increment() {</b>
+&nbsp;            this.checkInitialized();
+<b class="nc">&nbsp;            ++this.value;</b>
+&nbsp;            return this;
+&nbsp;        }
+&nbsp;
+&nbsp;        private void checkInitialized() {
+&nbsp;            if (this.value == Long.MIN_VALUE) {
+&nbsp;                throw new IdentifierGenerationException(&quot;integral holder was not initialized&quot;);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        public IntegralDataTypeHolder add(long addend) {
+&nbsp;            this.checkInitialized();
+&nbsp;            this.value += addend;
+&nbsp;            return this;
+&nbsp;        }
+&nbsp;
+&nbsp;        public IntegralDataTypeHolder decrement() {
+&nbsp;            this.checkInitialized();
+&nbsp;            --this.value;
+&nbsp;            return this;
+&nbsp;        }
+&nbsp;
+&nbsp;        public IntegralDataTypeHolder subtract(long subtrahend) {
+&nbsp;            this.checkInitialized();
+&nbsp;            this.value -= subtrahend;
+&nbsp;            return this;
+&nbsp;        }
+&nbsp;
+&nbsp;        public IntegralDataTypeHolder multiplyBy(IntegralDataTypeHolder factor) {
+&nbsp;            return this.multiplyBy(IdentifierGeneratorHelper.extractLong(factor));
+&nbsp;        }
+&nbsp;
+&nbsp;        public IntegralDataTypeHolder multiplyBy(long factor) {
+&nbsp;            this.checkInitialized();
+&nbsp;            this.value *= factor;
+&nbsp;            return this;
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean eq(IntegralDataTypeHolder other) {
+&nbsp;            return this.eq(IdentifierGeneratorHelper.extractLong(other));
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean eq(long value) {
+&nbsp;            this.checkInitialized();
+&nbsp;            return this.value == value;
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean lt(IntegralDataTypeHolder other) {
+&nbsp;            return this.lt(IdentifierGeneratorHelper.extractLong(other));
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean lt(long value) {
+&nbsp;            this.checkInitialized();
+&nbsp;            return this.value &lt; value;
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean gt(IntegralDataTypeHolder other) {
+&nbsp;            return this.gt(IdentifierGeneratorHelper.extractLong(other));
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean gt(long value) {
+&nbsp;            this.checkInitialized();
+&nbsp;            return this.value &gt; value;
+&nbsp;        }
+&nbsp;
+&nbsp;        public IntegralDataTypeHolder copy() {
+&nbsp;            BasicHolder copy = new BasicHolder(this.exactType);
+&nbsp;            copy.value = this.value;
+&nbsp;            return copy;
+&nbsp;        }
+&nbsp;
+&nbsp;        public Number makeValue() {
+&nbsp;            this.checkInitialized();
+&nbsp;            if (this.exactType == Long.class) {
+&nbsp;                return this.value;
+&nbsp;            } else {
+&nbsp;                return (Number)(this.exactType == Integer.class ? (int)this.value : (short)((int)this.value));
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        public Number makeValueThenIncrement() {
+&nbsp;            Number result = this.makeValue();
+&nbsp;            ++this.value;
+&nbsp;            return result;
+&nbsp;        }
+&nbsp;
+&nbsp;        public Number makeValueThenAdd(long addend) {
+&nbsp;            Number result = this.makeValue();
+&nbsp;            this.value += addend;
+&nbsp;            return result;
+&nbsp;        }
+&nbsp;
+&nbsp;        public String toString() {
+&nbsp;            String var10000 = this.exactType.getName();
+&nbsp;            return &quot;BasicHolder[&quot; + var10000 + &quot;[&quot; + this.value + &quot;]]&quot;;
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean equals(Object o) {
+&nbsp;            if (this == o) {
+&nbsp;                return true;
+&nbsp;            } else if (o != null &amp;&amp; this.getClass() == o.getClass()) {
+&nbsp;                BasicHolder that = (BasicHolder)o;
+&nbsp;                return this.value == that.value;
+&nbsp;            } else {
+&nbsp;                return false;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        public int hashCode() {
+&nbsp;            return (int)(this.value ^ this.value &gt;&gt;&gt; 32);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static class BigIntegerHolder implements IntegralDataTypeHolder {
+&nbsp;        private BigInteger value;
+&nbsp;
+&nbsp;        public BigIntegerHolder() {
+&nbsp;        }
+&nbsp;
+&nbsp;        public IntegralDataTypeHolder initialize(long value) {
+&nbsp;            this.value = BigInteger.valueOf(value);
+&nbsp;            return this;
+&nbsp;        }
+&nbsp;
+&nbsp;        public IntegralDataTypeHolder initialize(ResultSet resultSet, long defaultValue) throws SQLException {
+&nbsp;            BigDecimal rsValue = resultSet.getBigDecimal(1);
+&nbsp;            if (resultSet.wasNull()) {
+&nbsp;                return this.initialize(defaultValue);
+&nbsp;            } else {
+&nbsp;                this.value = rsValue.setScale(0, RoundingMode.UNNECESSARY).toBigInteger();
+&nbsp;                return this;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        public void bind(PreparedStatement preparedStatement, int position) throws SQLException {
+&nbsp;            preparedStatement.setBigDecimal(position, new BigDecimal(this.value));
+&nbsp;        }
+&nbsp;
+&nbsp;        public IntegralDataTypeHolder increment() {
+&nbsp;            this.checkInitialized();
+&nbsp;            this.value = this.value.add(BigInteger.ONE);
+&nbsp;            return this;
+&nbsp;        }
+&nbsp;
+&nbsp;        private void checkInitialized() {
+&nbsp;            if (this.value == null) {
+&nbsp;                throw new IdentifierGenerationException(&quot;integral holder was not initialized&quot;);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        public IntegralDataTypeHolder add(long increment) {
+&nbsp;            this.checkInitialized();
+&nbsp;            this.value = this.value.add(BigInteger.valueOf(increment));
+&nbsp;            return this;
+&nbsp;        }
+&nbsp;
+&nbsp;        public IntegralDataTypeHolder decrement() {
+&nbsp;            this.checkInitialized();
+&nbsp;            this.value = this.value.subtract(BigInteger.ONE);
+&nbsp;            return this;
+&nbsp;        }
+&nbsp;
+&nbsp;        public IntegralDataTypeHolder subtract(long subtrahend) {
+&nbsp;            this.checkInitialized();
+&nbsp;            this.value = this.value.subtract(BigInteger.valueOf(subtrahend));
+&nbsp;            return this;
+&nbsp;        }
+&nbsp;
+&nbsp;        public IntegralDataTypeHolder multiplyBy(IntegralDataTypeHolder factor) {
+&nbsp;            this.checkInitialized();
+&nbsp;            this.value = this.value.multiply(IdentifierGeneratorHelper.extractBigInteger(factor));
+&nbsp;            return this;
+&nbsp;        }
+&nbsp;
+&nbsp;        public IntegralDataTypeHolder multiplyBy(long factor) {
+&nbsp;            this.checkInitialized();
+&nbsp;            this.value = this.value.multiply(BigInteger.valueOf(factor));
+&nbsp;            return this;
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean eq(IntegralDataTypeHolder other) {
+&nbsp;            this.checkInitialized();
+&nbsp;            return this.value.compareTo(IdentifierGeneratorHelper.extractBigInteger(other)) == 0;
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean eq(long value) {
+&nbsp;            this.checkInitialized();
+&nbsp;            return this.value.compareTo(BigInteger.valueOf(value)) == 0;
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean lt(IntegralDataTypeHolder other) {
+&nbsp;            this.checkInitialized();
+&nbsp;            return this.value.compareTo(IdentifierGeneratorHelper.extractBigInteger(other)) &lt; 0;
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean lt(long value) {
+&nbsp;            this.checkInitialized();
+&nbsp;            return this.value.compareTo(BigInteger.valueOf(value)) &lt; 0;
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean gt(IntegralDataTypeHolder other) {
+&nbsp;            this.checkInitialized();
+&nbsp;            return this.value.compareTo(IdentifierGeneratorHelper.extractBigInteger(other)) &gt; 0;
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean gt(long value) {
+&nbsp;            this.checkInitialized();
+&nbsp;            return this.value.compareTo(BigInteger.valueOf(value)) &gt; 0;
+&nbsp;        }
+&nbsp;
+&nbsp;        public IntegralDataTypeHolder copy() {
+&nbsp;            BigIntegerHolder copy = new BigIntegerHolder();
+&nbsp;            copy.value = this.value;
+&nbsp;            return copy;
+&nbsp;        }
+&nbsp;
+&nbsp;        public Number makeValue() {
+&nbsp;            this.checkInitialized();
+&nbsp;            return this.value;
+&nbsp;        }
+&nbsp;
+&nbsp;        public Number makeValueThenIncrement() {
+&nbsp;            Number result = this.makeValue();
+&nbsp;            this.value = this.value.add(BigInteger.ONE);
+&nbsp;            return result;
+&nbsp;        }
+&nbsp;
+&nbsp;        public Number makeValueThenAdd(long addend) {
+&nbsp;            Number result = this.makeValue();
+&nbsp;            this.value = this.value.add(BigInteger.valueOf(addend));
+&nbsp;            return result;
+&nbsp;        }
+&nbsp;
+&nbsp;        public String toString() {
+&nbsp;            return &quot;BigIntegerHolder[&quot; + this.value + &quot;]&quot;;
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean equals(Object o) {
+&nbsp;            if (this == o) {
+&nbsp;                return true;
+&nbsp;            } else if (o != null &amp;&amp; this.getClass() == o.getClass()) {
+&nbsp;                BigIntegerHolder that = (BigIntegerHolder)o;
+&nbsp;                return Objects.equals(this.value, that.value);
+&nbsp;            } else {
+&nbsp;                return false;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        public int hashCode() {
+&nbsp;            return Objects.hashCode(this.value);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static class BigDecimalHolder implements IntegralDataTypeHolder {
+&nbsp;        private BigDecimal value;
+&nbsp;
+&nbsp;        public BigDecimalHolder() {
+&nbsp;        }
+&nbsp;
+&nbsp;        public IntegralDataTypeHolder initialize(long value) {
+&nbsp;            this.value = BigDecimal.valueOf(value);
+&nbsp;            return this;
+&nbsp;        }
+&nbsp;
+&nbsp;        public IntegralDataTypeHolder initialize(ResultSet resultSet, long defaultValue) throws SQLException {
+&nbsp;            BigDecimal rsValue = resultSet.getBigDecimal(1);
+&nbsp;            if (resultSet.wasNull()) {
+&nbsp;                return this.initialize(defaultValue);
+&nbsp;            } else {
+&nbsp;                this.value = rsValue.setScale(0, RoundingMode.UNNECESSARY);
+&nbsp;                return this;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        public void bind(PreparedStatement preparedStatement, int position) throws SQLException {
+&nbsp;            preparedStatement.setBigDecimal(position, this.value);
+&nbsp;        }
+&nbsp;
+&nbsp;        public IntegralDataTypeHolder increment() {
+&nbsp;            this.checkInitialized();
+&nbsp;            this.value = this.value.add(BigDecimal.ONE);
+&nbsp;            return this;
+&nbsp;        }
+&nbsp;
+&nbsp;        private void checkInitialized() {
+&nbsp;            if (this.value == null) {
+&nbsp;                throw new IdentifierGenerationException(&quot;integral holder was not initialized&quot;);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        public IntegralDataTypeHolder add(long increment) {
+&nbsp;            this.checkInitialized();
+&nbsp;            this.value = this.value.add(BigDecimal.valueOf(increment));
+&nbsp;            return this;
+&nbsp;        }
+&nbsp;
+&nbsp;        public IntegralDataTypeHolder decrement() {
+&nbsp;            this.checkInitialized();
+&nbsp;            this.value = this.value.subtract(BigDecimal.ONE);
+&nbsp;            return this;
+&nbsp;        }
+&nbsp;
+&nbsp;        public IntegralDataTypeHolder subtract(long subtrahend) {
+&nbsp;            this.checkInitialized();
+&nbsp;            this.value = this.value.subtract(BigDecimal.valueOf(subtrahend));
+&nbsp;            return this;
+&nbsp;        }
+&nbsp;
+&nbsp;        public IntegralDataTypeHolder multiplyBy(IntegralDataTypeHolder factor) {
+&nbsp;            this.checkInitialized();
+&nbsp;            this.value = this.value.multiply(IdentifierGeneratorHelper.extractBigDecimal(factor));
+&nbsp;            return this;
+&nbsp;        }
+&nbsp;
+&nbsp;        public IntegralDataTypeHolder multiplyBy(long factor) {
+&nbsp;            this.checkInitialized();
+&nbsp;            this.value = this.value.multiply(BigDecimal.valueOf(factor));
+&nbsp;            return this;
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean eq(IntegralDataTypeHolder other) {
+&nbsp;            this.checkInitialized();
+&nbsp;            return this.value.compareTo(IdentifierGeneratorHelper.extractBigDecimal(other)) == 0;
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean eq(long value) {
+&nbsp;            this.checkInitialized();
+&nbsp;            return this.value.compareTo(BigDecimal.valueOf(value)) == 0;
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean lt(IntegralDataTypeHolder other) {
+&nbsp;            this.checkInitialized();
+&nbsp;            return this.value.compareTo(IdentifierGeneratorHelper.extractBigDecimal(other)) &lt; 0;
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean lt(long value) {
+&nbsp;            this.checkInitialized();
+&nbsp;            return this.value.compareTo(BigDecimal.valueOf(value)) &lt; 0;
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean gt(IntegralDataTypeHolder other) {
+&nbsp;            this.checkInitialized();
+&nbsp;            return this.value.compareTo(IdentifierGeneratorHelper.extractBigDecimal(other)) &gt; 0;
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean gt(long value) {
+&nbsp;            this.checkInitialized();
+&nbsp;            return this.value.compareTo(BigDecimal.valueOf(value)) &gt; 0;
+&nbsp;        }
+&nbsp;
+&nbsp;        public IntegralDataTypeHolder copy() {
+&nbsp;            BigDecimalHolder copy = new BigDecimalHolder();
+&nbsp;            copy.value = this.value;
+&nbsp;            return copy;
+&nbsp;        }
+&nbsp;
+&nbsp;        public Number makeValue() {
+&nbsp;            this.checkInitialized();
+&nbsp;            return this.value;
+&nbsp;        }
+&nbsp;
+&nbsp;        public Number makeValueThenIncrement() {
+&nbsp;            Number result = this.makeValue();
+&nbsp;            this.value = this.value.add(BigDecimal.ONE);
+&nbsp;            return result;
+&nbsp;        }
+&nbsp;
+&nbsp;        public Number makeValueThenAdd(long addend) {
+&nbsp;            Number result = this.makeValue();
+&nbsp;            this.value = this.value.add(BigDecimal.valueOf(addend));
+&nbsp;            return result;
+&nbsp;        }
+&nbsp;
+&nbsp;        public String toString() {
+&nbsp;            return &quot;BigDecimalHolder[&quot; + this.value + &quot;]&quot;;
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean equals(Object o) {
+&nbsp;            if (this == o) {
+&nbsp;                return true;
+&nbsp;            } else if (o != null &amp;&amp; this.getClass() == o.getClass()) {
+&nbsp;                BigDecimalHolder that = (BigDecimalHolder)o;
+&nbsp;                return Objects.equals(this.value, that.value);
+&nbsp;            } else {
+&nbsp;                return false;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        public int hashCode() {
+&nbsp;            return Objects.hashCode(this.value);
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

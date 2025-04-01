@@ -1,0 +1,233 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > QuerydslBindingsFactory</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.data.querydsl.binding</a>
+</div>
+
+<h1>Coverage Summary for Class: QuerydslBindingsFactory (org.springframework.data.querydsl.binding)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">QuerydslBindingsFactory</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/15)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/40)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.data.querydsl.binding;
+&nbsp;
+&nbsp;import com.querydsl.core.types.EntityPath;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Optional;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import java.util.stream.Collectors;
+&nbsp;import org.springframework.beans.BeanUtils;
+&nbsp;import org.springframework.beans.BeansException;
+&nbsp;import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+&nbsp;import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+&nbsp;import org.springframework.context.ApplicationContext;
+&nbsp;import org.springframework.context.ApplicationContextAware;
+&nbsp;import org.springframework.data.querydsl.EntityPathResolver;
+&nbsp;import org.springframework.data.repository.support.Repositories;
+&nbsp;import org.springframework.data.util.TypeInformation;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;
+&nbsp;public class QuerydslBindingsFactory implements ApplicationContextAware {
+&nbsp;    private static final String INVALID_DOMAIN_TYPE = &quot;Unable to find Querydsl root type for detected domain type %s; User @%s&#39;s root attribute to define the domain type manually&quot;;
+&nbsp;    private final EntityPathResolver entityPathResolver;
+&nbsp;    private final Map&lt;TypeInformation&lt;?&gt;, EntityPath&lt;?&gt;&gt; entityPaths;
+&nbsp;    private Optional&lt;AutowireCapableBeanFactory&gt; beanFactory;
+&nbsp;    private Optional&lt;Repositories&gt; repositories;
+&nbsp;    private QuerydslBinderCustomizer&lt;EntityPath&lt;?&gt;&gt; defaultCustomizer;
+&nbsp;
+&nbsp;    public QuerydslBindingsFactory(EntityPathResolver entityPathResolver) {
+&nbsp;        Assert.notNull(entityPathResolver, &quot;EntityPathResolver must not be null&quot;);
+&nbsp;        this.entityPathResolver = entityPathResolver;
+&nbsp;        this.entityPaths = new ConcurrentHashMap();
+&nbsp;        this.beanFactory = Optional.empty();
+&nbsp;        this.repositories = Optional.empty();
+&nbsp;        this.defaultCustomizer = QuerydslBindingsFactory.NoOpCustomizer.INSTANCE;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+&nbsp;        this.beanFactory = Optional.of(applicationContext.getAutowireCapableBeanFactory());
+&nbsp;        this.repositories = Optional.of(new Repositories(applicationContext));
+&nbsp;        this.defaultCustomizer = this.findDefaultCustomizer();
+&nbsp;    }
+&nbsp;
+&nbsp;    public EntityPathResolver getEntityPathResolver() {
+&nbsp;        return this.entityPathResolver;
+&nbsp;    }
+&nbsp;
+&nbsp;    public QuerydslBindings createBindingsFor(TypeInformation&lt;?&gt; domainType) {
+&nbsp;        return this.createBindingsFor(domainType, Optional.empty());
+&nbsp;    }
+&nbsp;
+&nbsp;    public QuerydslBindings createBindingsFor(TypeInformation&lt;?&gt; domainType, Class&lt;? extends QuerydslBinderCustomizer&lt;?&gt;&gt; customizer) {
+&nbsp;        return this.createBindingsFor(domainType, Optional.of(customizer));
+&nbsp;    }
+&nbsp;
+&nbsp;    private QuerydslBindings createBindingsFor(TypeInformation&lt;?&gt; domainType, Optional&lt;Class&lt;? extends QuerydslBinderCustomizer&lt;?&gt;&gt;&gt; customizer) {
+<b class="nc">&nbsp;        Assert.notNull(customizer, &quot;Customizer must not be null&quot;);</b>
+&nbsp;        Assert.notNull(domainType, &quot;Domain type must not be null&quot;);
+<b class="nc">&nbsp;        EntityPath&lt;?&gt; path = this.verifyEntityPathPresent(domainType);</b>
+&nbsp;        QuerydslBindings bindings = new QuerydslBindings();
+<b class="nc">&nbsp;        this.defaultCustomizer.customize(bindings, path);</b>
+<b class="nc">&nbsp;        this.findCustomizerForDomainType(customizer, domainType.getType()).customize(bindings, path);</b>
+<b class="nc">&nbsp;        return bindings;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private EntityPath&lt;?&gt; verifyEntityPathPresent(TypeInformation&lt;?&gt; candidate) {
+&nbsp;        return (EntityPath)this.entityPaths.computeIfAbsent(candidate, (key) -&gt; {
+&nbsp;            try {
+&nbsp;                return this.entityPathResolver.createPath(key.getType());
+&nbsp;            } catch (IllegalArgumentException o_O) {
+<b class="nc">&nbsp;                throw new IllegalStateException(String.format(&quot;Unable to find Querydsl root type for detected domain type %s; User @%s&#39;s root attribute to define the domain type manually&quot;, key.getType(), QuerydslPredicate.class.getSimpleName()), o_O);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        });</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private QuerydslBinderCustomizer&lt;EntityPath&lt;?&gt;&gt; findDefaultCustomizer() {
+&nbsp;        return (QuerydslBinderCustomizer)this.beanFactory.map(this::getDefaultQuerydslBinderCustomizer).orElse(QuerydslBindingsFactory.NoOpCustomizer.INSTANCE);
+&nbsp;    }
+&nbsp;
+&nbsp;    private QuerydslBinderCustomizer&lt;EntityPath&lt;?&gt;&gt; getDefaultQuerydslBinderCustomizer(AutowireCapableBeanFactory beanFactory) {
+&nbsp;        List&lt;QuerydslBinderCustomizerDefaults&gt; customizers = (List)beanFactory.getBeanProvider(QuerydslBinderCustomizerDefaults.class).stream().collect(Collectors.toList());
+<b class="nc">&nbsp;        return (bindings, root) -&gt; {</b>
+&nbsp;            for(QuerydslBinderCustomizerDefaults querydslBinderCustomizerDefaults : customizers) {
+&nbsp;                querydslBinderCustomizerDefaults.customize(bindings, root);
+&nbsp;            }
+&nbsp;
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    private QuerydslBinderCustomizer&lt;EntityPath&lt;?&gt;&gt; findCustomizerForDomainType(Optional&lt;? extends Class&lt;? extends QuerydslBinderCustomizer&gt;&gt; customizer, Class&lt;?&gt; domainType) {
+&nbsp;        return (QuerydslBinderCustomizer)customizer.filter((it) -&gt; !QuerydslBinderCustomizer.class.equals(it)).map(this::createQuerydslBinderCustomizer).orElseGet(() -&gt; (QuerydslBinderCustomizer)this.repositories.flatMap((it) -&gt; it.getRepositoryFor(domainType)).map((it) -&gt; it instanceof QuerydslBinderCustomizer ? (QuerydslBinderCustomizer)it : null).orElse(QuerydslBindingsFactory.NoOpCustomizer.INSTANCE));
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private QuerydslBinderCustomizer&lt;EntityPath&lt;?&gt;&gt; createQuerydslBinderCustomizer(Class&lt;? extends QuerydslBinderCustomizer&gt; type) {
+&nbsp;        return (QuerydslBinderCustomizer)this.beanFactory.map((it) -&gt; {
+&nbsp;            try {
+&nbsp;                return (QuerydslBinderCustomizer)it.getBean(type);
+&nbsp;            } catch (NoSuchBeanDefinitionException var3) {
+&nbsp;                return (QuerydslBinderCustomizer)it.createBean(type);
+&nbsp;            }
+&nbsp;        }).orElseGet(() -&gt; (QuerydslBinderCustomizer)BeanUtils.instantiateClass(type));
+&nbsp;    }
+&nbsp;
+&nbsp;    private static enum NoOpCustomizer implements QuerydslBinderCustomizer&lt;EntityPath&lt;?&gt;&gt; {
+&nbsp;        INSTANCE;
+<b class="nc">&nbsp;</b>
+&nbsp;        private NoOpCustomizer() {
+&nbsp;        }
+&nbsp;
+&nbsp;        public void customize(QuerydslBindings bindings, EntityPath&lt;?&gt; root) {
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 21:00</div>
+</div>
+</body>
+</html>

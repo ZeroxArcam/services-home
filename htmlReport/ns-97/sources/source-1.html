@@ -5,7 +5,7 @@
 <html id="htmlId">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
-  <title>Coverage Report > ConstructorInjection</title>
+  <title>Coverage Report > ArgumentTypeResolver</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -19,10 +19,10 @@
 <div class="breadCrumbs">
 Current scope:     <a href="../../index.html">all classes</a>
     <span class="separator">|</span>
-    <a href="../index.html">org.mockito.internal.configuration.injection</a>
+    <a href="../index.html">net.bytebuddy.implementation.bind</a>
 </div>
 
-<h1>Coverage Summary for Class: ConstructorInjection (org.mockito.internal.configuration.injection)</h1>
+<h1>Coverage Summary for Class: ArgumentTypeResolver (net.bytebuddy.implementation.bind)</h1>
 
 <table class="coverageStats">
 
@@ -42,13 +42,13 @@ Current scope:     <a href="../../index.html">all classes</a>
 </th>
 </tr>
 <tr>
-  <td class="name">ConstructorInjection</td>
+  <td class="name">ArgumentTypeResolver</td>
 <td class="coverageStat">
   <span class="percent">
-    100%
+    25%
   </span>
   <span class="absValue">
-    (2/2)
+    (1/4)
   </span>
 </td>
 <td class="coverageStat">
@@ -56,42 +56,42 @@ Current scope:     <a href="../../index.html">all classes</a>
     0%
   </span>
   <span class="absValue">
-    (0/2)
+    (0/34)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    55.6%
+    5.1%
   </span>
   <span class="absValue">
-    (5/9)
+    (2/39)
   </span>
 </td>
 </tr>
   <tr>
-    <td class="name">ConstructorInjection$SimpleArgumentResolver</td>
+    <td class="name">ArgumentTypeResolver$ParameterIndexToken</td>
 <td class="coverageStat">
   <span class="percent">
-    100%
+    66.7%
   </span>
   <span class="absValue">
-    (3/3)
+    (2/3)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    83.3%
+    0%
   </span>
   <span class="absValue">
-    (5/6)
+    (0/8)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    90%
+    33.3%
   </span>
   <span class="absValue">
-    (9/10)
+    (3/9)
   </span>
 </td>
   </tr>
@@ -99,26 +99,26 @@ Current scope:     <a href="../../index.html">all classes</a>
   <td class="name"><strong>Total</strong></td>
 <td class="coverageStat">
   <span class="percent">
-    100%
+    42.9%
   </span>
   <span class="absValue">
-    (5/5)
+    (3/7)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    62.5%
+    0%
   </span>
   <span class="absValue">
-    (5/8)
+    (0/42)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    73.7%
+    10.4%
   </span>
   <span class="absValue">
-    (14/19)
+    (5/48)
   </span>
 </td>
 </tr>
@@ -134,62 +134,138 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;// (powered by FernFlower decompiler)
 &nbsp;//
 &nbsp;
-&nbsp;package org.mockito.internal.configuration.injection;
+&nbsp;package net.bytebuddy.implementation.bind;
 &nbsp;
-&nbsp;import java.lang.reflect.Field;
-&nbsp;import java.lang.reflect.InvocationTargetException;
-&nbsp;import java.util.ArrayList;
-&nbsp;import java.util.List;
-&nbsp;import java.util.Set;
-&nbsp;import org.mockito.exceptions.base.MockitoException;
-&nbsp;import org.mockito.internal.exceptions.Reporter;
-&nbsp;import org.mockito.internal.util.reflection.FieldInitializationReport;
-&nbsp;import org.mockito.internal.util.reflection.FieldInitializer;
+&nbsp;import net.bytebuddy.description.method.MethodDescription;
+&nbsp;import net.bytebuddy.description.method.ParameterDescription;
+&nbsp;import net.bytebuddy.description.method.ParameterList;
+&nbsp;import net.bytebuddy.description.type.TypeDescription;
+&nbsp;import net.bytebuddy.implementation.bind.MethodDelegationBinder.AmbiguityResolver.Resolution;
+&nbsp;import net.bytebuddy.utility.nullability.MaybeNull;
 &nbsp;
-&nbsp;public class ConstructorInjection extends MockInjectionStrategy {
-&nbsp;    public ConstructorInjection() {
+&nbsp;public enum ArgumentTypeResolver implements MethodDelegationBinder.AmbiguityResolver {
+&nbsp;    INSTANCE;
+&nbsp;
+&nbsp;    private ArgumentTypeResolver() {
 &nbsp;    }
 &nbsp;
-&nbsp;    public boolean processInjection(Field field, Object fieldOwner, Set&lt;Object&gt; mockCandidates) {
-&nbsp;        try {
-&nbsp;            SimpleArgumentResolver simpleArgumentResolver = new SimpleArgumentResolver(mockCandidates);
-&nbsp;            FieldInitializationReport report = (new FieldInitializer(fieldOwner, field, simpleArgumentResolver)).initialize();
-&nbsp;            return report.fieldWasInitializedUsingContructorArgs();
-&nbsp;        } catch (MockitoException e) {
-&nbsp;            if (e.getCause() instanceof InvocationTargetException) {
-&nbsp;                Throwable realCause = e.getCause().getCause();
-&nbsp;                throw Reporter.fieldInitialisationThrewException(field, realCause);
+&nbsp;    private static MethodDelegationBinder.AmbiguityResolver.Resolution resolveRivalBinding(TypeDescription sourceParameterType, int leftParameterIndex, MethodDelegationBinder.MethodBinding left, int rightParameterIndex, MethodDelegationBinder.MethodBinding right) {
+&nbsp;        TypeDescription leftParameterType = ((ParameterDescription)left.getTarget().getParameters().get(leftParameterIndex)).getType().asErasure();
+&nbsp;        TypeDescription rightParameterType = ((ParameterDescription)right.getTarget().getParameters().get(rightParameterIndex)).getType().asErasure();
+&nbsp;        if (!leftParameterType.equals(rightParameterType)) {
+&nbsp;            if (leftParameterType.isPrimitive() &amp;&amp; rightParameterType.isPrimitive()) {
+&nbsp;                return ArgumentTypeResolver.PrimitiveTypePrecedence.forPrimitive(leftParameterType).resolve(ArgumentTypeResolver.PrimitiveTypePrecedence.forPrimitive(rightParameterType));
+&nbsp;            } else if (leftParameterType.isPrimitive()) {
+&nbsp;                return sourceParameterType.isPrimitive() ? Resolution.LEFT : Resolution.RIGHT;
+&nbsp;            } else if (rightParameterType.isPrimitive()) {
+&nbsp;                return sourceParameterType.isPrimitive() ? Resolution.RIGHT : Resolution.LEFT;
+&nbsp;            } else if (leftParameterType.isAssignableFrom(rightParameterType)) {
+&nbsp;                return Resolution.RIGHT;
 &nbsp;            } else {
-&nbsp;                return false;
+&nbsp;                return rightParameterType.isAssignableFrom(leftParameterType) ? Resolution.LEFT : Resolution.AMBIGUOUS;
 &nbsp;            }
+&nbsp;        } else {
+&nbsp;            return Resolution.UNKNOWN;
 &nbsp;        }
 &nbsp;    }
 &nbsp;
-&nbsp;    static class SimpleArgumentResolver implements FieldInitializer.ConstructorArgumentResolver {
-&nbsp;        final Set&lt;Object&gt; objects;
+&nbsp;    private static MethodDelegationBinder.AmbiguityResolver.Resolution resolveByScore(int boundParameterScore) {
+&nbsp;        if (boundParameterScore == 0) {
+&nbsp;            return Resolution.AMBIGUOUS;
+&nbsp;        } else {
+<b class="fc">&nbsp;            return boundParameterScore &gt; 0 ? Resolution.LEFT : Resolution.RIGHT;</b>
+&nbsp;        }
+&nbsp;    }
 &nbsp;
-<b class="fc">&nbsp;        public SimpleArgumentResolver(Set&lt;Object&gt; objects) {</b>
-&nbsp;            this.objects = objects;
+&nbsp;    public MethodDelegationBinder.AmbiguityResolver.Resolution resolve(MethodDescription source, MethodDelegationBinder.MethodBinding left, MethodDelegationBinder.MethodBinding right) {
+<b class="fc">&nbsp;        MethodDelegationBinder.AmbiguityResolver.Resolution resolution = Resolution.UNKNOWN;</b>
+&nbsp;        ParameterList&lt;?&gt; sourceParameters = source.getParameters();
+&nbsp;        int leftExtra = 0;
+&nbsp;        int rightExtra = 0;
+&nbsp;
+&nbsp;        for(int sourceParameterIndex = 0; sourceParameterIndex &lt; sourceParameters.size(); ++sourceParameterIndex) {
+&nbsp;            ParameterIndexToken parameterIndexToken = new ParameterIndexToken(sourceParameterIndex);
+&nbsp;            Integer leftParameterIndex = left.getTargetParameterIndex(parameterIndexToken);
+&nbsp;            Integer rightParameterIndex = right.getTargetParameterIndex(parameterIndexToken);
+&nbsp;            if (leftParameterIndex != null &amp;&amp; rightParameterIndex != null) {
+&nbsp;                resolution = resolution.merge(resolveRivalBinding(((ParameterDescription)sourceParameters.get(sourceParameterIndex)).getType().asErasure(), leftParameterIndex, left, rightParameterIndex, right));
+&nbsp;            } else if (leftParameterIndex != null) {
+&nbsp;                ++leftExtra;
+&nbsp;            } else if (rightParameterIndex != null) {
+&nbsp;                ++rightExtra;
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return resolution == Resolution.UNKNOWN ? resolveByScore(leftExtra - rightExtra) : resolution;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected static enum PrimitiveTypePrecedence {</b>
+<b class="nc">&nbsp;        BOOLEAN(0),</b>
+<b class="nc">&nbsp;        BYTE(1),</b>
+<b class="nc">&nbsp;        SHORT(2),</b>
+<b class="nc">&nbsp;        INTEGER(3),</b>
+&nbsp;        CHARACTER(4),
+&nbsp;        LONG(5),
+<b class="nc">&nbsp;        FLOAT(6),</b>
+<b class="nc">&nbsp;        DOUBLE(7);</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        private final int score;</b>
+&nbsp;
+<b class="nc">&nbsp;        private PrimitiveTypePrecedence(int score) {</b>
+&nbsp;            this.score = score;
 &nbsp;        }
 &nbsp;
-&nbsp;        public Object[] resolveTypeInstances(Class&lt;?&gt;... argTypes) {
-<b class="fc">&nbsp;            List&lt;Object&gt; argumentInstances = new ArrayList(argTypes.length);</b>
-&nbsp;
-<b class="fc">&nbsp;            for(Class&lt;?&gt; argType : argTypes) {</b>
-<b class="fc">&nbsp;                argumentInstances.add(this.objectThatIsAssignableFrom(argType));</b>
+<b class="nc">&nbsp;        public static PrimitiveTypePrecedence forPrimitive(TypeDescription typeDescription) {</b>
+&nbsp;            if (typeDescription.represents(Boolean.TYPE)) {
+&nbsp;                return BOOLEAN;
+&nbsp;            } else if (typeDescription.represents(Byte.TYPE)) {
+&nbsp;                return BYTE;
+&nbsp;            } else if (typeDescription.represents(Short.TYPE)) {
+&nbsp;                return SHORT;
+&nbsp;            } else if (typeDescription.represents(Integer.TYPE)) {
+&nbsp;                return INTEGER;
+&nbsp;            } else if (typeDescription.represents(Character.TYPE)) {
+&nbsp;                return CHARACTER;
+&nbsp;            } else if (typeDescription.represents(Long.TYPE)) {
+&nbsp;                return LONG;
+<b class="nc">&nbsp;            } else if (typeDescription.represents(Float.TYPE)) {</b>
+<b class="nc">&nbsp;                return FLOAT;</b>
+<b class="nc">&nbsp;            } else if (typeDescription.represents(Double.TYPE)) {</b>
+<b class="nc">&nbsp;                return DOUBLE;</b>
+&nbsp;            } else {
+<b class="nc">&nbsp;                throw new IllegalArgumentException(&quot;Not a non-void, primitive type &quot; + typeDescription);</b>
 &nbsp;            }
-<b class="fc">&nbsp;</b>
-&nbsp;            return argumentInstances.toArray();
+&nbsp;        }
+&nbsp;
+&nbsp;        public MethodDelegationBinder.AmbiguityResolver.Resolution resolve(PrimitiveTypePrecedence right) {
+&nbsp;            if (this.score - right.score == 0) {
+&nbsp;                return Resolution.UNKNOWN;
+&nbsp;            } else {
+&nbsp;                return this.score - right.score &gt; 0 ? Resolution.RIGHT : Resolution.LEFT;
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public static class ParameterIndexToken {</b>
+<b class="nc">&nbsp;        private final int parameterIndex;</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        public ParameterIndexToken(int parameterIndex) {</b>
+<b class="nc">&nbsp;            this.parameterIndex = parameterIndex;</b>
 <b class="nc">&nbsp;        }</b>
 <b class="nc">&nbsp;</b>
-<b class="nc">&nbsp;        private Object objectThatIsAssignableFrom(Class&lt;?&gt; argType) {</b>
-&nbsp;            for(Object object : this.objects) {
-&nbsp;                if (argType.isAssignableFrom(object.getClass())) {
-<b class="nc">&nbsp;                    return object;</b>
-&nbsp;                }
+&nbsp;        public int hashCode() {
+<b class="nc">&nbsp;            return this.parameterIndex;</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        public boolean equals(@MaybeNull Object other) {</b>
+<b class="nc">&nbsp;            if (this == other) {</b>
+<b class="nc">&nbsp;                return true;</b>
+&nbsp;            } else if (other != null &amp;&amp; this.getClass() == other.getClass()) {
+&nbsp;                ParameterIndexToken parameterIndexToken = (ParameterIndexToken)other;
+<b class="nc">&nbsp;                return this.parameterIndex == parameterIndexToken.parameterIndex;</b>
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                return false;
 &nbsp;            }
-&nbsp;
-&nbsp;            return null;
 &nbsp;        }
 &nbsp;    }
 &nbsp;}
@@ -216,7 +292,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2025-03-20 13:42</div>
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
 </div>
 </body>
 </html>

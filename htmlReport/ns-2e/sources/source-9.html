@@ -1,0 +1,497 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > DeserializerCache</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.fasterxml.jackson.databind.deser</a>
+</div>
+
+<h1>Coverage Summary for Class: DeserializerCache (com.fasterxml.jackson.databind.deser)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DeserializerCache</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    12.5%
+  </span>
+  <span class="absValue">
+    (3/24)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/132)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    3.4%
+  </span>
+  <span class="absValue">
+    (6/177)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package com.fasterxml.jackson.databind.deser;
+&nbsp;
+&nbsp;import com.fasterxml.jackson.annotation.JsonFormat;
+&nbsp;import com.fasterxml.jackson.annotation.JsonFormat.Shape;
+&nbsp;import com.fasterxml.jackson.databind.AnnotationIntrospector;
+&nbsp;import com.fasterxml.jackson.databind.BeanDescription;
+&nbsp;import com.fasterxml.jackson.databind.DeserializationConfig;
+&nbsp;import com.fasterxml.jackson.databind.DeserializationContext;
+&nbsp;import com.fasterxml.jackson.databind.JavaType;
+&nbsp;import com.fasterxml.jackson.databind.JsonDeserializer;
+&nbsp;import com.fasterxml.jackson.databind.JsonMappingException;
+&nbsp;import com.fasterxml.jackson.databind.JsonNode;
+&nbsp;import com.fasterxml.jackson.databind.KeyDeserializer;
+&nbsp;import com.fasterxml.jackson.databind.deser.std.StdDelegatingDeserializer;
+&nbsp;import com.fasterxml.jackson.databind.introspect.Annotated;
+&nbsp;import com.fasterxml.jackson.databind.type.ArrayType;
+&nbsp;import com.fasterxml.jackson.databind.type.CollectionLikeType;
+&nbsp;import com.fasterxml.jackson.databind.type.CollectionType;
+&nbsp;import com.fasterxml.jackson.databind.type.MapLikeType;
+&nbsp;import com.fasterxml.jackson.databind.type.MapType;
+&nbsp;import com.fasterxml.jackson.databind.type.ReferenceType;
+&nbsp;import com.fasterxml.jackson.databind.util.ClassUtil;
+&nbsp;import com.fasterxml.jackson.databind.util.Converter;
+&nbsp;import com.fasterxml.jackson.databind.util.LRUMap;
+&nbsp;import com.fasterxml.jackson.databind.util.LookupCache;
+&nbsp;import java.io.Serializable;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.Objects;
+&nbsp;import java.util.concurrent.locks.ReentrantLock;
+&nbsp;
+&nbsp;public final class DeserializerCache implements Serializable {
+&nbsp;    private static final long serialVersionUID = 1L;
+&nbsp;    public static final int DEFAULT_MAX_CACHE_SIZE = 2000;
+&nbsp;    protected final LookupCache&lt;JavaType, JsonDeserializer&lt;Object&gt;&gt; _cachedDeserializers;
+&nbsp;    protected final HashMap&lt;JavaType, JsonDeserializer&lt;Object&gt;&gt; _incompleteDeserializers;
+&nbsp;    private final ReentrantLock _incompleteDeserializersLock;
+&nbsp;
+&nbsp;    public DeserializerCache() {
+&nbsp;        this(2000);
+&nbsp;    }
+&nbsp;
+&nbsp;    public DeserializerCache(int maxSize) {
+&nbsp;        this(new LRUMap(Math.min(64, maxSize &gt;&gt; 2), maxSize));
+&nbsp;    }
+&nbsp;
+&nbsp;    public DeserializerCache(LookupCache&lt;JavaType, JsonDeserializer&lt;Object&gt;&gt; cache) {
+&nbsp;        this._incompleteDeserializers = new HashMap(8);
+&nbsp;        this._incompleteDeserializersLock = new ReentrantLock();
+<b class="fc">&nbsp;        this._cachedDeserializers = cache;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public DeserializerCache emptyCopy() {
+&nbsp;        return new DeserializerCache(this._cachedDeserializers.emptyCopy());
+&nbsp;    }
+&nbsp;
+&nbsp;    Object writeReplace() {
+&nbsp;        this._incompleteDeserializers.clear();
+<b class="fc">&nbsp;        return this;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int cachedDeserializersCount() {
+&nbsp;        return this._cachedDeserializers.size();
+&nbsp;    }
+&nbsp;
+&nbsp;    public void flushCachedDeserializers() {
+&nbsp;        this._cachedDeserializers.clear();
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public JsonDeserializer&lt;Object&gt; findValueDeserializer(DeserializationContext ctxt, DeserializerFactory factory, JavaType propertyType) throws JsonMappingException {
+&nbsp;        Objects.requireNonNull(propertyType, &quot;Null &#39;propertyType&#39; passed&quot;);
+<b class="fc">&nbsp;        JsonDeserializer&lt;Object&gt; deser = this._findCachedDeserializer(propertyType);</b>
+&nbsp;        if (deser == null) {
+&nbsp;            deser = this._createAndCacheValueDeserializer(ctxt, factory, propertyType);
+&nbsp;            if (deser == null) {
+&nbsp;                deser = this._handleUnknownValueDeserializer(ctxt, propertyType);
+&nbsp;            }
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;        return deser;
+&nbsp;    }
+&nbsp;
+&nbsp;    public KeyDeserializer findKeyDeserializer(DeserializationContext ctxt, DeserializerFactory factory, JavaType type) throws JsonMappingException {
+&nbsp;        Objects.requireNonNull(type, &quot;Null &#39;type&#39; passed&quot;);
+&nbsp;        KeyDeserializer kd = factory.createKeyDeserializer(ctxt, type);
+<b class="nc">&nbsp;        if (kd == null) {</b>
+&nbsp;            return this._handleUnknownKeyDeserializer(ctxt, type);
+&nbsp;        } else {
+&nbsp;            if (kd instanceof ResolvableDeserializer) {
+&nbsp;                ((ResolvableDeserializer)kd).resolve(ctxt);
+&nbsp;            }
+&nbsp;
+&nbsp;            return kd;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public boolean hasValueDeserializerFor(DeserializationContext ctxt, DeserializerFactory factory, JavaType type) throws JsonMappingException {</b>
+<b class="nc">&nbsp;        Objects.requireNonNull(type, &quot;Null &#39;type&#39; passed&quot;);</b>
+&nbsp;        JsonDeserializer&lt;Object&gt; deser = this._findCachedDeserializer(type);
+&nbsp;        if (deser == null) {
+&nbsp;            deser = this._createAndCacheValueDeserializer(ctxt, factory, type);
+&nbsp;        }
+&nbsp;
+&nbsp;        return deser != null;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected JsonDeserializer&lt;Object&gt; _findCachedDeserializer(JavaType type) {
+&nbsp;        return this._hasCustomHandlers(type) ? null : (JsonDeserializer)this._cachedDeserializers.get(type);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected JsonDeserializer&lt;Object&gt; _createAndCacheValueDeserializer(DeserializationContext ctxt, DeserializerFactory factory, JavaType type) throws JsonMappingException {
+&nbsp;        boolean isCustom = this._hasCustomHandlers(type);
+&nbsp;        if (!isCustom) {
+&nbsp;            JsonDeserializer&lt;Object&gt; deser = (JsonDeserializer)this._cachedDeserializers.get(type);
+&nbsp;            if (deser != null) {
+&nbsp;                return deser;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        this._incompleteDeserializersLock.lock();</b>
+&nbsp;
+&nbsp;        JsonDeserializer&lt;Object&gt; deser;
+&nbsp;        try {
+&nbsp;            if (!isCustom) {
+&nbsp;                JsonDeserializer&lt;Object&gt; deser = (JsonDeserializer)this._cachedDeserializers.get(type);
+&nbsp;                if (deser != null) {
+&nbsp;                    deser = deser;
+&nbsp;                    return deser;
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            int count = this._incompleteDeserializers.size();
+&nbsp;            if (count &gt; 0) {
+&nbsp;                deser = (JsonDeserializer)this._incompleteDeserializers.get(type);
+&nbsp;                if (deser != null) {
+&nbsp;                    JsonDeserializer var7 = deser;
+&nbsp;                    return var7;
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            try {
+&nbsp;                deser = this._createAndCache2(ctxt, factory, type, isCustom);
+&nbsp;            } finally {
+&nbsp;                if (count == 0 &amp;&amp; this._incompleteDeserializers.size() &gt; 0) {
+&nbsp;                    this._incompleteDeserializers.clear();
+&nbsp;                }
+&nbsp;
+&nbsp;            }
+&nbsp;        } finally {
+&nbsp;            this._incompleteDeserializersLock.unlock();
+&nbsp;        }
+&nbsp;
+&nbsp;        return deser;
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @deprecated */
+&nbsp;    @Deprecated
+&nbsp;    protected JsonDeserializer&lt;Object&gt; _createAndCache2(DeserializationContext ctxt, DeserializerFactory factory, JavaType type) throws JsonMappingException {
+&nbsp;        return this._createAndCache2(ctxt, factory, type, this._hasCustomHandlers(type));
+&nbsp;    }
+&nbsp;
+&nbsp;    protected JsonDeserializer&lt;Object&gt; _createAndCache2(DeserializationContext ctxt, DeserializerFactory factory, JavaType type, boolean isCustom) throws JsonMappingException {
+&nbsp;        JsonDeserializer&lt;Object&gt; deser;
+&nbsp;        try {
+&nbsp;            deser = this._createDeserializer(ctxt, factory, type);
+<b class="nc">&nbsp;        } catch (IllegalArgumentException iae) {</b>
+<b class="nc">&nbsp;            ctxt.reportBadDefinition(type, ClassUtil.exceptionMessage(iae));</b>
+<b class="nc">&nbsp;            deser = null;</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if (deser == null) {</b>
+&nbsp;            return null;
+&nbsp;        } else {
+&nbsp;            boolean addToCache = !isCustom &amp;&amp; deser.isCachable();
+<b class="nc">&nbsp;            if (deser instanceof ResolvableDeserializer) {</b>
+&nbsp;                this._incompleteDeserializers.put(type, deser);
+&nbsp;
+<b class="nc">&nbsp;                try {</b>
+&nbsp;                    ((ResolvableDeserializer)deser).resolve(ctxt);
+&nbsp;                } finally {
+&nbsp;                    this._incompleteDeserializers.remove(type);
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            if (addToCache) {
+&nbsp;                this._cachedDeserializers.put(type, deser);
+&nbsp;            }
+&nbsp;
+&nbsp;            return deser;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected JsonDeserializer&lt;Object&gt; _createDeserializer(DeserializationContext ctxt, DeserializerFactory factory, JavaType type) throws JsonMappingException {</b>
+<b class="nc">&nbsp;        DeserializationConfig config = ctxt.getConfig();</b>
+<b class="nc">&nbsp;        if (type.isAbstract() || type.isMapLikeType() || type.isCollectionLikeType()) {</b>
+<b class="nc">&nbsp;            type = factory.mapAbstractType(config, type);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        BeanDescription beanDesc = config.introspect(type);</b>
+<b class="nc">&nbsp;        JsonDeserializer&lt;Object&gt; deser = this.findDeserializerFromAnnotation(ctxt, beanDesc.getClassInfo());</b>
+&nbsp;        if (deser != null) {
+<b class="nc">&nbsp;            return deser;</b>
+&nbsp;        } else {
+&nbsp;            JavaType newType = this.modifyTypeByAnnotation(ctxt, beanDesc.getClassInfo(), type);
+&nbsp;            if (newType != type) {
+&nbsp;                type = newType;
+&nbsp;                beanDesc = config.introspect(newType);
+&nbsp;            }
+&nbsp;
+&nbsp;            Class&lt;?&gt; builder = beanDesc.findPOJOBuilder();
+&nbsp;            if (builder != null) {
+&nbsp;                return factory.createBuilderBasedDeserializer(ctxt, type, beanDesc, builder);
+&nbsp;            } else {
+<b class="nc">&nbsp;                Converter&lt;Object, Object&gt; conv = beanDesc.findDeserializationConverter();</b>
+&nbsp;                if (conv != null) {
+&nbsp;                    JavaType delegateType = conv.getInputType(ctxt.getTypeFactory());
+&nbsp;                    if (!delegateType.hasRawClass(type.getRawClass())) {
+<b class="nc">&nbsp;                        beanDesc = config.introspect(delegateType);</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                    return new StdDelegatingDeserializer(conv, delegateType, this._createDeserializer2(ctxt, factory, delegateType, beanDesc));
+<b class="nc">&nbsp;                } else {</b>
+&nbsp;                    return this._createDeserializer2(ctxt, factory, type, beanDesc);
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected JsonDeserializer&lt;?&gt; _createDeserializer2(DeserializationContext ctxt, DeserializerFactory factory, JavaType type, BeanDescription beanDesc) throws JsonMappingException {
+&nbsp;        DeserializationConfig config = ctxt.getConfig();
+&nbsp;        if (type.isEnumType()) {
+&nbsp;            return factory.createEnumDeserializer(ctxt, type, beanDesc);
+&nbsp;        } else {
+<b class="nc">&nbsp;            if (type.isContainerType()) {</b>
+<b class="nc">&nbsp;                if (type.isArrayType()) {</b>
+&nbsp;                    return factory.createArrayDeserializer(ctxt, (ArrayType)type, beanDesc);
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                if (type.isMapLikeType()) {
+&nbsp;                    JsonFormat.Value format = beanDesc.findExpectedFormat();
+&nbsp;                    if (format.getShape() != Shape.OBJECT) {
+&nbsp;                        MapLikeType mlt = (MapLikeType)type;
+&nbsp;                        if (mlt instanceof MapType) {
+&nbsp;                            return factory.createMapDeserializer(ctxt, (MapType)mlt, beanDesc);
+&nbsp;                        }
+&nbsp;
+&nbsp;                        return factory.createMapLikeDeserializer(ctxt, mlt, beanDesc);
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                if (type.isCollectionLikeType()) {
+&nbsp;                    JsonFormat.Value format = beanDesc.findExpectedFormat();
+&nbsp;                    if (format.getShape() != Shape.OBJECT) {
+<b class="nc">&nbsp;                        CollectionLikeType clt = (CollectionLikeType)type;</b>
+<b class="nc">&nbsp;                        if (clt instanceof CollectionType) {</b>
+<b class="nc">&nbsp;                            return factory.createCollectionDeserializer(ctxt, (CollectionType)clt, beanDesc);</b>
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                        return factory.createCollectionLikeDeserializer(ctxt, clt, beanDesc);
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            if (type.isReferenceType()) {</b>
+<b class="nc">&nbsp;                return factory.createReferenceDeserializer(ctxt, (ReferenceType)type, beanDesc);</b>
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                return JsonNode.class.isAssignableFrom(type.getRawClass()) ? factory.createTreeDeserializer(config, type, beanDesc) : factory.createBeanDeserializer(ctxt, type, beanDesc);
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    protected JsonDeserializer&lt;Object&gt; findDeserializerFromAnnotation(DeserializationContext ctxt, Annotated ann) throws JsonMappingException {</b>
+<b class="nc">&nbsp;        Object deserDef = ctxt.getAnnotationIntrospector().findDeserializer(ann);</b>
+<b class="nc">&nbsp;        if (deserDef == null) {</b>
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        } else {
+&nbsp;            JsonDeserializer&lt;Object&gt; deser = ctxt.deserializerInstance(ann, deserDef);
+&nbsp;            return this.findConvertingDeserializer(ctxt, ann, deser);
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected JsonDeserializer&lt;Object&gt; findConvertingDeserializer(DeserializationContext ctxt, Annotated a, JsonDeserializer&lt;Object&gt; deser) throws JsonMappingException {
+<b class="nc">&nbsp;        Converter&lt;Object, Object&gt; conv = this.findConverter(ctxt, a);</b>
+<b class="nc">&nbsp;        if (conv == null) {</b>
+&nbsp;            return deser;
+&nbsp;        } else {
+&nbsp;            JavaType delegateType = conv.getInputType(ctxt.getTypeFactory());
+<b class="nc">&nbsp;            return new StdDelegatingDeserializer(conv, delegateType, deser);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Converter&lt;Object, Object&gt; findConverter(DeserializationContext ctxt, Annotated a) throws JsonMappingException {
+&nbsp;        Object convDef = ctxt.getAnnotationIntrospector().findDeserializationConverter(a);
+&nbsp;        return convDef == null ? null : ctxt.converterInstance(a, convDef);
+&nbsp;    }
+&nbsp;
+&nbsp;    private JavaType modifyTypeByAnnotation(DeserializationContext ctxt, Annotated a, JavaType type) throws JsonMappingException {
+&nbsp;        AnnotationIntrospector intr = ctxt.getAnnotationIntrospector();
+&nbsp;        if (intr == null) {
+&nbsp;            return type;
+&nbsp;        } else {
+&nbsp;            if (type.isMapLikeType()) {
+<b class="nc">&nbsp;                JavaType keyType = type.getKeyType();</b>
+&nbsp;                if (keyType != null &amp;&amp; keyType.getValueHandler() == null) {
+&nbsp;                    Object kdDef = intr.findKeyDeserializer(a);
+&nbsp;                    if (kdDef != null) {
+&nbsp;                        KeyDeserializer kd = ctxt.keyDeserializerInstance(a, kdDef);
+&nbsp;                        if (kd != null) {
+&nbsp;                            type = ((MapLikeType)type).withKeyValueHandler(kd);
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            JavaType contentType = type.getContentType();
+&nbsp;            if (contentType != null &amp;&amp; contentType.getValueHandler() == null) {
+<b class="nc">&nbsp;                Object cdDef = intr.findContentDeserializer(a);</b>
+<b class="nc">&nbsp;                if (cdDef != null) {</b>
+&nbsp;                    JsonDeserializer&lt;?&gt; cd = null;
+<b class="nc">&nbsp;                    if (cdDef instanceof JsonDeserializer) {</b>
+<b class="nc">&nbsp;                        cd = (JsonDeserializer)cdDef;</b>
+&nbsp;                    } else {
+&nbsp;                        Class&lt;?&gt; cdClass = this._verifyAsClass(cdDef, &quot;findContentDeserializer&quot;, JsonDeserializer.None.class);
+&nbsp;                        if (cdClass != null) {
+&nbsp;                            cd = ctxt.deserializerInstance(a, cdClass);
+&nbsp;                        }
+<b class="nc">&nbsp;                    }</b>
+&nbsp;
+&nbsp;                    if (cd != null) {
+&nbsp;                        type = type.withContentValueHandler(cd);
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            type = intr.refineDeserializationType(ctxt.getConfig(), a, type);
+&nbsp;            return type;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private boolean _hasCustomHandlers(JavaType t) {</b>
+<b class="nc">&nbsp;        if (t.isContainerType()) {</b>
+&nbsp;            JavaType ct = t.getContentType();
+<b class="nc">&nbsp;            if (ct != null &amp;&amp; (ct.getValueHandler() != null || ct.getTypeHandler() != null)) {</b>
+&nbsp;                return true;
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            if (t.isMapLikeType()) {
+<b class="nc">&nbsp;                JavaType kt = t.getKeyType();</b>
+<b class="nc">&nbsp;                if (kt.getValueHandler() != null) {</b>
+&nbsp;                    return true;
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return false;
+&nbsp;    }
+&nbsp;
+&nbsp;    private Class&lt;?&gt; _verifyAsClass(Object src, String methodName, Class&lt;?&gt; noneClass) {
+&nbsp;        if (src == null) {
+&nbsp;            return null;
+&nbsp;        } else if (!(src instanceof Class)) {
+&nbsp;            throw new IllegalStateException(&quot;AnnotationIntrospector.&quot; + methodName + &quot;() returned value of type &quot; + src.getClass().getName() + &quot;: expected type JsonSerializer or Class&lt;JsonSerializer&gt; instead&quot;);
+&nbsp;        } else {
+&nbsp;            Class&lt;?&gt; cls = (Class)src;
+&nbsp;            return cls != noneClass &amp;&amp; !ClassUtil.isBogusClass(cls) ? cls : null;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected JsonDeserializer&lt;Object&gt; _handleUnknownValueDeserializer(DeserializationContext ctxt, JavaType type) throws JsonMappingException {
+<b class="nc">&nbsp;        Class&lt;?&gt; rawClass = type.getRawClass();</b>
+&nbsp;        return !ClassUtil.isConcrete(rawClass) ? (JsonDeserializer)ctxt.reportBadDefinition(type, &quot;Cannot find a Value deserializer for abstract type &quot; + type) : (JsonDeserializer)ctxt.reportBadDefinition(type, &quot;Cannot find a Value deserializer for type &quot; + type);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected KeyDeserializer _handleUnknownKeyDeserializer(DeserializationContext ctxt, JavaType type) throws JsonMappingException {</b>
+&nbsp;        return (KeyDeserializer)ctxt.reportBadDefinition(type, &quot;Cannot find a (Map) Key deserializer for type &quot; + type);
+<b class="nc">&nbsp;    }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:57</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,1057 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > PropertyBinder</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.boot.model.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: PropertyBinder (org.hibernate.boot.model.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PropertyBinder</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    79.5%
+  </span>
+  <span class="absValue">
+    (66/83)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    37.9%
+  </span>
+  <span class="absValue">
+    (106/280)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    53.3%
+  </span>
+  <span class="absValue">
+    (253/475)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.boot.model.internal;
+&nbsp;
+&nbsp;import jakarta.persistence.Basic;
+&nbsp;import jakarta.persistence.Column;
+&nbsp;import jakarta.persistence.ElementCollection;
+&nbsp;import jakarta.persistence.EmbeddedId;
+&nbsp;import jakarta.persistence.FetchType;
+&nbsp;import jakarta.persistence.GeneratedValue;
+&nbsp;import jakarta.persistence.Id;
+&nbsp;import jakarta.persistence.JoinColumn;
+&nbsp;import jakarta.persistence.JoinColumns;
+&nbsp;import jakarta.persistence.Lob;
+&nbsp;import jakarta.persistence.ManyToMany;
+&nbsp;import jakarta.persistence.ManyToOne;
+&nbsp;import jakarta.persistence.MapsId;
+&nbsp;import jakarta.persistence.OneToMany;
+&nbsp;import jakarta.persistence.OneToOne;
+&nbsp;import jakarta.persistence.Version;
+&nbsp;import java.lang.annotation.Annotation;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Objects;
+&nbsp;import org.hibernate.AnnotationException;
+&nbsp;import org.hibernate.AssertionFailure;
+&nbsp;import org.hibernate.MappingException;
+&nbsp;import org.hibernate.annotations.Any;
+&nbsp;import org.hibernate.annotations.AttributeBinderType;
+&nbsp;import org.hibernate.annotations.CompositeType;
+&nbsp;import org.hibernate.annotations.IdGeneratorType;
+&nbsp;import org.hibernate.annotations.Immutable;
+&nbsp;import org.hibernate.annotations.Index;
+&nbsp;import org.hibernate.annotations.LazyGroup;
+&nbsp;import org.hibernate.annotations.ManyToAny;
+&nbsp;import org.hibernate.annotations.NaturalId;
+&nbsp;import org.hibernate.annotations.OptimisticLock;
+&nbsp;import org.hibernate.annotations.Parent;
+&nbsp;import org.hibernate.annotations.ValueGenerationType;
+&nbsp;import org.hibernate.annotations.common.reflection.XAnnotatedElement;
+&nbsp;import org.hibernate.annotations.common.reflection.XClass;
+&nbsp;import org.hibernate.annotations.common.reflection.XProperty;
+&nbsp;import org.hibernate.binder.AttributeBinder;
+&nbsp;import org.hibernate.boot.model.IdentifierGeneratorDefinition;
+&nbsp;import org.hibernate.boot.model.internal.BasicValueBinder.Kind;
+&nbsp;import org.hibernate.boot.model.naming.Identifier;
+&nbsp;import org.hibernate.boot.model.naming.ImplicitUniqueKeyNameSource;
+&nbsp;import org.hibernate.boot.model.relational.Database;
+&nbsp;import org.hibernate.boot.spi.AccessType;
+&nbsp;import org.hibernate.boot.spi.InFlightMetadataCollector;
+&nbsp;import org.hibernate.boot.spi.MetadataBuildingContext;
+&nbsp;import org.hibernate.boot.spi.PropertyData;
+&nbsp;import org.hibernate.engine.OptimisticLockStyle;
+&nbsp;import org.hibernate.internal.CoreMessageLogger;
+&nbsp;import org.hibernate.internal.util.StringHelper;
+&nbsp;import org.hibernate.internal.util.collections.CollectionHelper;
+&nbsp;import org.hibernate.mapping.Collection;
+&nbsp;import org.hibernate.mapping.Component;
+&nbsp;import org.hibernate.mapping.GeneratorCreator;
+&nbsp;import org.hibernate.mapping.Join;
+&nbsp;import org.hibernate.mapping.KeyValue;
+&nbsp;import org.hibernate.mapping.MappedSuperclass;
+&nbsp;import org.hibernate.mapping.PersistentClass;
+&nbsp;import org.hibernate.mapping.Property;
+&nbsp;import org.hibernate.mapping.RootClass;
+&nbsp;import org.hibernate.mapping.SimpleValue;
+&nbsp;import org.hibernate.mapping.ToOne;
+&nbsp;import org.hibernate.mapping.Value;
+&nbsp;import org.hibernate.metamodel.spi.EmbeddableInstantiator;
+&nbsp;import org.hibernate.resource.beans.container.spi.BeanContainer;
+&nbsp;import org.hibernate.resource.beans.internal.Helper;
+&nbsp;import org.hibernate.resource.beans.spi.ManagedBeanRegistry;
+&nbsp;import org.hibernate.service.ServiceRegistry;
+&nbsp;import org.hibernate.usertype.CompositeUserType;
+&nbsp;import org.jboss.logging.Logger;
+&nbsp;
+&nbsp;public class PropertyBinder {
+&nbsp;    private static final CoreMessageLogger LOG = (CoreMessageLogger)Logger.getMessageLogger(CoreMessageLogger.class, PropertyBinder.class.getName());
+&nbsp;    private MetadataBuildingContext buildingContext;
+&nbsp;    private String name;
+&nbsp;    private String returnedClassName;
+&nbsp;    private boolean lazy;
+&nbsp;    private String lazyGroup;
+&nbsp;    private AccessType accessType;
+&nbsp;    private AnnotatedColumns columns;
+&nbsp;    private PropertyHolder holder;
+&nbsp;    private Value value;
+&nbsp;    private Component componentElement;
+&nbsp;    private boolean insertable = true;
+&nbsp;    private boolean updatable = true;
+&nbsp;    private String cascade;
+&nbsp;    private BasicValueBinder basicValueBinder;
+&nbsp;    private XClass declaringClass;
+&nbsp;    private boolean declaringClassSet;
+&nbsp;    private boolean embedded;
+&nbsp;    private EntityBinder entityBinder;
+&nbsp;    private boolean toMany;
+&nbsp;    private String referencedEntityName;
+&nbsp;    private XProperty property;
+&nbsp;    private XClass returnedClass;
+&nbsp;    private boolean isId;
+&nbsp;    private Map&lt;XClass, InheritanceState&gt; inheritanceStatePerClass;
+&nbsp;
+&nbsp;    public PropertyBinder() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setReferencedEntityName(String referencedEntityName) {
+&nbsp;        this.referencedEntityName = referencedEntityName;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public void setEmbedded(boolean embedded) {</b>
+&nbsp;        this.embedded = embedded;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setEntityBinder(EntityBinder entityBinder) {
+&nbsp;        this.entityBinder = entityBinder;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setInsertable(boolean insertable) {
+&nbsp;        this.insertable = insertable;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setUpdatable(boolean updatable) {
+<b class="fc">&nbsp;        this.updatable = updatable;</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void setName(String name) {
+&nbsp;        this.name = name;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setReturnedClassName(String returnedClassName) {
+&nbsp;        this.returnedClassName = returnedClassName;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setLazy(boolean lazy) {
+<b class="nc">&nbsp;        this.lazy = lazy;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setLazyGroup(String lazyGroup) {
+<b class="nc">&nbsp;        this.lazyGroup = lazyGroup;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setAccessType(AccessType accessType) {
+<b class="fc">&nbsp;        this.accessType = accessType;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setColumns(AnnotatedColumns columns) {
+&nbsp;        this.columns = columns;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setHolder(PropertyHolder holder) {
+&nbsp;        this.holder = holder;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void setValue(Value value) {</b>
+&nbsp;        this.value = value;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void setComponentElement(Component componentElement) {</b>
+&nbsp;        this.componentElement = componentElement;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public void setCascade(String cascadeStrategy) {</b>
+&nbsp;        this.cascade = cascadeStrategy;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public void setBuildingContext(MetadataBuildingContext buildingContext) {</b>
+&nbsp;        this.buildingContext = buildingContext;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public void setDeclaringClass(XClass declaringClass) {</b>
+&nbsp;        this.declaringClass = declaringClass;
+&nbsp;        this.declaringClassSet = true;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private boolean isToOneValue(Value value) {
+&nbsp;        return value instanceof ToOne;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public void setProperty(XProperty property) {
+&nbsp;        this.property = property;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public void setReturnedClass(XClass returnedClass) {</b>
+&nbsp;        this.returnedClass = returnedClass;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public BasicValueBinder getBasicValueBinder() {</b>
+&nbsp;        return this.basicValueBinder;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public Value getValue() {</b>
+&nbsp;        return this.value;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void setId(boolean id) {</b>
+&nbsp;        this.isId = id;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public boolean isId() {</b>
+&nbsp;        return this.isId;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public void setInheritanceStatePerClass(Map&lt;XClass, InheritanceState&gt; inheritanceStatePerClass) {</b>
+&nbsp;        this.inheritanceStatePerClass = inheritanceStatePerClass;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    private void validateBind() {</b>
+<b class="fc">&nbsp;        if (!this.declaringClassSet) {</b>
+&nbsp;            throw new AssertionFailure(&quot;declaringClass has not been set before a bind&quot;);
+&nbsp;        }
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    private void validateMake() {
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    private Property makePropertyAndValue() {</b>
+&nbsp;        this.validateBind();
+&nbsp;        LOG.debugf(&quot;MetadataSourceProcessor property %s with lazy=%s&quot;, this.name, this.lazy);
+&nbsp;        String containerClassName = this.holder.getClassName();
+<b class="fc">&nbsp;        this.holder.startingProperty(this.property);</b>
+&nbsp;        this.basicValueBinder = new BasicValueBinder(Kind.ATTRIBUTE, this.buildingContext);
+&nbsp;        this.basicValueBinder.setPropertyName(this.name);
+&nbsp;        this.basicValueBinder.setReturnedClassName(this.returnedClassName);
+<b class="nc">&nbsp;        this.basicValueBinder.setColumns(this.columns);</b>
+&nbsp;        this.basicValueBinder.setPersistentClassName(containerClassName);
+&nbsp;        this.basicValueBinder.setType(this.property, this.returnedClass, containerClassName, this.holder.resolveAttributeConverterDescriptor(this.property));
+&nbsp;        this.basicValueBinder.setReferencedEntityName(this.referencedEntityName);
+<b class="fc">&nbsp;        this.basicValueBinder.setAccessType(this.accessType);</b>
+&nbsp;        this.value = this.basicValueBinder.make();
+&nbsp;        return this.makeProperty();
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    private void callAttributeBinders(Property property, Map&lt;String, PersistentClass&gt; persistentClasses) {
+&nbsp;        for(Annotation containingAnnotation : HCANNHelper.findContainingAnnotations(this.property, AttributeBinderType.class)) {
+&nbsp;            AttributeBinderType binderType = (AttributeBinderType)containingAnnotation.annotationType().getAnnotation(AttributeBinderType.class);
+<b class="fc">&nbsp;</b>
+&nbsp;            try {
+&nbsp;                AttributeBinder binder = (AttributeBinder)binderType.binder().newInstance();
+&nbsp;                PersistentClass persistentClass = this.entityBinder != null ? this.entityBinder.getPersistentClass() : (PersistentClass)persistentClasses.get(this.holder.getEntityName());
+<b class="fc">&nbsp;                binder.bind(containingAnnotation, this.buildingContext, persistentClass, property);</b>
+&nbsp;            } catch (Exception e) {
+&nbsp;                throw new AnnotationException(&quot;error processing @AttributeBinderType annotation &#39;&quot; + containingAnnotation + &quot;&#39;&quot;, e);
+&nbsp;            }
+<b class="pc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Property makePropertyAndBind() {
+&nbsp;        return this.bind(this.makeProperty());
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public Property makePropertyValueAndBind() {
+&nbsp;        return this.bind(this.makePropertyAndValue());
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+<b class="fc">&nbsp;    public void setToMany(boolean toMany) {</b>
+<b class="fc">&nbsp;        this.toMany = toMany;</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+<b class="fc">&nbsp;    private Property bind(Property property) {</b>
+<b class="fc">&nbsp;        if (this.isId) {</b>
+<b class="fc">&nbsp;            this.bindId(property);</b>
+<b class="fc">&nbsp;        } else {</b>
+<b class="fc">&nbsp;            this.holder.addProperty(property, this.columns, this.declaringClass);</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        this.callAttributeBindersInSecondPass(property);
+&nbsp;        return property;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+<b class="fc">&nbsp;    void callAttributeBindersInSecondPass(Property property) {</b>
+<b class="fc">&nbsp;        InFlightMetadataCollector metadataCollector = this.buildingContext.getMetadataCollector();</b>
+&nbsp;        if (metadataCollector.isInSecondPass()) {
+<b class="fc">&nbsp;            this.callAttributeBinders(property, metadataCollector.getEntityBindingMap());</b>
+&nbsp;        } else {
+<b class="fc">&nbsp;            metadataCollector.addSecondPass((persistentClasses) -&gt; this.callAttributeBinders(property, persistentClasses));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+<b class="pc">&nbsp;    private void bindId(Property property) {</b>
+<b class="nc">&nbsp;        RootClass rootClass = (RootClass)this.holder.getPersistentClass();</b>
+<b class="nc">&nbsp;        if (!this.toMany &amp;&amp; !this.entityBinder.wrapIdsInEmbeddedComponents()) {</b>
+&nbsp;            rootClass.setIdentifier((KeyValue)this.getValue());
+<b class="nc">&nbsp;            if (this.embedded) {</b>
+&nbsp;                rootClass.setEmbeddedIdentifier(true);
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                rootClass.setIdentifierProperty(property);</b>
+<b class="nc">&nbsp;                MappedSuperclass superclass = BinderHelper.getMappedSuperclassOrNull(this.declaringClass, this.inheritanceStatePerClass, this.buildingContext);</b>
+<b class="nc">&nbsp;                this.setDeclaredIdentifier(rootClass, superclass, property);</b>
+&nbsp;            }
+&nbsp;        } else {
+<b class="nc">&nbsp;            this.getOrCreateCompositeId(rootClass).addProperty(property);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private void setDeclaredIdentifier(RootClass rootClass, MappedSuperclass superclass, Property prop) {
+&nbsp;        ClassPropertyHolder.handleGenericComponentProperty(prop, this.buildingContext);
+<b class="fc">&nbsp;        if (superclass == null) {</b>
+&nbsp;            rootClass.setDeclaredIdentifierProperty(prop);
+&nbsp;        } else {
+&nbsp;            Class&lt;?&gt; type = this.buildingContext.getBootstrapContext().getReflectionManager().toClass(this.declaringClass);
+&nbsp;            MetadataBuildingContext var10003 = this.buildingContext;
+<b class="fc">&nbsp;            Objects.requireNonNull(superclass);</b>
+&nbsp;            ClassPropertyHolder.prepareActualProperty(prop, type, false, var10003, superclass::setDeclaredIdentifierProperty);
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private Component getOrCreateCompositeId(RootClass rootClass) {
+&nbsp;        Component id = (Component)rootClass.getIdentifier();
+<b class="fc">&nbsp;        if (id == null) {</b>
+<b class="fc">&nbsp;            Component identifier = EmbeddableBinder.createEmbeddable(this.holder, new PropertyPreloadedData(), true, false, this.resolveCustomInstantiator(this.property, this.returnedClass), this.buildingContext);</b>
+&nbsp;            rootClass.setIdentifier(identifier);
+&nbsp;            identifier.setNullValue(&quot;undefined&quot;);
+<b class="fc">&nbsp;            rootClass.setEmbeddedIdentifier(true);</b>
+&nbsp;            rootClass.setIdentifierMapper(identifier);
+&nbsp;            return identifier;
+<b class="fc">&nbsp;        } else {</b>
+&nbsp;            return id;
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private Class&lt;? extends EmbeddableInstantiator&gt; resolveCustomInstantiator(XProperty property, XClass embeddableClass) {
+<b class="fc">&nbsp;        if (property.isAnnotationPresent(org.hibernate.annotations.EmbeddableInstantiator.class)) {</b>
+<b class="pc">&nbsp;            return ((org.hibernate.annotations.EmbeddableInstantiator)property.getAnnotation(org.hibernate.annotations.EmbeddableInstantiator.class)).value();</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            return embeddableClass.isAnnotationPresent(org.hibernate.annotations.EmbeddableInstantiator.class) ? ((org.hibernate.annotations.EmbeddableInstantiator)embeddableClass.getAnnotation(org.hibernate.annotations.EmbeddableInstantiator.class)).value() : null;
+&nbsp;        }
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public Property makeProperty() {
+&nbsp;        this.validateMake();
+&nbsp;        LOG.debugf(&quot;Building property %s&quot;, this.name);
+<b class="fc">&nbsp;        Property property = new Property();</b>
+<b class="pc">&nbsp;        property.setName(this.name);</b>
+&nbsp;        property.setValue(this.value);
+&nbsp;        property.setLazy(this.lazy);
+&nbsp;        property.setLazyGroup(this.lazyGroup);
+&nbsp;        property.setCascade(this.cascade);
+<b class="nc">&nbsp;        property.setPropertyAccessorName(this.accessType.getType());</b>
+&nbsp;        property.setReturnedClassName(this.returnedClassName);
+&nbsp;        this.handleValueGeneration(property);
+<b class="fc">&nbsp;        this.handleNaturalId(property);</b>
+<b class="pc">&nbsp;        this.handleLob(property);</b>
+<b class="nc">&nbsp;        this.handleMutability(property);</b>
+&nbsp;        this.handleOptional(property);
+&nbsp;        this.inferOptimisticLocking(property);
+<b class="fc">&nbsp;        LOG.tracev(&quot;Cascading {0} with {1}&quot;, this.name, this.cascade);</b>
+<b class="fc">&nbsp;        return property;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    private void handleValueGeneration(Property property) {
+&nbsp;        if (this.property != null) {
+&nbsp;            property.setValueGeneratorCreator(this.getValueGenerationFromAnnotations(this.property));
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;    }</b>
+<b class="pc">&nbsp;</b>
+<b class="fc">&nbsp;    private GeneratorCreator getValueGenerationFromAnnotations(XProperty property) {</b>
+&nbsp;        GeneratorCreator creator = null;
+&nbsp;
+<b class="nc">&nbsp;        for(Annotation annotation : property.getAnnotations()) {</b>
+<b class="nc">&nbsp;            GeneratorCreator candidate = GeneratorBinder.generatorCreator(property, annotation);</b>
+<b class="nc">&nbsp;            if (candidate != null) {</b>
+<b class="nc">&nbsp;                if (creator != null) {</b>
+<b class="nc">&nbsp;                    throw new AnnotationException(&quot;Property &#39;&quot; + StringHelper.qualify(this.holder.getPath(), this.name) + &quot;&#39; has multiple &#39;@ValueGenerationType&#39; annotations&quot;);</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                creator = candidate;
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return creator;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void handleLob(Property property) {
+&nbsp;        if (this.property != null) {
+<b class="nc">&nbsp;            property.setLob(this.property.isAnnotationPresent(Lob.class));</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private void handleMutability(Property property) {</b>
+<b class="nc">&nbsp;        if (this.property != null &amp;&amp; this.property.isAnnotationPresent(Immutable.class)) {</b>
+<b class="nc">&nbsp;            this.updatable = false;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        property.setInsertable(this.insertable);</b>
+&nbsp;        property.setUpdateable(this.updatable);
+&nbsp;    }
+&nbsp;
+&nbsp;    private void handleOptional(Property property) {
+<b class="nc">&nbsp;        if (this.property != null) {</b>
+<b class="nc">&nbsp;            property.setOptional(!this.isId &amp;&amp; isOptional(this.property, this.holder));</b>
+&nbsp;            if (property.isOptional()) {
+<b class="nc">&nbsp;                OptionalDeterminationSecondPass secondPass = (persistentClasses) -&gt; {</b>
+<b class="nc">&nbsp;                    if (property.getPersistentClass() != null) {</b>
+&nbsp;                        for(Join join : property.getPersistentClass().getJoins()) {
+&nbsp;                            if (join.getProperties().contains(property)) {
+<b class="nc">&nbsp;                                return;</b>
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+&nbsp;                    if (!property.getValue().isNullable()) {
+<b class="fc">&nbsp;                        property.setOptional(false);</b>
+<b class="fc">&nbsp;                    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;                };</b>
+<b class="fc">&nbsp;                this.buildingContext.getMetadataCollector().addSecondPass(secondPass);</b>
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    private void handleNaturalId(Property property) {
+<b class="fc">&nbsp;        if (this.property != null &amp;&amp; this.entityBinder != null) {</b>
+<b class="fc">&nbsp;            NaturalId naturalId = (NaturalId)this.property.getAnnotation(NaturalId.class);</b>
+<b class="fc">&nbsp;            if (naturalId != null) {</b>
+<b class="fc">&nbsp;                if (!this.entityBinder.isRootEntity()) {</b>
+<b class="fc">&nbsp;                    throw new AnnotationException(&quot;Property &#39;&quot; + StringHelper.qualify(this.holder.getPath(), this.name) + &quot;&#39; belongs to an entity subclass and may not be annotated &#39;@NaturalId&#39; (only a property of a root &#39;@Entity&#39; or a &#39;@MappedSuperclass&#39; may be a &#39;@NaturalId&#39;)&quot;);</b>
+<b class="fc">&nbsp;                }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;                if (!naturalId.mutable()) {</b>
+&nbsp;                    this.updatable = false;
+&nbsp;                }
+&nbsp;
+<b class="pc">&nbsp;                property.setNaturalIdentifier(true);</b>
+<b class="fc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private void inferOptimisticLocking(Property property) {
+&nbsp;        if (this.value instanceof Collection) {
+&nbsp;            property.setOptimisticLocked(((Collection)this.value).isOptimisticLocked());
+<b class="fc">&nbsp;        } else if (this.property != null &amp;&amp; this.property.isAnnotationPresent(OptimisticLock.class)) {</b>
+<b class="fc">&nbsp;            OptimisticLock optimisticLock = (OptimisticLock)this.property.getAnnotation(OptimisticLock.class);</b>
+<b class="fc">&nbsp;            this.validateOptimisticLock(optimisticLock);</b>
+<b class="pc">&nbsp;            property.setOptimisticLocked(!optimisticLock.excluded());</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            property.setOptimisticLocked(!this.isToOneValue(this.value) || this.insertable);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private void validateOptimisticLock(OptimisticLock optimisticLock) {
+&nbsp;        if (optimisticLock.excluded()) {
+&nbsp;            if (this.property.isAnnotationPresent(Version.class)) {
+<b class="fc">&nbsp;                throw new AnnotationException(&quot;Property &#39;&quot; + StringHelper.qualify(this.holder.getPath(), this.name) + &quot;&#39; is annotated &#39;@OptimisticLock(excluded=true)&#39; and &#39;@Version&#39;&quot;);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            if (this.property.isAnnotationPresent(Id.class)) {
+<b class="pc">&nbsp;                throw new AnnotationException(&quot;Property &#39;&quot; + StringHelper.qualify(this.holder.getPath(), this.name) + &quot;&#39; is annotated &#39;@OptimisticLock(excluded=true)&#39; and &#39;@Id&#39;&quot;);</b>
+&nbsp;            }
+<b class="fc">&nbsp;</b>
+&nbsp;            if (this.property.isAnnotationPresent(EmbeddedId.class)) {
+&nbsp;                throw new AnnotationException(&quot;Property &#39;&quot; + StringHelper.qualify(this.holder.getPath(), this.name) + &quot;&#39; is annotated &#39;@OptimisticLock(excluded=true)&#39; and &#39;@EmbeddedId&#39;&quot;);
+&nbsp;            }
+&nbsp;        }
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="fc">&nbsp;    static int addElementsOfClass(List&lt;PropertyData&gt; elements, PropertyContainer propertyContainer, MetadataBuildingContext context, int idPropertyCounter) {</b>
+<b class="fc">&nbsp;        for(XProperty property : propertyContainer.propertyIterator()) {</b>
+&nbsp;            idPropertyCounter = addProperty(propertyContainer, property, elements, context, idPropertyCounter);
+&nbsp;        }
+&nbsp;
+<b class="pc">&nbsp;        return idPropertyCounter;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private static int addProperty(PropertyContainer propertyContainer, XProperty property, List&lt;PropertyData&gt; inFlightPropertyDataList, MetadataBuildingContext context, int idPropertyCounter) {</b>
+&nbsp;        for(PropertyData propertyData : inFlightPropertyDataList) {
+&nbsp;            if (propertyData.getPropertyName().equals(property.getName())) {
+<b class="pc">&nbsp;                checkIdProperty(property, propertyData);</b>
+<b class="pc">&nbsp;                return idPropertyCounter;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        XClass declaringClass = propertyContainer.getDeclaringClass();
+&nbsp;        XClass entity = propertyContainer.getEntityAtStake();
+&nbsp;        PropertyData propertyAnnotatedElement = new PropertyInferredData(declaringClass, property, propertyContainer.getClassLevelAccessType().getType(), context.getBootstrapContext().getReflectionManager());
+&nbsp;        XAnnotatedElement element = propertyAnnotatedElement.getProperty();
+<b class="pc">&nbsp;        if (hasIdAnnotation(element)) {</b>
+<b class="fc">&nbsp;            inFlightPropertyDataList.add(0, propertyAnnotatedElement);</b>
+&nbsp;            handleIdProperty(propertyContainer, context, declaringClass, entity, element);
+&nbsp;            if (BinderHelper.hasToOneAnnotation(element)) {
+&nbsp;                context.getMetadataCollector().addToOneAndIdProperty(entity, propertyAnnotatedElement);
+&nbsp;            }
+&nbsp;
+&nbsp;            ++idPropertyCounter;
+&nbsp;        } else {
+<b class="fc">&nbsp;            inFlightPropertyDataList.add(propertyAnnotatedElement);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        if (element.isAnnotationPresent(MapsId.class)) {
+&nbsp;            context.getMetadataCollector().addPropertyAnnotatedWithMapsId(entity, propertyAnnotatedElement);
+&nbsp;        }
+<b class="pc">&nbsp;</b>
+<b class="fc">&nbsp;        return idPropertyCounter;</b>
+<b class="pc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private static void checkIdProperty(XProperty property, PropertyData propertyData) {</b>
+&nbsp;        Id incomingIdProperty = (Id)property.getAnnotation(Id.class);
+&nbsp;        Id existingIdProperty = (Id)propertyData.getProperty().getAnnotation(Id.class);
+&nbsp;        if (incomingIdProperty != null &amp;&amp; existingIdProperty == null) {
+<b class="nc">&nbsp;            throw new MappingException(String.format(&quot;You cannot override the [%s] non-identifier property from the [%s] base class or @MappedSuperclass and make it an identifier in the [%s] subclass&quot;, propertyData.getProperty().getName(), propertyData.getProperty().getDeclaringClass().getName(), property.getDeclaringClass().getName()));</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private static void handleIdProperty(PropertyContainer propertyContainer, MetadataBuildingContext context, XClass declaringClass, XClass entity, XAnnotatedElement element) {
+&nbsp;        if (context.getBuildingOptions().isSpecjProprietarySyntaxEnabled() &amp;&amp; element.isAnnotationPresent(Id.class) &amp;&amp; element.isAnnotationPresent(Column.class)) {
+&nbsp;            String columnName = ((Column)element.getAnnotation(Column.class)).name();
+&nbsp;
+&nbsp;            for(XProperty property : declaringClass.getDeclaredProperties(AccessType.FIELD.getType())) {
+&nbsp;                if (!property.isAnnotationPresent(MapsId.class) &amp;&amp; isJoinColumnPresent(columnName, property)) {
+<b class="pc">&nbsp;                    context.getMetadataCollector().addPropertyAnnotatedWithMapsIdSpecj(entity, new PropertyInferredData(declaringClass, property, propertyContainer.getClassLevelAccessType().getType(), context.getBootstrapContext().getReflectionManager()), element.toString());</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+<b class="pc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private static boolean isJoinColumnPresent(String columnName, XProperty property) {
+&nbsp;        if (property.isAnnotationPresent(JoinColumn.class) &amp;&amp; ((JoinColumn)property.getAnnotation(JoinColumn.class)).name().equals(columnName)) {
+<b class="fc">&nbsp;            return true;</b>
+&nbsp;        } else {
+&nbsp;            if (property.isAnnotationPresent(JoinColumns.class)) {
+&nbsp;                for(JoinColumn columnAnnotation : ((JoinColumns)property.getAnnotation(JoinColumns.class)).value()) {
+&nbsp;                    if (columnName.equals(columnAnnotation.name())) {
+<b class="nc">&nbsp;                        return true;</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            return false;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    static boolean hasIdAnnotation(XAnnotatedElement element) {</b>
+<b class="nc">&nbsp;        return element.isAnnotationPresent(Id.class) || element.isAnnotationPresent(EmbeddedId.class);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void processElementAnnotations(PropertyHolder propertyHolder, Nullability nullability, PropertyData inferredData, Map&lt;String, IdentifierGeneratorDefinition&gt; classGenerators, EntityBinder entityBinder, boolean isIdentifierMapper, boolean isComponentEmbedded, boolean inSecondPass, MetadataBuildingContext context, Map&lt;XClass, InheritanceState&gt; inheritanceStatePerClass) throws MappingException {
+&nbsp;        if (alreadyProcessedBySuper(propertyHolder, inferredData, entityBinder)) {
+&nbsp;            LOG.debugf(&quot;Skipping attribute [%s : %s] as it was already processed as part of super hierarchy&quot;, inferredData.getClassOrElementName(), inferredData.getPropertyName());
+&nbsp;        } else {
+&nbsp;            if (LOG.isTraceEnabled()) {
+&nbsp;                LOG.tracev(&quot;Processing annotations of {0}.{1}&quot;, propertyHolder.getEntityName(), inferredData.getPropertyName());
+&nbsp;            }
+&nbsp;
+&nbsp;            XProperty property = inferredData.getProperty();
+&nbsp;            if (property.isAnnotationPresent(Parent.class)) {
+&nbsp;                handleParentProperty(propertyHolder, inferredData, property);
+&nbsp;            } else {
+&nbsp;                buildProperty(propertyHolder, nullability, inferredData, classGenerators, entityBinder, isIdentifierMapper, isComponentEmbedded, inSecondPass, context, inheritanceStatePerClass, property, inferredData.getClassOrElement());
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+<b class="fc">&nbsp;    private static boolean alreadyProcessedBySuper(PropertyHolder holder, PropertyData data, EntityBinder binder) {</b>
+&nbsp;        return !holder.isComponent() &amp;&amp; binder.isPropertyDefinedInSuperHierarchy(data.getPropertyName());
+&nbsp;    }
+&nbsp;
+&nbsp;    private static void handleParentProperty(PropertyHolder holder, PropertyData data, XProperty property) {
+&nbsp;        if (holder.isComponent()) {
+&nbsp;            holder.setParentProperty(property.getName());
+&nbsp;        } else {
+&nbsp;            String var10002 = BinderHelper.getPath(holder, data);
+&nbsp;            throw new AnnotationException(&quot;Property &#39;&quot; + var10002 + &quot;&#39; is annotated &#39;@Parent&#39; but is not a member of an embeddable class&quot;);
+&nbsp;        }
+<b class="fc">&nbsp;    }</b>
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;    private static void buildProperty(PropertyHolder propertyHolder, Nullability nullability, PropertyData inferredData, Map&lt;String, IdentifierGeneratorDefinition&gt; classGenerators, EntityBinder entityBinder, boolean isIdentifierMapper, boolean isComponentEmbedded, boolean inSecondPass, MetadataBuildingContext context, Map&lt;XClass, InheritanceState&gt; inheritanceStatePerClass, XProperty property, XClass returnedClass) {</b>
+&nbsp;        ColumnsBuilder columnsBuilder = (new ColumnsBuilder(propertyHolder, nullability, property, inferredData, entityBinder, context)).extractMetadata();
+<b class="nc">&nbsp;        PropertyBinder propertyBinder = new PropertyBinder();</b>
+&nbsp;        propertyBinder.setName(inferredData.getPropertyName());
+&nbsp;        propertyBinder.setReturnedClassName(inferredData.getTypeName());
+&nbsp;        propertyBinder.setAccessType(inferredData.getDefaultAccess());
+<b class="fc">&nbsp;        propertyBinder.setHolder(propertyHolder);</b>
+<b class="fc">&nbsp;        propertyBinder.setProperty(property);</b>
+<b class="fc">&nbsp;        propertyBinder.setReturnedClass(inferredData.getPropertyClass());</b>
+&nbsp;        propertyBinder.setBuildingContext(context);
+&nbsp;        if (isIdentifierMapper) {
+<b class="fc">&nbsp;            propertyBinder.setInsertable(false);</b>
+<b class="fc">&nbsp;            propertyBinder.setUpdatable(false);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        propertyBinder.setDeclaringClass(inferredData.getDeclaringClass());
+&nbsp;        propertyBinder.setEntityBinder(entityBinder);
+<b class="fc">&nbsp;        propertyBinder.setInheritanceStatePerClass(inheritanceStatePerClass);</b>
+<b class="fc">&nbsp;        propertyBinder.setId(!entityBinder.isIgnoreIdAnnotations() &amp;&amp; hasIdAnnotation(property));</b>
+<b class="fc">&nbsp;        LazyGroup lazyGroupAnnotation = (LazyGroup)property.getAnnotation(LazyGroup.class);</b>
+<b class="fc">&nbsp;        if (lazyGroupAnnotation != null) {</b>
+<b class="pc">&nbsp;            propertyBinder.setLazyGroup(lazyGroupAnnotation.value());</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="fc">&nbsp;        AnnotatedJoinColumns joinColumns = columnsBuilder.getJoinColumns();</b>
+&nbsp;        AnnotatedColumns columns = bindProperty(propertyHolder, nullability, inferredData, classGenerators, entityBinder, isIdentifierMapper, isComponentEmbedded, inSecondPass, context, inheritanceStatePerClass, property, returnedClass, columnsBuilder, propertyBinder);
+&nbsp;        addIndexes(inSecondPass, property, columns, joinColumns);
+<b class="fc">&nbsp;        addNaturalIds(inSecondPass, property, columns, joinColumns, context);</b>
+&nbsp;    }
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;    private static AnnotatedColumns bindProperty(PropertyHolder propertyHolder, Nullability nullability, PropertyData inferredData, Map&lt;String, IdentifierGeneratorDefinition&gt; classGenerators, EntityBinder entityBinder, boolean isIdentifierMapper, boolean isComponentEmbedded, boolean inSecondPass, MetadataBuildingContext context, Map&lt;XClass, InheritanceState&gt; inheritanceStatePerClass, XProperty property, XClass returnedClass, ColumnsBuilder columnsBuilder, PropertyBinder propertyBinder) {</b>
+&nbsp;        if (isVersion(property)) {
+&nbsp;            bindVersionProperty(propertyHolder, inferredData, isIdentifierMapper, context, inheritanceStatePerClass, columnsBuilder.getColumns(), propertyBinder);
+<b class="fc">&nbsp;        } else if (isManyToOne(property)) {</b>
+&nbsp;            ToOneBinder.bindManyToOne(propertyHolder, inferredData, isIdentifierMapper, inSecondPass, context, property, columnsBuilder.getJoinColumns(), propertyBinder, isForcePersist(property));
+&nbsp;        } else if (isOneToOne(property)) {
+&nbsp;            ToOneBinder.bindOneToOne(propertyHolder, inferredData, isIdentifierMapper, inSecondPass, context, property, columnsBuilder.getJoinColumns(), propertyBinder, isForcePersist(property));
+<b class="nc">&nbsp;        } else if (isAny(property)) {</b>
+<b class="nc">&nbsp;            AnyBinder.bindAny(propertyHolder, nullability, inferredData, entityBinder, isIdentifierMapper, context, property, columnsBuilder.getJoinColumns(), isForcePersist(property));</b>
+<b class="nc">&nbsp;        } else if (isCollection(property)) {</b>
+<b class="nc">&nbsp;            CollectionBinder.bindCollection(propertyHolder, nullability, inferredData, classGenerators, entityBinder, isIdentifierMapper, context, inheritanceStatePerClass, property, columnsBuilder.getJoinColumns());</b>
+<b class="nc">&nbsp;        } else if (!propertyBinder.isId() || !entityBinder.isIgnoreIdAnnotations()) {</b>
+&nbsp;            return bindBasic(propertyHolder, nullability, inferredData, classGenerators, entityBinder, isIdentifierMapper, isComponentEmbedded, context, inheritanceStatePerClass, property, columnsBuilder, columnsBuilder.getColumns(), returnedClass, propertyBinder);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return columnsBuilder.getColumns();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static boolean isVersion(XProperty property) {
+&nbsp;        return property.isAnnotationPresent(Version.class);
+&nbsp;    }
+&nbsp;
+&nbsp;    private static boolean isOneToOne(XProperty property) {
+&nbsp;        return property.isAnnotationPresent(OneToOne.class);
+&nbsp;    }
+&nbsp;
+&nbsp;    private static boolean isManyToOne(XProperty property) {
+&nbsp;        return property.isAnnotationPresent(ManyToOne.class);
+&nbsp;    }
+&nbsp;
+&nbsp;    private static boolean isAny(XProperty property) {
+<b class="pc">&nbsp;        return property.isAnnotationPresent(Any.class);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private static boolean isCollection(XProperty property) {</b>
+<b class="nc">&nbsp;        return property.isAnnotationPresent(OneToMany.class) || property.isAnnotationPresent(ManyToMany.class) || property.isAnnotationPresent(ElementCollection.class) || property.isAnnotationPresent(ManyToAny.class);</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private static boolean isForcePersist(XProperty property) {
+&nbsp;        return property.isAnnotationPresent(MapsId.class) || property.isAnnotationPresent(Id.class);
+&nbsp;    }
+&nbsp;
+&nbsp;    private static void bindVersionProperty(PropertyHolder propertyHolder, PropertyData inferredData, boolean isIdentifierMapper, MetadataBuildingContext context, Map&lt;XClass, InheritanceState&gt; inheritanceStatePerClass, AnnotatedColumns columns, PropertyBinder propertyBinder) {
+&nbsp;        checkVersionProperty(propertyHolder, isIdentifierMapper);
+<b class="nc">&nbsp;        if (LOG.isTraceEnabled()) {</b>
+&nbsp;            LOG.tracev(&quot;{0} is a version property&quot;, inferredData.getPropertyName());
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        RootClass rootClass = (RootClass)propertyHolder.getPersistentClass();</b>
+&nbsp;        propertyBinder.setColumns(columns);
+&nbsp;        Property property = propertyBinder.makePropertyValueAndBind();
+&nbsp;        propertyBinder.getBasicValueBinder().setVersion(true);
+&nbsp;        rootClass.setVersion(property);
+&nbsp;        XClass declaringClass = inferredData.getDeclaringClass();
+&nbsp;        MappedSuperclass superclass = BinderHelper.getMappedSuperclassOrNull(declaringClass, inheritanceStatePerClass, context);
+&nbsp;        if (superclass != null) {
+&nbsp;            if (superclass.getDeclaredVersion() == null) {
+&nbsp;                superclass.setDeclaredVersion(property);
+&nbsp;            }
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            rootClass.setDeclaredVersion(property);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        rootClass.setOptimisticLockStyle(OptimisticLockStyle.VERSION);</b>
+<b class="nc">&nbsp;        if (LOG.isTraceEnabled()) {</b>
+<b class="nc">&nbsp;            SimpleValue versionValue = (SimpleValue)rootClass.getVersion().getValue();</b>
+<b class="nc">&nbsp;            LOG.tracev(&quot;Version name: {0}, unsavedValue: {1}&quot;, rootClass.getVersion().getName(), versionValue.getNullValue());</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private static void checkVersionProperty(PropertyHolder propertyHolder, boolean isIdentifierMapper) {
+&nbsp;        if (isIdentifierMapper) {
+&nbsp;            throw new AnnotationException(&quot;Class &#39;&quot; + propertyHolder.getEntityName() + &quot;&#39; is annotated &#39;@IdClass&#39; and may not have a property annotated &#39;@Version&#39;&quot;);
+<b class="fc">&nbsp;        } else if (!(propertyHolder.getPersistentClass() instanceof RootClass)) {</b>
+<b class="fc">&nbsp;            throw new AnnotationException(&quot;Entity &#39;&quot; + propertyHolder.getEntityName() + &quot;&#39; is a subclass in an entity class hierarchy and may not have a property annotated &#39;@Version&#39;&quot;);</b>
+&nbsp;        } else if (!propertyHolder.isEntity()) {
+&nbsp;            throw new AnnotationException(&quot;Embedded class &#39;&quot; + propertyHolder.getEntityName() + &quot;&#39; may not have a property annotated &#39;@Version&#39;&quot;);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static AnnotatedColumns bindBasic(PropertyHolder propertyHolder, Nullability nullability, PropertyData inferredData, Map&lt;String, IdentifierGeneratorDefinition&gt; classGenerators, EntityBinder entityBinder, boolean isIdentifierMapper, boolean isComponentEmbedded, MetadataBuildingContext context, Map&lt;XClass, InheritanceState&gt; inheritanceStatePerClass, XProperty property, ColumnsBuilder columnsBuilder, AnnotatedColumns columns, XClass returnedClass, PropertyBinder propertyBinder) {
+&nbsp;        boolean isComposite;
+&nbsp;        boolean isOverridden;
+&nbsp;        AnnotatedColumns actualColumns;
+&nbsp;        if (!isIdentifierMapper &amp;&amp; !propertyBinder.isId() &amp;&amp; !propertyHolder.isOrWithinEmbeddedId() &amp;&amp; !propertyHolder.isInIdClass()) {
+&nbsp;            isOverridden = false;
+&nbsp;            isComposite = EmbeddableBinder.isEmbedded(property, returnedClass);
+&nbsp;            actualColumns = columns;
+&nbsp;        } else {
+&nbsp;            PropertyData overridingProperty = BinderHelper.getPropertyOverriddenByMapperOrMapsId(propertyBinder.isId(), propertyHolder, property.getName(), context);
+&nbsp;            if (overridingProperty != null) {
+&nbsp;                isOverridden = true;
+<b class="pc">&nbsp;                isComposite = isComposite(inheritanceStatePerClass, property, returnedClass, overridingProperty);</b>
+<b class="nc">&nbsp;                actualColumns = columnsBuilder.overrideColumnFromMapperOrMapsIdProperty(propertyBinder.isId());</b>
+&nbsp;            } else {
+<b class="nc">&nbsp;                isOverridden = false;</b>
+<b class="nc">&nbsp;                isComposite = EmbeddableBinder.isEmbedded(property, returnedClass);</b>
+&nbsp;                actualColumns = columns;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        Class&lt;? extends CompositeUserType&lt;?&gt;&gt; compositeUserType = resolveCompositeUserType(inferredData, context);
+&nbsp;        if (!isComposite &amp;&amp; compositeUserType == null) {
+&nbsp;            if (property.isCollection() &amp;&amp; property.getElementClass() != null &amp;&amp; EmbeddableBinder.isEmbedded(property, property.getElementClass())) {
+<b class="pc">&nbsp;                propertyBinder.setComponentElement(EmbeddableBinder.bindEmbeddable(inferredData, propertyHolder, entityBinder.getPropertyAccessor(property), entityBinder, isIdentifierMapper, context, isComponentEmbedded, propertyBinder.isId(), inheritanceStatePerClass, (String)null, (String)null, EmbeddableBinder.determineCustomInstantiator(property, property.getElementClass(), context), compositeUserType, (AnnotatedJoinColumns)null, columns));</b>
+<b class="nc">&nbsp;                propertyBinder.setColumns(actualColumns);</b>
+&nbsp;                propertyBinder.makePropertyValueAndBind();
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                createBasicBinder(propertyHolder, inferredData, nullability, context, property, actualColumns, propertyBinder, isOverridden);</b>
+&nbsp;            }
+&nbsp;        } else if (property.isArray() &amp;&amp; property.getElementClass() != null &amp;&amp; EmbeddableBinder.isEmbedded(property, property.getElementClass())) {
+&nbsp;            propertyBinder.setComponentElement(EmbeddableBinder.bindEmbeddable(inferredData, propertyHolder, entityBinder.getPropertyAccessor(property), entityBinder, isIdentifierMapper, context, isComponentEmbedded, propertyBinder.isId(), inheritanceStatePerClass, (String)null, (String)null, EmbeddableBinder.determineCustomInstantiator(property, returnedClass, context), compositeUserType, (AnnotatedJoinColumns)null, columns));
+<b class="fc">&nbsp;            propertyBinder.setColumns(actualColumns);</b>
+<b class="pc">&nbsp;            propertyBinder.makePropertyValueAndBind();</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            propertyBinder = EmbeddableBinder.createCompositeBinder(propertyHolder, inferredData, entityBinder, isIdentifierMapper, isComponentEmbedded, context, inheritanceStatePerClass, property, actualColumns, returnedClass, propertyBinder, isOverridden, compositeUserType);
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if (isOverridden) {</b>
+&nbsp;            handleGeneratorsForOverriddenId(propertyHolder, classGenerators, context, property, propertyBinder);
+&nbsp;        } else if (propertyBinder.isId()) {
+&nbsp;            if (isIdentifierMapper) {
+&nbsp;                String var10002 = BinderHelper.getPath(propertyHolder, inferredData);
+&nbsp;                throw new AnnotationException(&quot;Property &#39;&quot; + var10002 + &quot;&#39; belongs to an &#39;@IdClass&#39; and may not be annotated &#39;@Id&#39; or &#39;@EmbeddedId&#39;&quot;);
+&nbsp;            }
+&nbsp;
+&nbsp;            processId(propertyHolder, inferredData, (SimpleValue)propertyBinder.getValue(), classGenerators, context);
+&nbsp;        }
+&nbsp;
+&nbsp;        return actualColumns;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private static boolean isComposite(Map&lt;XClass, InheritanceState&gt; inheritanceStatePerClass, XProperty property, XClass returnedClass, PropertyData overridingProperty) {
+&nbsp;        InheritanceState state = (InheritanceState)inheritanceStatePerClass.get(overridingProperty.getClassOrElement());
+&nbsp;        return state != null ? state.hasIdClassOrEmbeddedId() : EmbeddableBinder.isEmbedded(property, returnedClass);
+&nbsp;    }
+&nbsp;
+<b class="pc">&nbsp;    private static void handleGeneratorsForOverriddenId(PropertyHolder propertyHolder, Map&lt;String, IdentifierGeneratorDefinition&gt; classGenerators, MetadataBuildingContext context, XProperty property, PropertyBinder propertyBinder) {</b>
+<b class="fc">&nbsp;        PropertyData mapsIdProperty = BinderHelper.getPropertyOverriddenByMapperOrMapsId(propertyBinder.isId(), propertyHolder, property.getName(), context);</b>
+&nbsp;        IdentifierGeneratorDefinition foreignGenerator = GeneratorBinder.createForeignGenerator(mapsIdProperty);
+&nbsp;        if (BinderHelper.isGlobalGeneratorNameGlobal(context)) {
+&nbsp;            context.getMetadataCollector().addSecondPass(new IdGeneratorResolverSecondPass((SimpleValue)propertyBinder.getValue(), property, foreignGenerator.getStrategy(), foreignGenerator.getName(), context, foreignGenerator));
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            Map&lt;String, IdentifierGeneratorDefinition&gt; generators = new HashMap(classGenerators);</b>
+&nbsp;            generators.put(foreignGenerator.getName(), foreignGenerator);
+&nbsp;            GeneratorBinder.makeIdGenerator((SimpleValue)propertyBinder.getValue(), property, foreignGenerator.getStrategy(), foreignGenerator.getName(), context, generators);
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private static void createBasicBinder(PropertyHolder propertyHolder, PropertyData inferredData, Nullability nullability, MetadataBuildingContext context, XProperty property, AnnotatedColumns columns, PropertyBinder propertyBinder, boolean isOverridden) {
+&nbsp;        if (shouldForceNotNull(nullability, propertyBinder, isExplicitlyOptional(property))) {
+&nbsp;            forceColumnsNotNull(propertyHolder, inferredData, columns, propertyBinder);
+&nbsp;        }
+&nbsp;
+&nbsp;        propertyBinder.setLazy(isLazy(property));
+&nbsp;        propertyBinder.setColumns(columns);
+&nbsp;        if (isOverridden) {
+&nbsp;            PropertyData mapsIdProperty = BinderHelper.getPropertyOverriddenByMapperOrMapsId(propertyBinder.isId(), propertyHolder, property.getName(), context);
+&nbsp;            propertyBinder.setReferencedEntityName(mapsIdProperty.getClassOrElementName());
+&nbsp;        }
+&nbsp;
+&nbsp;        propertyBinder.makePropertyValueAndBind();
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    private static void forceColumnsNotNull(PropertyHolder holder, PropertyData data, AnnotatedColumns columns, PropertyBinder binder) {</b>
+&nbsp;        for(AnnotatedColumn column : columns.getColumns()) {
+&nbsp;            if (binder.isId() &amp;&amp; column.isFormula()) {
+&nbsp;                String var10002 = BinderHelper.getPath(holder, data);
+&nbsp;                throw new CannotForceNonNullableException(&quot;Identifier property &#39;&quot; + var10002 + &quot;&#39; cannot map to a &#39;@Formula&#39;&quot;);
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            column.forceNotNull();</b>
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private static boolean shouldForceNotNull(Nullability nullability, PropertyBinder binder, boolean optional) {</b>
+<b class="fc">&nbsp;        return binder.isId() || !optional &amp;&amp; nullability != Nullability.FORCED_NULL;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private static boolean isExplicitlyOptional(XProperty property) {</b>
+<b class="pc">&nbsp;        return !property.isAnnotationPresent(Basic.class) || ((Basic)property.getAnnotation(Basic.class)).optional();</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public static boolean isOptional(XProperty property, PropertyHolder propertyHolder) {
+<b class="fc">&nbsp;        return property.isAnnotationPresent(Basic.class) ? ((Basic)property.getAnnotation(Basic.class)).optional() : property.isArray() || propertyHolder != null &amp;&amp; propertyHolder.isComponent() || !property.getClassOrElementClass().isPrimitive();</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="pc">&nbsp;    private static boolean isLazy(XProperty property) {</b>
+&nbsp;        return property.isAnnotationPresent(Basic.class) &amp;&amp; ((Basic)property.getAnnotation(Basic.class)).fetch() == FetchType.LAZY;
+<b class="fc">&nbsp;    }</b>
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;    private static void addIndexes(boolean inSecondPass, XProperty property, AnnotatedColumns columns, AnnotatedJoinColumns joinColumns) {</b>
+&nbsp;        Index index = (Index)property.getAnnotation(Index.class);
+&nbsp;        if (index != null) {
+<b class="fc">&nbsp;            if (joinColumns != null) {</b>
+<b class="fc">&nbsp;                for(AnnotatedColumn column : joinColumns.getColumns()) {</b>
+&nbsp;                    column.addIndex(index, inSecondPass);
+&nbsp;                }
+&nbsp;            } else if (columns != null) {
+&nbsp;                for(AnnotatedColumn column : columns.getColumns()) {
+&nbsp;                    column.addIndex(index, inSecondPass);
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private static void addNaturalIds(boolean inSecondPass, XProperty property, final AnnotatedColumns columns, final AnnotatedJoinColumns joinColumns, final MetadataBuildingContext context) {
+&nbsp;        NaturalId naturalId = (NaturalId)property.getAnnotation(NaturalId.class);
+&nbsp;        if (naturalId != null) {
+&nbsp;            Database database = context.getMetadataCollector().getDatabase();
+<b class="fc">&nbsp;            if (joinColumns != null) {</b>
+<b class="fc">&nbsp;                Identifier name = context.getBuildingOptions().getImplicitNamingStrategy().determineUniqueKeyName(new ImplicitUniqueKeyNameSource() {</b>
+&nbsp;                    public Identifier getTableName() {
+&nbsp;                        return joinColumns.getTable().getNameIdentifier();
+&nbsp;                    }
+&nbsp;
+&nbsp;                    public List&lt;Identifier&gt; getColumnNames() {
+&nbsp;                        return Collections.singletonList(Identifier.toIdentifier(&quot;_NaturalID&quot;));
+&nbsp;                    }
+&nbsp;
+&nbsp;                    public Identifier getUserProvidedIdentifier() {
+&nbsp;                        return null;
+&nbsp;                    }
+&nbsp;
+&nbsp;                    public MetadataBuildingContext getBuildingContext() {
+&nbsp;                        return context;
+&nbsp;                    }
+&nbsp;                });
+&nbsp;                String keyName = name.render(database.getDialect());
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;                for(AnnotatedColumn column : joinColumns.getColumns()) {</b>
+&nbsp;                    column.addUniqueKey(keyName, inSecondPass);
+&nbsp;                }
+&nbsp;            } else {
+&nbsp;                Identifier name = context.getBuildingOptions().getImplicitNamingStrategy().determineUniqueKeyName(new ImplicitUniqueKeyNameSource() {
+&nbsp;                    public Identifier getTableName() {
+<b class="nc">&nbsp;                        return columns.getTable().getNameIdentifier();</b>
+&nbsp;                    }
+&nbsp;
+&nbsp;                    public List&lt;Identifier&gt; getColumnNames() {
+<b class="fc">&nbsp;                        return Collections.singletonList(Identifier.toIdentifier(&quot;_NaturalID&quot;));</b>
+<b class="fc">&nbsp;                    }</b>
+&nbsp;
+&nbsp;                    public Identifier getUserProvidedIdentifier() {
+&nbsp;                        return null;
+&nbsp;                    }
+&nbsp;
+&nbsp;                    public MetadataBuildingContext getBuildingContext() {
+<b class="fc">&nbsp;                        return context;</b>
+&nbsp;                    }
+<b class="fc">&nbsp;                });</b>
+&nbsp;                String keyName = name.render(database.getDialect());
+&nbsp;
+<b class="pc">&nbsp;                for(AnnotatedColumn column : columns.getColumns()) {</b>
+<b class="nc">&nbsp;                    column.addUniqueKey(keyName, inSecondPass);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private static Class&lt;? extends CompositeUserType&lt;?&gt;&gt; resolveCompositeUserType(PropertyData inferredData, MetadataBuildingContext context) {</b>
+&nbsp;        XProperty property = inferredData.getProperty();
+<b class="nc">&nbsp;        XClass returnedClass = inferredData.getClassOrElement();</b>
+&nbsp;        if (property != null) {
+&nbsp;            CompositeType compositeType = (CompositeType)HCANNHelper.findAnnotation(property, CompositeType.class);
+<b class="pc">&nbsp;            if (compositeType != null) {</b>
+<b class="nc">&nbsp;                return compositeType.value();</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            Class&lt;? extends CompositeUserType&lt;?&gt;&gt; compositeUserType = TimeZoneStorageHelper.resolveTimeZoneStorageCompositeUserType(property, returnedClass, context);
+&nbsp;            if (compositeUserType != null) {
+&nbsp;                return compositeUserType;
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if (returnedClass != null) {</b>
+&nbsp;            Class&lt;?&gt; embeddableClass = context.getBootstrapContext().getReflectionManager().toClass(returnedClass);
+&nbsp;            if (embeddableClass != null) {
+<b class="pc">&nbsp;                return context.getMetadataCollector().findRegisteredCompositeUserType(embeddableClass);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        return null;
+&nbsp;    }
+&nbsp;
+&nbsp;    static void processId(PropertyHolder propertyHolder, PropertyData inferredData, SimpleValue idValue, Map&lt;String, IdentifierGeneratorDefinition&gt; classGenerators, MetadataBuildingContext context) {
+&nbsp;        XProperty idProperty = inferredData.getProperty();
+&nbsp;        List&lt;Annotation&gt; idGeneratorAnnotations = HCANNHelper.findContainingAnnotations(idProperty, IdGeneratorType.class);
+&nbsp;        List&lt;Annotation&gt; generatorAnnotations = HCANNHelper.findContainingAnnotations(idProperty, ValueGenerationType.class);
+<b class="nc">&nbsp;        removeIdGenerators(generatorAnnotations, idGeneratorAnnotations);</b>
+&nbsp;        if (idGeneratorAnnotations.size() + generatorAnnotations.size() &gt; 1) {
+&nbsp;            String var12 = BinderHelper.getPath(propertyHolder, inferredData);
+&nbsp;            throw new AnnotationException(&quot;Property &#39;&quot; + var12 + &quot;&#39; has too many generator annotations &quot; + CollectionHelper.combine(idGeneratorAnnotations, generatorAnnotations));
+<b class="pc">&nbsp;        } else {</b>
+&nbsp;            if (!idGeneratorAnnotations.isEmpty()) {
+<b class="fc">&nbsp;                Annotation annotation = (Annotation)idGeneratorAnnotations.get(0);</b>
+&nbsp;                ServiceRegistry serviceRegistry = context.getBootstrapContext().getServiceRegistry();
+&nbsp;                BeanContainer beanContainer = Helper.allowExtensionsInCdi(serviceRegistry) ? ((ManagedBeanRegistry)serviceRegistry.requireService(ManagedBeanRegistry.class)).getBeanContainer() : null;
+&nbsp;                idValue.setCustomIdGeneratorCreator(GeneratorBinder.identifierGeneratorCreator(idProperty, annotation, beanContainer));
+&nbsp;            } else {
+&nbsp;                if (!generatorAnnotations.isEmpty()) {
+&nbsp;                    String var10002 = BinderHelper.getPath(propertyHolder, inferredData);
+&nbsp;                    throw new AnnotationException(&quot;Property &#39;&quot; + var10002 + &quot;&#39; is annotated &#39;&quot; + ((Annotation)generatorAnnotations.get(0)).annotationType() + &quot;&#39; which is not an &#39;@IdGeneratorType&#39;&quot;);
+&nbsp;                }
+&nbsp;
+&nbsp;                if (idProperty.isAnnotationPresent(GeneratedValue.class)) {
+&nbsp;                    XClass entityClass = inferredData.getClassOrElement();
+<b class="fc">&nbsp;                    GeneratorBinder.createIdGenerator(idValue, classGenerators, context, entityClass, idProperty);</b>
+&nbsp;                    if (LOG.isTraceEnabled()) {
+&nbsp;                        LOG.tracev(&quot;Bind {0} on {1}&quot;, BinderHelper.isCompositeId(entityClass, idProperty) ? &quot;@EmbeddedId&quot; : &quot;@Id&quot;, inferredData.getPropertyName());
+&nbsp;                    }
+&nbsp;                }
+<b class="fc">&nbsp;            }</b>
+&nbsp;
+&nbsp;        }
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    private static void removeIdGenerators(List&lt;Annotation&gt; generatorAnnotations, List&lt;Annotation&gt; idGeneratorAnnotations) {
+&nbsp;        for(Annotation id : idGeneratorAnnotations) {
+&nbsp;            generatorAnnotations.removeIf((gen) -&gt; gen.annotationType().equals(id.annotationType()));
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:57</div>
+</div>
+</body>
+</html>

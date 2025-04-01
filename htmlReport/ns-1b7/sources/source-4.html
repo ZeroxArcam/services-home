@@ -1,0 +1,360 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > JdbcResourceLocalTransactionCoordinatorImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.resource.transaction.backend.jdbc.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: JdbcResourceLocalTransactionCoordinatorImpl (org.hibernate.resource.transaction.backend.jdbc.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">JdbcResourceLocalTransactionCoordinatorImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    15.8%
+  </span>
+  <span class="absValue">
+    (3/19)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/24)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    20%
+  </span>
+  <span class="absValue">
+    (10/50)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.resource.transaction.backend.jdbc.internal;
+&nbsp;
+&nbsp;import jakarta.persistence.RollbackException;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.List;
+&nbsp;import org.hibernate.internal.CoreLogging;
+&nbsp;import org.hibernate.internal.CoreMessageLogger;
+&nbsp;import org.hibernate.jpa.spi.JpaCompliance;
+&nbsp;import org.hibernate.resource.transaction.backend.jdbc.spi.JdbcResourceTransaction;
+&nbsp;import org.hibernate.resource.transaction.backend.jdbc.spi.JdbcResourceTransactionAccess;
+&nbsp;import org.hibernate.resource.transaction.internal.SynchronizationRegistryStandardImpl;
+&nbsp;import org.hibernate.resource.transaction.spi.IsolationDelegate;
+&nbsp;import org.hibernate.resource.transaction.spi.SynchronizationRegistry;
+&nbsp;import org.hibernate.resource.transaction.spi.TransactionCoordinator;
+&nbsp;import org.hibernate.resource.transaction.spi.TransactionCoordinatorBuilder;
+&nbsp;import org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner;
+&nbsp;import org.hibernate.resource.transaction.spi.TransactionObserver;
+&nbsp;import org.hibernate.resource.transaction.spi.TransactionStatus;
+&nbsp;
+&nbsp;public class JdbcResourceLocalTransactionCoordinatorImpl implements TransactionCoordinator {
+&nbsp;    private static final CoreMessageLogger log = CoreLogging.messageLogger(JdbcResourceLocalTransactionCoordinatorImpl.class);
+&nbsp;    private final TransactionCoordinatorBuilder transactionCoordinatorBuilder;
+&nbsp;    private final JdbcResourceTransactionAccess jdbcResourceTransactionAccess;
+&nbsp;    private final TransactionCoordinatorOwner transactionCoordinatorOwner;
+&nbsp;    private final SynchronizationRegistryStandardImpl synchronizationRegistry = new SynchronizationRegistryStandardImpl();
+&nbsp;    private final JpaCompliance jpaCompliance;
+&nbsp;    private TransactionDriverControlImpl physicalTransactionDelegate;
+&nbsp;    private int timeOut = -1;
+&nbsp;    private transient List&lt;TransactionObserver&gt; observers = null;
+&nbsp;
+&nbsp;    JdbcResourceLocalTransactionCoordinatorImpl(TransactionCoordinatorBuilder transactionCoordinatorBuilder, TransactionCoordinatorOwner owner, JdbcResourceTransactionAccess jdbcResourceTransactionAccess) {
+&nbsp;        this.transactionCoordinatorBuilder = transactionCoordinatorBuilder;
+&nbsp;        this.jdbcResourceTransactionAccess = jdbcResourceTransactionAccess;
+<b class="fc">&nbsp;        this.transactionCoordinatorOwner = owner;</b>
+&nbsp;        this.jpaCompliance = owner.getJdbcSessionOwner().getJdbcSessionContext().getJpaCompliance();
+&nbsp;    }
+&nbsp;
+&nbsp;    private Iterable&lt;TransactionObserver&gt; observers() {
+<b class="fc">&nbsp;        return (Iterable&lt;TransactionObserver&gt;)(this.observers != null &amp;&amp; !this.observers.isEmpty() ? new ArrayList(this.observers) : Collections.emptyList());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public TransactionCoordinator.TransactionDriver getTransactionDriverControl() {
+&nbsp;        if (this.physicalTransactionDelegate == null) {
+&nbsp;            this.physicalTransactionDelegate = new TransactionDriverControlImpl(this.jdbcResourceTransactionAccess.getResourceLocalTransaction());
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+<b class="fc">&nbsp;        return this.physicalTransactionDelegate;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void explicitJoin() {
+&nbsp;        log.callingJoinTransactionOnNonJtaEntityManager();
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isJoined() {
+&nbsp;        return this.physicalTransactionDelegate != null &amp;&amp; this.getTransactionDriverControl().isActive(true);
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public void pulse() {</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public SynchronizationRegistry getLocalSynchronizations() {</b>
+<b class="fc">&nbsp;        return this.synchronizationRegistry;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public JpaCompliance getJpaCompliance() {
+&nbsp;        return this.jpaCompliance;
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isActive() {
+&nbsp;        return this.transactionCoordinatorOwner.isActive();
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public IsolationDelegate createIsolationDelegate() {
+&nbsp;        return new JdbcIsolationDelegate(this.transactionCoordinatorOwner);
+&nbsp;    }
+&nbsp;
+&nbsp;    public TransactionCoordinatorBuilder getTransactionCoordinatorBuilder() {
+&nbsp;        return this.transactionCoordinatorBuilder;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void setTimeOut(int seconds) {</b>
+<b class="nc">&nbsp;        this.timeOut = seconds;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public int getTimeOut() {
+&nbsp;        return this.timeOut;
+&nbsp;    }
+&nbsp;
+&nbsp;    private void afterBeginCallback() {
+<b class="nc">&nbsp;        if (this.timeOut &gt; 0) {</b>
+&nbsp;            this.transactionCoordinatorOwner.setTransactionTimeOut(this.timeOut);
+&nbsp;        }
+&nbsp;
+&nbsp;        this.transactionCoordinatorOwner.startTransactionBoundary();
+<b class="nc">&nbsp;        this.transactionCoordinatorOwner.afterTransactionBegin();</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        for(TransactionObserver observer : this.observers()) {
+&nbsp;            observer.afterBegin();
+&nbsp;        }
+&nbsp;
+&nbsp;        log.trace(&quot;ResourceLocalTransactionCoordinatorImpl#afterBeginCallback&quot;);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private void beforeCompletionCallback() {
+&nbsp;        log.trace(&quot;ResourceLocalTransactionCoordinatorImpl#beforeCompletionCallback&quot;);
+<b class="nc">&nbsp;</b>
+&nbsp;        try {
+&nbsp;            this.transactionCoordinatorOwner.beforeTransactionCompletion();
+&nbsp;            this.synchronizationRegistry.notifySynchronizationsBeforeTransactionCompletion();
+&nbsp;
+<b class="nc">&nbsp;            for(TransactionObserver observer : this.observers()) {</b>
+&nbsp;                observer.beforeCompletion();
+&nbsp;            }
+&nbsp;
+&nbsp;        } catch (RuntimeException e) {
+<b class="nc">&nbsp;            if (this.physicalTransactionDelegate != null) {</b>
+&nbsp;                this.physicalTransactionDelegate.markRollbackOnly();
+&nbsp;            }
+&nbsp;
+&nbsp;            throw e;
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void afterCompletionCallback(boolean successful) {
+&nbsp;        log.tracef(&quot;ResourceLocalTransactionCoordinatorImpl#afterCompletionCallback(%s)&quot;, successful);
+<b class="nc">&nbsp;        int statusToSend = successful ? 3 : 5;</b>
+&nbsp;        this.synchronizationRegistry.notifySynchronizationsAfterTransactionCompletion(statusToSend);
+&nbsp;        this.transactionCoordinatorOwner.afterTransactionCompletion(successful, false);
+&nbsp;
+&nbsp;        for(TransactionObserver observer : this.observers()) {
+<b class="nc">&nbsp;            observer.afterCompletion(successful, false);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void addObserver(TransactionObserver observer) {</b>
+&nbsp;        if (this.observers == null) {
+&nbsp;            this.observers = new ArrayList(6);
+&nbsp;        }
+&nbsp;
+&nbsp;        this.observers.add(observer);
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public void removeObserver(TransactionObserver observer) {
+&nbsp;        if (this.observers != null) {
+&nbsp;            this.observers.remove(observer);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public class TransactionDriverControlImpl implements TransactionCoordinator.TransactionDriver {</b>
+&nbsp;        private final JdbcResourceTransaction jdbcResourceTransaction;
+&nbsp;        private boolean invalid;
+<b class="nc">&nbsp;        private boolean rollbackOnly = false;</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        public TransactionDriverControlImpl(JdbcResourceTransaction jdbcResourceTransaction) {
+<b class="nc">&nbsp;            this.jdbcResourceTransaction = jdbcResourceTransaction;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        protected void invalidate() {
+<b class="nc">&nbsp;            this.invalid = true;</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        public void begin() {</b>
+<b class="nc">&nbsp;            this.errorIfInvalid();</b>
+<b class="nc">&nbsp;            this.jdbcResourceTransaction.begin();</b>
+&nbsp;            JdbcResourceLocalTransactionCoordinatorImpl.this.afterBeginCallback();
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        protected void errorIfInvalid() {</b>
+&nbsp;            if (this.invalid) {
+<b class="nc">&nbsp;                throw new IllegalStateException(&quot;Physical-transaction delegate is no longer valid&quot;);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        public void commit() {
+&nbsp;            try {
+&nbsp;                if (this.rollbackOnly) {
+<b class="nc">&nbsp;                    JdbcResourceLocalTransactionCoordinatorImpl.log.debug(&quot;On commit, transaction was marked for roll-back only, rolling back&quot;);</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                    try {</b>
+&nbsp;                        this.rollback();
+<b class="nc">&nbsp;                        if (JdbcResourceLocalTransactionCoordinatorImpl.this.jpaCompliance.isJpaTransactionComplianceEnabled()) {</b>
+<b class="nc">&nbsp;                            JdbcResourceLocalTransactionCoordinatorImpl.log.debug(&quot;Throwing RollbackException on roll-back of transaction marked rollback-only on commit&quot;);</b>
+<b class="nc">&nbsp;                            throw new RollbackException(&quot;Transaction was marked for rollback-only&quot;);</b>
+&nbsp;                        }
+&nbsp;                    } catch (RollbackException e) {
+&nbsp;                        throw e;
+&nbsp;                    } catch (RuntimeException e) {
+&nbsp;                        JdbcResourceLocalTransactionCoordinatorImpl.log.debug(&quot;Encountered failure rolling back failed commit&quot;, e);
+<b class="nc">&nbsp;                        throw e;</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                } else {
+<b class="nc">&nbsp;                    JdbcResourceLocalTransactionCoordinatorImpl.this.beforeCompletionCallback();</b>
+&nbsp;                    this.jdbcResourceTransaction.commit();
+&nbsp;                    JdbcResourceLocalTransactionCoordinatorImpl.this.afterCompletionCallback(true);
+&nbsp;                }
+&nbsp;            } catch (RollbackException e) {
+<b class="nc">&nbsp;                throw e;</b>
+<b class="nc">&nbsp;            } catch (RuntimeException e) {</b>
+&nbsp;                try {
+&nbsp;                    this.rollback();
+&nbsp;                } catch (RuntimeException e2) {
+&nbsp;                    JdbcResourceLocalTransactionCoordinatorImpl.log.debug(&quot;Encountered failure rolling back failed commit&quot;, e2);
+&nbsp;                }
+&nbsp;
+&nbsp;                throw e;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        public void rollback() {
+&nbsp;            try {
+&nbsp;                if (this.rollbackOnly || this.jdbcResourceTransaction.getStatus() == TransactionStatus.ACTIVE) {
+&nbsp;                    this.jdbcResourceTransaction.rollback();
+&nbsp;                    JdbcResourceLocalTransactionCoordinatorImpl.this.afterCompletionCallback(false);
+&nbsp;                }
+&nbsp;            } finally {
+&nbsp;                this.rollbackOnly = false;
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;
+&nbsp;        public TransactionStatus getStatus() {
+&nbsp;            return this.rollbackOnly ? TransactionStatus.MARKED_ROLLBACK : this.jdbcResourceTransaction.getStatus();
+&nbsp;        }
+&nbsp;
+&nbsp;        public void markRollbackOnly() {
+&nbsp;            if (this.getStatus() != TransactionStatus.ROLLED_BACK) {
+&nbsp;                if (JdbcResourceLocalTransactionCoordinatorImpl.log.isDebugEnabled()) {
+&nbsp;                    JdbcResourceLocalTransactionCoordinatorImpl.log.debug(&quot;JDBC transaction marked for rollback-only (exception provided for stack trace)&quot;, new Exception(&quot;exception just for purpose of providing stack trace&quot;));
+&nbsp;                }
+&nbsp;
+&nbsp;                this.rollbackOnly = true;
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

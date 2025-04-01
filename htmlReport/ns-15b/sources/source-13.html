@@ -1,0 +1,360 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > DefaultRefreshEventListener</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.event.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: DefaultRefreshEventListener (org.hibernate.event.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DefaultRefreshEventListener</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    15.4%
+  </span>
+  <span class="absValue">
+    (2/13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/72)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    1.7%
+  </span>
+  <span class="absValue">
+    (2/121)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.event.internal;
+&nbsp;
+&nbsp;import org.hibernate.HibernateException;
+&nbsp;import org.hibernate.LockMode;
+&nbsp;import org.hibernate.LockOptions;
+&nbsp;import org.hibernate.NonUniqueObjectException;
+&nbsp;import org.hibernate.TransientObjectException;
+&nbsp;import org.hibernate.UnresolvableObjectException;
+&nbsp;import org.hibernate.bytecode.enhance.spi.interceptor.LazyAttributeLoadingInterceptor;
+&nbsp;import org.hibernate.bytecode.spi.BytecodeEnhancementMetadata;
+&nbsp;import org.hibernate.cache.spi.access.CollectionDataAccess;
+&nbsp;import org.hibernate.cache.spi.access.EntityDataAccess;
+&nbsp;import org.hibernate.cache.spi.access.SoftLock;
+&nbsp;import org.hibernate.engine.internal.Cascade;
+&nbsp;import org.hibernate.engine.internal.CascadePoint;
+&nbsp;import org.hibernate.engine.spi.ActionQueue;
+&nbsp;import org.hibernate.engine.spi.CascadingActions;
+&nbsp;import org.hibernate.engine.spi.EntityEntry;
+&nbsp;import org.hibernate.engine.spi.PersistenceContext;
+&nbsp;import org.hibernate.engine.spi.SessionFactoryImplementor;
+&nbsp;import org.hibernate.event.spi.EventSource;
+&nbsp;import org.hibernate.event.spi.RefreshContext;
+&nbsp;import org.hibernate.event.spi.RefreshEvent;
+&nbsp;import org.hibernate.event.spi.RefreshEventListener;
+&nbsp;import org.hibernate.internal.CoreLogging;
+&nbsp;import org.hibernate.internal.CoreMessageLogger;
+&nbsp;import org.hibernate.loader.ast.spi.CascadingFetchProfile;
+&nbsp;import org.hibernate.metamodel.spi.MappingMetamodelImplementor;
+&nbsp;import org.hibernate.persister.collection.CollectionPersister;
+&nbsp;import org.hibernate.persister.entity.EntityPersister;
+&nbsp;import org.hibernate.pretty.MessageHelper;
+&nbsp;import org.hibernate.proxy.HibernateProxy;
+&nbsp;import org.hibernate.proxy.LazyInitializer;
+&nbsp;import org.hibernate.type.CollectionType;
+&nbsp;import org.hibernate.type.ComponentType;
+&nbsp;import org.hibernate.type.Type;
+&nbsp;
+&nbsp;public class DefaultRefreshEventListener implements RefreshEventListener {
+&nbsp;    private static final CoreMessageLogger LOG = CoreLogging.messageLogger(DefaultRefreshEventListener.class);
+&nbsp;
+&nbsp;    public DefaultRefreshEventListener() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public void onRefresh(RefreshEvent event) throws HibernateException {
+&nbsp;        this.onRefresh(event, RefreshContext.create());
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public void onRefresh(RefreshEvent event, RefreshContext refreshedAlready) {</b>
+<b class="fc">&nbsp;        EventSource source = event.getSession();</b>
+&nbsp;        PersistenceContext persistenceContext = source.getPersistenceContextInternal();
+&nbsp;        Object object = event.getObject();
+&nbsp;        if (persistenceContext.reassociateIfUninitializedProxy(object)) {
+<b class="nc">&nbsp;            boolean isTransient = isTransient(event, source, object);</b>
+&nbsp;            if (refreshedAlready.isEmpty()) {
+&nbsp;                LazyInitializer lazyInitializer = HibernateProxy.extractLazyInitializer(object);
+&nbsp;                EntityPersister persister;
+&nbsp;                if (lazyInitializer != null) {
+&nbsp;                    persister = source.getEntityPersister(lazyInitializer.getEntityName(), object);
+&nbsp;                } else if (!isTransient) {
+&nbsp;                    EntityEntry entry = persistenceContext.getEntry(object);
+&nbsp;                    persister = entry.getPersister();
+&nbsp;                } else {
+<b class="nc">&nbsp;                    persister = source.getEntityPersister(source.guessEntityName(object), object);</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                refresh(event, (Object)null, source, persister, lazyInitializer, (EntityEntry)null, persister.getIdentifier(object, event.getSession()), persistenceContext);</b>
+<b class="nc">&nbsp;                if (lazyInitializer != null) {</b>
+&nbsp;                    refreshedAlready.add(lazyInitializer.getImplementation());
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            if (isTransient) {</b>
+&nbsp;                source.setReadOnly(object, source.isDefaultReadOnly());
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            Object entity = persistenceContext.unproxyAndReassociate(object);
+<b class="nc">&nbsp;            if (refreshedAlready.add(entity)) {</b>
+<b class="nc">&nbsp;                refresh(event, refreshedAlready, entity);</b>
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                LOG.trace(&quot;Already refreshed&quot;);
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private static boolean isTransient(RefreshEvent event, EventSource source, Object object) {
+&nbsp;        String entityName = event.getEntityName();
+&nbsp;        return entityName != null ? !source.contains(entityName, object) : !source.contains(object);
+&nbsp;    }
+&nbsp;
+&nbsp;    private static void refresh(RefreshEvent event, RefreshContext refreshedAlready, Object object) {
+<b class="nc">&nbsp;        EventSource source = event.getSession();</b>
+&nbsp;        PersistenceContext persistenceContext = source.getPersistenceContextInternal();
+&nbsp;        EntityEntry entry = persistenceContext.getEntry(object);
+<b class="nc">&nbsp;        EntityPersister persister;</b>
+<b class="nc">&nbsp;        Object id;</b>
+&nbsp;        if (entry == null) {
+&nbsp;            persister = source.getEntityPersister(event.getEntityName(), object);
+&nbsp;            id = persister.getIdentifier(object, event.getSession());
+<b class="nc">&nbsp;            if (id == null) {</b>
+<b class="nc">&nbsp;                throw new TransientObjectException(&quot;transient instance passed to refresh&quot;);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            if (LOG.isTraceEnabled()) {
+<b class="nc">&nbsp;                LOG.tracev(&quot;Refreshing transient {0}&quot;, MessageHelper.infoString(persister, id, event.getFactory()));</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            if (persistenceContext.getEntry(source.generateEntityKey(id, persister)) != null) {
+&nbsp;                throw new NonUniqueObjectException(id, persister.getEntityName());
+<b class="nc">&nbsp;            }</b>
+&nbsp;        } else {
+&nbsp;            if (LOG.isTraceEnabled()) {
+&nbsp;                LOG.tracev(&quot;Refreshing &quot;, MessageHelper.infoString(entry.getPersister(), entry.getId(), event.getFactory()));
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if (!entry.isExistsInDatabase()) {</b>
+<b class="nc">&nbsp;                throw new UnresolvableObjectException(entry.getId(), &quot;this instance does not yet exist as a row in the database&quot;);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            persister = entry.getPersister();
+<b class="nc">&nbsp;            id = entry.getId();</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        Cascade.cascade(CascadingActions.REFRESH, CascadePoint.BEFORE_REFRESH, source, persister, object, refreshedAlready);
+&nbsp;        if (entry != null) {
+&nbsp;            persistenceContext.removeEntityHolder(entry.getEntityKey());
+<b class="nc">&nbsp;            if (persister.hasCollections()) {</b>
+&nbsp;                (new EvictVisitor(source, object)).process(object, persister);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            persistenceContext.removeEntry(object);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        evictEntity(object, persister, id, source);</b>
+<b class="nc">&nbsp;        evictCachedCollections(persister, id, source);</b>
+&nbsp;        refresh(event, object, source, persister, (LazyInitializer)null, entry, id, persistenceContext);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private static void refresh(RefreshEvent event, Object object, EventSource source, EntityPersister persister, LazyInitializer lazyInitializer, EntityEntry entry, Object id, PersistenceContext persistenceContext) {
+<b class="nc">&nbsp;        BytecodeEnhancementMetadata instrumentationMetadata = persister.getInstrumentationMetadata();</b>
+<b class="nc">&nbsp;        if (object != null &amp;&amp; instrumentationMetadata.isEnhancedForLazyLoading()) {</b>
+&nbsp;            LazyAttributeLoadingInterceptor interceptor = instrumentationMetadata.extractInterceptor(object);
+&nbsp;            if (interceptor != null) {
+&nbsp;                interceptor.clearInitializedLazyFields();
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        Object result = source.getLoadQueryInfluencers().fromInternalFetchProfile(CascadingFetchProfile.REFRESH, () -&gt; doRefresh(event, source, object, entry, persister, lazyInitializer, id, persistenceContext));</b>
+&nbsp;        UnresolvableObjectException.throwIfNull(result, id, persister.getEntityName());
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private static void evictEntity(Object object, EntityPersister persister, Object id, EventSource source) {</b>
+<b class="nc">&nbsp;        if (persister.canWriteToCache()) {</b>
+&nbsp;            Object previousVersion = null;
+&nbsp;            if (persister.isVersionPropertyGenerated()) {
+&nbsp;                previousVersion = persister.getVersion(object);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            EntityDataAccess cache = persister.getCacheAccessStrategy();
+&nbsp;            Object ck = cache.generateCacheKey(id, persister, source.getFactory(), source.getTenantIdentifier());
+&nbsp;            SoftLock lock = cache.lockItem(source, ck, previousVersion);
+<b class="nc">&nbsp;            cache.remove(source, ck);</b>
+&nbsp;            source.getActionQueue().registerProcess((success, session) -&gt; cache.unlockItem(session, ck, lock));
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private static Object doRefresh(RefreshEvent event, EventSource source, Object object, EntityEntry entry, EntityPersister persister, LazyInitializer lazyInitializer, Object id, PersistenceContext persistenceContext) {
+&nbsp;        LockOptions lockOptionsToUse = event.getLockOptions();
+&nbsp;        LockMode requestedLockMode = lockOptionsToUse.getLockMode();
+<b class="nc">&nbsp;        LockMode postRefreshLockMode;</b>
+<b class="nc">&nbsp;        if (entry != null) {</b>
+<b class="nc">&nbsp;            LockMode currentLockMode = entry.getLockMode();</b>
+<b class="nc">&nbsp;            if (currentLockMode.greaterThan(requestedLockMode)) {</b>
+&nbsp;                lockOptionsToUse = event.getLockOptions().makeCopy();
+<b class="nc">&nbsp;                if (currentLockMode != LockMode.WRITE &amp;&amp; currentLockMode != LockMode.PESSIMISTIC_WRITE &amp;&amp; currentLockMode != LockMode.PESSIMISTIC_READ) {</b>
+&nbsp;                    lockOptionsToUse.setLockMode(currentLockMode);
+&nbsp;                    postRefreshLockMode = null;
+<b class="nc">&nbsp;                } else {</b>
+<b class="nc">&nbsp;                    lockOptionsToUse.setLockMode(LockMode.READ);</b>
+&nbsp;                    postRefreshLockMode = currentLockMode;
+<b class="nc">&nbsp;                }</b>
+&nbsp;            } else {
+&nbsp;                postRefreshLockMode = null;
+&nbsp;            }
+&nbsp;        } else {
+&nbsp;            postRefreshLockMode = null;
+&nbsp;        }
+&nbsp;
+&nbsp;        Object result = persister.load(id, object, lockOptionsToUse, source);
+&nbsp;        if (result != null) {
+&nbsp;            if (postRefreshLockMode != null) {
+&nbsp;                persistenceContext.getEntry(result).setLockMode(postRefreshLockMode);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            source.setReadOnly(result, isReadOnly(entry, persister, lazyInitializer, source));</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static boolean isReadOnly(EntityEntry entry, EntityPersister persister, LazyInitializer lazyInitializer, EventSource source) {
+<b class="nc">&nbsp;        if (!persister.isMutable()) {</b>
+&nbsp;            return true;
+<b class="nc">&nbsp;        } else if (entry != null) {</b>
+&nbsp;            return entry.isReadOnly();
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            return lazyInitializer != null ? lazyInitializer.isReadOnly() : source.isDefaultReadOnly();
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private static void evictCachedCollections(EntityPersister persister, Object id, EventSource source) {</b>
+<b class="nc">&nbsp;        evictCachedCollections(persister.getPropertyTypes(), id, source);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static void evictCachedCollections(Type[] types, Object id, EventSource source) throws HibernateException {
+<b class="nc">&nbsp;        ActionQueue actionQueue = source.getActionQueue();</b>
+&nbsp;        SessionFactoryImplementor factory = source.getFactory();
+<b class="nc">&nbsp;        MappingMetamodelImplementor metamodel = factory.getRuntimeMetamodels().getMappingMetamodel();</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        for(Type type : types) {
+&nbsp;            if (type instanceof CollectionType) {
+<b class="nc">&nbsp;                String role = ((CollectionType)type).getRole();</b>
+<b class="nc">&nbsp;                CollectionPersister collectionPersister = metamodel.getCollectionDescriptor(role);</b>
+&nbsp;                if (collectionPersister.hasCache()) {
+<b class="nc">&nbsp;                    CollectionDataAccess cache = collectionPersister.getCacheAccessStrategy();</b>
+<b class="nc">&nbsp;                    Object ck = cache.generateCacheKey(id, collectionPersister, factory, source.getTenantIdentifier());</b>
+<b class="nc">&nbsp;                    SoftLock lock = cache.lockItem(source, ck, (Object)null);</b>
+&nbsp;                    cache.remove(source, ck);
+&nbsp;                    actionQueue.registerProcess((success, session) -&gt; cache.unlockItem(session, ck, lock));
+&nbsp;                }
+&nbsp;            } else if (type instanceof ComponentType) {
+&nbsp;                ComponentType compositeType = (ComponentType)type;
+&nbsp;                evictCachedCollections(compositeType.getSubtypes(), id, source);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:57</div>
+</div>
+</body>
+</html>

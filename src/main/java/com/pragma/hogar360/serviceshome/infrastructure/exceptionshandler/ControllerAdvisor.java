@@ -69,6 +69,12 @@ public class ControllerAdvisor {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ExceptionResponse(ExceptionConstants.CATEGORY_NOT_FOUND_EXCEPTION,
                 LocalDateTime.now()));
     }
+//    @ExceptionHandler(BusinessException.class)
+//    public ResponseEntity<ExceptionResponse> handleBusinessException(BusinessException exception){
+//        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ExceptionResponse(ExceptionConstants.CATEGORY_NOT_FOUND_EXCEPTION,
+//                LocalDateTime.now()));
+//    }
+
     @ExceptionHandler(DuplicateLocationException.class)
     public ResponseEntity<ExceptionResponse> handleDuplicateLocationException(DuplicateLocationException exception) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new ExceptionResponse(ExceptionConstants.DUPLICATE_ENTITY_EXCEPTION,
@@ -115,6 +121,11 @@ public class ControllerAdvisor {
     @ExceptionHandler(InvalidNumberException.class)
     public ResponseEntity<ExceptionResponse> handleInvalidNumberException(InvalidNumberException exception) {
         return ResponseEntity.badRequest().body(new ExceptionResponse(ExceptionConstants.INVALID_NUMBER_OF_ROOMS,
+                LocalDateTime.now()));
+    }
+    @ExceptionHandler(InvalidSortByException.class)
+    public ResponseEntity<ExceptionResponse> handleInvalidSortByException(InvalidSortByException exception) {
+        return ResponseEntity.badRequest().body(new ExceptionResponse(ExceptionConstants.INVALID_SORT_BY,
                 LocalDateTime.now()));
     }
 

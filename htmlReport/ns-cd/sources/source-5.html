@@ -1,0 +1,226 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > JavaLangTypeToResolvedTypeConverter</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.aspectj.weaver.reflect</a>
+</div>
+
+<h1>Coverage Summary for Class: JavaLangTypeToResolvedTypeConverter (org.aspectj.weaver.reflect)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">JavaLangTypeToResolvedTypeConverter</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    34.6%
+  </span>
+  <span class="absValue">
+    (9/26)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    51.7%
+  </span>
+  <span class="absValue">
+    (30/58)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.aspectj.weaver.reflect;
+&nbsp;
+&nbsp;import java.lang.reflect.GenericArrayType;
+&nbsp;import java.lang.reflect.ParameterizedType;
+&nbsp;import java.lang.reflect.Type;
+&nbsp;import java.lang.reflect.TypeVariable;
+&nbsp;import java.lang.reflect.WildcardType;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.Map;
+&nbsp;import org.aspectj.weaver.BoundedReferenceType;
+&nbsp;import org.aspectj.weaver.ReferenceType;
+&nbsp;import org.aspectj.weaver.ResolvedType;
+&nbsp;import org.aspectj.weaver.TypeFactory;
+&nbsp;import org.aspectj.weaver.TypeVariableReferenceType;
+&nbsp;import org.aspectj.weaver.UnresolvedType;
+&nbsp;import org.aspectj.weaver.World;
+&nbsp;
+&nbsp;public class JavaLangTypeToResolvedTypeConverter {
+&nbsp;    private Map&lt;Type, TypeVariableReferenceType&gt; typeVariablesInProgress = new HashMap();
+&nbsp;    private final World world;
+&nbsp;
+&nbsp;    public JavaLangTypeToResolvedTypeConverter(World aWorld) {
+&nbsp;        this.world = aWorld;
+&nbsp;    }
+&nbsp;
+&nbsp;    private World getWorld() {
+&nbsp;        return this.world;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public ResolvedType fromType(Type type) {</b>
+&nbsp;        if (type instanceof Class) {
+&nbsp;            Class&lt;?&gt; clazz = (Class)type;
+<b class="fc">&nbsp;            String name = clazz.getName();</b>
+<b class="fc">&nbsp;            if (clazz.isArray()) {</b>
+&nbsp;                UnresolvedType ut = UnresolvedType.forSignature(name.replace(&#39;.&#39;, &#39;/&#39;));
+&nbsp;                return this.getWorld().resolve(ut);
+&nbsp;            } else {
+<b class="fc">&nbsp;                return this.getWorld().resolve(name);</b>
+&nbsp;            }
+&nbsp;        } else if (type instanceof ParameterizedType) {
+&nbsp;            Type ownerType = ((ParameterizedType)type).getOwnerType();
+<b class="fc">&nbsp;            ParameterizedType parameterizedType = (ParameterizedType)type;</b>
+<b class="fc">&nbsp;            ResolvedType baseType = this.fromType(parameterizedType.getRawType());</b>
+<b class="fc">&nbsp;            Type[] typeArguments = parameterizedType.getActualTypeArguments();</b>
+&nbsp;            if (baseType.isSimpleType() &amp;&amp; typeArguments.length == 0 &amp;&amp; ownerType != null) {
+&nbsp;                return baseType;
+&nbsp;            } else {
+&nbsp;                ResolvedType[] resolvedTypeArguments = this.fromTypes(typeArguments);
+&nbsp;                return TypeFactory.createParameterizedType(baseType, resolvedTypeArguments, this.getWorld());
+&nbsp;            }
+&nbsp;        } else if (type instanceof TypeVariable) {
+&nbsp;            TypeVariableReferenceType inprogressVar = (TypeVariableReferenceType)this.typeVariablesInProgress.get(type);
+&nbsp;            if (inprogressVar != null) {
+&nbsp;                return inprogressVar;
+&nbsp;            } else {
+&nbsp;                TypeVariable&lt;?&gt; tv = (TypeVariable)type;
+<b class="pc">&nbsp;                org.aspectj.weaver.TypeVariable rt_tv = new org.aspectj.weaver.TypeVariable(tv.getName());</b>
+<b class="nc">&nbsp;                TypeVariableReferenceType tvrt = new TypeVariableReferenceType(rt_tv, this.getWorld());</b>
+<b class="nc">&nbsp;                this.typeVariablesInProgress.put(type, tvrt);</b>
+&nbsp;                Type[] bounds = tv.getBounds();
+<b class="fc">&nbsp;                ResolvedType[] resBounds = this.fromTypes(bounds);</b>
+&nbsp;                ResolvedType upperBound = resBounds[0];
+<b class="pc">&nbsp;                ResolvedType[] additionalBounds = ResolvedType.EMPTY_RESOLVED_TYPE_ARRAY;</b>
+&nbsp;                if (resBounds.length &gt; 1) {
+&nbsp;                    additionalBounds = new ResolvedType[resBounds.length - 1];
+<b class="nc">&nbsp;                    System.arraycopy(resBounds, 1, additionalBounds, 0, additionalBounds.length);</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                rt_tv.setUpperBound(upperBound);</b>
+<b class="nc">&nbsp;                rt_tv.setAdditionalInterfaceBounds(additionalBounds);</b>
+&nbsp;                this.typeVariablesInProgress.remove(type);
+&nbsp;                return tvrt;
+&nbsp;            }
+&nbsp;        } else if (type instanceof WildcardType) {
+&nbsp;            WildcardType wildType = (WildcardType)type;
+<b class="nc">&nbsp;            Type[] lowerBounds = wildType.getLowerBounds();</b>
+&nbsp;            Type[] upperBounds = wildType.getUpperBounds();
+<b class="nc">&nbsp;            ResolvedType bound = null;</b>
+<b class="nc">&nbsp;            boolean isExtends = lowerBounds.length == 0;</b>
+<b class="pc">&nbsp;            if (isExtends) {</b>
+<b class="fc">&nbsp;                bound = this.fromType(upperBounds[0]);</b>
+<b class="pc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                bound = this.fromType(lowerBounds[0]);</b>
+&nbsp;            }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;            return new BoundedReferenceType((ReferenceType)bound, isExtends, this.getWorld());</b>
+<b class="fc">&nbsp;        } else if (type instanceof GenericArrayType) {</b>
+<b class="fc">&nbsp;            GenericArrayType genericArrayType = (GenericArrayType)type;</b>
+<b class="fc">&nbsp;            Type componentType = genericArrayType.getGenericComponentType();</b>
+<b class="fc">&nbsp;            return UnresolvedType.makeArray(this.fromType(componentType), 1).resolve(this.getWorld());</b>
+<b class="fc">&nbsp;        } else {</b>
+<b class="fc">&nbsp;            return ResolvedType.MISSING;</b>
+<b class="pc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public ResolvedType[] fromTypes(Type[] types) {
+<b class="fc">&nbsp;        ResolvedType[] ret = new ResolvedType[types.length];</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;        for(int i = 0; i &lt; ret.length; ++i) {</b>
+<b class="fc">&nbsp;            ret[i] = this.fromType(types[i]);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return ret;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
+</div>
+</body>
+</html>

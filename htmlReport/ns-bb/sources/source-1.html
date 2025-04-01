@@ -5,7 +5,7 @@
 <html id="htmlId">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
-  <title>Coverage Report > AopInvocationException</title>
+  <title>Coverage Report > ConcurrentDateFormat</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -19,10 +19,10 @@
 <div class="breadCrumbs">
 Current scope:     <a href="../../index.html">all classes</a>
     <span class="separator">|</span>
-    <a href="../index.html">org.springframework.aop</a>
+    <a href="../index.html">org.apache.tomcat.util.http</a>
 </div>
 
-<h1>Coverage Summary for Class: AopInvocationException (org.springframework.aop)</h1>
+<h1>Coverage Summary for Class: ConcurrentDateFormat (org.apache.tomcat.util.http)</h1>
 
 <table class="coverageStats">
 <tr>
@@ -37,33 +37,45 @@ Current scope:     <a href="../../index.html">all classes</a>
 </th>
 <th class="coverageStat 
 ">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
   Line, %
 </th>
 </tr>
 <tr>
-  <td class="name">AopInvocationException</td>
+  <td class="name">ConcurrentDateFormat</td>
 <td class="coverageStat">
   <span class="percent">
-    0%
+    100%
   </span>
   <span class="absValue">
-    (0/1)
+    (1/1)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    0%
+    75%
   </span>
   <span class="absValue">
-    (0/2)
+    (3/4)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    0%
+    25%
   </span>
   <span class="absValue">
-    (0/2)
+    (1/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    65.2%
+  </span>
+  <span class="absValue">
+    (15/23)
   </span>
 </td>
 </tr>
@@ -80,19 +92,59 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;// (powered by FernFlower decompiler)
 &nbsp;//
 &nbsp;
-&nbsp;package org.springframework.aop;
+&nbsp;package org.apache.tomcat.util.http;
 &nbsp;
-&nbsp;import org.springframework.core.NestedRuntimeException;
+&nbsp;import java.text.ParseException;
+&nbsp;import java.text.SimpleDateFormat;
+&nbsp;import java.util.Date;
+&nbsp;import java.util.Locale;
+&nbsp;import java.util.Queue;
+&nbsp;import java.util.TimeZone;
+&nbsp;import java.util.concurrent.ConcurrentLinkedQueue;
 &nbsp;
-&nbsp;public class AopInvocationException extends NestedRuntimeException {
-&nbsp;    public AopInvocationException(String msg) {
-&nbsp;        super(msg);
+&nbsp;public class ConcurrentDateFormat {
+&nbsp;    private final String format;
+&nbsp;    private final Locale locale;
+&nbsp;    private final TimeZone timezone;
+&nbsp;    private final Queue&lt;SimpleDateFormat&gt; queue = new ConcurrentLinkedQueue();
+&nbsp;
+&nbsp;    public ConcurrentDateFormat(String format, Locale locale, TimeZone timezone) {
+&nbsp;        this.format = format;
+&nbsp;        this.locale = locale;
+&nbsp;        this.timezone = timezone;
+&nbsp;        SimpleDateFormat initial = this.createInstance();
+&nbsp;        this.queue.add(initial);
 &nbsp;    }
 &nbsp;
-&nbsp;    public AopInvocationException(String msg, Throwable cause) {
-&nbsp;        super(msg, cause);
-&nbsp;    }
-&nbsp;}
+&nbsp;    public String format(Date date) {
+&nbsp;        SimpleDateFormat sdf = (SimpleDateFormat)this.queue.poll();
+&nbsp;        if (sdf == null) {
+&nbsp;            sdf = this.createInstance();
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        String result = sdf.format(date);</b>
+&nbsp;        this.queue.add(sdf);
+<b class="fc">&nbsp;        return result;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public Date parse(String source) throws ParseException {</b>
+<b class="fc">&nbsp;        SimpleDateFormat sdf = (SimpleDateFormat)this.queue.poll();</b>
+<b class="fc">&nbsp;        if (sdf == null) {</b>
+&nbsp;            sdf = this.createInstance();
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        Date result = sdf.parse(source);</b>
+<b class="pc">&nbsp;        sdf.setTimeZone(this.timezone);</b>
+<b class="nc">&nbsp;        this.queue.add(sdf);</b>
+&nbsp;        return result;
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private SimpleDateFormat createInstance() {</b>
+&nbsp;        SimpleDateFormat sdf = new SimpleDateFormat(this.format, this.locale);
+&nbsp;        sdf.setTimeZone(this.timezone);
+&nbsp;        return sdf;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;}</b>
 </code>
 </pre>
 </div>
@@ -116,7 +168,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2025-03-20 13:42</div>
+    <div style="float:right;">generated on 2025-03-31 21:00</div>
 </div>
 </body>
 </html>

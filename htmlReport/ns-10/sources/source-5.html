@@ -5,7 +5,7 @@
 <html id="htmlId">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
-  <title>Coverage Report > LocationController</title>
+  <title>Coverage Report > LocationPersistenceAdapter</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -19,10 +19,10 @@
 <div class="breadCrumbs">
 Current scope:     <a href="../../index.html">all classes</a>
     <span class="separator">|</span>
-    <a href="../index.html">com.pragma.hogar360.serviceshome.infrastructure.endpoints.rest</a>
+    <a href="../index.html">com.pragma.hogar360.serviceshome.infrastructure.adapters.persistence</a>
 </div>
 
-<h1>Coverage Summary for Class: LocationController (com.pragma.hogar360.serviceshome.infrastructure.endpoints.rest)</h1>
+<h1>Coverage Summary for Class: LocationPersistenceAdapter (com.pragma.hogar360.serviceshome.infrastructure.adapters.persistence)</h1>
 
 <table class="coverageStats">
 <tr>
@@ -41,7 +41,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 </th>
 </tr>
 <tr>
-  <td class="name">LocationController</td>
+  <td class="name">LocationPersistenceAdapter</td>
 <td class="coverageStat">
   <span class="percent">
     0%
@@ -55,7 +55,7 @@ Current scope:     <a href="../../index.html">all classes</a>
     0%
   </span>
   <span class="absValue">
-    (0/2)
+    (0/6)
   </span>
 </td>
 <td class="coverageStat">
@@ -63,7 +63,7 @@ Current scope:     <a href="../../index.html">all classes</a>
     0%
   </span>
   <span class="absValue">
-    (0/2)
+    (0/15)
   </span>
 </td>
 </tr>
@@ -75,88 +75,66 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 
 <pre>
-<code class="sourceCode" id="sourceCode">&nbsp;package com.pragma.hogar360.serviceshome.infrastructure.endpoints.rest;
-&nbsp;
-&nbsp;import com.pragma.hogar360.serviceshome.application.dto.request.SaveLocationRequest;
-&nbsp;import com.pragma.hogar360.serviceshome.application.dto.response.PagedLocationResponse;
-&nbsp;import com.pragma.hogar360.serviceshome.application.dto.response.SaveLocationResponse;
-&nbsp;import com.pragma.hogar360.serviceshome.application.services.LocationService;
-&nbsp;import io.swagger.v3.oas.annotations.Operation;
-&nbsp;import io.swagger.v3.oas.annotations.Parameter;
-&nbsp;import io.swagger.v3.oas.annotations.media.Content;
-&nbsp;import io.swagger.v3.oas.annotations.media.ExampleObject;
-&nbsp;import io.swagger.v3.oas.annotations.media.Schema;
-&nbsp;import io.swagger.v3.oas.annotations.responses.ApiResponse;
-&nbsp;import io.swagger.v3.oas.annotations.tags.Tag;
+<code class="sourceCode" id="sourceCode">&nbsp;package com.pragma.hogar360.serviceshome.infrastructure.adapters.persistence;
+&nbsp;import com.pragma.hogar360.serviceshome.commons.configurations.utils.Auxiliary;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.model.LocationModel;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.ports.out.LocationPersistencePort;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.utils.constants.Pagination;
+&nbsp;import com.pragma.hogar360.serviceshome.infrastructure.entities.LocationEntity;
+&nbsp;import com.pragma.hogar360.serviceshome.infrastructure.mappers.LocationEntityMapper;
+&nbsp;import com.pragma.hogar360.serviceshome.infrastructure.repositories.mysql.LocationRepository;
 &nbsp;import lombok.RequiredArgsConstructor;
-&nbsp;import org.springframework.http.HttpStatus;
-&nbsp;import org.springframework.http.ResponseEntity;
-&nbsp;import org.springframework.web.bind.annotation.*;
+&nbsp;import lombok.extern.slf4j.Slf4j;
+&nbsp;import org.springframework.data.domain.Pageable;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;import org.springframework.transaction.annotation.Transactional;
+&nbsp;import org.springframework.data.domain.Page;
+&nbsp;import org.springframework.data.domain.PageRequest;
+&nbsp;import org.springframework.data.domain.Sort;
 &nbsp;
-&nbsp;/**
-&nbsp; * REST controller for managing location operations.
-&nbsp; *
-&nbsp; * @author [Ciro Alfonso Pallares Fragozo]
-&nbsp; * @version 1.1
-&nbsp; * @since [16/3/2025]
-&nbsp; *
-&nbsp; */
-&nbsp;@RestController
-&nbsp;@RequestMapping(&quot;/api/v1/locations&quot;)
+&nbsp;import java.util.Optional;
+&nbsp;
+&nbsp;@Service
+&nbsp;@Transactional
 &nbsp;@RequiredArgsConstructor
-&nbsp;@Tag(name = &quot;Locations&quot;, description = &quot;Operations related to locations&quot;)
-&nbsp;public class LocationController {
+<b class="nc">&nbsp;@Slf4j</b>
+&nbsp;public class LocationPersistenceAdapter implements LocationPersistencePort {
 &nbsp;
-&nbsp;    private final LocationService locationService;
+&nbsp;    private final LocationRepository locationRepository;
+&nbsp;    private final LocationEntityMapper locationEntityMapper;
 &nbsp;
-&nbsp;    /**
-&nbsp;     * Endpoint to save a new location.
-&nbsp;     *
-&nbsp;     * @param saveLocationRequest The request containing location data.
-&nbsp;     * @return A ResponseEntity with the save response.
-&nbsp;     */
-&nbsp;    @PostMapping(&quot;/&quot;)
-&nbsp;    @Operation(summary = &quot;Save a new location&quot;, description = &quot;Saves a new location in the system. The city and department must exist. The combination of city and department must be unique. Notes = Ensure that the city and department names are properly formatted and exist in the system.&quot;)
-&nbsp;    @ApiResponse(responseCode = &quot;201&quot;, description = &quot;Location created&quot;, content = @Content(schema = @Schema(implementation = SaveLocationResponse.class), examples = @ExampleObject(value = &quot;{\&quot;id\&quot;: 1, \&quot;cityName\&quot;: \&quot;Valledupar\&quot;, \&quot;departmentName\&quot;: \&quot;Cesar\&quot;}&quot;)))
-&nbsp;    @ApiResponse(responseCode = &quot;400&quot;, description = &quot;Bad request&quot;, content = @Content(schema = @Schema(implementation = String.class), examples = @ExampleObject(value = &quot;\&quot;Name cannot exceed 50 characters.\&quot;\n \&quot;Description cannot exceed 90 characters.\&quot; &quot;)))
-&nbsp;    @ApiResponse(responseCode = &quot;404&quot;, description = &quot;City or department not found&quot;, content = @Content(schema = @Schema(implementation = String.class), examples = @ExampleObject(value = &quot;City &#39;Valledupar&#39; not found.&quot;)))
-&nbsp;    @ApiResponse(responseCode = &quot;409&quot;, description = &quot;Location already exists&quot;, content = @Content(schema = @Schema(implementation = String.class), examples = @ExampleObject(value = &quot;Location &#39;Valledupar, Cesar&#39; already exists.&quot;)))
-&nbsp;    public ResponseEntity&lt;SaveLocationResponse&gt; save(
-&nbsp;            @io.swagger.v3.oas.annotations.parameters.RequestBody(
-&nbsp;                    description = &quot;Location data to save&quot;,
-&nbsp;                    required = true,
-&nbsp;                    content = @Content(
-&nbsp;                            examples = @ExampleObject(
-&nbsp;                                    value = &quot;{\&quot;cityName\&quot;: \&quot;Valledupar\&quot;, \&quot;departmentName\&quot;: \&quot;Cesar\&quot;}&quot;
-&nbsp;                            )
-&nbsp;                    )
-&nbsp;            )
-&nbsp;            @RequestBody SaveLocationRequest saveLocationRequest) {
-<b class="nc">&nbsp;        return ResponseEntity.status(HttpStatus.CREATED).body(locationService.createLocation(saveLocationRequest));</b>
+&nbsp;    @Override
+&nbsp;    public void save(LocationModel locationModel) {
+<b class="nc">&nbsp;        locationRepository.save(locationEntityMapper.toEntity(locationModel));</b>
 &nbsp;    }
 &nbsp;
-&nbsp;    /**
-&nbsp;     * Endpoint to search locations with pagination and sorting.
-&nbsp;     *
-&nbsp;     * @param page          The page number (0-based).
-&nbsp;     * @param size          The number of locations per page.
-&nbsp;     * @param sortBy        The field to sort by (&quot;cityName&quot; or &quot;departmentName&quot;).
-&nbsp;     * @param sortDirection The sorting direction (&quot;ASC&quot; or &quot;DESC&quot;).
-&nbsp;     * @param text          The search text for filtering locations.
-&nbsp;     * @return A ResponseEntity with the paged location response.
-&nbsp;     */
-&nbsp;    @GetMapping(&quot;/search&quot;)
-&nbsp;    @Operation(summary = &quot;Search locations&quot;, description = &quot;Searches locations with pagination and sorting.&quot;)
-&nbsp;    @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Search results&quot;, content = @Content(schema = @Schema(implementation = PagedLocationResponse.class)))
-&nbsp;    @ApiResponse(responseCode = &quot;400&quot;, description = &quot;Bad request&quot;, content = @Content(schema = @Schema(implementation = String.class)))
-&nbsp;    public ResponseEntity&lt;PagedLocationResponse&gt; search(
-&nbsp;            @Parameter(description = &quot;Page number (0-based)&quot;) @RequestParam(defaultValue = &quot;0&quot;) Integer page,
-&nbsp;            @Parameter(description = &quot;Number of locations per page&quot;) @RequestParam(defaultValue = &quot;10&quot;) Integer size,
-&nbsp;            @Parameter(description = &quot;Field to sort by (cityName or departmentName)&quot;) @RequestParam(defaultValue = &quot;cityName&quot;) String sortBy,
-&nbsp;            @Parameter(description = &quot;Sorting direction (ASC or DESC)&quot;) @RequestParam(defaultValue = &quot;ASC&quot;) String sortDirection,
-&nbsp;            @Parameter(description = &quot;Search text for filtering locations&quot;) @RequestParam(defaultValue = &quot;&quot;) String text) {
+&nbsp;    @Override
+&nbsp;    public boolean existsByCityId(Long id) {
+<b class="nc">&nbsp;        return locationRepository.existsByCityId(id);</b>
+&nbsp;    }
 &nbsp;
-<b class="nc">&nbsp;        return ResponseEntity.ok(locationService.getLocations(page, size, sortBy, sortDirection, text));</b>
+&nbsp;    @Override
+&nbsp;    public boolean existsByNeighborhood(String neighborhood){
+<b class="nc">&nbsp;        return locationRepository.existsByNeighborhood(neighborhood);</b>
+&nbsp;    }
+&nbsp;    @Override
+&nbsp;    public Optional&lt;LocationModel&gt; findById(Long id) {
+<b class="nc">&nbsp;        return locationRepository.findById(id).map(locationEntityMapper::toModel);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public Pagination&lt;LocationModel&gt; getLocations(Integer page, Integer size, String sortBy, String sortDirection, String text) {
+<b class="nc">&nbsp;        Sort sort = Auxiliary.createSort(sortBy, sortDirection);</b>
+<b class="nc">&nbsp;        Pageable pageable = PageRequest.of(page, size, sort);</b>
+<b class="nc">&nbsp;        log.info(&quot;Fetching locations from DB - Page: {}, Size: {}, SortBy: {}, SortDirection: {}, Text: &#39;{}&#39;&quot;,</b>
+&nbsp;                page, size, sortBy, sortDirection, text);
+<b class="nc">&nbsp;        Page&lt;LocationEntity&gt; locationPage = locationRepository.findByCityNameOrDepartmentNameContainingIgnoreCase(text, pageable);</b>
+<b class="nc">&nbsp;        log.info(&quot;Locations fetched. Total Elements: {}, Total Pages: {}&quot;,</b>
+<b class="nc">&nbsp;                locationPage.getTotalElements(), locationPage.getTotalPages());</b>
+<b class="nc">&nbsp;        Pagination&lt;LocationModel&gt; result = locationEntityMapper.locationEntityPageToLocationModelPagination(locationPage);</b>
+<b class="nc">&nbsp;        log.info(&quot;Mapped Locations: {}&quot;, result.getItems());</b>
+<b class="nc">&nbsp;        log.info(&quot;Pagination mapped successfully. Returning response...&quot;);</b>
+<b class="nc">&nbsp;        return result;</b>
 &nbsp;    }
 &nbsp;}
 </code>
@@ -182,7 +160,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2025-03-20 13:43</div>
+    <div style="float:right;">generated on 2025-03-31 20:44</div>
 </div>
 </body>
 </html>

@@ -1,0 +1,224 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ServletContextResourcePatternResolver</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.web.context.support</a>
+</div>
+
+<h1>Coverage Summary for Class: ServletContextResourcePatternResolver (org.springframework.web.context.support)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ServletContextResourcePatternResolver</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (3/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    2.8%
+  </span>
+  <span class="absValue">
+    (1/36)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    9.3%
+  </span>
+  <span class="absValue">
+    (4/43)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.web.context.support;
+&nbsp;
+&nbsp;import jakarta.servlet.ServletContext;
+&nbsp;import java.io.IOException;
+&nbsp;import java.util.Enumeration;
+&nbsp;import java.util.LinkedHashSet;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.jar.JarEntry;
+&nbsp;import java.util.jar.JarFile;
+&nbsp;import org.apache.commons.logging.Log;
+&nbsp;import org.apache.commons.logging.LogFactory;
+&nbsp;import org.springframework.core.io.Resource;
+&nbsp;import org.springframework.core.io.ResourceLoader;
+&nbsp;import org.springframework.core.io.UrlResource;
+&nbsp;import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+&nbsp;import org.springframework.util.StringUtils;
+&nbsp;
+&nbsp;public class ServletContextResourcePatternResolver extends PathMatchingResourcePatternResolver {
+&nbsp;    private static final Log logger = LogFactory.getLog(ServletContextResourcePatternResolver.class);
+&nbsp;
+&nbsp;    public ServletContextResourcePatternResolver(ServletContext servletContext) {
+&nbsp;        super(new ServletContextResourceLoader(servletContext));
+&nbsp;    }
+&nbsp;
+&nbsp;    public ServletContextResourcePatternResolver(ResourceLoader resourceLoader) {
+&nbsp;        super(resourceLoader);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Set&lt;Resource&gt; doFindPathMatchingFileResources(Resource rootDirResource, String subPattern) throws IOException {
+&nbsp;        if (rootDirResource instanceof ServletContextResource scResource) {
+&nbsp;            ServletContext sc = scResource.getServletContext();
+&nbsp;            String var10000 = scResource.getPath();
+&nbsp;            String fullPattern = var10000 + subPattern;
+&nbsp;            Set&lt;Resource&gt; result = new LinkedHashSet(8);
+&nbsp;            this.doRetrieveMatchingServletContextResources(sc, fullPattern, scResource.getPath(), result);
+&nbsp;            return result;
+&nbsp;        } else {
+&nbsp;            return super.doFindPathMatchingFileResources(rootDirResource, subPattern);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void doRetrieveMatchingServletContextResources(ServletContext servletContext, String fullPattern, String dir, Set&lt;Resource&gt; result) throws IOException {
+<b class="fc">&nbsp;        Set&lt;String&gt; candidates = servletContext.getResourcePaths(dir);</b>
+&nbsp;        if (candidates != null) {
+&nbsp;            boolean dirDepthNotFixed = fullPattern.contains(&quot;**&quot;);
+&nbsp;            int jarFileSep = fullPattern.indexOf(&quot;!/&quot;);
+&nbsp;            String jarFilePath = null;
+&nbsp;            String pathInJarFile = null;
+&nbsp;            if (jarFileSep &gt; 0 &amp;&amp; jarFileSep + &quot;!/&quot;.length() &lt; fullPattern.length()) {
+&nbsp;                jarFilePath = fullPattern.substring(0, jarFileSep);
+&nbsp;                pathInJarFile = fullPattern.substring(jarFileSep + &quot;!/&quot;.length());
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            for(String currPath : candidates) {
+&nbsp;                if (!currPath.startsWith(dir)) {
+&nbsp;                    int dirIndex = currPath.indexOf(dir);
+&nbsp;                    if (dirIndex != -1) {
+&nbsp;                        currPath = currPath.substring(dirIndex);
+&nbsp;                    }
+&nbsp;                }
+<b class="fc">&nbsp;</b>
+&nbsp;                if (currPath.endsWith(&quot;/&quot;) &amp;&amp; (dirDepthNotFixed || StringUtils.countOccurrencesOf(currPath, &quot;/&quot;) &lt;= StringUtils.countOccurrencesOf(fullPattern, &quot;/&quot;))) {
+&nbsp;                    this.doRetrieveMatchingServletContextResources(servletContext, fullPattern, currPath, result);
+&nbsp;                }
+&nbsp;
+&nbsp;                if (jarFilePath != null &amp;&amp; this.getPathMatcher().match(jarFilePath, currPath)) {
+&nbsp;                    String absoluteJarPath = servletContext.getRealPath(currPath);
+&nbsp;                    if (absoluteJarPath != null) {
+&nbsp;                        this.doRetrieveMatchingJarEntries(absoluteJarPath, pathInJarFile, result);
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                if (this.getPathMatcher().match(fullPattern, currPath)) {
+&nbsp;                    result.add(new ServletContextResource(servletContext, currPath));
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private void doRetrieveMatchingJarEntries(String jarFilePath, String entryPattern, Set&lt;Resource&gt; result) {</b>
+<b class="nc">&nbsp;        if (logger.isDebugEnabled()) {</b>
+<b class="nc">&nbsp;            logger.debug(&quot;Searching jar file [&quot; + jarFilePath + &quot;] for entries matching [&quot; + entryPattern + &quot;]&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        try (JarFile jarFile = new JarFile(jarFilePath)) {</b>
+&nbsp;            Enumeration&lt;JarEntry&gt; entries = jarFile.entries();
+&nbsp;
+&nbsp;            while(entries.hasMoreElements()) {
+&nbsp;                JarEntry entry = (JarEntry)entries.nextElement();
+&nbsp;                String entryPath = entry.getName();
+&nbsp;                if (this.getPathMatcher().match(entryPattern, entryPath)) {
+&nbsp;                    result.add(new UrlResource(&quot;jar&quot;, &quot;file:&quot; + jarFilePath + &quot;!/&quot; + entryPath));
+&nbsp;                }
+&nbsp;            }
+&nbsp;        } catch (IOException ex) {
+&nbsp;            if (logger.isWarnEnabled()) {
+&nbsp;                logger.warn(&quot;Cannot search for matching resources in jar file [&quot; + jarFilePath + &quot;] because the jar cannot be opened through the file system&quot;, ex);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
+</div>
+</body>
+</html>

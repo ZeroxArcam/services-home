@@ -1,0 +1,281 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > StandardBeanExpressionResolver</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.context.expression</a>
+</div>
+
+<h1>Coverage Summary for Class: StandardBeanExpressionResolver (org.springframework.context.expression)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">StandardBeanExpressionResolver</td>
+<td class="coverageStat">
+  <span class="percent">
+    63.6%
+  </span>
+  <span class="absValue">
+    (7/11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    37.5%
+  </span>
+  <span class="absValue">
+    (3/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    68.9%
+  </span>
+  <span class="absValue">
+    (31/45)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">StandardBeanExpressionResolver$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/4)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    73.3%
+  </span>
+  <span class="absValue">
+    (11/15)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    37.5%
+  </span>
+  <span class="absValue">
+    (3/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    71.4%
+  </span>
+  <span class="absValue">
+    (35/49)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.context.expression;
+&nbsp;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import org.springframework.beans.BeansException;
+&nbsp;import org.springframework.beans.factory.BeanExpressionException;
+&nbsp;import org.springframework.beans.factory.config.BeanExpressionContext;
+&nbsp;import org.springframework.beans.factory.config.BeanExpressionResolver;
+&nbsp;import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+&nbsp;import org.springframework.core.SpringProperties;
+&nbsp;import org.springframework.core.convert.ConversionService;
+&nbsp;import org.springframework.core.convert.support.DefaultConversionService;
+&nbsp;import org.springframework.expression.EvaluationContext;
+&nbsp;import org.springframework.expression.Expression;
+&nbsp;import org.springframework.expression.ExpressionParser;
+&nbsp;import org.springframework.expression.ParserContext;
+&nbsp;import org.springframework.expression.spel.SpelCompilerMode;
+&nbsp;import org.springframework.expression.spel.SpelParserConfiguration;
+&nbsp;import org.springframework.expression.spel.standard.SpelExpressionParser;
+&nbsp;import org.springframework.expression.spel.support.StandardEvaluationContext;
+&nbsp;import org.springframework.expression.spel.support.StandardTypeConverter;
+&nbsp;import org.springframework.expression.spel.support.StandardTypeLocator;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.StringUtils;
+&nbsp;
+&nbsp;public class StandardBeanExpressionResolver implements BeanExpressionResolver {
+&nbsp;    public static final String MAX_SPEL_EXPRESSION_LENGTH_PROPERTY_NAME = &quot;spring.context.expression.maxLength&quot;;
+&nbsp;    public static final String DEFAULT_EXPRESSION_PREFIX = &quot;#{&quot;;
+&nbsp;    public static final String DEFAULT_EXPRESSION_SUFFIX = &quot;}&quot;;
+&nbsp;    private String expressionPrefix;
+&nbsp;    private String expressionSuffix;
+&nbsp;    private ExpressionParser expressionParser;
+&nbsp;    private final Map&lt;String, Expression&gt; expressionCache;
+&nbsp;    private final Map&lt;BeanExpressionContext, StandardEvaluationContext&gt; evaluationCache;
+&nbsp;    private final ParserContext beanExpressionParserContext;
+&nbsp;
+&nbsp;    public StandardBeanExpressionResolver() {
+&nbsp;        this((ClassLoader)null);
+&nbsp;    }
+&nbsp;
+&nbsp;    public StandardBeanExpressionResolver(@Nullable ClassLoader beanClassLoader) {
+&nbsp;        this.expressionPrefix = &quot;#{&quot;;
+&nbsp;        this.expressionSuffix = &quot;}&quot;;
+&nbsp;        this.expressionCache = new ConcurrentHashMap(256);
+&nbsp;        this.evaluationCache = new ConcurrentHashMap(8);
+&nbsp;        this.beanExpressionParserContext = new ParserContext() {
+&nbsp;            public boolean isTemplate() {
+&nbsp;                return true;
+&nbsp;            }
+&nbsp;
+&nbsp;            public String getExpressionPrefix() {
+&nbsp;                return StandardBeanExpressionResolver.this.expressionPrefix;
+&nbsp;            }
+&nbsp;
+&nbsp;            public String getExpressionSuffix() {
+&nbsp;                return StandardBeanExpressionResolver.this.expressionSuffix;
+&nbsp;            }
+&nbsp;        };
+&nbsp;        SpelParserConfiguration parserConfig = new SpelParserConfiguration((SpelCompilerMode)null, beanClassLoader, false, false, Integer.MAX_VALUE, retrieveMaxExpressionLength());
+&nbsp;        this.expressionParser = new SpelExpressionParser(parserConfig);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setExpressionPrefix(String expressionPrefix) {
+&nbsp;        Assert.hasText(expressionPrefix, &quot;Expression prefix must not be empty&quot;);
+&nbsp;        this.expressionPrefix = expressionPrefix;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setExpressionSuffix(String expressionSuffix) {
+&nbsp;        Assert.hasText(expressionSuffix, &quot;Expression suffix must not be empty&quot;);
+&nbsp;        this.expressionSuffix = expressionSuffix;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+<b class="fc">&nbsp;    public void setExpressionParser(ExpressionParser expressionParser) {</b>
+&nbsp;        Assert.notNull(expressionParser, &quot;ExpressionParser must not be null&quot;);
+&nbsp;        this.expressionParser = expressionParser;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    @Nullable
+<b class="fc">&nbsp;    public Object evaluate(@Nullable String value, BeanExpressionContext beanExpressionContext) throws BeansException {</b>
+&nbsp;        if (!StringUtils.hasLength(value)) {
+<b class="fc">&nbsp;            return value;</b>
+&nbsp;        } else {
+&nbsp;            try {
+<b class="fc">&nbsp;                Expression expr = (Expression)this.expressionCache.computeIfAbsent(value, (expression) -&gt; this.expressionParser.parseExpression(expression, this.beanExpressionParserContext));</b>
+&nbsp;                EvaluationContext evalContext = (EvaluationContext)this.evaluationCache.computeIfAbsent(beanExpressionContext, (bec) -&gt; {
+&nbsp;                    ConfigurableBeanFactory beanFactory = bec.getBeanFactory();
+&nbsp;                    StandardEvaluationContext sec = new StandardEvaluationContext(bec);
+<b class="fc">&nbsp;                    sec.addPropertyAccessor(new BeanExpressionContextAccessor());</b>
+&nbsp;                    sec.addPropertyAccessor(new BeanFactoryAccessor());
+&nbsp;                    sec.addPropertyAccessor(new MapAccessor());
+&nbsp;                    sec.addPropertyAccessor(new EnvironmentAccessor());
+<b class="fc">&nbsp;                    sec.setBeanResolver(new BeanFactoryResolver(beanFactory));</b>
+&nbsp;                    sec.setTypeLocator(new StandardTypeLocator(beanFactory.getBeanClassLoader()));
+&nbsp;                    sec.setTypeConverter(new StandardTypeConverter(() -&gt; {
+&nbsp;                        ConversionService cs = beanFactory.getConversionService();
+&nbsp;                        return cs != null ? cs : DefaultConversionService.getSharedInstance();
+&nbsp;                    }));
+&nbsp;                    this.customizeEvaluationContext(sec);
+&nbsp;                    return sec;
+&nbsp;                });
+&nbsp;                return expr.getValue(evalContext);
+&nbsp;            } catch (Throwable ex) {
+<b class="nc">&nbsp;                throw new BeanExpressionException(&quot;Expression parsing failed&quot;, ex);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void customizeEvaluationContext(StandardEvaluationContext evalContext) {
+&nbsp;    }
+&nbsp;
+&nbsp;    private static int retrieveMaxExpressionLength() {
+&nbsp;        String value = SpringProperties.getProperty(&quot;spring.context.expression.maxLength&quot;);
+<b class="fc">&nbsp;        if (!StringUtils.hasText(value)) {</b>
+<b class="fc">&nbsp;            return 10000;</b>
+<b class="fc">&nbsp;        } else {</b>
+<b class="fc">&nbsp;            try {</b>
+&nbsp;                int maxLength = Integer.parseInt(value.trim());
+&nbsp;                Assert.isTrue(maxLength &gt; 0, () -&gt; &quot;Value [&quot; + maxLength + &quot;] for system property [spring.context.expression.maxLength] must be positive&quot;);
+&nbsp;                return maxLength;
+&nbsp;            } catch (NumberFormatException ex) {
+&nbsp;                throw new IllegalArgumentException(&quot;Failed to parse value for system property [spring.context.expression.maxLength]: &quot; + ex.getMessage(), ex);
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:58</div>
+</div>
+</body>
+</html>

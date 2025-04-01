@@ -1,14 +1,14 @@
 package com.pragma.hogar360.serviceshome.domain.usecases;
 import com.pragma.hogar360.serviceshome.domain.exceptions.*;
-import com.pragma.hogar360.serviceshome.domain.model.CategoryModel;
-import com.pragma.hogar360.serviceshome.domain.model.HomeModel;
-import com.pragma.hogar360.serviceshome.domain.model.HomePublicationInfoModel;
-import com.pragma.hogar360.serviceshome.domain.model.LocationModel;
+import com.pragma.hogar360.serviceshome.domain.model.*;
 import com.pragma.hogar360.serviceshome.domain.ports.in.HomeServicePort;
 import com.pragma.hogar360.serviceshome.domain.ports.out.CategoryPersistencePort;
 import com.pragma.hogar360.serviceshome.domain.ports.out.HomePersistencePort;
 import com.pragma.hogar360.serviceshome.domain.ports.out.LocationPersistencePort;
 import com.pragma.hogar360.serviceshome.domain.utils.constants.DomainConstants;
+import com.pragma.hogar360.serviceshome.domain.utils.constants.Pagination;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -110,5 +110,40 @@ public class HomeUseCase implements HomeServicePort {
                 )
         );
         homePersistencePort.saveAll(homesToActivate);
+    }
+    @Override
+    public Pagination<HomeModel> findHomesByFilters(
+            HomeQueryModel queryModel,
+            Integer page,
+            Integer size,
+            String sortBy,
+            String sortDirection
+    ) {
+        if (!DomainConstants.VALID_SORT_BY_VALUES.contains(sortBy)) {
+            throw new InvalidSortByException(String.format(DomainConstants.INVALID_SORT_BY_MESSAGE, sortBy));
+        }
+
+        if (queryModel.getMinRooms() != null && queryModel.getMinRooms() < DomainConstants.NUMBER_OF_ROOM_INT) {
+            throw new InvalidParameters(DomainConstants.MIN_ROOMS_NEGATIVE_MESSAGE);
+        }
+        if (queryModel.getMaxRooms() != null && queryModel.getMaxRooms() < DomainConstants.NUMBER_OF_ROOM_INT) {
+            throw new InvalidParameters(DomainConstants.MAX_ROOMS_NEGATIVE_MESSAGE);
+        }
+        if (queryModel.getMinBathrooms() != null && queryModel.getMinBathrooms() < DomainConstants.NUMBER_OF_ROOM_INT) {
+            throw new InvalidParameters(DomainConstants.MIN_BATHROOMS_NEGATIVE_MESSAGE);
+        }
+        if (queryModel.getMaxBathrooms() != null && queryModel.getMaxBathrooms() < DomainConstants.NUMBER_OF_ROOM_INT) {
+            throw new InvalidParameters(DomainConstants.MAX_BATHROOMS_NEGATIVE_MESSAGE);
+        }
+        if (queryModel.getMinPrice() != null && queryModel.getMinPrice().compareTo(BigDecimal.ZERO) < DomainConstants.NUMBER_OF_ROOM_INT) {
+            throw new InvalidParameters(DomainConstants.MIN_PRICE_NEGATIVE_MESSAGE);
+        }
+        if (queryModel.getMaxPrice() != null && queryModel.getMaxPrice().compareTo(BigDecimal.ZERO) < DomainConstants.NUMBER_OF_ROOM_INT) {
+            throw new InvalidParameters(DomainConstants.MAX_PRICE_NEGATIVE_MESSAGE);
+        }
+        if (!sortDirection.equalsIgnoreCase(DomainConstants.SORT_ASC) && !sortDirection.equalsIgnoreCase(DomainConstants.SORT_DESC)) {
+            throw new InvalidParameters(String.format(DomainConstants.INVALID_SORT_DIRECTION_MESSAGE, sortDirection));
+        }
+        return homePersistencePort.findHomesByFilters(queryModel, page, size, sortBy, sortDirection);
     }
 }

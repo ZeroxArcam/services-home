@@ -1,0 +1,247 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > MockitoResetTestExecutionListener</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.test.context.bean.override.mockito</a>
+</div>
+
+<h1>Coverage Summary for Class: MockitoResetTestExecutionListener (org.springframework.test.context.bean.override.mockito)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MockitoResetTestExecutionListener</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    30%
+  </span>
+  <span class="absValue">
+    (3/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/28)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    11.9%
+  </span>
+  <span class="absValue">
+    (5/42)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.test.context.bean.override.mockito;
+&nbsp;
+&nbsp;import java.util.Arrays;
+&nbsp;import java.util.HashSet;
+&nbsp;import java.util.Set;
+&nbsp;import org.apache.commons.logging.Log;
+&nbsp;import org.apache.commons.logging.LogFactory;
+&nbsp;import org.mockito.Mockito;
+&nbsp;import org.springframework.beans.factory.BeanFactory;
+&nbsp;import org.springframework.beans.factory.FactoryBean;
+&nbsp;import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+&nbsp;import org.springframework.beans.factory.config.BeanDefinition;
+&nbsp;import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+&nbsp;import org.springframework.context.ApplicationContext;
+&nbsp;import org.springframework.context.ConfigurableApplicationContext;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.test.context.TestContext;
+&nbsp;import org.springframework.test.context.support.AbstractTestExecutionListener;
+&nbsp;import org.springframework.util.ClassUtils;
+&nbsp;
+&nbsp;public class MockitoResetTestExecutionListener extends AbstractTestExecutionListener {
+&nbsp;    public static final int ORDER = 2147483547;
+&nbsp;    private static final Log logger = LogFactory.getLog(MockitoResetTestExecutionListener.class);
+&nbsp;    private static final boolean mockitoPresent = ClassUtils.isPresent(&quot;org.mockito.Mockito&quot;, MockitoResetTestExecutionListener.class.getClassLoader());
+&nbsp;    @Nullable
+&nbsp;    private static volatile Boolean mockitoInitialized;
+&nbsp;
+&nbsp;    public MockitoResetTestExecutionListener() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getOrder() {
+&nbsp;        return 2147483547;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void beforeTestMethod(TestContext testContext) {
+&nbsp;        if (isEnabled()) {
+&nbsp;            resetMocks(testContext.getApplicationContext(), MockReset.BEFORE);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void afterTestMethod(TestContext testContext) {
+&nbsp;        if (isEnabled()) {
+&nbsp;            resetMocks(testContext.getApplicationContext(), MockReset.AFTER);
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private static void resetMocks(ApplicationContext applicationContext, MockReset reset) {
+&nbsp;        if (applicationContext instanceof ConfigurableApplicationContext configurableContext) {
+&nbsp;            resetMocks(configurableContext, reset);
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private static void resetMocks(ConfigurableApplicationContext applicationContext, MockReset reset) {
+&nbsp;        ConfigurableListableBeanFactory beanFactory = applicationContext.getBeanFactory();
+&nbsp;        String[] beanNames = beanFactory.getBeanDefinitionNames();
+&nbsp;        Set&lt;String&gt; instantiatedSingletons = new HashSet(Arrays.asList(beanFactory.getSingletonNames()));
+&nbsp;
+<b class="fc">&nbsp;        for(String beanName : beanNames) {</b>
+<b class="fc">&nbsp;            BeanDefinition beanDefinition = beanFactory.getBeanDefinition(beanName);</b>
+&nbsp;            if (beanDefinition.isSingleton() &amp;&amp; instantiatedSingletons.contains(beanName)) {
+&nbsp;                Object bean = getBean(beanFactory, beanName);
+&nbsp;                if (bean != null &amp;&amp; reset == MockReset.get(bean)) {
+&nbsp;                    Mockito.reset(new Object[]{bean});
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        try {
+&nbsp;            ((MockBeans)beanFactory.getBean(MockBeans.class)).resetAll(reset);
+&nbsp;        } catch (NoSuchBeanDefinitionException var11) {
+&nbsp;        }
+&nbsp;
+&nbsp;        if (applicationContext.getParent() != null) {
+&nbsp;            resetMocks(applicationContext.getParent(), reset);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    private static Object getBean(ConfigurableListableBeanFactory beanFactory, String beanName) {
+&nbsp;        try {
+&nbsp;            if (isStandardBeanOrSingletonFactoryBean(beanFactory, beanName)) {
+<b class="fc">&nbsp;                return beanFactory.getBean(beanName);</b>
+&nbsp;            }
+&nbsp;        } catch (Exception var3) {
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return beanFactory.getSingleton(beanName);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private static boolean isStandardBeanOrSingletonFactoryBean(BeanFactory beanFactory, String beanName) {
+&nbsp;        String factoryBeanName = &quot;&amp;&quot; + beanName;
+&nbsp;        if (beanFactory.containsBean(factoryBeanName)) {
+&nbsp;            FactoryBean&lt;?&gt; factoryBean = (FactoryBean)beanFactory.getBean(factoryBeanName);
+<b class="nc">&nbsp;            return factoryBean.isSingleton();</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            return true;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static boolean isEnabled() {
+<b class="nc">&nbsp;        if (!mockitoPresent) {</b>
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        } else {
+&nbsp;            Boolean enabled = mockitoInitialized;
+&nbsp;            if (enabled == null) {
+&nbsp;                try {
+<b class="nc">&nbsp;                    Mockito.mockingDetails(&quot;a string is not a mock&quot;).isMock();</b>
+<b class="nc">&nbsp;                    enabled = true;</b>
+<b class="nc">&nbsp;                } catch (Throwable ex) {</b>
+<b class="nc">&nbsp;                    enabled = false;</b>
+<b class="nc">&nbsp;                    if (logger.isDebugEnabled()) {</b>
+<b class="nc">&nbsp;                        logger.debug(&quot;MockitoResetTestExecutionListener is disabled in the current environment. See exception for details.&quot;, ex);</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                mockitoInitialized = enabled;
+&nbsp;            }
+&nbsp;
+&nbsp;            return enabled;
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,845 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > AntPathMatcher</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.util</a>
+</div>
+
+<h1>Coverage Summary for Class: AntPathMatcher (org.springframework.util)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AntPathMatcher</td>
+<td class="coverageStat">
+  <span class="percent">
+    52%
+  </span>
+  <span class="absValue">
+    (13/25)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    34.6%
+  </span>
+  <span class="absValue">
+    (74/214)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    49.3%
+  </span>
+  <span class="absValue">
+    (105/213)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">AntPathMatcher$AntPathStringMatcher</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    47.1%
+  </span>
+  <span class="absValue">
+    (16/34)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    63%
+  </span>
+  <span class="absValue">
+    (34/54)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">AntPathMatcher$PathSeparatorPatternCache</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (1/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    60%
+  </span>
+  <span class="absValue">
+    (3/5)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    56.2%
+  </span>
+  <span class="absValue">
+    (18/32)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    36.3%
+  </span>
+  <span class="absValue">
+    (90/248)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    52.2%
+  </span>
+  <span class="absValue">
+    (142/272)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.util;
+&nbsp;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Comparator;
+&nbsp;import java.util.LinkedHashMap;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import java.util.regex.Matcher;
+&nbsp;import java.util.regex.Pattern;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;
+&nbsp;public class AntPathMatcher implements PathMatcher {
+&nbsp;    public static final String DEFAULT_PATH_SEPARATOR = &quot;/&quot;;
+&nbsp;    private static final int CACHE_TURNOFF_THRESHOLD = 65536;
+&nbsp;    private static final Pattern VARIABLE_PATTERN = Pattern.compile(&quot;\\{[^/]+?\\}&quot;);
+&nbsp;    private static final char[] WILDCARD_CHARS = new char[]{&#39;*&#39;, &#39;?&#39;, &#39;{&#39;};
+&nbsp;    private String pathSeparator;
+&nbsp;    private PathSeparatorPatternCache pathSeparatorPatternCache;
+&nbsp;    private boolean caseSensitive = true;
+&nbsp;    private boolean trimTokens = false;
+&nbsp;    @Nullable
+&nbsp;    private volatile Boolean cachePatterns;
+&nbsp;    private final Map&lt;String, String[]&gt; tokenizedPatternCache = new ConcurrentHashMap(256);
+&nbsp;    final Map&lt;String, AntPathStringMatcher&gt; stringMatcherCache = new ConcurrentHashMap(256);
+&nbsp;
+&nbsp;    public AntPathMatcher() {
+&nbsp;        this.pathSeparator = &quot;/&quot;;
+&nbsp;        this.pathSeparatorPatternCache = new PathSeparatorPatternCache(&quot;/&quot;);
+&nbsp;    }
+&nbsp;
+&nbsp;    public AntPathMatcher(String pathSeparator) {
+&nbsp;        Assert.notNull(pathSeparator, &quot;&#39;pathSeparator&#39; must not be null&quot;);
+&nbsp;        this.pathSeparator = pathSeparator;
+&nbsp;        this.pathSeparatorPatternCache = new PathSeparatorPatternCache(pathSeparator);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setPathSeparator(@Nullable String pathSeparator) {
+&nbsp;        this.pathSeparator = pathSeparator != null ? pathSeparator : &quot;/&quot;;
+&nbsp;        this.pathSeparatorPatternCache = new PathSeparatorPatternCache(this.pathSeparator);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setCaseSensitive(boolean caseSensitive) {
+&nbsp;        this.caseSensitive = caseSensitive;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setTrimTokens(boolean trimTokens) {
+&nbsp;        this.trimTokens = trimTokens;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setCachePatterns(boolean cachePatterns) {
+&nbsp;        this.cachePatterns = cachePatterns;
+&nbsp;    }
+&nbsp;
+&nbsp;    private void deactivatePatternCache() {
+&nbsp;        this.cachePatterns = false;
+&nbsp;        this.tokenizedPatternCache.clear();
+&nbsp;        this.stringMatcherCache.clear();
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isPattern(@Nullable String path) {
+&nbsp;        if (path == null) {
+&nbsp;            return false;
+&nbsp;        } else {
+&nbsp;            boolean uriVar = false;
+&nbsp;
+&nbsp;            for(int i = 0; i &lt; path.length(); ++i) {
+&nbsp;                char c = path.charAt(i);
+&nbsp;                if (c == &#39;*&#39; || c == &#39;?&#39;) {
+&nbsp;                    return true;
+&nbsp;                }
+&nbsp;
+&nbsp;                if (c == &#39;{&#39;) {
+&nbsp;                    uriVar = true;
+&nbsp;                } else if (c == &#39;}&#39; &amp;&amp; uriVar) {
+<b class="fc">&nbsp;                    return true;</b>
+&nbsp;                }
+<b class="fc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            return false;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean match(String pattern, String path) {
+<b class="fc">&nbsp;        return this.doMatch(pattern, path, true, (Map)null);</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public boolean matchStart(String pattern, String path) {
+&nbsp;        return this.doMatch(pattern, path, false, (Map)null);
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    protected boolean doMatch(String pattern, @Nullable String path, boolean fullMatch, @Nullable Map&lt;String, String&gt; uriTemplateVariables) {</b>
+&nbsp;        if (path != null &amp;&amp; path.startsWith(this.pathSeparator) == pattern.startsWith(this.pathSeparator)) {
+<b class="fc">&nbsp;            String[] pattDirs = this.tokenizePattern(pattern);</b>
+&nbsp;            if (fullMatch &amp;&amp; this.caseSensitive &amp;&amp; !this.isPotentialMatch(path, pattDirs)) {
+&nbsp;                return false;
+&nbsp;            } else {
+&nbsp;                String[] pathDirs = this.tokenizePath(path);
+&nbsp;                int pattIdxStart = 0;
+<b class="fc">&nbsp;                int pattIdxEnd = pattDirs.length - 1;</b>
+<b class="fc">&nbsp;                int pathIdxStart = 0;</b>
+<b class="fc">&nbsp;</b>
+&nbsp;                int pathIdxEnd;
+&nbsp;                for(pathIdxEnd = pathDirs.length - 1; pattIdxStart &lt;= pattIdxEnd &amp;&amp; pathIdxStart &lt;= pathIdxEnd; ++pathIdxStart) {
+&nbsp;                    String pattDir = pattDirs[pattIdxStart];
+&nbsp;                    if (&quot;**&quot;.equals(pattDir)) {
+&nbsp;                        break;
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if (!this.matchStrings(pattDir, pathDirs[pathIdxStart], uriTemplateVariables)) {</b>
+<b class="nc">&nbsp;                        return false;</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                    ++pattIdxStart;
+&nbsp;                }
+&nbsp;
+&nbsp;                if (pathIdxStart &gt; pathIdxEnd) {
+&nbsp;                    if (pattIdxStart &gt; pattIdxEnd) {
+&nbsp;                        return pattern.endsWith(this.pathSeparator) == path.endsWith(this.pathSeparator);
+&nbsp;                    } else if (!fullMatch) {
+&nbsp;                        return true;
+<b class="nc">&nbsp;                    } else if (pattIdxStart == pattIdxEnd &amp;&amp; pattDirs[pattIdxStart].equals(&quot;*&quot;) &amp;&amp; path.endsWith(this.pathSeparator)) {</b>
+<b class="nc">&nbsp;                        return true;</b>
+&nbsp;                    } else {
+&nbsp;                        for(int i = pattIdxStart; i &lt;= pattIdxEnd; ++i) {
+&nbsp;                            if (!pattDirs[i].equals(&quot;**&quot;)) {
+&nbsp;                                return false;
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;
+&nbsp;                        return true;
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                } else if (pattIdxStart &gt; pattIdxEnd) {
+&nbsp;                    return false;
+&nbsp;                } else if (!fullMatch &amp;&amp; &quot;**&quot;.equals(pattDirs[pattIdxStart])) {
+&nbsp;                    return true;
+&nbsp;                } else {
+&nbsp;                    while(pattIdxStart &lt;= pattIdxEnd &amp;&amp; pathIdxStart &lt;= pathIdxEnd) {
+&nbsp;                        String pattDir = pattDirs[pattIdxEnd];
+<b class="nc">&nbsp;                        if (pattDir.equals(&quot;**&quot;)) {</b>
+&nbsp;                            break;
+&nbsp;                        }
+&nbsp;
+&nbsp;                        if (!this.matchStrings(pattDir, pathDirs[pathIdxEnd], uriTemplateVariables)) {
+&nbsp;                            return false;
+&nbsp;                        }
+&nbsp;
+&nbsp;                        if (pattIdxEnd == pattDirs.length - 1 &amp;&amp; pattern.endsWith(this.pathSeparator) != path.endsWith(this.pathSeparator)) {
+&nbsp;                            return false;
+&nbsp;                        }
+&nbsp;
+&nbsp;                        --pattIdxEnd;
+&nbsp;                        --pathIdxEnd;
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if (pathIdxStart &gt; pathIdxEnd) {</b>
+&nbsp;                        for(int i = pattIdxStart; i &lt;= pattIdxEnd; ++i) {
+&nbsp;                            if (!pattDirs[i].equals(&quot;**&quot;)) {
+&nbsp;                                return false;
+<b class="nc">&nbsp;                            }</b>
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                        return true;
+&nbsp;                    } else {
+&nbsp;                        while(pattIdxStart != pattIdxEnd &amp;&amp; pathIdxStart &lt;= pathIdxEnd) {
+&nbsp;                            int patIdxTmp = -1;
+&nbsp;
+<b class="pc">&nbsp;                            for(int i = pattIdxStart + 1; i &lt;= pattIdxEnd; ++i) {</b>
+<b class="nc">&nbsp;                                if (pattDirs[i].equals(&quot;**&quot;)) {</b>
+&nbsp;                                    patIdxTmp = i;
+<b class="fc">&nbsp;                                    break;</b>
+<b class="fc">&nbsp;                                }</b>
+<b class="fc">&nbsp;                            }</b>
+<b class="pc">&nbsp;</b>
+<b class="fc">&nbsp;                            if (patIdxTmp == pattIdxStart + 1) {</b>
+&nbsp;                                ++pattIdxStart;
+<b class="pc">&nbsp;                            } else {</b>
+<b class="nc">&nbsp;                                int patLength = patIdxTmp - pattIdxStart - 1;</b>
+&nbsp;                                int strLength = pathIdxEnd - pathIdxStart + 1;
+&nbsp;                                int foundIdx = -1;
+<b class="pc">&nbsp;                                int i = 0;</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                                label150:
+&nbsp;                                while(i &lt;= strLength - patLength) {
+<b class="fc">&nbsp;                                    for(int j = 0; j &lt; patLength; ++j) {</b>
+&nbsp;                                        String subPat = pattDirs[pattIdxStart + j + 1];
+&nbsp;                                        String subStr = pathDirs[pathIdxStart + i + j];
+&nbsp;                                        if (!this.matchStrings(subPat, subStr, uriTemplateVariables)) {
+&nbsp;                                            ++i;
+<b class="fc">&nbsp;                                            continue label150;</b>
+&nbsp;                                        }
+&nbsp;                                    }
+&nbsp;
+&nbsp;                                    foundIdx = pathIdxStart + i;
+<b class="nc">&nbsp;                                    break;</b>
+&nbsp;                                }
+&nbsp;
+&nbsp;                                if (foundIdx == -1) {
+&nbsp;                                    return false;
+&nbsp;                                }
+&nbsp;
+&nbsp;                                pattIdxStart = patIdxTmp;
+&nbsp;                                pathIdxStart = foundIdx + patLength;
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;
+&nbsp;                        for(int i = pattIdxStart; i &lt;= pattIdxEnd; ++i) {
+&nbsp;                            if (!pattDirs[i].equals(&quot;**&quot;)) {
+<b class="pc">&nbsp;                                return false;</b>
+<b class="nc">&nbsp;                            }</b>
+&nbsp;                        }
+&nbsp;
+<b class="fc">&nbsp;                        return true;</b>
+<b class="pc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;        } else {
+<b class="fc">&nbsp;            return false;</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private boolean isPotentialMatch(String path, String[] pattDirs) {</b>
+&nbsp;        if (!this.trimTokens) {
+&nbsp;            int pos = 0;
+<b class="pc">&nbsp;</b>
+<b class="fc">&nbsp;            for(String pattDir : pattDirs) {</b>
+<b class="fc">&nbsp;                int skipped = this.skipSeparator(path, pos, this.pathSeparator);</b>
+&nbsp;                pos += skipped;
+&nbsp;                skipped = this.skipSegment(path, pos, pattDir);
+<b class="fc">&nbsp;                if (skipped &lt; pattDir.length()) {</b>
+<b class="fc">&nbsp;                    return skipped &gt; 0 || pattDir.length() &gt; 0 &amp;&amp; this.isWildcardChar(pattDir.charAt(0));</b>
+&nbsp;                }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;                pos += skipped;</b>
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+&nbsp;        return true;
+<b class="pc">&nbsp;    }</b>
+<b class="pc">&nbsp;</b>
+&nbsp;    private int skipSegment(String path, int pos, String prefix) {
+<b class="nc">&nbsp;        int skipped = 0;</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        for(int i = 0; i &lt; prefix.length(); ++i) {
+<b class="nc">&nbsp;            char c = prefix.charAt(i);</b>
+<b class="nc">&nbsp;            if (this.isWildcardChar(c)) {</b>
+&nbsp;                return skipped;
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            int currPos = pos + skipped;</b>
+&nbsp;            if (currPos &gt;= path.length()) {
+&nbsp;                return 0;
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="pc">&nbsp;            if (c == path.charAt(currPos)) {</b>
+&nbsp;                ++skipped;
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+<b class="pc">&nbsp;</b>
+&nbsp;        return skipped;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private int skipSeparator(String path, int pos, String separator) {
+&nbsp;        int skipped;
+<b class="pc">&nbsp;        for(skipped = 0; path.startsWith(separator, pos + skipped); skipped += separator.length()) {</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;        return skipped;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private boolean isWildcardChar(char c) {</b>
+&nbsp;        for(char candidate : WILDCARD_CHARS) {
+<b class="pc">&nbsp;            if (c == candidate) {</b>
+<b class="pc">&nbsp;                return true;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;        return false;</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    protected String[] tokenizePattern(String pattern) {
+<b class="fc">&nbsp;        String[] tokenized = null;</b>
+<b class="pc">&nbsp;        Boolean cachePatterns = this.cachePatterns;</b>
+<b class="nc">&nbsp;        if (cachePatterns == null || cachePatterns) {</b>
+&nbsp;            tokenized = (String[])this.tokenizedPatternCache.get(pattern);
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+&nbsp;        if (tokenized == null) {
+&nbsp;            tokenized = this.tokenizePath(pattern);
+<b class="pc">&nbsp;            if (cachePatterns == null &amp;&amp; this.tokenizedPatternCache.size() &gt;= 65536) {</b>
+<b class="nc">&nbsp;                this.deactivatePatternCache();</b>
+<b class="nc">&nbsp;                return tokenized;</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            if (cachePatterns == null || cachePatterns) {
+&nbsp;                this.tokenizedPatternCache.put(pattern, tokenized);
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        return tokenized;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected String[] tokenizePath(String path) {
+&nbsp;        return StringUtils.tokenizeToStringArray(path, this.pathSeparator, this.trimTokens, true);
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private boolean matchStrings(String pattern, String str, @Nullable Map&lt;String, String&gt; uriTemplateVariables) {</b>
+&nbsp;        return this.getStringMatcher(pattern).matchStrings(str, uriTemplateVariables);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected AntPathStringMatcher getStringMatcher(String pattern) {</b>
+<b class="nc">&nbsp;        AntPathStringMatcher matcher = null;</b>
+<b class="nc">&nbsp;        Boolean cachePatterns = this.cachePatterns;</b>
+<b class="nc">&nbsp;        if (cachePatterns == null || cachePatterns) {</b>
+&nbsp;            matcher = (AntPathStringMatcher)this.stringMatcherCache.get(pattern);
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if (matcher == null) {</b>
+&nbsp;            matcher = new AntPathStringMatcher(pattern, this.pathSeparator, this.caseSensitive);
+&nbsp;            if (cachePatterns == null &amp;&amp; this.stringMatcherCache.size() &gt;= 65536) {
+&nbsp;                this.deactivatePatternCache();
+<b class="nc">&nbsp;                return matcher;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            if (cachePatterns == null || cachePatterns) {
+<b class="nc">&nbsp;                this.stringMatcherCache.put(pattern, matcher);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        return matcher;</b>
+<b class="pc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public String extractPathWithinPattern(String pattern, String path) {
+&nbsp;        String[] patternParts = StringUtils.tokenizeToStringArray(pattern, this.pathSeparator, this.trimTokens, true);
+&nbsp;        String[] pathParts = StringUtils.tokenizeToStringArray(path, this.pathSeparator, this.trimTokens, true);
+<b class="fc">&nbsp;        StringBuilder builder = new StringBuilder();</b>
+&nbsp;        boolean pathStarted = false;
+&nbsp;
+&nbsp;        for(int segment = 0; segment &lt; patternParts.length; ++segment) {
+<b class="pc">&nbsp;            String patternPart = patternParts[segment];</b>
+<b class="fc">&nbsp;            if (patternPart.indexOf(42) &gt; -1 || patternPart.indexOf(63) &gt; -1) {</b>
+<b class="pc">&nbsp;                while(segment &lt; pathParts.length) {</b>
+<b class="fc">&nbsp;                    if (pathStarted || segment == 0 &amp;&amp; !pattern.startsWith(this.pathSeparator)) {</b>
+<b class="fc">&nbsp;                        builder.append(this.pathSeparator);</b>
+<b class="fc">&nbsp;                    }</b>
+<b class="fc">&nbsp;</b>
+<b class="pc">&nbsp;                    builder.append(pathParts[segment]);</b>
+&nbsp;                    pathStarted = true;
+<b class="fc">&nbsp;                    ++segment;</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return builder.toString();
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public Map&lt;String, String&gt; extractUriTemplateVariables(String pattern, String path) {</b>
+<b class="fc">&nbsp;        Map&lt;String, String&gt; variables = new LinkedHashMap();</b>
+<b class="fc">&nbsp;        boolean result = this.doMatch(pattern, path, true, variables);</b>
+<b class="fc">&nbsp;        if (!result) {</b>
+&nbsp;            throw new IllegalStateException(&quot;Pattern \&quot;&quot; + pattern + &quot;\&quot; is not a match for \&quot;&quot; + path + &quot;\&quot;&quot;);
+<b class="fc">&nbsp;        } else {</b>
+<b class="pc">&nbsp;            return variables;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="pc">&nbsp;</b>
+<b class="fc">&nbsp;    public String combine(String pattern1, String pattern2) {</b>
+&nbsp;        if (!StringUtils.hasText(pattern1) &amp;&amp; !StringUtils.hasText(pattern2)) {
+&nbsp;            return &quot;&quot;;
+<b class="fc">&nbsp;        } else if (!StringUtils.hasText(pattern1)) {</b>
+&nbsp;            return pattern2;
+&nbsp;        } else if (!StringUtils.hasText(pattern2)) {
+&nbsp;            return pattern1;
+<b class="fc">&nbsp;        } else {</b>
+<b class="fc">&nbsp;            boolean pattern1ContainsUriVar = pattern1.indexOf(123) != -1;</b>
+<b class="fc">&nbsp;            if (!pattern1.equals(pattern2) &amp;&amp; !pattern1ContainsUriVar &amp;&amp; this.match(pattern1, pattern2)) {</b>
+&nbsp;                return pattern2;
+<b class="fc">&nbsp;            } else if (pattern1.endsWith(this.pathSeparatorPatternCache.getEndsOnWildCard())) {</b>
+&nbsp;                return this.concat(pattern1.substring(0, pattern1.length() - 2), pattern2);
+&nbsp;            } else if (pattern1.endsWith(this.pathSeparatorPatternCache.getEndsOnDoubleWildCard())) {
+&nbsp;                return this.concat(pattern1, pattern2);
+<b class="fc">&nbsp;            } else {</b>
+<b class="fc">&nbsp;                int starDotPos1 = pattern1.indexOf(&quot;*.&quot;);</b>
+<b class="fc">&nbsp;                if (!pattern1ContainsUriVar &amp;&amp; starDotPos1 != -1 &amp;&amp; !this.pathSeparator.equals(&quot;.&quot;)) {</b>
+&nbsp;                    String ext1 = pattern1.substring(starDotPos1 + 1);
+&nbsp;                    int dotPos2 = pattern2.indexOf(46);
+<b class="fc">&nbsp;                    String file2 = dotPos2 == -1 ? pattern2 : pattern2.substring(0, dotPos2);</b>
+&nbsp;                    String ext2 = dotPos2 == -1 ? &quot;&quot; : pattern2.substring(dotPos2);
+&nbsp;                    boolean ext1All = ext1.equals(&quot;.*&quot;) || ext1.isEmpty();
+&nbsp;                    boolean ext2All = ext2.equals(&quot;.*&quot;) || ext2.isEmpty();
+&nbsp;                    if (!ext1All &amp;&amp; !ext2All) {
+&nbsp;                        throw new IllegalArgumentException(&quot;Cannot combine patterns: &quot; + pattern1 + &quot; vs &quot; + pattern2);
+&nbsp;                    } else {
+&nbsp;                        String ext = ext1All ? ext2 : ext1;
+&nbsp;                        return file2 + ext;
+&nbsp;                    }
+&nbsp;                } else {
+<b class="fc">&nbsp;                    return this.concat(pattern1, pattern2);</b>
+<b class="fc">&nbsp;                }</b>
+<b class="pc">&nbsp;            }</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private String concat(String path1, String path2) {</b>
+<b class="pc">&nbsp;        boolean path1EndsWithSeparator = path1.endsWith(this.pathSeparator);</b>
+&nbsp;        boolean path2StartsWithSeparator = path2.startsWith(this.pathSeparator);
+&nbsp;        if (path1EndsWithSeparator &amp;&amp; path2StartsWithSeparator) {
+&nbsp;            return path1 + path2.substring(1);
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            return !path1EndsWithSeparator &amp;&amp; !path2StartsWithSeparator ? path1 + this.pathSeparator + path2 : path1 + path2;</b>
+&nbsp;        }
+<b class="pc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    public Comparator&lt;String&gt; getPatternComparator(String path) {
+&nbsp;        return new AntPatternComparator(path, this.pathSeparator);
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected static class AntPathStringMatcher {
+&nbsp;        private static final String DEFAULT_VARIABLE_PATTERN = &quot;((?s).*)&quot;;
+&nbsp;        private final String rawPattern;
+&nbsp;        private final boolean caseSensitive;
+&nbsp;        private final boolean exactMatch;
+&nbsp;        @Nullable
+&nbsp;        private final Pattern pattern;
+<b class="fc">&nbsp;        private final List&lt;String&gt; variableNames = new ArrayList();</b>
+&nbsp;
+&nbsp;        protected AntPathStringMatcher(String pattern, String pathSeparator, boolean caseSensitive) {
+&nbsp;            this.rawPattern = pattern;
+&nbsp;            this.caseSensitive = caseSensitive;
+&nbsp;            StringBuilder patternBuilder = new StringBuilder();
+&nbsp;            Matcher matcher = getGlobPattern(pathSeparator).matcher(pattern);
+&nbsp;
+&nbsp;            int end;
+&nbsp;            for(end = 0; matcher.find(); end = matcher.end()) {
+&nbsp;                patternBuilder.append(this.quote(pattern, end, matcher.start()));
+&nbsp;                String match = matcher.group();
+<b class="fc">&nbsp;                if (&quot;?&quot;.equals(match)) {</b>
+&nbsp;                    patternBuilder.append(&#39;.&#39;);
+&nbsp;                } else if (&quot;*&quot;.equals(match)) {
+&nbsp;                    patternBuilder.append(&quot;.*&quot;);
+&nbsp;                } else if (match.startsWith(&quot;{&quot;) &amp;&amp; match.endsWith(&quot;}&quot;)) {
+&nbsp;                    int colonIdx = match.indexOf(58);
+&nbsp;                    if (colonIdx == -1) {
+&nbsp;                        patternBuilder.append(&quot;((?s).*)&quot;);
+&nbsp;                        this.variableNames.add(matcher.group(1));
+&nbsp;                    } else {
+&nbsp;                        String variablePattern = match.substring(colonIdx + 1, match.length() - 1);
+&nbsp;                        patternBuilder.append(&#39;(&#39;);
+&nbsp;                        patternBuilder.append(variablePattern);
+&nbsp;                        patternBuilder.append(&#39;)&#39;);
+&nbsp;                        String variableName = match.substring(1, colonIdx);
+&nbsp;                        this.variableNames.add(variableName);
+&nbsp;                    }
+<b class="fc">&nbsp;                }</b>
+<b class="fc">&nbsp;            }</b>
+<b class="pc">&nbsp;</b>
+<b class="fc">&nbsp;            if (end == 0) {</b>
+&nbsp;                this.exactMatch = true;
+<b class="fc">&nbsp;                this.pattern = null;</b>
+<b class="fc">&nbsp;            } else {</b>
+<b class="pc">&nbsp;                this.exactMatch = false;</b>
+&nbsp;                patternBuilder.append(this.quote(pattern, end, pattern.length()));
+&nbsp;                this.pattern = Pattern.compile(patternBuilder.toString(), 32 | (this.caseSensitive ? 0 : 2));
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="pc">&nbsp;        private static Pattern getGlobPattern(String pathSeparator) {</b>
+<b class="fc">&nbsp;            String pattern = &quot;\\?|\\*|\\{((?:\\{[^&quot; + pathSeparator + &quot;]+?\\}|[^&quot; + pathSeparator + &quot;{}]|\\\\[{}])+?)\\}&quot;;</b>
+&nbsp;            return Pattern.compile(pattern);
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+&nbsp;        private String quote(String s, int start, int end) {
+&nbsp;            return start == end ? &quot;&quot; : Pattern.quote(s.substring(start, end));
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean matchStrings(String str, @Nullable Map&lt;String, String&gt; uriTemplateVariables) {
+&nbsp;            if (this.exactMatch) {
+&nbsp;                return this.caseSensitive ? this.rawPattern.equals(str) : this.rawPattern.equalsIgnoreCase(str);
+&nbsp;            } else {
+&nbsp;                if (this.pattern != null) {
+&nbsp;                    Matcher matcher = this.pattern.matcher(str);
+&nbsp;                    if (matcher.matches()) {
+&nbsp;                        if (uriTemplateVariables != null) {
+&nbsp;                            if (this.variableNames.size() != matcher.groupCount()) {
+&nbsp;                                throw new IllegalArgumentException(&quot;The number of capturing groups in the pattern segment &quot; + String.valueOf(this.pattern) + &quot; does not match the number of URI template variables it defines, which can occur if capturing groups are used in a URI template regex. Use non-capturing groups instead.&quot;);
+&nbsp;                            }
+&nbsp;
+&nbsp;                            for(int i = 1; i &lt;= matcher.groupCount(); ++i) {
+<b class="nc">&nbsp;                                String name = (String)this.variableNames.get(i - 1);</b>
+<b class="nc">&nbsp;                                if (name.startsWith(&quot;*&quot;)) {</b>
+<b class="nc">&nbsp;                                    throw new IllegalArgumentException(&quot;Capturing patterns (&quot; + name + &quot;) are not supported by the AntPathMatcher. Use the PathPatternParser instead.&quot;);</b>
+<b class="nc">&nbsp;                                }</b>
+&nbsp;
+<b class="nc">&nbsp;                                String value = matcher.group(i);</b>
+<b class="nc">&nbsp;                                uriTemplateVariables.put(name, value);</b>
+<b class="nc">&nbsp;                            }</b>
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                        return true;</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                return false;
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected static class AntPatternComparator implements Comparator&lt;String&gt; {
+&nbsp;        private final String path;
+&nbsp;        private final String pathSeparator;
+&nbsp;
+<b class="nc">&nbsp;        public AntPatternComparator(String path) {</b>
+<b class="nc">&nbsp;            this(path, &quot;/&quot;);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        public AntPatternComparator(String path, String pathSeparator) {
+<b class="nc">&nbsp;            this.path = path;</b>
+&nbsp;            this.pathSeparator = pathSeparator;
+&nbsp;        }
+&nbsp;
+&nbsp;        public int compare(String pattern1, String pattern2) {
+&nbsp;            PatternInfo info1 = new PatternInfo(pattern1, this.pathSeparator);
+&nbsp;            PatternInfo info2 = new PatternInfo(pattern2, this.pathSeparator);
+&nbsp;            if (info1.isLeastSpecific() &amp;&amp; info2.isLeastSpecific()) {
+&nbsp;                return 0;
+&nbsp;            } else if (info1.isLeastSpecific()) {
+&nbsp;                return 1;
+&nbsp;            } else if (info2.isLeastSpecific()) {
+&nbsp;                return -1;
+&nbsp;            } else {
+&nbsp;                boolean pattern1EqualsPath = pattern1.equals(this.path);
+&nbsp;                boolean pattern2EqualsPath = pattern2.equals(this.path);
+&nbsp;                if (pattern1EqualsPath &amp;&amp; pattern2EqualsPath) {
+&nbsp;                    return 0;
+&nbsp;                } else if (pattern1EqualsPath) {
+&nbsp;                    return -1;
+&nbsp;                } else if (pattern2EqualsPath) {
+&nbsp;                    return 1;
+&nbsp;                } else if (info1.isPrefixPattern() &amp;&amp; info2.isPrefixPattern()) {
+&nbsp;                    return info2.getLength() - info1.getLength();
+&nbsp;                } else if (info1.isPrefixPattern() &amp;&amp; info2.getDoubleWildcards() == 0) {
+&nbsp;                    return 1;
+&nbsp;                } else if (info2.isPrefixPattern() &amp;&amp; info1.getDoubleWildcards() == 0) {
+&nbsp;                    return -1;
+&nbsp;                } else if (info1.getTotalCount() != info2.getTotalCount()) {
+&nbsp;                    return info1.getTotalCount() - info2.getTotalCount();
+&nbsp;                } else if (info1.getLength() != info2.getLength()) {
+&nbsp;                    return info2.getLength() - info1.getLength();
+&nbsp;                } else if (info1.getSingleWildcards() &lt; info2.getSingleWildcards()) {
+<b class="nc">&nbsp;                    return -1;</b>
+<b class="nc">&nbsp;                } else if (info2.getSingleWildcards() &lt; info1.getSingleWildcards()) {</b>
+&nbsp;                    return 1;
+<b class="nc">&nbsp;                } else if (info1.getUriVars() &lt; info2.getUriVars()) {</b>
+<b class="nc">&nbsp;                    return -1;</b>
+&nbsp;                } else {
+<b class="nc">&nbsp;                    return info2.getUriVars() &lt; info1.getUriVars() ? 1 : 0;</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        private static class PatternInfo {</b>
+&nbsp;            @Nullable
+&nbsp;            private final String pattern;
+<b class="nc">&nbsp;            private int uriVars;</b>
+&nbsp;            private int singleWildcards;
+&nbsp;            private int doubleWildcards;
+&nbsp;            private boolean catchAllPattern;
+&nbsp;            private boolean prefixPattern;
+<b class="nc">&nbsp;            @Nullable</b>
+<b class="nc">&nbsp;            private Integer length;</b>
+&nbsp;
+&nbsp;            PatternInfo(@Nullable String pattern, String pathSeparator) {
+&nbsp;                this.pattern = pattern;
+&nbsp;                if (this.pattern != null) {
+<b class="nc">&nbsp;                    this.initCounters();</b>
+<b class="nc">&nbsp;                    this.catchAllPattern = this.pattern.equals(pathSeparator + &quot;**&quot;);</b>
+&nbsp;                    this.prefixPattern = !this.catchAllPattern &amp;&amp; this.pattern.endsWith(pathSeparator + &quot;**&quot;);
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                if (this.uriVars == 0) {</b>
+&nbsp;                    this.length = this.pattern != null ? this.pattern.length() : 0;
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            protected void initCounters() {</b>
+<b class="nc">&nbsp;                int pos = 0;</b>
+<b class="nc">&nbsp;                if (this.pattern != null) {</b>
+<b class="nc">&nbsp;                    while(pos &lt; this.pattern.length()) {</b>
+<b class="nc">&nbsp;                        if (this.pattern.charAt(pos) == &#39;{&#39;) {</b>
+<b class="nc">&nbsp;                            ++this.uriVars;</b>
+<b class="nc">&nbsp;                            ++pos;</b>
+&nbsp;                        } else if (this.pattern.charAt(pos) == &#39;*&#39;) {
+<b class="nc">&nbsp;                            if (pos + 1 &lt; this.pattern.length() &amp;&amp; this.pattern.charAt(pos + 1) == &#39;*&#39;) {</b>
+<b class="nc">&nbsp;                                ++this.doubleWildcards;</b>
+&nbsp;                                pos += 2;
+&nbsp;                            } else if (pos &gt; 0 &amp;&amp; !this.pattern.substring(pos - 1).equals(&quot;.*&quot;)) {
+&nbsp;                                ++this.singleWildcards;
+<b class="nc">&nbsp;                                ++pos;</b>
+<b class="nc">&nbsp;                            } else {</b>
+&nbsp;                                ++pos;
+<b class="nc">&nbsp;                            }</b>
+<b class="nc">&nbsp;                        } else {</b>
+&nbsp;                            ++pos;
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            public int getUriVars() {
+&nbsp;                return this.uriVars;
+&nbsp;            }
+&nbsp;
+&nbsp;            public int getSingleWildcards() {
+&nbsp;                return this.singleWildcards;
+&nbsp;            }
+&nbsp;
+&nbsp;            public int getDoubleWildcards() {
+&nbsp;                return this.doubleWildcards;
+&nbsp;            }
+&nbsp;
+&nbsp;            public boolean isLeastSpecific() {
+&nbsp;                return this.pattern == null || this.catchAllPattern;
+&nbsp;            }
+&nbsp;
+&nbsp;            public boolean isPrefixPattern() {
+&nbsp;                return this.prefixPattern;
+&nbsp;            }
+&nbsp;
+&nbsp;            public int getTotalCount() {
+<b class="nc">&nbsp;                return this.uriVars + this.singleWildcards + 2 * this.doubleWildcards;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            public int getLength() {
+&nbsp;                if (this.length == null) {
+&nbsp;                    this.length = this.pattern != null ? AntPathMatcher.VARIABLE_PATTERN.matcher(this.pattern).replaceAll(&quot;#&quot;).length() : 0;
+&nbsp;                }
+&nbsp;
+&nbsp;                return this.length;
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static class PathSeparatorPatternCache {
+&nbsp;        private final String endsOnWildCard;
+&nbsp;        private final String endsOnDoubleWildCard;
+&nbsp;
+&nbsp;        public PathSeparatorPatternCache(String pathSeparator) {
+&nbsp;            this.endsOnWildCard = pathSeparator + &quot;*&quot;;
+&nbsp;            this.endsOnDoubleWildCard = pathSeparator + &quot;**&quot;;
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        public String getEndsOnWildCard() {</b>
+&nbsp;            return this.endsOnWildCard;
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;        public String getEndsOnDoubleWildCard() {</b>
+<b class="fc">&nbsp;            return this.endsOnDoubleWildCard;</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

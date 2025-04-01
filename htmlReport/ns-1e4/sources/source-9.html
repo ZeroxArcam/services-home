@@ -1,0 +1,589 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > SchemaCreatorImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.tool.schema.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: SchemaCreatorImpl (org.hibernate.tool.schema.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SchemaCreatorImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    5.1%
+  </span>
+  <span class="absValue">
+    (2/39)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    3%
+  </span>
+  <span class="absValue">
+    (4/132)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    2%
+  </span>
+  <span class="absValue">
+    (4/202)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.tool.schema.internal;
+&nbsp;
+&nbsp;import java.net.URL;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.HashSet;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Set;
+&nbsp;import org.hibernate.Internal;
+&nbsp;import org.hibernate.boot.Metadata;
+&nbsp;import org.hibernate.boot.model.naming.Identifier;
+&nbsp;import org.hibernate.boot.model.relational.AuxiliaryDatabaseObject;
+&nbsp;import org.hibernate.boot.model.relational.Exportable;
+&nbsp;import org.hibernate.boot.model.relational.InitCommand;
+&nbsp;import org.hibernate.boot.model.relational.Namespace;
+&nbsp;import org.hibernate.boot.model.relational.Sequence;
+&nbsp;import org.hibernate.boot.model.relational.SqlStringGenerationContext;
+&nbsp;import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
+&nbsp;import org.hibernate.boot.spi.MetadataImplementor;
+&nbsp;import org.hibernate.dialect.Dialect;
+&nbsp;import org.hibernate.engine.config.spi.ConfigurationService;
+&nbsp;import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
+&nbsp;import org.hibernate.engine.jdbc.internal.FormatStyle;
+&nbsp;import org.hibernate.engine.jdbc.internal.Formatter;
+&nbsp;import org.hibernate.internal.CoreLogging;
+&nbsp;import org.hibernate.internal.CoreMessageLogger;
+&nbsp;import org.hibernate.internal.util.collections.CollectionHelper;
+&nbsp;import org.hibernate.internal.util.config.ConfigurationHelper;
+&nbsp;import org.hibernate.mapping.ForeignKey;
+&nbsp;import org.hibernate.mapping.Index;
+&nbsp;import org.hibernate.mapping.Table;
+&nbsp;import org.hibernate.mapping.UniqueKey;
+&nbsp;import org.hibernate.mapping.UserDefinedType;
+&nbsp;import org.hibernate.service.ServiceRegistry;
+&nbsp;import org.hibernate.service.spi.ServiceRegistryImplementor;
+&nbsp;import org.hibernate.tool.schema.SourceType;
+&nbsp;import org.hibernate.tool.schema.internal.exec.GenerationTarget;
+&nbsp;import org.hibernate.tool.schema.internal.exec.JdbcContext;
+&nbsp;import org.hibernate.tool.schema.internal.exec.ScriptSourceInputFromUrl;
+&nbsp;import org.hibernate.tool.schema.internal.exec.ScriptSourceInputNonExistentImpl;
+&nbsp;import org.hibernate.tool.schema.spi.ContributableMatcher;
+&nbsp;import org.hibernate.tool.schema.spi.ExceptionHandler;
+&nbsp;import org.hibernate.tool.schema.spi.ExecutionOptions;
+&nbsp;import org.hibernate.tool.schema.spi.SchemaCreator;
+&nbsp;import org.hibernate.tool.schema.spi.SchemaFilter;
+&nbsp;import org.hibernate.tool.schema.spi.SchemaManagementException;
+&nbsp;import org.hibernate.tool.schema.spi.SchemaManagementTool;
+&nbsp;import org.hibernate.tool.schema.spi.ScriptSourceInput;
+&nbsp;import org.hibernate.tool.schema.spi.SourceDescriptor;
+&nbsp;import org.hibernate.tool.schema.spi.SqlScriptCommandExtractor;
+&nbsp;import org.hibernate.tool.schema.spi.TargetDescriptor;
+&nbsp;
+&nbsp;public class SchemaCreatorImpl implements SchemaCreator {
+&nbsp;    private static final CoreMessageLogger log = CoreLogging.messageLogger(SchemaCreatorImpl.class);
+&nbsp;    public static final String DEFAULT_IMPORT_FILE = &quot;/import.sql&quot;;
+&nbsp;    private final HibernateSchemaManagementTool tool;
+&nbsp;    private final SchemaFilter schemaFilter;
+&nbsp;
+&nbsp;    public SchemaCreatorImpl(HibernateSchemaManagementTool tool) {
+&nbsp;        this((HibernateSchemaManagementTool)tool, DefaultSchemaFilter.INSTANCE);
+&nbsp;    }
+&nbsp;
+&nbsp;    public SchemaCreatorImpl(HibernateSchemaManagementTool tool, SchemaFilter schemaFilter) {
+&nbsp;        this.tool = tool;
+&nbsp;        this.schemaFilter = schemaFilter;
+&nbsp;    }
+&nbsp;
+&nbsp;    public SchemaCreatorImpl(ServiceRegistry serviceRegistry) {
+&nbsp;        this((ServiceRegistry)serviceRegistry, DefaultSchemaFilter.INSTANCE);
+&nbsp;    }
+&nbsp;
+&nbsp;    public SchemaCreatorImpl(ServiceRegistry serviceRegistry, SchemaFilter schemaFilter) {
+<b class="fc">&nbsp;        SchemaManagementTool smt = (SchemaManagementTool)serviceRegistry.getService(SchemaManagementTool.class);</b>
+&nbsp;        if (!(smt instanceof HibernateSchemaManagementTool)) {
+&nbsp;            smt = new HibernateSchemaManagementTool();
+&nbsp;            ((HibernateSchemaManagementTool)smt).injectServices((ServiceRegistryImplementor)serviceRegistry);
+&nbsp;        }
+&nbsp;
+&nbsp;        this.tool = (HibernateSchemaManagementTool)smt;
+&nbsp;        this.schemaFilter = schemaFilter;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void doCreation(Metadata metadata, ExecutionOptions options, ContributableMatcher contributableInclusionFilter, SourceDescriptor sourceDescriptor, TargetDescriptor targetDescriptor) {
+<b class="nc">&nbsp;        if (!targetDescriptor.getTargetTypes().isEmpty()) {</b>
+<b class="nc">&nbsp;            Map&lt;String, Object&gt; configuration = options.getConfigurationValues();</b>
+<b class="nc">&nbsp;            JdbcContext jdbcContext = this.tool.resolveJdbcContext(configuration);</b>
+&nbsp;            this.doCreation(metadata, jdbcContext.getDialect(), options, contributableInclusionFilter, sourceDescriptor, this.tool.buildGenerationTargets(targetDescriptor, jdbcContext, configuration, true));
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    @Internal
+<b class="nc">&nbsp;    public void doCreation(Metadata metadata, Dialect dialect, ExecutionOptions options, ContributableMatcher contributableInclusionFilter, SourceDescriptor sourceDescriptor, GenerationTarget... targets) {</b>
+<b class="nc">&nbsp;        for(GenerationTarget target : targets) {</b>
+<b class="nc">&nbsp;            target.prepare();</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        boolean var21 = false;
+&nbsp;
+<b class="nc">&nbsp;        try {</b>
+<b class="nc">&nbsp;            var21 = true;</b>
+&nbsp;            this.performCreation(metadata, dialect, options, contributableInclusionFilter, sourceDescriptor, targets);
+&nbsp;            var21 = false;
+&nbsp;        } finally {
+&nbsp;            if (var21) {
+&nbsp;                for(GenerationTarget target : targets) {
+&nbsp;                    try {
+&nbsp;                        target.release();
+&nbsp;                    } catch (Exception e) {
+&nbsp;                        log.debugf(&quot;Problem releasing GenerationTarget [%s] : %s&quot;, target, e.getMessage());
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        for(GenerationTarget target : targets) {
+&nbsp;            try {
+&nbsp;                target.release();
+<b class="nc">&nbsp;            } catch (Exception e) {</b>
+&nbsp;                log.debugf(&quot;Problem releasing GenerationTarget [%s] : %s&quot;, target, e.getMessage());
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private void performCreation(Metadata metadata, Dialect dialect, ExecutionOptions options, ContributableMatcher contributableInclusionFilter, SourceDescriptor sourceDescriptor, GenerationTarget... targets) {
+&nbsp;        SqlScriptCommandExtractor commandExtractor = this.getCommandExtractor();
+&nbsp;        boolean format = Helper.interpretFormattingEnabled(options.getConfigurationValues());
+&nbsp;        Formatter formatter = format ? FormatStyle.DDL.getFormatter() : FormatStyle.NONE.getFormatter();
+&nbsp;        switch (sourceDescriptor.getSourceType()) {
+&nbsp;            case SCRIPT:
+<b class="nc">&nbsp;                this.createFromScript(sourceDescriptor.getScriptSourceInput(), commandExtractor, formatter, dialect, options, targets);</b>
+<b class="nc">&nbsp;                break;</b>
+&nbsp;            case METADATA:
+&nbsp;                this.createFromMetadata(metadata, options, contributableInclusionFilter, dialect, formatter, targets);
+&nbsp;                break;
+<b class="nc">&nbsp;            case METADATA_THEN_SCRIPT:</b>
+&nbsp;                this.createFromMetadata(metadata, options, contributableInclusionFilter, dialect, formatter, targets);
+&nbsp;                this.createFromScript(sourceDescriptor.getScriptSourceInput(), commandExtractor, formatter, dialect, options, targets);
+<b class="nc">&nbsp;                break;</b>
+&nbsp;            case SCRIPT_THEN_METADATA:
+<b class="nc">&nbsp;                this.createFromScript(sourceDescriptor.getScriptSourceInput(), commandExtractor, formatter, dialect, options, targets);</b>
+&nbsp;                this.createFromMetadata(metadata, options, contributableInclusionFilter, dialect, formatter, targets);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        this.applyImportSources(options, commandExtractor, format, dialect, targets);
+&nbsp;    }
+&nbsp;
+&nbsp;    private SqlScriptCommandExtractor getCommandExtractor() {
+&nbsp;        return (SqlScriptCommandExtractor)this.tool.getServiceRegistry().getService(SqlScriptCommandExtractor.class);
+&nbsp;    }
+&nbsp;
+&nbsp;    private ClassLoaderService getClassLoaderService() {
+&nbsp;        return (ClassLoaderService)this.tool.getServiceRegistry().getService(ClassLoaderService.class);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void createFromScript(ScriptSourceInput scriptSourceInput, SqlScriptCommandExtractor commandExtractor, Formatter formatter, Dialect dialect, ExecutionOptions options, GenerationTarget... targets) {
+<b class="nc">&nbsp;        Helper.applyScript(options, commandExtractor, dialect, scriptSourceInput, formatter, targets);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    @Internal
+<b class="nc">&nbsp;    public void createFromMetadata(Metadata metadata, ExecutionOptions options, Dialect dialect, Formatter formatter, GenerationTarget... targets) {</b>
+&nbsp;        this.createFromMetadata(metadata, options, (contributed) -&gt; true, dialect, formatter, targets);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    @Internal
+<b class="nc">&nbsp;    public void createFromMetadata(Metadata metadata, ExecutionOptions options, ContributableMatcher contributableInclusionMatcher, Dialect dialect, Formatter formatter, GenerationTarget... targets) {</b>
+&nbsp;        SqlStringGenerationContext context = Helper.createSqlStringGenerationContext(options, metadata);
+&nbsp;        Set&lt;String&gt; exportIdentifiers = CollectionHelper.setOfSize(50);
+<b class="nc">&nbsp;        createSchemasAndCatalogs(metadata, options, this.schemaFilter, dialect, formatter, context, targets);</b>
+<b class="nc">&nbsp;        createAuxiliaryObjectsBeforeTables(metadata, options, dialect, formatter, context, exportIdentifiers, targets);</b>
+&nbsp;        createUserDefinedTypes(metadata, options, this.schemaFilter, dialect, formatter, context, targets);
+&nbsp;        createSequencesTablesConstraints(metadata, options, this.schemaFilter, contributableInclusionMatcher, dialect, formatter, context, exportIdentifiers, targets);
+<b class="nc">&nbsp;        createForeignKeys(metadata, options, this.schemaFilter, contributableInclusionMatcher, dialect, formatter, context, targets);</b>
+<b class="nc">&nbsp;        createAuxiliaryObjectsAfterTables(metadata, options, dialect, formatter, context, exportIdentifiers, targets);</b>
+&nbsp;        executeInitCommands(metadata, options, formatter, targets);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private static void executeInitCommands(Metadata metadata, ExecutionOptions options, Formatter formatter, GenerationTarget[] targets) {</b>
+&nbsp;        for(InitCommand initCommand : metadata.getDatabase().getInitCommands()) {
+&nbsp;            Helper.applySqlStrings(initCommand.getInitCommands(), formatter, options, targets);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static void createAuxiliaryObjectsAfterTables(Metadata metadata, ExecutionOptions options, Dialect dialect, Formatter formatter, SqlStringGenerationContext context, Set&lt;String&gt; exportIdentifiers, GenerationTarget[] targets) {
+<b class="nc">&nbsp;        for(AuxiliaryDatabaseObject auxiliaryDatabaseObject : metadata.getDatabase().getAuxiliaryDatabaseObjects()) {</b>
+&nbsp;            if (auxiliaryDatabaseObject.appliesToDialect(dialect) &amp;&amp; !auxiliaryDatabaseObject.beforeTablesOnCreation()) {
+&nbsp;                checkExportIdentifier(auxiliaryDatabaseObject, exportIdentifiers);
+&nbsp;                Helper.applySqlStrings(dialect.getAuxiliaryDatabaseObjectExporter().getSqlCreateStrings(auxiliaryDatabaseObject, metadata, context), formatter, options, targets);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private static void createForeignKeys(Metadata metadata, ExecutionOptions options, SchemaFilter schemaFilter, ContributableMatcher contributableInclusionMatcher, Dialect dialect, Formatter formatter, SqlStringGenerationContext context, GenerationTarget[] targets) {
+<b class="nc">&nbsp;        for(Namespace namespace : metadata.getDatabase().getNamespaces()) {</b>
+&nbsp;            if (schemaFilter.includeNamespace(namespace)) {
+&nbsp;                for(Table table : namespace.getTables()) {
+&nbsp;                    if (schemaFilter.includeTable(table) &amp;&amp; contributableInclusionMatcher.matches(table)) {
+&nbsp;                        for(ForeignKey foreignKey : table.getForeignKeys().values()) {
+&nbsp;                            Helper.applySqlStrings(dialect.getForeignKeyExporter().getSqlCreateStrings(foreignKey, metadata, context), formatter, options, targets);
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private static void createSequencesTablesConstraints(Metadata metadata, ExecutionOptions options, SchemaFilter schemaFilter, ContributableMatcher contributableInclusionMatcher, Dialect dialect, Formatter formatter, SqlStringGenerationContext context, Set&lt;String&gt; exportIdentifiers, GenerationTarget[] targets) {
+&nbsp;        for(Namespace namespace : metadata.getDatabase().getNamespaces()) {
+&nbsp;            if (schemaFilter.includeNamespace(namespace)) {
+&nbsp;                createSequences(metadata, options, schemaFilter, contributableInclusionMatcher, dialect, formatter, context, exportIdentifiers, targets, namespace);
+&nbsp;                createTables(metadata, options, schemaFilter, contributableInclusionMatcher, dialect, formatter, context, exportIdentifiers, targets, namespace);
+&nbsp;                createTableConstraints(metadata, options, schemaFilter, contributableInclusionMatcher, dialect, formatter, context, exportIdentifiers, targets, namespace);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private static void createTableConstraints(Metadata metadata, ExecutionOptions options, SchemaFilter schemaFilter, ContributableMatcher contributableInclusionMatcher, Dialect dialect, Formatter formatter, SqlStringGenerationContext context, Set&lt;String&gt; exportIdentifiers, GenerationTarget[] targets, Namespace namespace) {
+&nbsp;        for(Table table : namespace.getTables()) {
+&nbsp;            if (table.isPhysicalTable() &amp;&amp; schemaFilter.includeTable(table) &amp;&amp; contributableInclusionMatcher.matches(table)) {
+<b class="nc">&nbsp;                for(Index index : table.getIndexes().values()) {</b>
+<b class="nc">&nbsp;                    checkExportIdentifier(index, exportIdentifiers);</b>
+&nbsp;                    Helper.applySqlStrings(dialect.getIndexExporter().getSqlCreateStrings(index, metadata, context), formatter, options, targets);
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="nc">&nbsp;                for(UniqueKey uniqueKey : table.getUniqueKeys().values()) {</b>
+&nbsp;                    checkExportIdentifier(uniqueKey, exportIdentifiers);
+<b class="nc">&nbsp;                    Helper.applySqlStrings(dialect.getUniqueKeyExporter().getSqlCreateStrings(uniqueKey, metadata, context), formatter, options, targets);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private static void createTables(Metadata metadata, ExecutionOptions options, SchemaFilter schemaFilter, ContributableMatcher contributableInclusionMatcher, Dialect dialect, Formatter formatter, SqlStringGenerationContext context, Set&lt;String&gt; exportIdentifiers, GenerationTarget[] targets, Namespace namespace) {
+&nbsp;        for(Table table : namespace.getTables()) {
+&nbsp;            if (table.isPhysicalTable() &amp;&amp; !table.isView() &amp;&amp; schemaFilter.includeTable(table) &amp;&amp; contributableInclusionMatcher.matches(table)) {
+&nbsp;                checkExportIdentifier(table, exportIdentifiers);
+&nbsp;                Helper.applySqlStrings(dialect.getTableExporter().getSqlCreateStrings(table, metadata, context), formatter, options, targets);
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        for(Table table : namespace.getTables()) {
+<b class="nc">&nbsp;            if (table.isPhysicalTable() &amp;&amp; table.isView() &amp;&amp; schemaFilter.includeTable(table) &amp;&amp; contributableInclusionMatcher.matches(table)) {</b>
+&nbsp;                checkExportIdentifier(table, exportIdentifiers);
+<b class="nc">&nbsp;                Helper.applySqlStrings(dialect.getTableExporter().getSqlCreateStrings(table, metadata, context), formatter, options, targets);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private static void createSequences(Metadata metadata, ExecutionOptions options, SchemaFilter schemaFilter, ContributableMatcher contributableInclusionMatcher, Dialect dialect, Formatter formatter, SqlStringGenerationContext context, Set&lt;String&gt; exportIdentifiers, GenerationTarget[] targets, Namespace namespace) {</b>
+&nbsp;        for(Sequence sequence : namespace.getSequences()) {
+&nbsp;            if (schemaFilter.includeSequence(sequence) &amp;&amp; contributableInclusionMatcher.matches(sequence)) {
+&nbsp;                checkExportIdentifier(sequence, exportIdentifiers);
+&nbsp;                Helper.applySqlStrings(dialect.getSequenceExporter().getSqlCreateStrings(sequence, metadata, context), formatter, options, targets);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private static void createAuxiliaryObjectsBeforeTables(Metadata metadata, ExecutionOptions options, Dialect dialect, Formatter formatter, SqlStringGenerationContext context, Set&lt;String&gt; exportIdentifiers, GenerationTarget[] targets) {
+&nbsp;        for(AuxiliaryDatabaseObject auxiliaryDatabaseObject : metadata.getDatabase().getAuxiliaryDatabaseObjects()) {
+<b class="nc">&nbsp;            if (auxiliaryDatabaseObject.beforeTablesOnCreation() &amp;&amp; auxiliaryDatabaseObject.appliesToDialect(dialect)) {</b>
+<b class="nc">&nbsp;                checkExportIdentifier(auxiliaryDatabaseObject, exportIdentifiers);</b>
+<b class="nc">&nbsp;                Helper.applySqlStrings(dialect.getAuxiliaryDatabaseObjectExporter().getSqlCreateStrings(auxiliaryDatabaseObject, metadata, context), formatter, options, targets);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    static void createUserDefinedTypes(Metadata metadata, ExecutionOptions options, SchemaFilter schemaFilter, Dialect dialect, Formatter formatter, SqlStringGenerationContext context, GenerationTarget[] targets) {
+&nbsp;        for(Namespace namespace : metadata.getDatabase().getNamespaces()) {
+&nbsp;            if (schemaFilter.includeNamespace(namespace)) {
+&nbsp;                for(UserDefinedType userDefinedType : namespace.getDependencyOrderedUserDefinedTypes()) {
+&nbsp;                    Helper.applySqlStrings(dialect.getUserDefinedTypeExporter().getSqlCreateStrings(userDefinedType, metadata, context), formatter, options, targets);
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private static void createSchemasAndCatalogs(Metadata metadata, ExecutionOptions options, SchemaFilter schemaFilter, Dialect dialect, Formatter formatter, SqlStringGenerationContext context, GenerationTarget[] targets) {
+&nbsp;        boolean tryToCreateCatalogs = options.shouldManageNamespaces() &amp;&amp; dialect.canCreateCatalog();
+&nbsp;        boolean tryToCreateSchemas = options.shouldManageNamespaces() &amp;&amp; dialect.canCreateSchema();
+&nbsp;        if (tryToCreateCatalogs || tryToCreateSchemas) {
+&nbsp;            Set&lt;Identifier&gt; exportedCatalogs = new HashSet();
+<b class="nc">&nbsp;</b>
+&nbsp;            for(Namespace namespace : metadata.getDatabase().getNamespaces()) {
+<b class="nc">&nbsp;                if (schemaFilter.includeNamespace(namespace)) {</b>
+<b class="nc">&nbsp;                    Namespace.Name logicalName = namespace.getName();</b>
+<b class="nc">&nbsp;                    Namespace.Name physicalName = namespace.getPhysicalName();</b>
+<b class="nc">&nbsp;                    if (tryToCreateCatalogs) {</b>
+&nbsp;                        Identifier catalogLogicalName = logicalName.getCatalog();
+<b class="nc">&nbsp;                        Identifier catalogPhysicalName = context.catalogWithDefault(physicalName.getCatalog());</b>
+<b class="nc">&nbsp;                        if (catalogPhysicalName != null &amp;&amp; !exportedCatalogs.contains(catalogLogicalName)) {</b>
+<b class="nc">&nbsp;                            Helper.applySqlStrings(dialect.getCreateCatalogCommand(catalogPhysicalName.render(dialect)), formatter, options, targets);</b>
+&nbsp;                            exportedCatalogs.add(catalogLogicalName);
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+&nbsp;                    if (tryToCreateSchemas) {
+&nbsp;                        Identifier schemaPhysicalName = context.schemaWithDefault(physicalName.getSchema());
+&nbsp;                        if (schemaPhysicalName != null) {
+&nbsp;                            Helper.applySqlStrings(dialect.getCreateSchemaCommand(schemaPhysicalName.render(dialect)), formatter, options, targets);
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private static void checkExportIdentifier(Exportable exportable, Set&lt;String&gt; exportIdentifiers) {
+&nbsp;        String exportIdentifier = exportable.getExportIdentifier();
+&nbsp;        if (exportIdentifiers.contains(exportIdentifier)) {
+&nbsp;            throw new SchemaManagementException(&quot;SQL strings added more than once for: &quot; + exportIdentifier);
+&nbsp;        } else {
+<b class="nc">&nbsp;            exportIdentifiers.add(exportIdentifier);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private void applyImportSources(ExecutionOptions options, SqlScriptCommandExtractor commandExtractor, boolean format, Dialect dialect, GenerationTarget... targets) {
+&nbsp;        Formatter formatter = getImportScriptFormatter(format);
+&nbsp;        boolean hasDefaultImportFileScriptBeenExecuted = this.applyImportScript(options, commandExtractor, dialect, formatter, targets);
+&nbsp;        this.applyImportFiles(options, commandExtractor, dialect, formatter, hasDefaultImportFileScriptBeenExecuted ? &quot;&quot; : this.getDefaultImportFile(options), targets);
+&nbsp;    }
+&nbsp;
+&nbsp;    private String getDefaultImportFile(ExecutionOptions options) {
+&nbsp;        return skipDefaultFileImport(options) ? &quot;&quot; : &quot;/import.sql&quot;;
+&nbsp;    }
+&nbsp;
+&nbsp;    private static boolean skipDefaultFileImport(ExecutionOptions options) {
+&nbsp;        return ConfigurationHelper.getBoolean(&quot;hibernate.hbm2ddl.skip_default_import_file&quot;, options.getConfigurationValues(), false);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private static Formatter getImportScriptFormatter(boolean format) {
+&nbsp;        return FormatStyle.NONE.getFormatter();
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean applyImportScript(ExecutionOptions options, SqlScriptCommandExtractor commandExtractor, Dialect dialect, Formatter formatter, GenerationTarget[] targets) {
+&nbsp;        Object importScriptSetting = getImportScriptSetting(options);
+&nbsp;        if (importScriptSetting != null) {
+&nbsp;            ScriptSourceInput importScriptInput = Helper.interpretScriptSourceSetting(importScriptSetting, this.getClassLoaderService(), getCharsetName(options));
+&nbsp;            Helper.applyScript(options, commandExtractor, dialect, importScriptInput, formatter, targets);
+&nbsp;            return this.containsDefaultImportFile(importScriptInput, options);
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            return false;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean containsDefaultImportFile(ScriptSourceInput importScriptInput, ExecutionOptions options) {
+&nbsp;        if (skipDefaultFileImport(options)) {
+&nbsp;            return false;
+&nbsp;        } else {
+&nbsp;            URL defaultImportFileUrl = this.getClassLoaderService().locateResource(&quot;/import.sql&quot;);
+&nbsp;            return defaultImportFileUrl != null &amp;&amp; importScriptInput.containsScript(defaultImportFileUrl);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void applyImportFiles(ExecutionOptions options, SqlScriptCommandExtractor commandExtractor, Dialect dialect, Formatter formatter, String defaultImportFile, GenerationTarget[] targets) {
+&nbsp;        String[] importFiles = ConfigurationHelper.getString(&quot;hibernate.hbm2ddl.import_files&quot;, options.getConfigurationValues(), defaultImportFile).split(&quot;,&quot;);
+&nbsp;        String charsetName = getCharsetName(options);
+&nbsp;        ClassLoaderService classLoaderService = this.getClassLoaderService();
+&nbsp;
+&nbsp;        for(String currentFile : importFiles) {
+&nbsp;            String resourceName = currentFile.trim();
+&nbsp;            if (!resourceName.isEmpty()) {
+&nbsp;                Helper.applyScript(options, commandExtractor, dialect, this.interpretLegacyImportScriptSetting(resourceName, classLoaderService, charsetName), formatter, targets);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private ScriptSourceInput interpretLegacyImportScriptSetting(String resourceName, ClassLoaderService classLoaderService, String charsetName) {</b>
+<b class="nc">&nbsp;        try {</b>
+<b class="nc">&nbsp;            URL resourceUrl = classLoaderService.locateResource(resourceName);</b>
+&nbsp;            return (ScriptSourceInput)(resourceUrl == null ? ScriptSourceInputNonExistentImpl.INSTANCE : new ScriptSourceInputFromUrl(resourceUrl, charsetName));
+<b class="nc">&nbsp;        } catch (Exception e) {</b>
+<b class="nc">&nbsp;            throw new SchemaManagementException(&quot;Error resolving legacy import resource : &quot; + resourceName, e);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private static String getCharsetName(ExecutionOptions options) {
+&nbsp;        return (String)options.getConfigurationValues().get(&quot;hibernate.hbm2ddl.charset_name&quot;);
+&nbsp;    }
+&nbsp;
+&nbsp;    private static Object getImportScriptSetting(ExecutionOptions options) {
+<b class="nc">&nbsp;        Map&lt;String, Object&gt; configuration = options.getConfigurationValues();</b>
+<b class="nc">&nbsp;        Object importScriptSetting = configuration.get(&quot;javax.persistence.sql-load-script-source&quot;);</b>
+<b class="nc">&nbsp;        return importScriptSetting == null ? configuration.get(&quot;jakarta.persistence.sql-load-script-source&quot;) : importScriptSetting;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public List&lt;String&gt; generateCreationCommands(Metadata metadata, final boolean manageNamespaces) {
+&nbsp;        JournalingGenerationTarget target = new JournalingGenerationTarget();
+&nbsp;        MetadataImplementor metadataImplementor = (MetadataImplementor)metadata;
+&nbsp;        Dialect dialect = ((JdbcEnvironment)metadataImplementor.getMetadataBuildingOptions().getServiceRegistry().requireService(JdbcEnvironment.class)).getDialect();
+&nbsp;        ExecutionOptions options = new ExecutionOptions() {
+&nbsp;            public boolean shouldManageNamespaces() {
+&nbsp;                return manageNamespaces;
+&nbsp;            }
+&nbsp;
+&nbsp;            public Map&lt;String, Object&gt; getConfigurationValues() {
+&nbsp;                return Collections.emptyMap();
+&nbsp;            }
+&nbsp;
+&nbsp;            public ExceptionHandler getExceptionHandler() {
+&nbsp;                return ExceptionHandlerHaltImpl.INSTANCE;
+&nbsp;            }
+&nbsp;        };
+&nbsp;        this.createFromMetadata(metadata, options, dialect, FormatStyle.NONE.getFormatter(), target);
+&nbsp;        return target.commands;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    @Internal</b>
+<b class="nc">&nbsp;    public void doCreation(Metadata metadata, boolean manageNamespaces, GenerationTarget... targets) {</b>
+<b class="nc">&nbsp;        ServiceRegistry serviceRegistry = ((MetadataImplementor)metadata).getMetadataBuildingOptions().getServiceRegistry();</b>
+<b class="nc">&nbsp;        this.doCreation(metadata, serviceRegistry, ((ConfigurationService)serviceRegistry.requireService(ConfigurationService.class)).getSettings(), manageNamespaces, targets);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    @Internal
+&nbsp;    public void doCreation(Metadata metadata, ServiceRegistry serviceRegistry, final Map&lt;String, Object&gt; settings, final boolean manageNamespaces, GenerationTarget... targets) {
+&nbsp;        this.doCreation(metadata, ((JdbcEnvironment)serviceRegistry.requireService(JdbcEnvironment.class)).getDialect(), new ExecutionOptions() {
+&nbsp;            public boolean shouldManageNamespaces() {
+&nbsp;                return manageNamespaces;
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            public Map&lt;String, Object&gt; getConfigurationValues() {</b>
+<b class="nc">&nbsp;                return settings;</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            public ExceptionHandler getExceptionHandler() {</b>
+<b class="nc">&nbsp;                return ExceptionHandlerLoggedImpl.INSTANCE;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }, (contributed) -&gt; true, new SourceDescriptor() {
+&nbsp;            public SourceType getSourceType() {
+&nbsp;                return SourceType.METADATA;
+&nbsp;            }
+&nbsp;
+&nbsp;            public ScriptSourceInput getScriptSourceInput() {
+&nbsp;                return null;
+&nbsp;            }
+&nbsp;        }, targets);
+&nbsp;    }
+&nbsp;
+&nbsp;    private static class JournalingGenerationTarget implements GenerationTarget {
+&nbsp;        private final ArrayList&lt;String&gt; commands = new ArrayList();
+&nbsp;
+&nbsp;        private JournalingGenerationTarget() {
+&nbsp;        }
+&nbsp;
+&nbsp;        public void prepare() {
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        public void accept(String command) {</b>
+<b class="nc">&nbsp;            this.commands.add(command);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        public void release() {</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 21:00</div>
+</div>
+</body>
+</html>

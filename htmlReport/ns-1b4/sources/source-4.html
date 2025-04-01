@@ -1,0 +1,436 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ResourceRegistryStandardImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.resource.jdbc.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: ResourceRegistryStandardImpl (org.hibernate.resource.jdbc.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ResourceRegistryStandardImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    7.7%
+  </span>
+  <span class="absValue">
+    (2/26)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/78)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    4.9%
+  </span>
+  <span class="absValue">
+    (6/122)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.resource.jdbc.internal;
+&nbsp;
+&nbsp;import java.sql.Blob;
+&nbsp;import java.sql.Clob;
+&nbsp;import java.sql.NClob;
+&nbsp;import java.sql.ResultSet;
+&nbsp;import java.sql.SQLException;
+&nbsp;import java.sql.Statement;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.HashMap;
+&nbsp;import org.hibernate.HibernateException;
+&nbsp;import org.hibernate.JDBCException;
+&nbsp;import org.hibernate.internal.CoreLogging;
+&nbsp;import org.hibernate.internal.CoreMessageLogger;
+&nbsp;import org.hibernate.resource.jdbc.ResourceRegistry;
+&nbsp;import org.hibernate.resource.jdbc.spi.JdbcObserver;
+&nbsp;
+&nbsp;public final class ResourceRegistryStandardImpl implements ResourceRegistry {
+&nbsp;    private static final CoreMessageLogger log = CoreLogging.messageLogger(ResourceRegistryStandardImpl.class);
+&nbsp;    private static final Object PRESENT = new Object();
+&nbsp;    private static final HashMap&lt;ResultSet, Object&gt; EMPTY = new HashMap(1, 0.2F);
+&nbsp;    private final JdbcObserver jdbcObserver;
+&nbsp;    private final HashMap&lt;Statement, HashMap&lt;ResultSet, Object&gt;&gt; xref;
+&nbsp;    private HashMap&lt;ResultSet, Object&gt; unassociatedResultSets;
+&nbsp;    private ArrayList&lt;Blob&gt; blobs;
+&nbsp;    private ArrayList&lt;Clob&gt; clobs;
+&nbsp;    private ArrayList&lt;NClob&gt; nclobs;
+&nbsp;    private Statement lastQuery;
+&nbsp;
+&nbsp;    public ResourceRegistryStandardImpl() {
+&nbsp;        this((JdbcObserver)null);
+&nbsp;    }
+&nbsp;
+&nbsp;    public ResourceRegistryStandardImpl(JdbcObserver jdbcObserver) {
+&nbsp;        this.xref = new HashMap();
+&nbsp;        this.jdbcObserver = jdbcObserver;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public boolean hasRegisteredResources() {
+<b class="fc">&nbsp;        return this.hasRegistered(this.xref) || this.hasRegistered(this.unassociatedResultSets) || this.hasRegistered(this.blobs) || this.hasRegistered(this.clobs) || this.hasRegistered(this.nclobs);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void register(Statement statement, boolean cancelable) {
+&nbsp;        log.tracef(&quot;Registering statement [%s]&quot;, statement);
+<b class="fc">&nbsp;        HashMap&lt;ResultSet, Object&gt; previousValue = (HashMap)this.xref.putIfAbsent(statement, EMPTY);</b>
+&nbsp;        if (previousValue != null) {
+&nbsp;            throw new HibernateException(&quot;JDBC Statement already registered&quot;);
+&nbsp;        } else {
+<b class="fc">&nbsp;            if (cancelable) {</b>
+&nbsp;                this.lastQuery = statement;
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void release(Statement statement) {
+&nbsp;        log.tracev(&quot;Releasing statement [{0}]&quot;, statement);
+&nbsp;        HashMap&lt;ResultSet, Object&gt; resultSets = (HashMap)this.xref.remove(statement);
+<b class="nc">&nbsp;        if (resultSets != null) {</b>
+&nbsp;            closeAll(resultSets);
+&nbsp;        } else {
+<b class="fc">&nbsp;            log.unregisteredStatement();</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        close(statement);
+&nbsp;        if (this.lastQuery == statement) {
+&nbsp;            this.lastQuery = null;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void release(ResultSet resultSet, Statement statement) {</b>
+&nbsp;        log.tracef(&quot;Releasing result set [%s]&quot;, resultSet);
+&nbsp;        if (statement == null) {
+&nbsp;            try {
+&nbsp;                statement = resultSet.getStatement();
+<b class="nc">&nbsp;            } catch (SQLException e) {</b>
+&nbsp;                throw this.convert(e, &quot;unable to access Statement from ResultSet&quot;);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        if (statement != null) {
+&nbsp;            HashMap&lt;ResultSet, Object&gt; resultSets = (HashMap)this.xref.get(statement);
+<b class="nc">&nbsp;            if (resultSets == null) {</b>
+<b class="nc">&nbsp;                log.unregisteredStatement();</b>
+&nbsp;            } else {
+&nbsp;                resultSets.remove(resultSet);
+&nbsp;                if (resultSets.isEmpty()) {
+&nbsp;                    try {
+&nbsp;                        if (statement.isClosed()) {
+<b class="nc">&nbsp;                            this.xref.remove(statement);</b>
+&nbsp;                        }
+<b class="nc">&nbsp;                    } catch (SQLException e) {</b>
+<b class="nc">&nbsp;                        log.debugf(&quot;Unable to release JDBC statement [%s]&quot;, e.getMessage());</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        } else {
+&nbsp;            Object removed = this.unassociatedResultSets == null ? null : this.unassociatedResultSets.remove(resultSet);
+<b class="nc">&nbsp;            if (removed == null) {</b>
+&nbsp;                log.unregisteredResultSetWithoutStatement();
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        close(resultSet);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private static void closeAll(HashMap&lt;ResultSet, Object&gt; resultSets) {
+&nbsp;        if (resultSets != null) {
+&nbsp;            resultSets.forEach((resultSet, o) -&gt; close(resultSet));
+&nbsp;            resultSets.clear();
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private static void releaseXref(Statement s, HashMap&lt;ResultSet, Object&gt; r) {
+<b class="nc">&nbsp;        closeAll(r);</b>
+&nbsp;        close(s);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private static void close(ResultSet resultSet) {
+&nbsp;        log.tracef(&quot;Closing result set [%s]&quot;, resultSet);
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        try {</b>
+<b class="nc">&nbsp;            if (resultSet != null) {</b>
+<b class="nc">&nbsp;                resultSet.close();</b>
+&nbsp;            }
+&nbsp;        } catch (SQLException e) {
+<b class="nc">&nbsp;            log.debugf(&quot;Unable to release JDBC result set [%s]&quot;, e.getMessage());</b>
+<b class="nc">&nbsp;        } catch (Exception e) {</b>
+&nbsp;            log.debugf(&quot;Unable to release JDBC result set [%s]&quot;, e.getMessage());
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void close(Statement statement) {
+<b class="nc">&nbsp;        log.tracef(&quot;Closing prepared statement [%s]&quot;, statement);</b>
+&nbsp;
+&nbsp;        try {
+&nbsp;            try {
+&nbsp;                if (statement.getMaxRows() != 0) {
+&nbsp;                    statement.setMaxRows(0);
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                if (statement.getQueryTimeout() != 0) {</b>
+&nbsp;                    statement.setQueryTimeout(0);
+&nbsp;                }
+<b class="nc">&nbsp;            } catch (SQLException sqle) {</b>
+&nbsp;                if (log.isDebugEnabled()) {
+&nbsp;                    log.debugf(&quot;Exception clearing maxRows/queryTimeout [%s]&quot;, sqle.getMessage());
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+&nbsp;                return;
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            statement.close();</b>
+&nbsp;        } catch (SQLException e) {
+&nbsp;            log.debugf(&quot;Unable to release JDBC statement [%s]&quot;, e.getMessage());
+&nbsp;        } catch (Exception e) {
+<b class="nc">&nbsp;            log.debugf(&quot;Unable to release JDBC statement [%s]&quot;, e.getMessage());</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void register(ResultSet resultSet, Statement statement) {</b>
+&nbsp;        log.tracef(&quot;Registering result set [%s]&quot;, resultSet);
+&nbsp;        if (statement == null) {
+<b class="nc">&nbsp;            try {</b>
+&nbsp;                statement = resultSet.getStatement();
+&nbsp;            } catch (SQLException e) {
+&nbsp;                throw this.convert(e, &quot;unable to access Statement from ResultSet&quot;);
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        if (statement != null) {
+&nbsp;            HashMap&lt;ResultSet, Object&gt; resultSets = (HashMap)this.xref.get(statement);
+<b class="nc">&nbsp;            if (resultSets == null) {</b>
+&nbsp;                log.debug(&quot;ResultSet statement was not registered (on register)&quot;);
+&nbsp;            }
+&nbsp;
+&nbsp;            if (resultSets == null || resultSets == EMPTY) {
+<b class="nc">&nbsp;                resultSets = new HashMap();</b>
+&nbsp;                this.xref.put(statement, resultSets);
+&nbsp;            }
+&nbsp;
+&nbsp;            resultSets.put(resultSet, PRESENT);
+&nbsp;        } else {
+<b class="nc">&nbsp;            if (this.unassociatedResultSets == null) {</b>
+<b class="nc">&nbsp;                this.unassociatedResultSets = new HashMap();</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            this.unassociatedResultSets.put(resultSet, PRESENT);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private JDBCException convert(SQLException e, String s) {</b>
+<b class="nc">&nbsp;        return new JDBCException(s, e);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void register(Blob blob) {
+&nbsp;        if (this.blobs == null) {
+&nbsp;            this.blobs = new ArrayList();
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        this.blobs.add(blob);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void release(Blob blob) {
+<b class="nc">&nbsp;        if (this.blobs == null) {</b>
+&nbsp;            log.debug(&quot;Request to release Blob, but appears no Blobs have ever been registered&quot;);
+&nbsp;        } else {
+&nbsp;            this.blobs.remove(blob);
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void register(Clob clob) {
+<b class="nc">&nbsp;        if (this.clobs == null) {</b>
+&nbsp;            this.clobs = new ArrayList();
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        this.clobs.add(clob);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void release(Clob clob) {
+<b class="nc">&nbsp;        if (this.clobs == null) {</b>
+<b class="nc">&nbsp;            log.debug(&quot;Request to release Clob, but appears no Clobs have ever been registered&quot;);</b>
+&nbsp;        } else {
+&nbsp;            this.clobs.remove(clob);
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public void register(NClob nclob) {
+&nbsp;        if (this.nclobs == null) {
+<b class="nc">&nbsp;            this.nclobs = new ArrayList();</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        this.nclobs.add(nclob);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void release(NClob nclob) {
+<b class="nc">&nbsp;        if (this.nclobs == null) {</b>
+<b class="nc">&nbsp;            log.debug(&quot;Request to release NClob, but appears no NClobs have ever been registered&quot;);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            this.nclobs.remove(nclob);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void cancelLastQuery() {
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            if (this.lastQuery != null) {
+&nbsp;                this.lastQuery.cancel();
+&nbsp;            }
+&nbsp;        } catch (SQLException e) {
+<b class="nc">&nbsp;            throw this.convert(e, &quot;Cannot cancel query&quot;);</b>
+<b class="nc">&nbsp;        } finally {</b>
+&nbsp;            this.lastQuery = null;
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void releaseResources() {
+&nbsp;        log.trace(&quot;Releasing JDBC resources&quot;);
+<b class="nc">&nbsp;        if (this.jdbcObserver != null) {</b>
+<b class="nc">&nbsp;            this.jdbcObserver.jdbcReleaseRegistryResourcesStart();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        this.xref.forEach(ResourceRegistryStandardImpl::releaseXref);</b>
+&nbsp;        this.xref.clear();
+&nbsp;        closeAll(this.unassociatedResultSets);
+&nbsp;        if (this.blobs != null) {
+&nbsp;            this.blobs.forEach((blob) -&gt; {
+<b class="nc">&nbsp;                try {</b>
+<b class="nc">&nbsp;                    blob.free();</b>
+&nbsp;                } catch (SQLException e) {
+<b class="nc">&nbsp;                    log.debugf(&quot;Unable to free JDBC Blob reference [%s]&quot;, e.getMessage());</b>
+&nbsp;                }
+&nbsp;
+&nbsp;            });
+&nbsp;            this.blobs = null;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        if (this.clobs != null) {
+&nbsp;            this.clobs.forEach((clob) -&gt; {
+<b class="nc">&nbsp;                try {</b>
+&nbsp;                    clob.free();
+&nbsp;                } catch (SQLException e) {
+&nbsp;                    log.debugf(&quot;Unable to free JDBC Clob reference [%s]&quot;, e.getMessage());
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;            });</b>
+<b class="nc">&nbsp;            this.clobs = null;</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        if (this.nclobs != null) {
+&nbsp;            this.nclobs.forEach((nclob) -&gt; {
+&nbsp;                try {
+&nbsp;                    nclob.free();
+&nbsp;                } catch (SQLException e) {
+<b class="nc">&nbsp;                    log.debugf(&quot;Unable to free JDBC NClob reference [%s]&quot;, e.getMessage());</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;            });
+<b class="nc">&nbsp;            this.nclobs = null;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean hasRegistered(HashMap resource) {
+<b class="nc">&nbsp;        return resource != null &amp;&amp; !resource.isEmpty();</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private boolean hasRegistered(ArrayList resource) {
+&nbsp;        return resource != null &amp;&amp; !resource.isEmpty();
+<b class="nc">&nbsp;    }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

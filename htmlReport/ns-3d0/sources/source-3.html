@@ -1,0 +1,409 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > HibernateJpaDialect</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.orm.jpa.vendor</a>
+</div>
+
+<h1>Coverage Summary for Class: HibernateJpaDialect (org.springframework.orm.jpa.vendor)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">HibernateJpaDialect</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    8.3%
+  </span>
+  <span class="absValue">
+    (1/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/92)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    2.8%
+  </span>
+  <span class="absValue">
+    (3/106)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.orm.jpa.vendor;
+&nbsp;
+&nbsp;import jakarta.persistence.EntityManager;
+&nbsp;import jakarta.persistence.PersistenceException;
+&nbsp;import java.sql.Connection;
+&nbsp;import java.sql.SQLException;
+&nbsp;import org.hibernate.ConnectionReleaseMode;
+&nbsp;import org.hibernate.FlushMode;
+&nbsp;import org.hibernate.HibernateException;
+&nbsp;import org.hibernate.JDBCException;
+&nbsp;import org.hibernate.NonUniqueObjectException;
+&nbsp;import org.hibernate.NonUniqueResultException;
+&nbsp;import org.hibernate.ObjectDeletedException;
+&nbsp;import org.hibernate.PersistentObjectException;
+&nbsp;import org.hibernate.PessimisticLockException;
+&nbsp;import org.hibernate.PropertyValueException;
+&nbsp;import org.hibernate.QueryException;
+&nbsp;import org.hibernate.QueryTimeoutException;
+&nbsp;import org.hibernate.Session;
+&nbsp;import org.hibernate.StaleObjectStateException;
+&nbsp;import org.hibernate.StaleStateException;
+&nbsp;import org.hibernate.TransientObjectException;
+&nbsp;import org.hibernate.UnresolvableObjectException;
+&nbsp;import org.hibernate.WrongClassException;
+&nbsp;import org.hibernate.dialect.lock.OptimisticEntityLockException;
+&nbsp;import org.hibernate.dialect.lock.PessimisticEntityLockException;
+&nbsp;import org.hibernate.engine.spi.SessionImplementor;
+&nbsp;import org.hibernate.exception.ConstraintViolationException;
+&nbsp;import org.hibernate.exception.DataException;
+&nbsp;import org.hibernate.exception.JDBCConnectionException;
+&nbsp;import org.hibernate.exception.LockAcquisitionException;
+&nbsp;import org.hibernate.exception.SQLGrammarException;
+&nbsp;import org.springframework.dao.CannotAcquireLockException;
+&nbsp;import org.springframework.dao.DataAccessException;
+&nbsp;import org.springframework.dao.DataAccessResourceFailureException;
+&nbsp;import org.springframework.dao.DataIntegrityViolationException;
+&nbsp;import org.springframework.dao.DuplicateKeyException;
+&nbsp;import org.springframework.dao.IncorrectResultSizeDataAccessException;
+&nbsp;import org.springframework.dao.InvalidDataAccessApiUsageException;
+&nbsp;import org.springframework.dao.InvalidDataAccessResourceUsageException;
+&nbsp;import org.springframework.dao.PessimisticLockingFailureException;
+&nbsp;import org.springframework.jdbc.datasource.ConnectionHandle;
+&nbsp;import org.springframework.jdbc.datasource.DataSourceUtils;
+&nbsp;import org.springframework.jdbc.support.SQLExceptionSubclassTranslator;
+&nbsp;import org.springframework.jdbc.support.SQLExceptionTranslator;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.orm.ObjectOptimisticLockingFailureException;
+&nbsp;import org.springframework.orm.ObjectRetrievalFailureException;
+&nbsp;import org.springframework.orm.jpa.DefaultJpaDialect;
+&nbsp;import org.springframework.orm.jpa.EntityManagerFactoryUtils;
+&nbsp;import org.springframework.orm.jpa.JpaSystemException;
+&nbsp;import org.springframework.transaction.InvalidIsolationLevelException;
+&nbsp;import org.springframework.transaction.TransactionDefinition;
+&nbsp;import org.springframework.transaction.TransactionException;
+&nbsp;import org.springframework.transaction.support.ResourceTransactionDefinition;
+&nbsp;import org.springframework.util.ReflectionUtils;
+&nbsp;
+&nbsp;public class HibernateJpaDialect extends DefaultJpaDialect {
+&nbsp;    boolean prepareConnection = true;
+&nbsp;    @Nullable
+&nbsp;    private SQLExceptionTranslator jdbcExceptionTranslator;
+&nbsp;    @Nullable
+&nbsp;    private SQLExceptionTranslator transactionExceptionTranslator = new SQLExceptionSubclassTranslator();
+&nbsp;
+&nbsp;    public HibernateJpaDialect() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setPrepareConnection(boolean prepareConnection) {
+&nbsp;        this.prepareConnection = prepareConnection;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setJdbcExceptionTranslator(@Nullable SQLExceptionTranslator exceptionTranslator) {
+&nbsp;        this.jdbcExceptionTranslator = exceptionTranslator;
+&nbsp;        this.transactionExceptionTranslator = exceptionTranslator;
+&nbsp;    }
+&nbsp;
+&nbsp;    public Object beginTransaction(EntityManager entityManager, TransactionDefinition definition) throws PersistenceException, SQLException, TransactionException {
+&nbsp;        SessionImplementor session = this.getSession(entityManager);
+&nbsp;        if (definition.getTimeout() != -1) {
+&nbsp;            session.getTransaction().setTimeout(definition.getTimeout());
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        boolean isolationLevelNeeded = definition.getIsolationLevel() != -1;</b>
+&nbsp;        Integer previousIsolationLevel = null;
+<b class="fc">&nbsp;        Connection preparedCon = null;</b>
+&nbsp;        if (isolationLevelNeeded || definition.isReadOnly()) {
+&nbsp;            if (this.prepareConnection &amp;&amp; ConnectionReleaseMode.ON_CLOSE.equals(session.getJdbcCoordinator().getLogicalConnection().getConnectionHandlingMode().getReleaseMode())) {
+&nbsp;                preparedCon = session.getJdbcCoordinator().getLogicalConnection().getPhysicalConnection();
+&nbsp;                previousIsolationLevel = DataSourceUtils.prepareConnectionForTransaction(preparedCon, definition);
+<b class="fc">&nbsp;            } else if (isolationLevelNeeded) {</b>
+&nbsp;                throw new InvalidIsolationLevelException(&quot;HibernateJpaDialect is not allowed to support custom isolation levels: make sure that its &#39;prepareConnection&#39; flag is on (the default) and that the Hibernate connection release mode is set to ON_CLOSE.&quot;);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        entityManager.getTransaction().begin();
+&nbsp;        FlushMode previousFlushMode = this.prepareFlushMode(session, definition.isReadOnly());
+&nbsp;        if (definition instanceof ResourceTransactionDefinition rtd) {
+&nbsp;            if (rtd.isLocalResource()) {
+&nbsp;                previousFlushMode = null;
+&nbsp;                if (definition.isReadOnly()) {
+&nbsp;                    session.setDefaultReadOnly(true);
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return new SessionTransactionData(session, previousFlushMode, preparedCon != null, previousIsolationLevel, definition.isReadOnly());
+&nbsp;    }
+&nbsp;
+&nbsp;    public Object prepareTransaction(EntityManager entityManager, boolean readOnly, @Nullable String name) throws PersistenceException {
+&nbsp;        SessionImplementor session = this.getSession(entityManager);
+&nbsp;        FlushMode previousFlushMode = this.prepareFlushMode(session, readOnly);
+&nbsp;        return new SessionTransactionData(session, previousFlushMode, false, (Integer)null, readOnly);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    @Nullable</b>
+&nbsp;    protected FlushMode prepareFlushMode(Session session, boolean readOnly) throws PersistenceException {
+&nbsp;        FlushMode flushMode = session.getHibernateFlushMode();
+&nbsp;        if (readOnly) {
+&nbsp;            if (!flushMode.equals(FlushMode.MANUAL)) {
+&nbsp;                session.setHibernateFlushMode(FlushMode.MANUAL);
+&nbsp;                return flushMode;
+&nbsp;            }
+&nbsp;        } else if (flushMode.lessThan(FlushMode.COMMIT)) {
+&nbsp;            session.setHibernateFlushMode(FlushMode.AUTO);
+&nbsp;            return flushMode;
+&nbsp;        }
+&nbsp;
+&nbsp;        return null;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void cleanupTransaction(@Nullable Object transactionData) {
+&nbsp;        if (transactionData instanceof SessionTransactionData sessionTransactionData) {
+&nbsp;            sessionTransactionData.resetSessionState();
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public ConnectionHandle getJdbcConnection(EntityManager entityManager, boolean readOnly) throws PersistenceException, SQLException {</b>
+&nbsp;        SessionImplementor session = this.getSession(entityManager);
+&nbsp;        return new HibernateConnectionHandle(session);
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public DataAccessException translateExceptionIfPossible(RuntimeException ex) {
+&nbsp;        if (ex instanceof HibernateException hibernateEx) {
+<b class="nc">&nbsp;            return this.convertHibernateAccessException(hibernateEx);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            if (ex instanceof PersistenceException) {</b>
+<b class="nc">&nbsp;                Throwable var3 = ex.getCause();</b>
+&nbsp;                if (var3 instanceof HibernateException) {
+&nbsp;                    HibernateException hibernateEx = (HibernateException)var3;
+<b class="nc">&nbsp;                    return this.convertHibernateAccessException(hibernateEx);</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            return EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(ex);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected DataAccessException convertHibernateAccessException(HibernateException ex) {</b>
+&nbsp;        if (this.jdbcExceptionTranslator != null &amp;&amp; ex instanceof JDBCException jdbcEx) {
+<b class="nc">&nbsp;            DataAccessException dae = this.jdbcExceptionTranslator.translate(&quot;Hibernate operation: &quot; + jdbcEx.getMessage(), jdbcEx.getSQL(), jdbcEx.getSQLException());</b>
+<b class="nc">&nbsp;            if (dae != null) {</b>
+&nbsp;                return dae;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        if (this.transactionExceptionTranslator != null &amp;&amp; ex instanceof org.hibernate.TransactionException) {
+&nbsp;            Throwable var14 = ex.getCause();
+&nbsp;            if (var14 instanceof SQLException) {
+<b class="nc">&nbsp;                SQLException sqlEx = (SQLException)var14;</b>
+&nbsp;                DataAccessException dae = this.transactionExceptionTranslator.translate(&quot;Hibernate transaction: &quot; + ex.getMessage(), (String)null, sqlEx);
+&nbsp;                if (dae != null) {
+<b class="nc">&nbsp;                    return dae;</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if (ex instanceof JDBCConnectionException) {</b>
+<b class="nc">&nbsp;            return new DataAccessResourceFailureException(ex.getMessage(), ex);</b>
+&nbsp;        } else if (ex instanceof SQLGrammarException) {
+&nbsp;            SQLGrammarException hibEx = (SQLGrammarException)ex;
+<b class="nc">&nbsp;            return new InvalidDataAccessResourceUsageException(ex.getMessage() + &quot;; SQL [&quot; + hibEx.getSQL() + &quot;]&quot;, ex);</b>
+<b class="nc">&nbsp;        } else if (ex instanceof QueryTimeoutException) {</b>
+&nbsp;            QueryTimeoutException hibEx = (QueryTimeoutException)ex;
+&nbsp;            return new org.springframework.dao.QueryTimeoutException(ex.getMessage() + &quot;; SQL [&quot; + hibEx.getSQL() + &quot;]&quot;, ex);
+&nbsp;        } else if (ex instanceof LockAcquisitionException) {
+&nbsp;            LockAcquisitionException hibEx = (LockAcquisitionException)ex;
+&nbsp;            return new CannotAcquireLockException(ex.getMessage() + &quot;; SQL [&quot; + hibEx.getSQL() + &quot;]&quot;, ex);
+&nbsp;        } else if (ex instanceof PessimisticLockException) {
+<b class="nc">&nbsp;            PessimisticLockException hibEx = (PessimisticLockException)ex;</b>
+<b class="nc">&nbsp;            return new PessimisticLockingFailureException(ex.getMessage() + &quot;; SQL [&quot; + hibEx.getSQL() + &quot;]&quot;, ex);</b>
+<b class="nc">&nbsp;        } else if (ex instanceof ConstraintViolationException) {</b>
+&nbsp;            ConstraintViolationException hibEx = (ConstraintViolationException)ex;
+&nbsp;            String var10002 = ex.getMessage();
+&nbsp;            return new DataIntegrityViolationException(var10002 + &quot;; SQL [&quot; + hibEx.getSQL() + &quot;]; constraint [&quot; + hibEx.getConstraintName() + &quot;]&quot;, ex);
+&nbsp;        } else if (ex instanceof DataException) {
+<b class="nc">&nbsp;            DataException hibEx = (DataException)ex;</b>
+<b class="nc">&nbsp;            return new DataIntegrityViolationException(ex.getMessage() + &quot;; SQL [&quot; + hibEx.getSQL() + &quot;]&quot;, ex);</b>
+&nbsp;        } else if (ex instanceof QueryException) {
+<b class="nc">&nbsp;            return new InvalidDataAccessResourceUsageException(ex.getMessage(), ex);</b>
+<b class="nc">&nbsp;        } else if (ex instanceof NonUniqueResultException) {</b>
+<b class="nc">&nbsp;            return new IncorrectResultSizeDataAccessException(ex.getMessage(), 1, ex);</b>
+&nbsp;        } else if (ex instanceof NonUniqueObjectException) {
+&nbsp;            return new DuplicateKeyException(ex.getMessage(), ex);
+&nbsp;        } else if (ex instanceof PropertyValueException) {
+&nbsp;            return new DataIntegrityViolationException(ex.getMessage(), ex);
+<b class="nc">&nbsp;        } else if (ex instanceof PersistentObjectException) {</b>
+<b class="nc">&nbsp;            return new InvalidDataAccessApiUsageException(ex.getMessage(), ex);</b>
+<b class="nc">&nbsp;        } else if (ex instanceof TransientObjectException) {</b>
+&nbsp;            return new InvalidDataAccessApiUsageException(ex.getMessage(), ex);
+&nbsp;        } else if (ex instanceof ObjectDeletedException) {
+&nbsp;            return new InvalidDataAccessApiUsageException(ex.getMessage(), ex);
+<b class="nc">&nbsp;        } else if (ex instanceof UnresolvableObjectException) {</b>
+&nbsp;            UnresolvableObjectException hibEx = (UnresolvableObjectException)ex;
+&nbsp;            return new ObjectRetrievalFailureException(hibEx.getEntityName(), this.getIdentifier(hibEx), ex.getMessage(), ex);
+&nbsp;        } else if (ex instanceof WrongClassException) {
+&nbsp;            WrongClassException hibEx = (WrongClassException)ex;
+<b class="nc">&nbsp;            return new ObjectRetrievalFailureException(hibEx.getEntityName(), this.getIdentifier(hibEx), ex.getMessage(), ex);</b>
+<b class="nc">&nbsp;        } else if (ex instanceof StaleObjectStateException) {</b>
+&nbsp;            StaleObjectStateException hibEx = (StaleObjectStateException)ex;
+&nbsp;            return new ObjectOptimisticLockingFailureException(hibEx.getEntityName(), this.getIdentifier(hibEx), ex.getMessage(), ex);
+&nbsp;        } else if (ex instanceof StaleStateException) {
+&nbsp;            return new ObjectOptimisticLockingFailureException(ex.getMessage(), ex);
+&nbsp;        } else if (ex instanceof OptimisticEntityLockException) {
+&nbsp;            return new ObjectOptimisticLockingFailureException(ex.getMessage(), ex);
+&nbsp;        } else if (ex instanceof PessimisticEntityLockException) {
+<b class="nc">&nbsp;            return (DataAccessException)(ex.getCause() instanceof LockAcquisitionException ? new CannotAcquireLockException(ex.getMessage(), ex.getCause()) : new PessimisticLockingFailureException(ex.getMessage(), ex));</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            return new JpaSystemException(ex);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected SessionImplementor getSession(EntityManager entityManager) {
+<b class="nc">&nbsp;        return (SessionImplementor)entityManager.unwrap(SessionImplementor.class);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    @Nullable</b>
+<b class="nc">&nbsp;    protected Object getIdentifier(HibernateException hibEx) {</b>
+&nbsp;        try {
+<b class="nc">&nbsp;            return ReflectionUtils.invokeMethod(hibEx.getClass().getMethod(&quot;getIdentifier&quot;), hibEx);</b>
+&nbsp;        } catch (NoSuchMethodException var3) {
+&nbsp;            return null;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static class SessionTransactionData {
+&nbsp;        private final SessionImplementor session;
+&nbsp;        @Nullable
+&nbsp;        private final FlushMode previousFlushMode;
+<b class="nc">&nbsp;        private final boolean needsConnectionReset;</b>
+<b class="nc">&nbsp;        @Nullable</b>
+<b class="nc">&nbsp;        private final Integer previousIsolationLevel;</b>
+<b class="nc">&nbsp;        private final boolean readOnly;</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        public SessionTransactionData(SessionImplementor session, @Nullable FlushMode previousFlushMode, boolean connectionPrepared, @Nullable Integer previousIsolationLevel, boolean readOnly) {
+&nbsp;            this.session = session;
+<b class="nc">&nbsp;            this.previousFlushMode = previousFlushMode;</b>
+<b class="nc">&nbsp;            this.needsConnectionReset = connectionPrepared;</b>
+<b class="nc">&nbsp;            this.previousIsolationLevel = previousIsolationLevel;</b>
+<b class="nc">&nbsp;            this.readOnly = readOnly;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        public void resetSessionState() {
+&nbsp;            if (this.previousFlushMode != null) {
+&nbsp;                this.session.setHibernateFlushMode(this.previousFlushMode);
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            if (this.needsConnectionReset &amp;&amp; this.session.getJdbcCoordinator().getLogicalConnection().isPhysicallyConnected()) {</b>
+&nbsp;                Connection con = this.session.getJdbcCoordinator().getLogicalConnection().getPhysicalConnection();
+<b class="nc">&nbsp;                DataSourceUtils.resetConnectionAfterTransaction(con, this.previousIsolationLevel, this.readOnly);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private static class HibernateConnectionHandle implements ConnectionHandle {</b>
+<b class="nc">&nbsp;        private final SessionImplementor session;</b>
+&nbsp;
+<b class="nc">&nbsp;        public HibernateConnectionHandle(SessionImplementor session) {</b>
+<b class="nc">&nbsp;            this.session = session;</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        public Connection getConnection() {</b>
+<b class="nc">&nbsp;            return this.session.getJdbcCoordinator().getLogicalConnection().getPhysicalConnection();</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

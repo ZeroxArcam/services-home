@@ -1,0 +1,234 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > DefaultPartHttpMessageReader</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.http.codec.multipart</a>
+</div>
+
+<h1>Coverage Summary for Class: DefaultPartHttpMessageReader (org.springframework.http.codec.multipart)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DefaultPartHttpMessageReader</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/17)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/40)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.http.codec.multipart;
+&nbsp;
+&nbsp;import java.io.IOException;
+&nbsp;import java.nio.charset.Charset;
+&nbsp;import java.nio.charset.StandardCharsets;
+&nbsp;import java.nio.file.Path;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.concurrent.atomic.AtomicInteger;
+&nbsp;import org.springframework.core.ResolvableType;
+&nbsp;import org.springframework.core.codec.DecodingException;
+&nbsp;import org.springframework.http.MediaType;
+&nbsp;import org.springframework.http.ReactiveHttpInputMessage;
+&nbsp;import org.springframework.http.codec.HttpMessageReader;
+&nbsp;import org.springframework.http.codec.LoggingCodecSupport;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import reactor.core.publisher.Flux;
+&nbsp;import reactor.core.publisher.Mono;
+&nbsp;import reactor.core.scheduler.Scheduler;
+&nbsp;import reactor.core.scheduler.Schedulers;
+&nbsp;
+&nbsp;public class DefaultPartHttpMessageReader extends LoggingCodecSupport implements HttpMessageReader&lt;Part&gt; {
+&nbsp;    private int maxInMemorySize = 262144;
+&nbsp;    private int maxHeadersSize = 10240;
+&nbsp;    private long maxDiskUsagePerPart = -1L;
+&nbsp;    private int maxParts = -1;
+&nbsp;    @Nullable
+&nbsp;    private Scheduler blockingOperationScheduler;
+&nbsp;    private FileStorage fileStorage = FileStorage.tempDirectory(this::getBlockingOperationScheduler);
+&nbsp;    private Charset headersCharset;
+&nbsp;
+&nbsp;    public DefaultPartHttpMessageReader() {
+&nbsp;        this.headersCharset = StandardCharsets.UTF_8;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setMaxHeadersSize(int byteCount) {
+&nbsp;        this.maxHeadersSize = byteCount;
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getMaxInMemorySize() {
+&nbsp;        return this.maxInMemorySize;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setMaxInMemorySize(int maxInMemorySize) {
+&nbsp;        this.maxInMemorySize = maxInMemorySize;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setMaxDiskUsagePerPart(long maxDiskUsagePerPart) {
+&nbsp;        this.maxDiskUsagePerPart = maxDiskUsagePerPart;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void setMaxParts(int maxParts) {</b>
+&nbsp;        this.maxParts = maxParts;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public void setFileStorageDirectory(Path fileStorageDirectory) throws IOException {</b>
+&nbsp;        Assert.notNull(fileStorageDirectory, &quot;FileStorageDirectory must not be null&quot;);
+<b class="nc">&nbsp;        this.fileStorage = FileStorage.fromPath(fileStorageDirectory);</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void setBlockingOperationScheduler(Scheduler blockingOperationScheduler) {
+&nbsp;        Assert.notNull(blockingOperationScheduler, &quot;&#39;blockingOperationScheduler&#39; must not be null&quot;);
+&nbsp;        this.blockingOperationScheduler = blockingOperationScheduler;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private Scheduler getBlockingOperationScheduler() {
+<b class="nc">&nbsp;        return this.blockingOperationScheduler != null ? this.blockingOperationScheduler : Schedulers.boundedElastic();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setHeadersCharset(Charset headersCharset) {
+&nbsp;        Assert.notNull(headersCharset, &quot;HeadersCharset must not be null&quot;);
+&nbsp;        this.headersCharset = headersCharset;
+&nbsp;    }
+&nbsp;
+&nbsp;    public List&lt;MediaType&gt; getReadableMediaTypes() {
+<b class="nc">&nbsp;        return Collections.singletonList(MediaType.MULTIPART_FORM_DATA);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean canRead(ResolvableType elementType, @Nullable MediaType mediaType) {
+&nbsp;        return Part.class.equals(elementType.toClass()) &amp;&amp; (mediaType == null || MediaType.MULTIPART_FORM_DATA.isCompatibleWith(mediaType));
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public Mono&lt;Part&gt; readMono(ResolvableType elementType, ReactiveHttpInputMessage message, Map&lt;String, Object&gt; hints) {</b>
+&nbsp;        return Mono.error(new UnsupportedOperationException(&quot;Cannot read multipart request body into single Part&quot;));
+&nbsp;    }
+&nbsp;
+&nbsp;    public Flux&lt;Part&gt; read(ResolvableType elementType, ReactiveHttpInputMessage message, Map&lt;String, Object&gt; hints) {
+&nbsp;        return Flux.defer(() -&gt; {
+&nbsp;            byte[] boundary = MultipartUtils.boundary(message, this.headersCharset);
+&nbsp;            if (boundary == null) {
+&nbsp;                return Flux.error(new DecodingException(&quot;No multipart boundary found in Content-Type: \&quot;&quot; + String.valueOf(message.getHeaders().getContentType()) + &quot;\&quot;&quot;));
+&nbsp;            } else {
+&nbsp;                Flux&lt;MultipartParser.Token&gt; allPartsTokens = MultipartParser.parse(message.getBody(), boundary, this.maxHeadersSize, this.headersCharset);
+&nbsp;                AtomicInteger partCount = new AtomicInteger();
+&nbsp;                return allPartsTokens.windowUntil(MultipartParser.Token::isLast).concatMap((partsTokens) -&gt; {
+&nbsp;                    if (this.tooManyParts(partCount)) {
+&nbsp;                        int var10002 = partCount.get();
+<b class="nc">&nbsp;                        return Mono.error(new DecodingException(&quot;Too many parts (&quot; + var10002 + &quot;/&quot; + this.maxParts + &quot; allowed)&quot;));</b>
+&nbsp;                    } else {
+&nbsp;                        return PartGenerator.createPart(partsTokens, this.maxInMemorySize, this.maxDiskUsagePerPart, this.fileStorage.directory(), this.getBlockingOperationScheduler());
+&nbsp;                    }
+&nbsp;                });
+&nbsp;            }
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean tooManyParts(AtomicInteger partCount) {
+<b class="nc">&nbsp;        int count = partCount.incrementAndGet();</b>
+&nbsp;        return this.maxParts &gt; 0 &amp;&amp; count &gt; this.maxParts;
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:58</div>
+</div>
+</body>
+</html>

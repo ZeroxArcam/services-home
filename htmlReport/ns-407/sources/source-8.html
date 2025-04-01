@@ -1,0 +1,613 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > HandlerMappingIntrospector</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.web.servlet.handler</a>
+</div>
+
+<h1>Coverage Summary for Class: HandlerMappingIntrospector (org.springframework.web.servlet.handler)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">HandlerMappingIntrospector</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/22)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/58)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/116)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.web.servlet.handler;
+&nbsp;
+&nbsp;import jakarta.servlet.DispatcherType;
+&nbsp;import jakarta.servlet.Filter;
+&nbsp;import jakarta.servlet.ServletRequest;
+&nbsp;import jakarta.servlet.http.HttpServletRequest;
+&nbsp;import jakarta.servlet.http.HttpServletRequestWrapper;
+&nbsp;import jakarta.servlet.http.HttpServletResponse;
+&nbsp;import java.io.IOException;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.Enumeration;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.Iterator;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Properties;
+&nbsp;import java.util.concurrent.atomic.AtomicInteger;
+&nbsp;import java.util.function.BiFunction;
+&nbsp;import java.util.stream.Collectors;
+&nbsp;import org.apache.commons.logging.Log;
+&nbsp;import org.apache.commons.logging.LogFactory;
+&nbsp;import org.springframework.beans.factory.BeanFactoryUtils;
+&nbsp;import org.springframework.beans.factory.InitializingBean;
+&nbsp;import org.springframework.context.ApplicationContext;
+&nbsp;import org.springframework.context.ApplicationContextAware;
+&nbsp;import org.springframework.core.annotation.AnnotationAwareOrderComparator;
+&nbsp;import org.springframework.core.io.ClassPathResource;
+&nbsp;import org.springframework.core.io.Resource;
+&nbsp;import org.springframework.core.io.support.PropertiesLoaderUtils;
+&nbsp;import org.springframework.http.server.RequestPath;
+&nbsp;import org.springframework.http.server.ServletServerHttpRequest;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.ClassUtils;
+&nbsp;import org.springframework.util.StringUtils;
+&nbsp;import org.springframework.web.cors.CorsConfiguration;
+&nbsp;import org.springframework.web.cors.CorsConfigurationSource;
+&nbsp;import org.springframework.web.cors.CorsUtils;
+&nbsp;import org.springframework.web.cors.PreFlightRequestHandler;
+&nbsp;import org.springframework.web.servlet.DispatcherServlet;
+&nbsp;import org.springframework.web.servlet.HandlerExecutionChain;
+&nbsp;import org.springframework.web.servlet.HandlerInterceptor;
+&nbsp;import org.springframework.web.servlet.HandlerMapping;
+&nbsp;import org.springframework.web.servlet.NoHandlerFoundException;
+&nbsp;import org.springframework.web.util.ServletRequestPathUtils;
+&nbsp;import org.springframework.web.util.UrlPathHelper;
+&nbsp;import org.springframework.web.util.pattern.PathPatternParser;
+&nbsp;
+&nbsp;public class HandlerMappingIntrospector implements CorsConfigurationSource, PreFlightRequestHandler, ApplicationContextAware, InitializingBean {
+&nbsp;    private static final Log logger = LogFactory.getLog(HandlerMappingIntrospector.class.getName());
+&nbsp;    private static final String CACHED_RESULT_ATTRIBUTE = HandlerMappingIntrospector.class.getName() + &quot;.CachedResult&quot;;
+&nbsp;    @Nullable
+&nbsp;    private ApplicationContext applicationContext;
+&nbsp;    @Nullable
+&nbsp;    private List&lt;HandlerMapping&gt; handlerMappings;
+&nbsp;    private Map&lt;HandlerMapping, PathPatternMatchableHandlerMapping&gt; pathPatternMappings = Collections.emptyMap();
+&nbsp;    private final CacheResultLogHelper cacheLogHelper = new CacheResultLogHelper();
+&nbsp;
+&nbsp;    public HandlerMappingIntrospector() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setApplicationContext(ApplicationContext applicationContext) {
+&nbsp;        this.applicationContext = applicationContext;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void afterPropertiesSet() {
+&nbsp;        if (this.handlerMappings == null) {
+&nbsp;            Assert.notNull(this.applicationContext, &quot;No ApplicationContext&quot;);
+&nbsp;            this.handlerMappings = initHandlerMappings(this.applicationContext);
+&nbsp;            this.pathPatternMappings = (Map)this.handlerMappings.stream().filter((m) -&gt; {
+&nbsp;                boolean var10000;
+&nbsp;                if (m instanceof MatchableHandlerMapping hm) {
+&nbsp;                    if (hm.getPatternParser() != null) {
+&nbsp;                        var10000 = true;
+&nbsp;                        return var10000;
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                var10000 = false;
+&nbsp;                return var10000;
+&nbsp;            }).map((mapping) -&gt; (MatchableHandlerMapping)mapping).collect(Collectors.toMap((mapping) -&gt; mapping, PathPatternMatchableHandlerMapping::new));
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private static List&lt;HandlerMapping&gt; initHandlerMappings(ApplicationContext context) {
+&nbsp;        Map&lt;String, HandlerMapping&gt; beans = BeanFactoryUtils.beansOfTypeIncludingAncestors(context, HandlerMapping.class, true, false);
+<b class="nc">&nbsp;        if (!beans.isEmpty()) {</b>
+&nbsp;            List&lt;HandlerMapping&gt; mappings = new ArrayList(beans.values());
+&nbsp;            AnnotationAwareOrderComparator.sort(mappings);
+<b class="nc">&nbsp;            return Collections.unmodifiableList(mappings);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            return Collections.unmodifiableList(initFallback(context));</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static List&lt;HandlerMapping&gt; initFallback(ApplicationContext applicationContext) {
+&nbsp;        Properties properties;
+&nbsp;        try {
+&nbsp;            Resource resource = new ClassPathResource(&quot;DispatcherServlet.properties&quot;, DispatcherServlet.class);
+&nbsp;            properties = PropertiesLoaderUtils.loadProperties(resource);
+&nbsp;        } catch (IOException ex) {
+<b class="nc">&nbsp;            throw new IllegalStateException(&quot;Could not load DispatcherServlet.properties: &quot; + ex.getMessage());</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        String value = properties.getProperty(HandlerMapping.class.getName());
+&nbsp;        String[] names = StringUtils.commaDelimitedListToStringArray(value);
+&nbsp;        List&lt;HandlerMapping&gt; result = new ArrayList(names.length);
+&nbsp;
+<b class="nc">&nbsp;        for(String name : names) {</b>
+&nbsp;            try {
+&nbsp;                Class&lt;?&gt; clazz = ClassUtils.forName(name, DispatcherServlet.class.getClassLoader());
+&nbsp;                Object mapping = applicationContext.getAutowireCapableBeanFactory().createBean(clazz);
+&nbsp;                result.add((HandlerMapping)mapping);
+<b class="nc">&nbsp;            } catch (ClassNotFoundException var11) {</b>
+<b class="nc">&nbsp;                throw new IllegalStateException(&quot;Could not find default HandlerMapping [&quot; + name + &quot;]&quot;);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return result;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public List&lt;HandlerMapping&gt; getHandlerMappings() {
+&nbsp;        return this.handlerMappings != null ? this.handlerMappings : Collections.emptyList();
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean allHandlerMappingsUsePathPatternParser() {
+<b class="nc">&nbsp;        Assert.state(this.handlerMappings != null, &quot;Not yet initialized via afterPropertiesSet.&quot;);</b>
+<b class="nc">&nbsp;        return this.getHandlerMappings().stream().allMatch(HandlerMapping::usesPathPatterns);</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void handlePreFlight(HttpServletRequest request, HttpServletResponse response) throws Exception {</b>
+<b class="nc">&nbsp;        Assert.state(this.handlerMappings != null, &quot;Not yet initialized via afterPropertiesSet.&quot;);</b>
+<b class="nc">&nbsp;        Assert.state(CorsUtils.isPreFlightRequest(request), &quot;Not a pre-flight request.&quot;);</b>
+&nbsp;        RequestPath previousPath = (RequestPath)request.getAttribute(ServletRequestPathUtils.PATH_ATTRIBUTE);
+&nbsp;
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            ServletRequestPathUtils.parseAndCache(request);
+&nbsp;            Iterator var4 = this.handlerMappings.iterator();
+&nbsp;
+&nbsp;            HandlerExecutionChain chain;
+&nbsp;            do {
+<b class="nc">&nbsp;                if (!var4.hasNext()) {</b>
+<b class="nc">&nbsp;                    throw new NoHandlerFoundException(request.getMethod(), request.getRequestURI(), (new ServletServerHttpRequest(request)).getHeaders());</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                HandlerMapping mapping = (HandlerMapping)var4.next();</b>
+&nbsp;                chain = mapping.getHandler(request);
+&nbsp;            } while(chain == null);
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            Object handler = chain.getHandler();</b>
+<b class="nc">&nbsp;            if (!(handler instanceof PreFlightRequestHandler)) {</b>
+<b class="nc">&nbsp;                throw new IllegalStateException(&quot;Expected PreFlightRequestHandler: &quot; + String.valueOf(handler.getClass()));</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            PreFlightRequestHandler preFlightHandler = (PreFlightRequestHandler)handler;</b>
+<b class="nc">&nbsp;            preFlightHandler.handlePreFlight(request, response);</b>
+&nbsp;        } finally {
+&nbsp;            ServletRequestPathUtils.setParsedRequestPath(previousPath, request);
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public Filter createCacheFilter() {
+&nbsp;        return (request, response, chain) -&gt; {
+&nbsp;            CachedResult previous = this.setCache((HttpServletRequest)request);
+&nbsp;
+&nbsp;            try {
+&nbsp;                chain.doFilter(request, response);
+&nbsp;            } finally {
+<b class="nc">&nbsp;                this.resetCache(request, previous);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public CachedResult setCache(HttpServletRequest request) {
+&nbsp;        CachedResult previous = (CachedResult)request.getAttribute(CACHED_RESULT_ATTRIBUTE);
+&nbsp;        if (previous == null || !previous.matches(request)) {
+<b class="nc">&nbsp;            HttpServletRequest wrapped = new AttributesPreservingRequest(request);</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            CachedResult result;
+&nbsp;            try {
+&nbsp;                result = (CachedResult)this.doWithHandlerMapping(wrapped, false, (mapping, executionChain) -&gt; {
+&nbsp;                    MatchableHandlerMapping matchableMapping = this.createMatchableHandlerMapping(mapping, wrapped);
+&nbsp;                    CorsConfiguration corsConfig = getCorsConfiguration(executionChain, wrapped);
+&nbsp;                    return new CachedResult(request, matchableMapping, corsConfig, (Exception)null, (IllegalStateException)null);
+&nbsp;                });
+&nbsp;            } catch (Exception var8) {
+&nbsp;                Exception ex = var8;
+&nbsp;
+<b class="nc">&nbsp;                try {</b>
+<b class="nc">&nbsp;                    AttributesPreservingRequest requestToUse = new AttributesPreservingRequest(request);</b>
+<b class="nc">&nbsp;                    result = (CachedResult)this.doWithHandlerMapping(requestToUse, true, (mapping, executionChain) -&gt; {</b>
+&nbsp;                        CorsConfiguration corsConfig = getCorsConfiguration(executionChain, wrapped);
+<b class="nc">&nbsp;                        return new CachedResult(request, (MatchableHandlerMapping)null, corsConfig, ex, (IllegalStateException)null);</b>
+<b class="nc">&nbsp;                    });</b>
+<b class="nc">&nbsp;                } catch (Exception ex2) {</b>
+<b class="nc">&nbsp;                    result = new CachedResult(request, (MatchableHandlerMapping)null, (CorsConfiguration)null, var8, new IllegalStateException(ex2));</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            if (result == null) {
+&nbsp;                result = new CachedResult(request, (MatchableHandlerMapping)null, (CorsConfiguration)null, (Exception)null, (IllegalStateException)null);
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            request.setAttribute(CACHED_RESULT_ATTRIBUTE, result);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return previous;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void resetCache(ServletRequest request, @Nullable CachedResult cachedResult) {
+&nbsp;        request.setAttribute(CACHED_RESULT_ATTRIBUTE, cachedResult);
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public MatchableHandlerMapping getMatchableHandlerMapping(HttpServletRequest request) throws Exception {
+&nbsp;        CachedResult result = HandlerMappingIntrospector.CachedResult.getResultFor(request);
+&nbsp;        if (result != null) {
+&nbsp;            return result.getHandlerMapping();
+&nbsp;        } else {
+&nbsp;            this.cacheLogHelper.logHandlerMappingCacheMiss(request);
+&nbsp;            HttpServletRequest requestToUse = new AttributesPreservingRequest(request);
+&nbsp;            return (MatchableHandlerMapping)this.doWithHandlerMapping(requestToUse, false, (mapping, executionChain) -&gt; this.createMatchableHandlerMapping(mapping, requestToUse));
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private MatchableHandlerMapping createMatchableHandlerMapping(HandlerMapping mapping, HttpServletRequest request) {
+&nbsp;        if (mapping instanceof MatchableHandlerMapping) {
+&nbsp;            PathPatternMatchableHandlerMapping pathPatternMapping = (PathPatternMatchableHandlerMapping)this.pathPatternMappings.get(mapping);
+&nbsp;            if (pathPatternMapping != null) {
+<b class="nc">&nbsp;                RequestPath requestPath = ServletRequestPathUtils.getParsedRequestPath(request);</b>
+<b class="nc">&nbsp;                return new LookupPathMatchableHandlerMapping(pathPatternMapping, requestPath);</b>
+&nbsp;            } else {
+<b class="nc">&nbsp;                String lookupPath = (String)request.getAttribute(UrlPathHelper.PATH_ATTRIBUTE);</b>
+&nbsp;                return new LookupPathMatchableHandlerMapping((MatchableHandlerMapping)mapping, lookupPath);
+&nbsp;            }
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            throw new IllegalStateException(&quot;HandlerMapping is not a MatchableHandlerMapping&quot;);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
+&nbsp;        CachedResult result = HandlerMappingIntrospector.CachedResult.getResultFor(request);
+&nbsp;        if (result != null) {
+&nbsp;            return result.getCorsConfig();
+&nbsp;        } else {
+&nbsp;            this.cacheLogHelper.logCorsConfigCacheMiss(request);
+&nbsp;
+&nbsp;            try {
+&nbsp;                boolean ignoreException = true;
+&nbsp;                AttributesPreservingRequest requestToUse = new AttributesPreservingRequest(request);
+<b class="nc">&nbsp;                return (CorsConfiguration)this.doWithHandlerMapping(requestToUse, ignoreException, (handlerMapping, executionChain) -&gt; getCorsConfiguration(executionChain, requestToUse));</b>
+<b class="nc">&nbsp;            } catch (Exception ex) {</b>
+<b class="nc">&nbsp;                throw new IllegalStateException(ex);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    @Nullable</b>
+<b class="nc">&nbsp;    private static CorsConfiguration getCorsConfiguration(HandlerExecutionChain chain, HttpServletRequest request) {</b>
+<b class="nc">&nbsp;        for(HandlerInterceptor interceptor : chain.getInterceptorList()) {</b>
+&nbsp;            if (interceptor instanceof CorsConfigurationSource source) {
+&nbsp;                return source.getCorsConfiguration(request);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Object var6 = chain.getHandler();</b>
+<b class="nc">&nbsp;        if (var6 instanceof CorsConfigurationSource source) {</b>
+<b class="nc">&nbsp;            return source.getCorsConfiguration(request);</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            return null;
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    @Nullable
+&nbsp;    private &lt;T&gt; T doWithHandlerMapping(HttpServletRequest request, boolean ignoreException, BiFunction&lt;HandlerMapping, HandlerExecutionChain, T&gt; extractor) throws Exception {
+<b class="nc">&nbsp;        Assert.state(this.handlerMappings != null, &quot;HandlerMapping&#39;s not initialized&quot;);</b>
+<b class="nc">&nbsp;        boolean parsePath = !this.pathPatternMappings.isEmpty();</b>
+&nbsp;        RequestPath previousPath = null;
+<b class="nc">&nbsp;        if (parsePath) {</b>
+&nbsp;            previousPath = (RequestPath)request.getAttribute(ServletRequestPathUtils.PATH_ATTRIBUTE);
+<b class="nc">&nbsp;            ServletRequestPathUtils.parseAndCache(request);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        Object ex;
+&nbsp;        try {
+&nbsp;            Iterator var6 = this.handlerMappings.iterator();
+&nbsp;
+&nbsp;            HandlerMapping handlerMapping;
+&nbsp;            HandlerExecutionChain chain;
+<b class="nc">&nbsp;            do {</b>
+&nbsp;                if (!var6.hasNext()) {
+&nbsp;                    return null;
+&nbsp;                }
+&nbsp;
+&nbsp;                handlerMapping = (HandlerMapping)var6.next();
+&nbsp;                chain = null;
+&nbsp;
+&nbsp;                try {
+&nbsp;                    chain = handlerMapping.getHandler(request);
+&nbsp;                } catch (Exception ex) {
+&nbsp;                    if (!ignoreException) {
+&nbsp;                        throw ex;
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            } while(chain == null);</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            ex = extractor.apply(handlerMapping, chain);
+<b class="nc">&nbsp;        } finally {</b>
+<b class="nc">&nbsp;            if (parsePath) {</b>
+<b class="nc">&nbsp;                ServletRequestPathUtils.setParsedRequestPath(previousPath, request);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return (T)ex;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public static final class CachedResult {</b>
+<b class="nc">&nbsp;        private final DispatcherType dispatcherType;</b>
+&nbsp;        private final String requestURI;
+&nbsp;        @Nullable
+<b class="nc">&nbsp;        private final MatchableHandlerMapping handlerMapping;</b>
+<b class="nc">&nbsp;        @Nullable</b>
+&nbsp;        private final CorsConfiguration corsConfig;
+&nbsp;        @Nullable
+<b class="nc">&nbsp;        private final Exception failure;</b>
+&nbsp;        @Nullable
+&nbsp;        private final IllegalStateException corsConfigFailure;
+&nbsp;
+&nbsp;        private CachedResult(HttpServletRequest request, @Nullable MatchableHandlerMapping mapping, @Nullable CorsConfiguration config, @Nullable Exception failure, @Nullable IllegalStateException corsConfigFailure) {
+&nbsp;            this.dispatcherType = request.getDispatcherType();
+<b class="nc">&nbsp;            this.requestURI = request.getRequestURI();</b>
+<b class="nc">&nbsp;            this.handlerMapping = mapping;</b>
+<b class="nc">&nbsp;            this.corsConfig = config;</b>
+&nbsp;            this.failure = failure;
+<b class="nc">&nbsp;            this.corsConfigFailure = corsConfigFailure;</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        public boolean matches(HttpServletRequest request) {</b>
+<b class="nc">&nbsp;            return this.dispatcherType.equals(request.getDispatcherType()) &amp;&amp; this.requestURI.equals(request.getRequestURI());</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        @Nullable
+&nbsp;        public MatchableHandlerMapping getHandlerMapping() throws Exception {
+<b class="nc">&nbsp;            if (this.failure != null) {</b>
+&nbsp;                throw this.failure;
+&nbsp;            } else {
+&nbsp;                return this.handlerMapping;
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        @Nullable</b>
+<b class="nc">&nbsp;        public CorsConfiguration getCorsConfig() {</b>
+&nbsp;            if (this.corsConfigFailure != null) {
+&nbsp;                throw this.corsConfigFailure;
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                return this.corsConfig;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        public String toString() {
+&nbsp;            String var10000 = String.valueOf(this.dispatcherType);
+&nbsp;            return &quot;CachedResult for &quot; + var10000 + &quot; dispatch to &#39;&quot; + this.requestURI + &quot;&#39;&quot;;
+&nbsp;        }
+&nbsp;
+&nbsp;        @Nullable
+<b class="nc">&nbsp;        public static CachedResult getResultFor(HttpServletRequest request) {</b>
+&nbsp;            CachedResult result = (CachedResult)request.getAttribute(HandlerMappingIntrospector.CACHED_RESULT_ATTRIBUTE);
+<b class="nc">&nbsp;            return result != null &amp;&amp; result.matches(request) ? result : null;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private static class CacheResultLogHelper {</b>
+&nbsp;        private final Map&lt;String, AtomicInteger&gt; counters = Map.of(&quot;MatchableHandlerMapping&quot;, new AtomicInteger(), &quot;CorsConfiguration&quot;, new AtomicInteger());
+&nbsp;
+<b class="nc">&nbsp;        private CacheResultLogHelper() {</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        public void logHandlerMappingCacheMiss(HttpServletRequest request) {</b>
+&nbsp;            this.logCacheMiss(&quot;MatchableHandlerMapping&quot;, request);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        public void logCorsConfigCacheMiss(HttpServletRequest request) {
+&nbsp;            this.logCacheMiss(&quot;CorsConfiguration&quot;, request);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        private void logCacheMiss(String label, HttpServletRequest request) {
+&nbsp;            AtomicInteger counter = (AtomicInteger)this.counters.get(label);
+<b class="nc">&nbsp;            Assert.notNull(counter, &quot;Expected &#39;&quot; + label + &quot;&#39; counter.&quot;);</b>
+&nbsp;            String message = getLogMessage(label, request);
+&nbsp;            if (HandlerMappingIntrospector.logger.isWarnEnabled() &amp;&amp; counter.getAndIncrement() == 0) {
+&nbsp;                HandlerMappingIntrospector.logger.warn(message + &quot; This is logged once only at WARN level, and every time at TRACE.&quot;);
+<b class="nc">&nbsp;            } else if (HandlerMappingIntrospector.logger.isTraceEnabled()) {</b>
+<b class="nc">&nbsp;                HandlerMappingIntrospector.logger.trace(&quot;No CachedResult, performing &quot; + label + &quot; lookup instead.&quot;);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        private static String getLogMessage(String label, HttpServletRequest request) {
+&nbsp;            String var10000 = String.valueOf(request.getDispatcherType());
+&nbsp;            return &quot;Cache miss for &quot; + var10000 + &quot; dispatch to &#39;&quot; + request.getRequestURI() + &quot;&#39; (previous &quot; + String.valueOf(request.getAttribute(HandlerMappingIntrospector.CACHED_RESULT_ATTRIBUTE)) + &quot;). Performing &quot; + label + &quot; lookup.&quot;;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static class AttributesPreservingRequest extends HttpServletRequestWrapper {
+&nbsp;        private final Map&lt;String, Object&gt; attributes;
+&nbsp;
+&nbsp;        AttributesPreservingRequest(HttpServletRequest request) {
+&nbsp;            super(request);
+&nbsp;            this.attributes = this.initAttributes(request);
+&nbsp;            this.attributes.put(AbstractHandlerMapping.SUPPRESS_LOGGING_ATTRIBUTE, Boolean.TRUE);
+&nbsp;        }
+&nbsp;
+&nbsp;        private Map&lt;String, Object&gt; initAttributes(HttpServletRequest request) {
+&nbsp;            Map&lt;String, Object&gt; map = new HashMap();
+&nbsp;            Enumeration&lt;String&gt; names = request.getAttributeNames();
+&nbsp;
+&nbsp;            while(names.hasMoreElements()) {
+&nbsp;                String name = (String)names.nextElement();
+&nbsp;                map.put(name, request.getAttribute(name));
+&nbsp;            }
+&nbsp;
+&nbsp;            return map;
+&nbsp;        }
+&nbsp;
+&nbsp;        public void setAttribute(String name, Object value) {
+&nbsp;            this.attributes.put(name, value);
+&nbsp;        }
+&nbsp;
+&nbsp;        @Nullable
+&nbsp;        public Object getAttribute(String name) {
+&nbsp;            return this.attributes.get(name);
+&nbsp;        }
+&nbsp;
+&nbsp;        public Enumeration&lt;String&gt; getAttributeNames() {
+&nbsp;            return Collections.enumeration(this.attributes.keySet());
+&nbsp;        }
+&nbsp;
+&nbsp;        public void removeAttribute(String name) {
+&nbsp;            this.attributes.remove(name);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static class LookupPathMatchableHandlerMapping implements MatchableHandlerMapping {
+&nbsp;        private final MatchableHandlerMapping delegate;
+&nbsp;        private final Object lookupPath;
+&nbsp;        private final String pathAttributeName;
+&nbsp;
+&nbsp;        LookupPathMatchableHandlerMapping(MatchableHandlerMapping delegate, Object lookupPath) {
+&nbsp;            this.delegate = delegate;
+&nbsp;            this.lookupPath = lookupPath;
+&nbsp;            this.pathAttributeName = lookupPath instanceof RequestPath ? ServletRequestPathUtils.PATH_ATTRIBUTE : UrlPathHelper.PATH_ATTRIBUTE;
+&nbsp;        }
+&nbsp;
+&nbsp;        @Nullable
+&nbsp;        public PathPatternParser getPatternParser() {
+&nbsp;            return this.delegate.getPatternParser();
+&nbsp;        }
+&nbsp;
+&nbsp;        @Nullable
+&nbsp;        public RequestMatchResult match(HttpServletRequest request, String pattern) {
+&nbsp;            pattern = this.initFullPathPattern(pattern);
+&nbsp;            Object previousPath = request.getAttribute(this.pathAttributeName);
+&nbsp;            request.setAttribute(this.pathAttributeName, this.lookupPath);
+&nbsp;
+&nbsp;            RequestMatchResult var4;
+&nbsp;            try {
+&nbsp;                var4 = this.delegate.match(request, pattern);
+&nbsp;            } finally {
+&nbsp;                request.setAttribute(this.pathAttributeName, previousPath);
+&nbsp;            }
+&nbsp;
+&nbsp;            return var4;
+&nbsp;        }
+&nbsp;
+&nbsp;        private String initFullPathPattern(String pattern) {
+&nbsp;            PathPatternParser parser = this.getPatternParser() != null ? this.getPatternParser() : PathPatternParser.defaultInstance;
+&nbsp;            return parser.initFullPathPattern(pattern);
+&nbsp;        }
+&nbsp;
+&nbsp;        @Nullable
+&nbsp;        public HandlerExecutionChain getHandler(HttpServletRequest request) throws Exception {
+&nbsp;            return this.delegate.getHandler(request);
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 21:00</div>
+</div>
+</body>
+</html>

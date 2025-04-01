@@ -23,5 +23,35 @@ public interface HomeDtoMapper {
     @Mapping(target = "publicationInfo.publicationDate", source = "publicationDate")
     HomeModel requestToModel(SaveHomeRequest homeModel);
 
-    HomeResponse modelToResponse(HomeModel homeModel);
+    //Long id,
+    //                           String neighborhood,
+    //                           String address,
+    //                           String description,
+    //                           String category,
+    //                           Integer numberOfRooms,
+    //                           Integer numberOfBathrooms,
+    //                           Double price,
+    //                           //Long cityId,
+    //                           String cityName,
+    //                           String departmentName,
+    //                           LocalDate activePublicationDate
+    //                           ){}
+
+
+    default HomeResponse modelToResponse(HomeModel homeModel) {
+        return new HomeResponse(
+                homeModel.getId(),
+                homeModel.getBasicInfo().getLocation().getNeighborhood(),
+                homeModel.getBasicInfo().getAddress(),
+                homeModel.getPropertyDetails().getDescription(),
+                homeModel.getPropertyDetails().getCategory().getName(),
+                homeModel.getPropertyDetails().getNumberOfRooms(),
+                homeModel.getPropertyDetails().getNumberOfBathrooms(),
+                homeModel.getBasicInfo().getPrice(),
+                homeModel.getBasicInfo().getLocation().getCityName(),
+                homeModel.getBasicInfo().getLocation().getCity().getDepartment().getName(),
+                homeModel.getPublicationInfo().getActivePublicationDate()
+        );
+    }
+    //HomeResponse modelToResponse(HomeModel homeModel);
 }

@@ -5,7 +5,7 @@
 <html id="htmlId">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
-  <title>Coverage Report > EndOutputEvent</title>
+  <title>Coverage Report > CategoryUseCaseTest</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -19,10 +19,10 @@
 <div class="breadCrumbs">
 Current scope:     <a href="../../index.html">all classes</a>
     <span class="separator">|</span>
-    <a href="../index.html">org.gradle.internal.logging.events</a>
+    <a href="../index.html">com.pragma.hogar360.serviceshome.domain.usecases</a>
 </div>
 
-<h1>Coverage Summary for Class: EndOutputEvent (org.gradle.internal.logging.events)</h1>
+<h1>Coverage Summary for Class: CategoryUseCaseTest (com.pragma.hogar360.serviceshome.domain.usecases)</h1>
 
 <table class="coverageStats">
 <tr>
@@ -41,7 +41,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 </th>
 </tr>
 <tr>
-  <td class="name">EndOutputEvent</td>
+  <td class="name">CategoryUseCaseTest</td>
 <td class="coverageStat">
   <span class="percent">
     100%
@@ -52,18 +52,18 @@ Current scope:     <a href="../../index.html">all classes</a>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    50%
+    100%
   </span>
   <span class="absValue">
-    (1/2)
+    (8/8)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    50%
+    100%
   </span>
   <span class="absValue">
-    (1/2)
+    (45/45)
   </span>
 </td>
 </tr>
@@ -73,7 +73,143 @@ Current scope:     <a href="../../index.html">all classes</a>
 <br/>
 <br/>
 
-  <code class="sourceCode">Source code is not available<br /></code>
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.pragma.hogar360.serviceshome.domain.usecases;
+&nbsp;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.exceptions.CategoryAlreadyExistsException;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.model.CategoryModel;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.ports.out.CategoryPersistencePort;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.utils.constants.Pagination;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.utils.constants.Validation;
+&nbsp;import com.pragma.hogar360.serviceshome.factory.CategoryModelFactory;
+&nbsp;import org.junit.jupiter.api.BeforeEach;
+&nbsp;import org.junit.jupiter.api.Test;
+&nbsp;import org.mockito.InjectMocks;
+&nbsp;import org.mockito.Mock;
+&nbsp;import org.mockito.MockitoAnnotations;
+&nbsp;import org.mockito.MockedStatic;
+&nbsp;import static org.mockito.Mockito.mockStatic;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.List;
+&nbsp;import static org.junit.jupiter.api.Assertions.*;
+&nbsp;import static org.mockito.Mockito.*;
+&nbsp;
+<b class="fc">&nbsp;class CategoryUseCaseTest {</b>
+&nbsp;
+&nbsp;    @Mock
+&nbsp;    private CategoryPersistencePort categoryPersistencePort;
+&nbsp;
+&nbsp;    @InjectMocks
+&nbsp;    private CategoryUseCase categoryUseCase;
+&nbsp;
+&nbsp;    @BeforeEach
+&nbsp;    void setUp() {
+<b class="fc">&nbsp;        MockitoAnnotations.openMocks(this);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Test
+&nbsp;    void testSave_Success() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        CategoryModel categoryModel = CategoryModelFactory.createDefaultCategoryModel();</b>
+<b class="fc">&nbsp;        when(categoryPersistencePort.getCategoryByName(categoryModel.getName())).thenReturn(null);</b>
+&nbsp;
+&nbsp;        // Act
+<b class="fc">&nbsp;        categoryUseCase.save(categoryModel);</b>
+&nbsp;
+&nbsp;        // Assert
+<b class="fc">&nbsp;        verify(categoryPersistencePort, times(1)).save(categoryModel);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Test
+&nbsp;    void testSave_CategoryAlreadyExists() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        CategoryModel categoryModel = CategoryModelFactory.createDefaultCategoryModel();</b>
+<b class="fc">&nbsp;        when(categoryPersistencePort.getCategoryByName(categoryModel.getName())).thenReturn(categoryModel);</b>
+&nbsp;
+&nbsp;        // Act &amp; Assert
+<b class="fc">&nbsp;        assertThrows(CategoryAlreadyExistsException.class, () -&gt; categoryUseCase.save(categoryModel));</b>
+<b class="fc">&nbsp;        verify(categoryPersistencePort, never()).save(categoryModel);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Test
+&nbsp;    void testGetCategories_Success() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        int page = 0;</b>
+<b class="fc">&nbsp;        int size = 10;</b>
+<b class="fc">&nbsp;        boolean orderAsc = true;</b>
+<b class="fc">&nbsp;        List&lt;CategoryModel&gt; categoryList = new ArrayList&lt;&gt;();</b>
+<b class="fc">&nbsp;        categoryList.add(CategoryModelFactory.createDefaultCategoryModel());</b>
+<b class="fc">&nbsp;        long totalElements = 1;</b>
+<b class="fc">&nbsp;        int totalPages = 1;</b>
+<b class="fc">&nbsp;        int pageNumber = 0;</b>
+<b class="fc">&nbsp;        int pageSize = 10;</b>
+&nbsp;
+<b class="fc">&nbsp;        Pagination&lt;CategoryModel&gt; pagination = new Pagination&lt;&gt;(categoryList, totalElements, totalPages, pageNumber, pageSize);</b>
+<b class="fc">&nbsp;        when(categoryPersistencePort.getCategories(page, size, orderAsc)).thenReturn(pagination);</b>
+&nbsp;
+&nbsp;        // Act
+<b class="fc">&nbsp;        Pagination&lt;CategoryModel&gt; result = categoryUseCase.getCategories(page, size, orderAsc);</b>
+&nbsp;
+&nbsp;        // Assert
+<b class="fc">&nbsp;        assertNotNull(result);</b>
+<b class="fc">&nbsp;        assertEquals(pagination, result);</b>
+<b class="fc">&nbsp;        verify(categoryPersistencePort, times(1)).getCategories(page, size, orderAsc);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Test
+&nbsp;    void testGetCategoryByName_Success() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        CategoryModel categoryModel = CategoryModelFactory.createDefaultCategoryModel();</b>
+<b class="fc">&nbsp;        when(categoryPersistencePort.getCategoryByName(categoryModel.getName())).thenReturn(categoryModel);</b>
+&nbsp;
+&nbsp;        // Act
+<b class="fc">&nbsp;        CategoryModel result = categoryUseCase.getCategoryByName(categoryModel.getName());</b>
+&nbsp;
+&nbsp;        // Assert
+<b class="fc">&nbsp;        assertNotNull(result);</b>
+<b class="fc">&nbsp;        assertEquals(categoryModel, result);</b>
+<b class="fc">&nbsp;        verify(categoryPersistencePort, times(1)).getCategoryByName(categoryModel.getName());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Test
+&nbsp;    void testGetCategoryByName_NotFound() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        String categoryName = &quot;Nonexistent Category&quot;;</b>
+<b class="fc">&nbsp;        when(categoryPersistencePort.getCategoryByName(categoryName)).thenReturn(null);</b>
+&nbsp;
+&nbsp;        // Act
+<b class="fc">&nbsp;        CategoryModel result = categoryUseCase.getCategoryByName(categoryName);</b>
+&nbsp;
+&nbsp;        // Assert
+<b class="fc">&nbsp;        assertNull(result);</b>
+<b class="fc">&nbsp;        verify(categoryPersistencePort, times(1)).getCategoryByName(categoryName);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Test
+&nbsp;    void testSave_ValidCategory_SavesCategory() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        CategoryModel categoryModel = CategoryModelFactory.createDefaultCategoryModel();</b>
+<b class="fc">&nbsp;        when(categoryPersistencePort.getCategoryByName(categoryModel.getName())).thenReturn(null);</b>
+&nbsp;
+<b class="fc">&nbsp;        try (MockedStatic&lt;Validation&gt; mockedValidation = mockStatic(Validation.class)) {</b>
+<b class="fc">&nbsp;            mockedValidation.when(() -&gt; Validation.validateName(categoryModel.getName())).thenAnswer(invocation -&gt; null);</b>
+<b class="fc">&nbsp;            mockedValidation.when(() -&gt; Validation.validateDescription(categoryModel.getDescription())).thenAnswer(invocation -&gt; null);</b>
+&nbsp;
+&nbsp;            // Act
+<b class="fc">&nbsp;            categoryUseCase.save(categoryModel);</b>
+&nbsp;
+&nbsp;            // Assert
+<b class="fc">&nbsp;            verify(categoryPersistencePort, times(1)).save(categoryModel);</b>
+<b class="fc">&nbsp;            mockedValidation.verify(() -&gt; Validation.validateName(categoryModel.getName()));</b>
+<b class="fc">&nbsp;            mockedValidation.verify(() -&gt; Validation.validateDescription(categoryModel.getDescription()));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;}
+</code>
+</pre>
 </div>
 
 <script type="text/javascript">
@@ -95,7 +231,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2025-03-20 13:41</div>
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
 </div>
 </body>
 </html>

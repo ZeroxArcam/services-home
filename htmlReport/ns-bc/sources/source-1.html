@@ -5,7 +5,7 @@
 <html id="htmlId">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
-  <title>Coverage Report > Advised</title>
+  <title>Coverage Report > StringManager</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -19,21 +19,22 @@
 <div class="breadCrumbs">
 Current scope:     <a href="../../index.html">all classes</a>
     <span class="separator">|</span>
-    <a href="../index.html">org.springframework.aop.framework</a>
+    <a href="../index.html">org.apache.tomcat.util.res</a>
 </div>
 
-<h1>Coverage Summary for Class: Advised (org.springframework.aop.framework)</h1>
+<h1>Coverage Summary for Class: StringManager (org.apache.tomcat.util.res)</h1>
 
 <table class="coverageStats">
+
 <tr>
   <th class="name">Class</th>
 <th class="coverageStat 
 ">
-  Class, %
+  Method, %
 </th>
 <th class="coverageStat 
 ">
-  Method, %
+  Branch, %
 </th>
 <th class="coverageStat 
 ">
@@ -41,33 +42,86 @@ Current scope:     <a href="../../index.html">all classes</a>
 </th>
 </tr>
 <tr>
-  <td class="name">Advised</td>
+  <td class="name">StringManager</td>
 <td class="coverageStat">
   <span class="percent">
-    0%
+    55.6%
   </span>
   <span class="absValue">
-    (0/1)
+    (5/9)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    0%
+    31.8%
   </span>
   <span class="absValue">
-    (0/1)
+    (7/22)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    0%
+    46%
   </span>
   <span class="absValue">
-    (0/1)
+    (23/50)
   </span>
 </td>
 </tr>
-
+  <tr>
+    <td class="name">StringManager$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    75%
+  </span>
+  <span class="absValue">
+    (3/4)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    63.6%
+  </span>
+  <span class="absValue">
+    (7/11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (8/24)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    48.1%
+  </span>
+  <span class="absValue">
+    (26/54)
+  </span>
+</td>
+</tr>
 </table>
 
 <br/>
@@ -80,61 +134,137 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;// (powered by FernFlower decompiler)
 &nbsp;//
 &nbsp;
-&nbsp;package org.springframework.aop.framework;
+&nbsp;package org.apache.tomcat.util.res;
 &nbsp;
-&nbsp;import org.aopalliance.aop.Advice;
-&nbsp;import org.springframework.aop.Advisor;
-&nbsp;import org.springframework.aop.TargetClassAware;
-&nbsp;import org.springframework.aop.TargetSource;
+&nbsp;import java.text.FieldPosition;
+&nbsp;import java.text.MessageFormat;
+&nbsp;import java.util.Enumeration;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.LinkedHashMap;
+&nbsp;import java.util.Locale;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.MissingResourceException;
+&nbsp;import java.util.ResourceBundle;
 &nbsp;
-&nbsp;public interface Advised extends TargetClassAware {
-&nbsp;    boolean isFrozen();
+&nbsp;public class StringManager {
+&nbsp;    private static int LOCALE_CACHE_SIZE = 10;
+&nbsp;    private final ResourceBundle bundle;
+&nbsp;    private final Locale locale;
+&nbsp;    private static final Map&lt;String, Map&lt;Locale, StringManager&gt;&gt; managers = new HashMap();
 &nbsp;
-&nbsp;    boolean isProxyTargetClass();
+&nbsp;    private StringManager(String packageName, Locale locale) {
+&nbsp;        String bundleName = packageName + &quot;.LocalStrings&quot;;
+&nbsp;        ResourceBundle bnd = null;
 &nbsp;
-&nbsp;    Class&lt;?&gt;[] getProxiedInterfaces();
+&nbsp;        try {
+&nbsp;            if (locale.getLanguage().equals(Locale.ENGLISH.getLanguage())) {
+&nbsp;                locale = Locale.ROOT;
+&nbsp;            }
 &nbsp;
-&nbsp;    boolean isInterfaceProxied(Class&lt;?&gt; ifc);
+&nbsp;            bnd = ResourceBundle.getBundle(bundleName, locale);
+&nbsp;        } catch (MissingResourceException var9) {
+&nbsp;            ClassLoader cl = Thread.currentThread().getContextClassLoader();
+&nbsp;            if (cl != null) {
+&nbsp;                try {
+&nbsp;                    bnd = ResourceBundle.getBundle(bundleName, locale, cl);
+&nbsp;                } catch (MissingResourceException var8) {
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
 &nbsp;
-&nbsp;    void setTargetSource(TargetSource targetSource);
+&nbsp;        this.bundle = bnd;
+&nbsp;        if (this.bundle != null) {
+&nbsp;            Locale bundleLocale = this.bundle.getLocale();
+&nbsp;            if (bundleLocale.equals(Locale.ROOT)) {
+&nbsp;                this.locale = Locale.ENGLISH;
+<b class="fc">&nbsp;            } else {</b>
+&nbsp;                this.locale = bundleLocale;
+&nbsp;            }
+&nbsp;        } else {
+&nbsp;            this.locale = null;
+&nbsp;        }
 &nbsp;
-&nbsp;    TargetSource getTargetSource();
-&nbsp;
-&nbsp;    void setExposeProxy(boolean exposeProxy);
-&nbsp;
-&nbsp;    boolean isExposeProxy();
-&nbsp;
-&nbsp;    void setPreFiltered(boolean preFiltered);
-&nbsp;
-&nbsp;    boolean isPreFiltered();
-&nbsp;
-&nbsp;    Advisor[] getAdvisors();
-&nbsp;
-&nbsp;    default int getAdvisorCount() {
-&nbsp;        return this.getAdvisors().length;
 &nbsp;    }
 &nbsp;
-&nbsp;    void addAdvisor(Advisor advisor) throws AopConfigException;
+&nbsp;    public String getString(String key) {
+&nbsp;        if (key == null) {
+&nbsp;            String msg = &quot;key may not have a null value&quot;;
+&nbsp;            throw new IllegalArgumentException(msg);
+&nbsp;        } else {
+&nbsp;            String str = null;
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;            try {</b>
+<b class="fc">&nbsp;                if (this.bundle != null) {</b>
+&nbsp;                    str = this.bundle.getString(key);
+&nbsp;                }
+&nbsp;            } catch (MissingResourceException var4) {
+&nbsp;                str = null;
+&nbsp;            }
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;            return str;</b>
+&nbsp;        }
+<b class="fc">&nbsp;    }</b>
 &nbsp;
-&nbsp;    void addAdvisor(int pos, Advisor advisor) throws AopConfigException;
+&nbsp;    public String getString(String key, Object... args) {
+&nbsp;        String value = this.getString(key);
+&nbsp;        if (value == null) {
+<b class="nc">&nbsp;            value = key;</b>
+<b class="nc">&nbsp;        }</b>
 &nbsp;
-&nbsp;    boolean removeAdvisor(Advisor advisor);
+<b class="nc">&nbsp;        MessageFormat mf = new MessageFormat(value);</b>
+&nbsp;        mf.setLocale(this.locale);
+&nbsp;        return mf.format(args, new StringBuffer(), (FieldPosition)null).toString();
+&nbsp;    }
 &nbsp;
-&nbsp;    void removeAdvisor(int index) throws AopConfigException;
+&nbsp;    public Locale getLocale() {
+<b class="fc">&nbsp;        return this.locale;</b>
+&nbsp;    }
+<b class="pc">&nbsp;</b>
+<b class="fc">&nbsp;    public static final StringManager getManager(Class&lt;?&gt; clazz) {</b>
+<b class="pc">&nbsp;        return getManager(clazz.getPackage().getName());</b>
+<b class="fc">&nbsp;    }</b>
 &nbsp;
-&nbsp;    int indexOf(Advisor advisor);
+<b class="nc">&nbsp;    public static final StringManager getManager(String packageName) {</b>
+&nbsp;        return getManager(packageName, Locale.getDefault());
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public static final synchronized StringManager getManager(String packageName, Locale locale) {
+&nbsp;        Map&lt;Locale, StringManager&gt; map = (Map)managers.get(packageName);
+&nbsp;        if (map == null) {
+&nbsp;            map = new LinkedHashMap&lt;Locale, StringManager&gt;(LOCALE_CACHE_SIZE, 0.75F, true) {
+&nbsp;                private static final long serialVersionUID = 1L;
 &nbsp;
-&nbsp;    boolean replaceAdvisor(Advisor a, Advisor b) throws AopConfigException;
+&nbsp;                protected boolean removeEldestEntry(Map.Entry&lt;Locale, StringManager&gt; eldest) {
+&nbsp;                    return this.size() &gt; StringManager.LOCALE_CACHE_SIZE - 1;
+&nbsp;                }
+&nbsp;            };
+&nbsp;            managers.put(packageName, map);
+&nbsp;        }
 &nbsp;
-&nbsp;    void addAdvice(Advice advice) throws AopConfigException;
+&nbsp;        StringManager mgr = (StringManager)map.get(locale);
+<b class="nc">&nbsp;        if (mgr == null) {</b>
+<b class="nc">&nbsp;            mgr = new StringManager(packageName, locale);</b>
+<b class="nc">&nbsp;            map.put(locale, mgr);</b>
+&nbsp;        }
 &nbsp;
-&nbsp;    void addAdvice(int pos, Advice advice) throws AopConfigException;
+<b class="nc">&nbsp;        return mgr;</b>
+&nbsp;    }
 &nbsp;
-&nbsp;    boolean removeAdvice(Advice advice);
+&nbsp;    public static StringManager getManager(String packageName, Enumeration&lt;Locale&gt; requestedLocales) {
+<b class="nc">&nbsp;        while(true) {</b>
+<b class="nc">&nbsp;            if (requestedLocales.hasMoreElements()) {</b>
+&nbsp;                Locale locale = (Locale)requestedLocales.nextElement();
+&nbsp;                StringManager result = getManager(packageName, locale);
+&nbsp;                if (!result.getLocale().equals(locale)) {
+&nbsp;                    continue;
+&nbsp;                }
 &nbsp;
-&nbsp;    int indexOf(Advice advice);
+&nbsp;                return result;
+&nbsp;            }
 &nbsp;
-&nbsp;    String toProxyConfigString();
+&nbsp;            return getManager(packageName);
+&nbsp;        }
+&nbsp;    }
 &nbsp;}
 </code>
 </pre>
@@ -159,7 +289,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2025-03-20 13:41</div>
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
 </div>
 </body>
 </html>

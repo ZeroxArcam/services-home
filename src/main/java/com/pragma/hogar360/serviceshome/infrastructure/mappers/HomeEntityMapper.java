@@ -1,9 +1,11 @@
 package com.pragma.hogar360.serviceshome.infrastructure.mappers;
 import com.pragma.hogar360.serviceshome.domain.model.HomeModel;
 import com.pragma.hogar360.serviceshome.domain.model.HomePublicationInfoModel;
+import com.pragma.hogar360.serviceshome.domain.utils.constants.Pagination;
 import com.pragma.hogar360.serviceshome.infrastructure.entities.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.springframework.data.domain.Page;
 
 @Mapper(componentModel = "spring")
 public interface HomeEntityMapper {
@@ -43,5 +45,11 @@ public interface HomeEntityMapper {
     default HomePublicationInfoModel.PublicationStatus mapPublicationStatus(HomeEntity.PublicationStatus status) {
         return HomePublicationInfoModel.PublicationStatus.valueOf(status.name());
     }
+    @Mapping(target = "items", expression = "java(homePage.getContent().stream().map(this::toModel).toList())")
+    @Mapping(target = "totalElements", expression = "java(homePage.getTotalElements())")
+    @Mapping(target = "totalPages", expression = "java(homePage.getTotalPages())")
+    @Mapping(target = "pageNumber", expression = "java(homePage.getNumber())")
+    @Mapping(target = "pageSize", expression = "java(homePage.getSize())")
+    Pagination<HomeModel> homeEntityPageToHomeModelPagination(Page<HomeEntity> homePage);
 
 }

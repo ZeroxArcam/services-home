@@ -1,0 +1,213 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > EnhancingClassTransformerImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.jpa.internal.enhance</a>
+</div>
+
+<h1>Coverage Summary for Class: EnhancingClassTransformerImpl (org.hibernate.jpa.internal.enhance)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">EnhancingClassTransformerImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    16.7%
+  </span>
+  <span class="absValue">
+    (1/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    7.1%
+  </span>
+  <span class="absValue">
+    (1/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    20.7%
+  </span>
+  <span class="absValue">
+    (6/29)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.jpa.internal.enhance;
+&nbsp;
+&nbsp;import jakarta.persistence.spi.TransformerException;
+&nbsp;import java.lang.ref.WeakReference;
+&nbsp;import java.security.ProtectionDomain;
+&nbsp;import java.util.Objects;
+&nbsp;import java.util.concurrent.locks.ReentrantLock;
+&nbsp;import org.hibernate.bytecode.enhance.internal.bytebuddy.CorePrefixFilter;
+&nbsp;import org.hibernate.bytecode.enhance.spi.EnhancementContext;
+&nbsp;import org.hibernate.bytecode.enhance.spi.EnhancementContextWrapper;
+&nbsp;import org.hibernate.bytecode.enhance.spi.Enhancer;
+&nbsp;import org.hibernate.bytecode.internal.BytecodeProviderInitiator;
+&nbsp;import org.hibernate.bytecode.spi.BytecodeProvider;
+&nbsp;import org.hibernate.bytecode.spi.ClassTransformer;
+&nbsp;
+&nbsp;public class EnhancingClassTransformerImpl implements ClassTransformer {
+&nbsp;    private final EnhancementContext enhancementContext;
+&nbsp;    private final BytecodeProvider bytecodeProvider;
+&nbsp;    private final ReentrantLock lock = new ReentrantLock();
+&nbsp;    private volatile WeakReference&lt;Entry&gt; entryReference;
+&nbsp;
+&nbsp;    public EnhancingClassTransformerImpl(EnhancementContext enhancementContext) {
+&nbsp;        Objects.requireNonNull(enhancementContext);
+&nbsp;        this.enhancementContext = enhancementContext;
+&nbsp;        BytecodeProvider overriddenProvider = enhancementContext.getBytecodeProvider();
+&nbsp;        this.bytecodeProvider = overriddenProvider == null ? BytecodeProviderInitiator.buildDefaultBytecodeProvider() : overriddenProvider;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public byte[] transform(ClassLoader loader, String className, Class&lt;?&gt; classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws TransformerException {
+<b class="fc">&nbsp;        String classNameDotFormat = className.replace(&#39;/&#39;, &#39;.&#39;);</b>
+<b class="fc">&nbsp;        if (CorePrefixFilter.DEFAULT_INSTANCE.isCoreClassName(classNameDotFormat)) {</b>
+<b class="fc">&nbsp;            return null;</b>
+<b class="fc">&nbsp;        } else {</b>
+<b class="pc">&nbsp;            byte[] e;</b>
+&nbsp;            try {
+&nbsp;                e = this.getEnhancer(loader).enhance(className, classfileBuffer);
+&nbsp;            } catch (Exception e) {
+&nbsp;                throw new TransformerException(&quot;Error performing enhancement of &quot; + className, e);
+&nbsp;            } finally {
+&nbsp;                this.bytecodeProvider.resetCaches();
+&nbsp;            }
+&nbsp;
+&nbsp;            return e;
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void discoverTypes(ClassLoader loader, String className) {</b>
+&nbsp;        this.getEnhancer(loader).discoverTypes(className, (byte[])null);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private Enhancer getEnhancer(ClassLoader loader) {</b>
+&nbsp;        Entry enhancerEntry = getEnhancerEntry(this.entryReference, loader);
+&nbsp;        if (enhancerEntry == null) {
+&nbsp;            this.lock.lock();
+<b class="nc">&nbsp;</b>
+&nbsp;            try {
+&nbsp;                enhancerEntry = getEnhancerEntry(this.entryReference, loader);
+<b class="nc">&nbsp;                if (enhancerEntry == null) {</b>
+&nbsp;                    enhancerEntry = new Entry(loader, this.createEnhancer(loader));
+&nbsp;                    this.entryReference = new WeakReference(enhancerEntry);
+<b class="nc">&nbsp;                }</b>
+&nbsp;            } finally {
+&nbsp;                this.lock.unlock();
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return enhancerEntry.enhancer;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static Entry getEnhancerEntry(WeakReference&lt;Entry&gt; weakReference, ClassLoader loader) {
+<b class="nc">&nbsp;        if (weakReference == null) {</b>
+<b class="nc">&nbsp;            return null;</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            Entry entry = (Entry)weakReference.get();
+<b class="nc">&nbsp;            return entry != null &amp;&amp; entry.classLoader == loader ? entry : null;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private Enhancer createEnhancer(ClassLoader loader) {
+&nbsp;        return this.bytecodeProvider.getEnhancer(new EnhancementContextWrapper(this.enhancementContext, loader));
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private static class Entry {
+&nbsp;        final ClassLoader classLoader;
+<b class="nc">&nbsp;        final Enhancer enhancer;</b>
+&nbsp;
+&nbsp;        public Entry(ClassLoader classLoader, Enhancer enhancer) {
+&nbsp;            this.classLoader = classLoader;
+<b class="nc">&nbsp;            this.enhancer = enhancer;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 21:00</div>
+</div>
+</body>
+</html>

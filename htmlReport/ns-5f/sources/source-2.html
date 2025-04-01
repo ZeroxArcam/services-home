@@ -1,0 +1,782 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > PoolBase</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.zaxxer.hikari.pool</a>
+</div>
+
+<h1>Coverage Summary for Class: PoolBase (com.zaxxer.hikari.pool)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PoolBase</td>
+<td class="coverageStat">
+  <span class="percent">
+    12%
+  </span>
+  <span class="absValue">
+    (3/25)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    2.5%
+  </span>
+  <span class="absValue">
+    (4/162)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    15.8%
+  </span>
+  <span class="absValue">
+    (32/203)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">PoolBase$ConnectionSetupException</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">PoolBase$IMetricsTrackerDelegate</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/6)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    9.4%
+  </span>
+  <span class="absValue">
+    (3/32)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    2.5%
+  </span>
+  <span class="absValue">
+    (4/162)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    15.2%
+  </span>
+  <span class="absValue">
+    (32/210)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package com.zaxxer.hikari.pool;
+&nbsp;
+&nbsp;import com.zaxxer.hikari.HikariConfig;
+&nbsp;import com.zaxxer.hikari.SQLExceptionOverride;
+&nbsp;import com.zaxxer.hikari.metrics.IMetricsTracker;
+&nbsp;import com.zaxxer.hikari.util.ClockSource;
+&nbsp;import com.zaxxer.hikari.util.DriverDataSource;
+&nbsp;import com.zaxxer.hikari.util.PropertyElf;
+&nbsp;import com.zaxxer.hikari.util.UtilityElf;
+&nbsp;import java.lang.management.ManagementFactory;
+&nbsp;import java.sql.Connection;
+&nbsp;import java.sql.SQLException;
+&nbsp;import java.sql.SQLTransientConnectionException;
+&nbsp;import java.sql.Statement;
+&nbsp;import java.util.Properties;
+&nbsp;import java.util.concurrent.Executor;
+&nbsp;import java.util.concurrent.Executors;
+&nbsp;import java.util.concurrent.ThreadFactory;
+&nbsp;import java.util.concurrent.ThreadPoolExecutor;
+&nbsp;import java.util.concurrent.TimeUnit;
+&nbsp;import java.util.concurrent.atomic.AtomicReference;
+&nbsp;import javax.management.MBeanServer;
+&nbsp;import javax.management.ObjectName;
+&nbsp;import javax.naming.InitialContext;
+&nbsp;import javax.naming.NamingException;
+&nbsp;import javax.sql.DataSource;
+&nbsp;import org.slf4j.Logger;
+&nbsp;import org.slf4j.LoggerFactory;
+&nbsp;
+&nbsp;abstract class PoolBase {
+&nbsp;    private final Logger logger = LoggerFactory.getLogger(PoolBase.class);
+&nbsp;    public final HikariConfig config;
+&nbsp;    IMetricsTrackerDelegate metricsTracker;
+&nbsp;    protected final String poolName;
+&nbsp;    volatile String catalog;
+&nbsp;    final AtomicReference&lt;Exception&gt; lastConnectionFailure;
+&nbsp;    long connectionTimeout;
+&nbsp;    long validationTimeout;
+&nbsp;    SQLExceptionOverride exceptionOverride;
+&nbsp;    private static final String[] RESET_STATES = new String[]{&quot;readOnly&quot;, &quot;autoCommit&quot;, &quot;isolation&quot;, &quot;catalog&quot;, &quot;netTimeout&quot;, &quot;schema&quot;};
+&nbsp;    private static final int UNINITIALIZED = -1;
+&nbsp;    private static final int TRUE = 1;
+&nbsp;    private static final int FALSE = 0;
+&nbsp;    private static final int MINIMUM_LOGIN_TIMEOUT = Integer.getInteger(&quot;com.zaxxer.hikari.minimumLoginTimeoutSecs&quot;, 1);
+&nbsp;    private int networkTimeout;
+&nbsp;    private int isNetworkTimeoutSupported;
+&nbsp;    private int isQueryTimeoutSupported;
+<b class="fc">&nbsp;    private int defaultTransactionIsolation;</b>
+&nbsp;    private int transactionIsolation;
+&nbsp;    private Executor netTimeoutExecutor;
+&nbsp;    private DataSource dataSource;
+&nbsp;    private final String schema;
+&nbsp;    private final boolean isReadOnly;
+&nbsp;    private final boolean isAutoCommit;
+&nbsp;    private final boolean isUseJdbc4Validation;
+&nbsp;    private final boolean isIsolateInternalQueries;
+&nbsp;    private volatile boolean isValidChecked;
+&nbsp;
+&nbsp;    PoolBase(HikariConfig config) {
+&nbsp;        this.config = config;
+&nbsp;        this.networkTimeout = -1;
+&nbsp;        this.catalog = config.getCatalog();
+<b class="fc">&nbsp;        this.schema = config.getSchema();</b>
+&nbsp;        this.isReadOnly = config.isReadOnly();
+&nbsp;        this.isAutoCommit = config.isAutoCommit();
+&nbsp;        this.exceptionOverride = (SQLExceptionOverride)UtilityElf.createInstance(config.getExceptionOverrideClassName(), SQLExceptionOverride.class, new Object[0]);
+<b class="fc">&nbsp;        this.transactionIsolation = UtilityElf.getTransactionIsolation(config.getTransactionIsolation());</b>
+&nbsp;        this.isQueryTimeoutSupported = -1;
+&nbsp;        this.isNetworkTimeoutSupported = -1;
+&nbsp;        this.isUseJdbc4Validation = config.getConnectionTestQuery() == null;
+&nbsp;        this.isIsolateInternalQueries = config.isIsolateInternalQueries();
+&nbsp;        this.poolName = config.getPoolName();
+&nbsp;        this.connectionTimeout = config.getConnectionTimeout();
+&nbsp;        this.validationTimeout = config.getValidationTimeout();
+&nbsp;        this.lastConnectionFailure = new AtomicReference();
+&nbsp;        this.initializeDataSource();
+&nbsp;    }
+&nbsp;
+&nbsp;    public String toString() {
+&nbsp;        return this.poolName;
+&nbsp;    }
+&nbsp;
+&nbsp;    abstract void recycle(PoolEntry var1);
+&nbsp;
+&nbsp;    void quietlyCloseConnection(Connection connection, String closureReason) {
+&nbsp;        if (connection != null) {
+<b class="fc">&nbsp;            try {</b>
+<b class="fc">&nbsp;                this.logger.debug(&quot;{} - Closing connection {}: {}&quot;, new Object[]{this.poolName, connection, closureReason});</b>
+&nbsp;
+<b class="fc">&nbsp;                try {</b>
+<b class="fc">&nbsp;                    Connection e = connection;</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;                    try {</b>
+<b class="fc">&nbsp;                        Connection var4 = connection;</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;                        try {</b>
+&nbsp;                            if (!connection.isClosed()) {
+<b class="fc">&nbsp;                                this.setNetworkTimeout(connection, TimeUnit.SECONDS.toMillis(15L));</b>
+<b class="fc">&nbsp;                            }</b>
+<b class="pc">&nbsp;                        } catch (Throwable var9) {</b>
+<b class="fc">&nbsp;                            if (connection != null) {</b>
+&nbsp;                                try {
+<b class="fc">&nbsp;                                    var4.close();</b>
+<b class="fc">&nbsp;                                } catch (Throwable var8) {</b>
+<b class="fc">&nbsp;                                    var9.addSuppressed(var8);</b>
+<b class="fc">&nbsp;                                }</b>
+&nbsp;                            }
+<b class="fc">&nbsp;</b>
+&nbsp;                            throw var9;
+&nbsp;                        }
+&nbsp;
+&nbsp;                        if (connection != null) {
+&nbsp;                            connection.close();
+&nbsp;                        }
+<b class="nc">&nbsp;                    } catch (Throwable var10) {</b>
+&nbsp;                        if (connection != null) {
+&nbsp;                            try {
+&nbsp;                                e.close();
+&nbsp;                            } catch (Throwable var7) {
+&nbsp;                                var10.addSuppressed(var7);
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;
+&nbsp;                        throw var10;
+&nbsp;                    }
+<b class="nc">&nbsp;</b>
+&nbsp;                    if (connection != null) {
+<b class="nc">&nbsp;                        connection.close();</b>
+&nbsp;                    }
+&nbsp;                } catch (SQLException var11) {
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            } catch (Exception e) {</b>
+<b class="nc">&nbsp;                this.logger.debug(&quot;{} - Closing connection {} failed&quot;, new Object[]{this.poolName, connection, e});</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    boolean isConnectionDead(Connection connection) {</b>
+&nbsp;        try {
+&nbsp;            this.setNetworkTimeout(connection, this.validationTimeout);
+&nbsp;
+&nbsp;            boolean statement;
+&nbsp;            try {
+&nbsp;                int validationSeconds = (int)Math.max(1000L, this.validationTimeout) / 1000;
+&nbsp;                if (!this.isUseJdbc4Validation) {
+<b class="nc">&nbsp;                    Statement statement = connection.createStatement();</b>
+&nbsp;
+<b class="nc">&nbsp;                    try {</b>
+&nbsp;                        if (this.isNetworkTimeoutSupported != 1) {
+<b class="nc">&nbsp;                            this.setQueryTimeout(statement, validationSeconds);</b>
+<b class="nc">&nbsp;                        }</b>
+&nbsp;
+&nbsp;                        statement.execute(this.config.getConnectionTestQuery());
+<b class="nc">&nbsp;                    } catch (Throwable var12) {</b>
+<b class="nc">&nbsp;                        if (statement != null) {</b>
+<b class="nc">&nbsp;                            try {</b>
+&nbsp;                                statement.close();
+&nbsp;                            } catch (Throwable var11) {
+<b class="nc">&nbsp;                                var12.addSuppressed(var11);</b>
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;
+<b class="nc">&nbsp;                        throw var12;</b>
+&nbsp;                    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                    if (statement != null) {</b>
+&nbsp;                        statement.close();
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    return false;</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                statement = !connection.isValid(validationSeconds);</b>
+<b class="nc">&nbsp;            } finally {</b>
+<b class="nc">&nbsp;                this.setNetworkTimeout(connection, (long)this.networkTimeout);</b>
+<b class="nc">&nbsp;                if (this.isIsolateInternalQueries &amp;&amp; !this.isAutoCommit) {</b>
+&nbsp;                    connection.rollback();
+&nbsp;                }
+&nbsp;
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            return statement;</b>
+&nbsp;        } catch (Exception e) {
+&nbsp;            this.lastConnectionFailure.set(e);
+&nbsp;            this.logger.warn(&quot;{} - Failed to validate connection {} ({}). Possibly consider using a shorter maxLifetime value.&quot;, new Object[]{this.poolName, connection, e.getMessage()});
+&nbsp;            return true;
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    Exception getLastConnectionFailure() {
+&nbsp;        return (Exception)this.lastConnectionFailure.get();
+&nbsp;    }
+&nbsp;
+&nbsp;    public DataSource getUnwrappedDataSource() {
+&nbsp;        return this.dataSource;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    PoolEntry newPoolEntry() throws Exception {
+&nbsp;        return new PoolEntry(this.newConnection(), this, this.isReadOnly, this.isAutoCommit);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    void resetConnectionState(Connection connection, ProxyConnection proxyConnection, int dirtyBits) throws SQLException {
+<b class="nc">&nbsp;        int resetBits = 0;</b>
+<b class="nc">&nbsp;        if ((dirtyBits &amp; 1) != 0 &amp;&amp; proxyConnection.getReadOnlyState() != this.isReadOnly) {</b>
+<b class="nc">&nbsp;            connection.setReadOnly(this.isReadOnly);</b>
+&nbsp;            resetBits |= 1;
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if ((dirtyBits &amp; 2) != 0 &amp;&amp; proxyConnection.getAutoCommitState() != this.isAutoCommit) {</b>
+<b class="nc">&nbsp;            connection.setAutoCommit(this.isAutoCommit);</b>
+&nbsp;            resetBits |= 2;
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if ((dirtyBits &amp; 4) != 0 &amp;&amp; proxyConnection.getTransactionIsolationState() != this.transactionIsolation) {</b>
+<b class="nc">&nbsp;            connection.setTransactionIsolation(this.transactionIsolation);</b>
+&nbsp;            resetBits |= 4;
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if ((dirtyBits &amp; 8) != 0 &amp;&amp; this.catalog != null &amp;&amp; !this.catalog.equals(proxyConnection.getCatalogState())) {</b>
+<b class="nc">&nbsp;            connection.setCatalog(this.catalog);</b>
+&nbsp;            resetBits |= 8;
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if ((dirtyBits &amp; 16) != 0 &amp;&amp; proxyConnection.getNetworkTimeoutState() != this.networkTimeout) {</b>
+<b class="nc">&nbsp;            this.setNetworkTimeout(connection, (long)this.networkTimeout);</b>
+&nbsp;            resetBits |= 16;
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if ((dirtyBits &amp; 32) != 0 &amp;&amp; this.schema != null &amp;&amp; !this.schema.equals(proxyConnection.getSchemaState())) {</b>
+<b class="nc">&nbsp;            connection.setSchema(this.schema);</b>
+&nbsp;            resetBits |= 32;
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if (resetBits != 0 &amp;&amp; this.logger.isDebugEnabled()) {</b>
+&nbsp;            this.logger.debug(&quot;{} - Reset ({}) on connection {}&quot;, new Object[]{this.poolName, this.stringFromResetBits(resetBits), connection});
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    void shutdownNetworkTimeoutExecutor() {</b>
+<b class="nc">&nbsp;        if (this.netTimeoutExecutor instanceof ThreadPoolExecutor) {</b>
+&nbsp;            ((ThreadPoolExecutor)this.netTimeoutExecutor).shutdownNow();
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    long getLoginTimeout() {
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            return this.dataSource != null ? (long)this.dataSource.getLoginTimeout() : TimeUnit.SECONDS.toSeconds(5L);
+<b class="nc">&nbsp;        } catch (SQLException var2) {</b>
+&nbsp;            return TimeUnit.SECONDS.toSeconds(5L);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    void handleMBeans(HikariPool hikariPool, boolean register) {
+&nbsp;        if (this.config.isRegisterMbeans()) {
+&nbsp;            try {
+&nbsp;                MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
+&nbsp;                ObjectName beanConfigName;
+&nbsp;                ObjectName beanPoolName;
+&nbsp;                if (&quot;true&quot;.equals(System.getProperty(&quot;hikaricp.jmx.register2.0&quot;))) {
+&nbsp;                    beanConfigName = new ObjectName(&quot;com.zaxxer.hikari:type=PoolConfig,name=&quot; + this.poolName);
+&nbsp;                    beanPoolName = new ObjectName(&quot;com.zaxxer.hikari:type=Pool,name=&quot; + this.poolName);
+&nbsp;                } else {
+<b class="nc">&nbsp;                    beanConfigName = new ObjectName(&quot;com.zaxxer.hikari:type=PoolConfig (&quot; + this.poolName + &quot;)&quot;);</b>
+&nbsp;                    beanPoolName = new ObjectName(&quot;com.zaxxer.hikari:type=Pool (&quot; + this.poolName + &quot;)&quot;);
+&nbsp;                }
+&nbsp;
+&nbsp;                if (register) {
+<b class="nc">&nbsp;                    if (!mBeanServer.isRegistered(beanConfigName)) {</b>
+&nbsp;                        mBeanServer.registerMBean(this.config, beanConfigName);
+&nbsp;                        mBeanServer.registerMBean(hikariPool, beanPoolName);
+<b class="nc">&nbsp;                    } else {</b>
+<b class="nc">&nbsp;                        this.logger.error(&quot;{} - JMX name ({}) is already registered.&quot;, this.poolName, this.poolName);</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                } else if (mBeanServer.isRegistered(beanConfigName)) {
+<b class="nc">&nbsp;                    mBeanServer.unregisterMBean(beanConfigName);</b>
+<b class="nc">&nbsp;                    mBeanServer.unregisterMBean(beanPoolName);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            } catch (Exception e) {</b>
+<b class="nc">&nbsp;                this.logger.warn(&quot;{} - Failed to {} management beans.&quot;, new Object[]{this.poolName, register ? &quot;register&quot; : &quot;unregister&quot;, e});</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private void initializeDataSource() {
+<b class="nc">&nbsp;        String jdbcUrl = this.config.getJdbcUrl();</b>
+<b class="nc">&nbsp;        String username = this.config.getUsername();</b>
+<b class="nc">&nbsp;        String password = this.config.getPassword();</b>
+&nbsp;        String dsClassName = this.config.getDataSourceClassName();
+&nbsp;        String driverClassName = this.config.getDriverClassName();
+&nbsp;        String dataSourceJNDI = this.config.getDataSourceJNDI();
+<b class="nc">&nbsp;        Properties dataSourceProperties = this.config.getDataSourceProperties();</b>
+&nbsp;        DataSource ds = this.config.getDataSource();
+&nbsp;        if (dsClassName != null &amp;&amp; ds == null) {
+&nbsp;            ds = (DataSource)UtilityElf.createInstance(dsClassName, DataSource.class, new Object[0]);
+&nbsp;            PropertyElf.setTargetFromProperties(ds, dataSourceProperties);
+&nbsp;        } else if (jdbcUrl != null &amp;&amp; ds == null) {
+&nbsp;            ds = new DriverDataSource(jdbcUrl, driverClassName, dataSourceProperties, username, password);
+&nbsp;        } else if (dataSourceJNDI != null &amp;&amp; ds == null) {
+&nbsp;            try {
+&nbsp;                InitialContext ic = new InitialContext();
+&nbsp;                ds = (DataSource)ic.lookup(dataSourceJNDI);
+&nbsp;            } catch (NamingException e) {
+&nbsp;                throw new HikariPool.PoolInitializationException(e);
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;        if (ds != null) {</b>
+<b class="fc">&nbsp;            this.setLoginTimeout(ds);</b>
+<b class="fc">&nbsp;            this.createNetworkTimeoutExecutor(ds, dsClassName, jdbcUrl);</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+<b class="fc">&nbsp;        this.dataSource = ds;</b>
+<b class="pc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private Connection newConnection() throws Exception {</b>
+&nbsp;        long start = ClockSource.currentTime();
+<b class="pc">&nbsp;        Connection connection = null;</b>
+<b class="fc">&nbsp;</b>
+&nbsp;        Connection var6;
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            String username = this.config.getUsername();
+<b class="nc">&nbsp;            String password = this.config.getPassword();</b>
+<b class="nc">&nbsp;            connection = username == null ? this.dataSource.getConnection() : this.dataSource.getConnection(username, password);</b>
+&nbsp;            if (connection == null) {
+<b class="nc">&nbsp;                throw new SQLTransientConnectionException(&quot;DataSource returned null unexpectedly&quot;);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            this.setupConnection(connection);
+<b class="nc">&nbsp;            this.lastConnectionFailure.set((Object)null);</b>
+<b class="nc">&nbsp;            var6 = connection;</b>
+<b class="nc">&nbsp;        } catch (Exception var10) {</b>
+&nbsp;            if (connection != null) {
+&nbsp;                this.quietlyCloseConnection(connection, &quot;(Failed to create/setup connection)&quot;);
+<b class="nc">&nbsp;            } else if (this.getLastConnectionFailure() == null) {</b>
+&nbsp;                this.logger.debug(&quot;{} - Failed to create/setup connection: {}&quot;, this.poolName, var10.getMessage());
+&nbsp;            }
+&nbsp;
+&nbsp;            this.lastConnectionFailure.set(var10);
+&nbsp;            throw var10;
+&nbsp;        } finally {
+&nbsp;            if (this.metricsTracker != null) {
+&nbsp;                this.metricsTracker.recordConnectionCreated(ClockSource.elapsedMillis(start));
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        return var6;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private void setupConnection(Connection connection) throws ConnectionSetupException {
+<b class="nc">&nbsp;        try {</b>
+<b class="nc">&nbsp;            if (this.networkTimeout == -1) {</b>
+<b class="nc">&nbsp;                this.networkTimeout = this.getAndSetNetworkTimeout(connection, this.validationTimeout);</b>
+&nbsp;            } else {
+&nbsp;                this.setNetworkTimeout(connection, this.validationTimeout);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            if (connection.isReadOnly() != this.isReadOnly) {</b>
+&nbsp;                connection.setReadOnly(this.isReadOnly);
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            if (connection.getAutoCommit() != this.isAutoCommit) {</b>
+&nbsp;                connection.setAutoCommit(this.isAutoCommit);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            this.checkDriverSupport(connection);
+&nbsp;            if (this.transactionIsolation != this.defaultTransactionIsolation) {
+<b class="nc">&nbsp;                connection.setTransactionIsolation(this.transactionIsolation);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            if (this.catalog != null) {
+&nbsp;                connection.setCatalog(this.catalog);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            if (this.schema != null) {
+&nbsp;                connection.setSchema(this.schema);
+&nbsp;            }
+&nbsp;
+&nbsp;            this.executeSql(connection, this.config.getConnectionInitSql(), true);
+&nbsp;            this.setNetworkTimeout(connection, (long)this.networkTimeout);
+&nbsp;        } catch (SQLException e) {
+&nbsp;            throw new ConnectionSetupException(e);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void checkDriverSupport(Connection connection) throws SQLException {
+&nbsp;        if (!this.isValidChecked) {
+<b class="nc">&nbsp;            this.checkValidationSupport(connection);</b>
+<b class="nc">&nbsp;            this.checkDefaultIsolation(connection);</b>
+&nbsp;            this.isValidChecked = true;
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private void checkValidationSupport(Connection connection) throws SQLException {</b>
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            if (this.isUseJdbc4Validation) {
+&nbsp;                connection.isValid(1);
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                this.executeSql(connection, this.config.getConnectionTestQuery(), false);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;        } catch (AbstractMethodError | Exception e) {</b>
+&nbsp;            this.logger.error(&quot;{} - Failed to execute{} connection test query ({}).&quot;, new Object[]{this.poolName, this.isUseJdbc4Validation ? &quot; isValid() for connection, configure&quot; : &quot;&quot;, ((Throwable)e).getMessage()});
+<b class="nc">&nbsp;            throw e;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private void checkDefaultIsolation(Connection connection) throws SQLException {</b>
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            this.defaultTransactionIsolation = connection.getTransactionIsolation();
+&nbsp;            if (this.transactionIsolation == -1) {
+<b class="nc">&nbsp;                this.transactionIsolation = this.defaultTransactionIsolation;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        } catch (SQLException e) {
+&nbsp;            this.logger.warn(&quot;{} - Default transaction isolation level detection failed ({}).&quot;, this.poolName, e.getMessage());
+<b class="nc">&nbsp;            if (e.getSQLState() != null &amp;&amp; !e.getSQLState().startsWith(&quot;08&quot;)) {</b>
+&nbsp;                throw e;
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private void setQueryTimeout(Statement statement, int timeoutSec) {
+&nbsp;        if (this.isQueryTimeoutSupported != 0) {
+&nbsp;            try {
+&nbsp;                statement.setQueryTimeout(timeoutSec);
+&nbsp;                this.isQueryTimeoutSupported = 1;
+&nbsp;            } catch (Exception e) {
+&nbsp;                if (this.isQueryTimeoutSupported == -1) {
+&nbsp;                    this.isQueryTimeoutSupported = 0;
+&nbsp;                    this.logger.info(&quot;{} - Failed to set query timeout for statement. ({})&quot;, this.poolName, e.getMessage());
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private int getAndSetNetworkTimeout(Connection connection, long timeoutMs) {
+&nbsp;        if (this.isNetworkTimeoutSupported != 0) {
+&nbsp;            try {
+&nbsp;                int originalTimeout = connection.getNetworkTimeout();
+&nbsp;                connection.setNetworkTimeout(this.netTimeoutExecutor, (int)timeoutMs);
+&nbsp;                this.isNetworkTimeoutSupported = 1;
+&nbsp;                return originalTimeout;
+&nbsp;            } catch (AbstractMethodError | Exception e) {
+&nbsp;                if (this.isNetworkTimeoutSupported == -1) {
+&nbsp;                    this.isNetworkTimeoutSupported = 0;
+&nbsp;                    this.logger.info(&quot;{} - Driver does not support get/set network timeout for connections. ({})&quot;, this.poolName, ((Throwable)e).getMessage());
+<b class="nc">&nbsp;                    if (this.validationTimeout &lt; TimeUnit.SECONDS.toMillis(1L)) {</b>
+<b class="nc">&nbsp;                        this.logger.warn(&quot;{} - A validationTimeout of less than 1 second cannot be honored on drivers without setNetworkTimeout() support.&quot;, this.poolName);</b>
+&nbsp;                    } else if (this.validationTimeout % TimeUnit.SECONDS.toMillis(1L) != 0L) {
+&nbsp;                        this.logger.warn(&quot;{} - A validationTimeout with fractional second granularity cannot be honored on drivers without setNetworkTimeout() support.&quot;, this.poolName);
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        return 0;
+&nbsp;    }
+&nbsp;
+&nbsp;    private void setNetworkTimeout(Connection connection, long timeoutMs) throws SQLException {
+&nbsp;        if (this.isNetworkTimeoutSupported == 1) {
+&nbsp;            connection.setNetworkTimeout(this.netTimeoutExecutor, (int)timeoutMs);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private void executeSql(Connection connection, String sql, boolean isCommit) throws SQLException {
+&nbsp;        if (sql != null) {
+&nbsp;            try (Statement statement = connection.createStatement()) {
+<b class="nc">&nbsp;                statement.execute(sql);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            if (this.isIsolateInternalQueries &amp;&amp; !this.isAutoCommit) {
+&nbsp;                if (isCommit) {
+&nbsp;                    connection.commit();
+<b class="nc">&nbsp;                } else {</b>
+<b class="nc">&nbsp;                    connection.rollback();</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private void createNetworkTimeoutExecutor(DataSource dataSource, String dsClassName, String jdbcUrl) {
+&nbsp;        if ((dsClassName == null || !dsClassName.contains(&quot;Mysql&quot;)) &amp;&amp; (jdbcUrl == null || !jdbcUrl.contains(&quot;mysql&quot;)) &amp;&amp; (dataSource == null || !dataSource.getClass().getName().contains(&quot;Mysql&quot;))) {
+&nbsp;            ThreadFactory threadFactory = this.config.getThreadFactory();
+&nbsp;            ThreadFactory var6 = threadFactory != null ? threadFactory : new UtilityElf.DefaultThreadFactory(this.poolName + &quot; network timeout executor&quot;);
+&nbsp;            ThreadPoolExecutor executor = (ThreadPoolExecutor)Executors.newCachedThreadPool((ThreadFactory)var6);
+&nbsp;            executor.setKeepAliveTime(15L, TimeUnit.SECONDS);
+&nbsp;            executor.allowCoreThreadTimeOut(true);
+<b class="nc">&nbsp;            this.netTimeoutExecutor = executor;</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            this.netTimeoutExecutor = new SynchronousExecutor();</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private void setLoginTimeout(DataSource dataSource) {</b>
+<b class="nc">&nbsp;        if (this.connectionTimeout != 2147483647L) {</b>
+&nbsp;            try {
+&nbsp;                dataSource.setLoginTimeout(Math.max(MINIMUM_LOGIN_TIMEOUT, (int)TimeUnit.MILLISECONDS.toSeconds(500L + this.connectionTimeout)));
+&nbsp;            } catch (Exception e) {
+&nbsp;                this.logger.info(&quot;{} - Failed to set login timeout for data source. ({})&quot;, this.poolName, e.getMessage());
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private String stringFromResetBits(int bits) {
+&nbsp;        StringBuilder sb = new StringBuilder();
+&nbsp;
+&nbsp;        for(int ndx = 0; ndx &lt; RESET_STATES.length; ++ndx) {
+&nbsp;            if ((bits &amp; 1 &lt;&lt; ndx) != 0) {
+&nbsp;                sb.append(RESET_STATES[ndx]).append(&quot;, &quot;);
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        sb.setLength(sb.length() - 2);</b>
+<b class="nc">&nbsp;        return sb.toString();</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    static class ConnectionSetupException extends Exception {
+<b class="nc">&nbsp;        private static final long serialVersionUID = 929872118275916521L;</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        ConnectionSetupException(Throwable t) {
+<b class="nc">&nbsp;            super(t);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private static class SynchronousExecutor implements Executor {</b>
+<b class="nc">&nbsp;        private SynchronousExecutor() {</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void execute(Runnable command) {
+&nbsp;            try {
+&nbsp;                command.run();
+<b class="nc">&nbsp;            } catch (Exception t) {</b>
+&nbsp;                LoggerFactory.getLogger(PoolBase.class).debug(&quot;Failed to execute: {}&quot;, command, t);
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    interface IMetricsTrackerDelegate extends AutoCloseable {
+&nbsp;        default void recordConnectionUsage(PoolEntry poolEntry) {
+&nbsp;        }
+&nbsp;
+&nbsp;        default void recordConnectionCreated(long connectionCreatedMillis) {
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        default void recordBorrowTimeoutStats(long startTime) {</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        default void recordBorrowStats(PoolEntry poolEntry, long startTime) {
+&nbsp;        }
+&nbsp;
+&nbsp;        default void recordConnectionTimeout() {
+&nbsp;        }
+&nbsp;
+&nbsp;        default void close() {
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    static class MetricsTrackerDelegate implements IMetricsTrackerDelegate {
+<b class="nc">&nbsp;        final IMetricsTracker tracker;</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        MetricsTrackerDelegate(IMetricsTracker tracker) {
+<b class="nc">&nbsp;            this.tracker = tracker;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        public void recordConnectionUsage(PoolEntry poolEntry) {</b>
+<b class="nc">&nbsp;            this.tracker.recordConnectionUsageMillis(poolEntry.getMillisSinceBorrowed());</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        public void recordConnectionCreated(long connectionCreatedMillis) {
+<b class="nc">&nbsp;            this.tracker.recordConnectionCreatedMillis(connectionCreatedMillis);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void recordBorrowTimeoutStats(long startTime) {
+&nbsp;            this.tracker.recordConnectionAcquiredNanos(ClockSource.elapsedNanos(startTime));
+&nbsp;        }
+&nbsp;
+&nbsp;        public void recordBorrowStats(PoolEntry poolEntry, long startTime) {
+&nbsp;            long now = ClockSource.currentTime();
+<b class="nc">&nbsp;            poolEntry.lastBorrowed = now;</b>
+<b class="nc">&nbsp;            this.tracker.recordConnectionAcquiredNanos(ClockSource.elapsedNanos(startTime, now));</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        public void recordConnectionTimeout() {
+&nbsp;            this.tracker.recordConnectionTimeout();
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        public void close() {</b>
+<b class="nc">&nbsp;            this.tracker.close();</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    static final class NopMetricsTrackerDelegate implements IMetricsTrackerDelegate {
+&nbsp;        NopMetricsTrackerDelegate() {
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:57</div>
+</div>
+</body>
+</html>

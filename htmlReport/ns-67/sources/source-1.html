@@ -5,7 +5,7 @@
 <html id="htmlId">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
-  <title>Coverage Report > InetAddressFactory</title>
+  <title>Coverage Report > TomcatMetrics</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -19,10 +19,10 @@
 <div class="breadCrumbs">
 Current scope:     <a href="../../index.html">all classes</a>
     <span class="separator">|</span>
-    <a href="../index.html">org.gradle.internal.remote.internal.inet</a>
+    <a href="../index.html">io.micrometer.core.instrument.binder.tomcat</a>
 </div>
 
-<h1>Coverage Summary for Class: InetAddressFactory (org.gradle.internal.remote.internal.inet)</h1>
+<h1>Coverage Summary for Class: TomcatMetrics (io.micrometer.core.instrument.binder.tomcat)</h1>
 
 <table class="coverageStats">
 <tr>
@@ -45,7 +45,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 </th>
 </tr>
 <tr>
-  <td class="name">InetAddressFactory</td>
+  <td class="name">TomcatMetrics</td>
 <td class="coverageStat">
   <span class="percent">
     0%
@@ -59,7 +59,7 @@ Current scope:     <a href="../../index.html">all classes</a>
     0%
   </span>
   <span class="absValue">
-    (0/8)
+    (0/39)
   </span>
 </td>
 <td class="coverageStat">
@@ -67,7 +67,7 @@ Current scope:     <a href="../../index.html">all classes</a>
     0%
   </span>
   <span class="absValue">
-    (0/14)
+    (0/24)
   </span>
 </td>
 <td class="coverageStat">
@@ -75,7 +75,7 @@ Current scope:     <a href="../../index.html">all classes</a>
     0%
   </span>
   <span class="absValue">
-    (0/35)
+    (0/168)
   </span>
 </td>
 </tr>
@@ -85,7 +85,253 @@ Current scope:     <a href="../../index.html">all classes</a>
 <br/>
 <br/>
 
-  <code class="sourceCode">Source code is not available<br /></code>
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package io.micrometer.core.instrument.binder.tomcat;
+&nbsp;
+&nbsp;import io.micrometer.common.lang.NonNullApi;
+&nbsp;import io.micrometer.common.lang.NonNullFields;
+&nbsp;import io.micrometer.common.lang.Nullable;
+&nbsp;import io.micrometer.core.instrument.FunctionCounter;
+&nbsp;import io.micrometer.core.instrument.FunctionTimer;
+&nbsp;import io.micrometer.core.instrument.Gauge;
+&nbsp;import io.micrometer.core.instrument.MeterRegistry;
+&nbsp;import io.micrometer.core.instrument.Tag;
+&nbsp;import io.micrometer.core.instrument.Tags;
+&nbsp;import io.micrometer.core.instrument.TimeGauge;
+&nbsp;import io.micrometer.core.instrument.binder.MeterBinder;
+&nbsp;import java.lang.management.ManagementFactory;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.concurrent.Callable;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import java.util.concurrent.TimeUnit;
+&nbsp;import java.util.function.BiConsumer;
+&nbsp;import javax.management.InstanceNotFoundException;
+&nbsp;import javax.management.ListenerNotFoundException;
+&nbsp;import javax.management.MBeanServer;
+&nbsp;import javax.management.MBeanServerDelegate;
+&nbsp;import javax.management.MBeanServerFactory;
+&nbsp;import javax.management.MBeanServerNotification;
+&nbsp;import javax.management.MalformedObjectNameException;
+&nbsp;import javax.management.Notification;
+&nbsp;import javax.management.NotificationFilter;
+&nbsp;import javax.management.NotificationListener;
+&nbsp;import javax.management.ObjectName;
+&nbsp;import javax.management.QueryExp;
+&nbsp;import org.apache.catalina.Manager;
+&nbsp;
+&nbsp;@NonNullApi
+&nbsp;@NonNullFields
+&nbsp;public class TomcatMetrics implements MeterBinder, AutoCloseable {
+&nbsp;    private static final String JMX_DOMAIN_EMBEDDED = &quot;Tomcat&quot;;
+&nbsp;    private static final String JMX_DOMAIN_STANDALONE = &quot;Catalina&quot;;
+&nbsp;    private static final String OBJECT_NAME_SERVER_SUFFIX = &quot;:type=Server&quot;;
+&nbsp;    private static final String OBJECT_NAME_SERVER_EMBEDDED = &quot;Tomcat:type=Server&quot;;
+<b class="nc">&nbsp;    private static final String OBJECT_NAME_SERVER_STANDALONE = &quot;Catalina:type=Server&quot;;</b>
+&nbsp;    @Nullable
+&nbsp;    private final Manager manager;
+&nbsp;    private final MBeanServer mBeanServer;
+&nbsp;    private final Iterable&lt;Tag&gt; tags;
+&nbsp;    private final Set&lt;NotificationListener&gt; notificationListeners;
+&nbsp;    private volatile String jmxDomain;
+&nbsp;
+&nbsp;    public TomcatMetrics(@Nullable Manager manager, Iterable&lt;Tag&gt; tags) {
+&nbsp;        this(manager, tags, getMBeanServer());
+&nbsp;    }
+&nbsp;
+&nbsp;    public TomcatMetrics(@Nullable Manager manager, Iterable&lt;Tag&gt; tags, MBeanServer mBeanServer) {
+&nbsp;        this.notificationListeners = ConcurrentHashMap.newKeySet();
+&nbsp;        this.manager = manager;
+&nbsp;        this.tags = tags;
+&nbsp;        this.mBeanServer = mBeanServer;
+&nbsp;        if (manager != null) {
+&nbsp;            this.jmxDomain = manager.getContext().getDomain();
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void monitor(MeterRegistry registry, @Nullable Manager manager, String... tags) {
+<b class="nc">&nbsp;        monitor(registry, manager, (Iterable)Tags.of(tags));</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public static void monitor(MeterRegistry registry, @Nullable Manager manager, Iterable&lt;Tag&gt; tags) {</b>
+<b class="nc">&nbsp;        (new TomcatMetrics(manager, tags)).bindTo(registry);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public static MBeanServer getMBeanServer() {
+<b class="nc">&nbsp;        List&lt;MBeanServer&gt; mBeanServers = MBeanServerFactory.findMBeanServer((String)null);</b>
+<b class="nc">&nbsp;        return !mBeanServers.isEmpty() ? (MBeanServer)mBeanServers.get(0) : ManagementFactory.getPlatformMBeanServer();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void bindTo(MeterRegistry registry) {
+&nbsp;        this.registerGlobalRequestMetrics(registry);
+<b class="nc">&nbsp;        this.registerServletMetrics(registry);</b>
+&nbsp;        this.registerCacheMetrics(registry);
+&nbsp;        this.registerThreadPoolMetrics(registry);
+&nbsp;        this.registerSessionMetrics(registry);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private void registerSessionMetrics(MeterRegistry registry) {
+&nbsp;        if (this.manager != null) {
+<b class="nc">&nbsp;            Gauge.builder(&quot;tomcat.sessions.active.max&quot;, this.manager, Manager::getMaxActive).tags(this.tags).baseUnit(&quot;sessions&quot;).register(registry);</b>
+<b class="nc">&nbsp;            Gauge.builder(&quot;tomcat.sessions.active.current&quot;, this.manager, Manager::getActiveSessions).tags(this.tags).baseUnit(&quot;sessions&quot;).register(registry);</b>
+<b class="nc">&nbsp;            FunctionCounter.builder(&quot;tomcat.sessions.created&quot;, this.manager, Manager::getSessionCounter).tags(this.tags).baseUnit(&quot;sessions&quot;).register(registry);</b>
+&nbsp;            FunctionCounter.builder(&quot;tomcat.sessions.expired&quot;, this.manager, Manager::getExpiredSessions).tags(this.tags).baseUnit(&quot;sessions&quot;).register(registry);
+<b class="nc">&nbsp;            FunctionCounter.builder(&quot;tomcat.sessions.rejected&quot;, this.manager, Manager::getRejectedSessions).tags(this.tags).baseUnit(&quot;sessions&quot;).register(registry);</b>
+&nbsp;            TimeGauge.builder(&quot;tomcat.sessions.alive.max&quot;, this.manager, TimeUnit.SECONDS, Manager::getSessionMaxAliveTime).tags(this.tags).register(registry);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private void registerThreadPoolMetrics(MeterRegistry registry) {</b>
+<b class="nc">&nbsp;        this.registerMetricsEventually(&quot;:type=ThreadPool,name=*&quot;, (name, allTags) -&gt; {</b>
+<b class="nc">&nbsp;            Gauge.builder(&quot;tomcat.threads.config.max&quot;, this.mBeanServer, (s) -&gt; this.safeDouble(() -&gt; s.getAttribute(name, &quot;maxThreads&quot;))).tags(allTags).baseUnit(&quot;threads&quot;).register(registry);</b>
+<b class="nc">&nbsp;            Gauge.builder(&quot;tomcat.threads.busy&quot;, this.mBeanServer, (s) -&gt; this.safeDouble(() -&gt; s.getAttribute(name, &quot;currentThreadsBusy&quot;))).tags(allTags).baseUnit(&quot;threads&quot;).register(registry);</b>
+<b class="nc">&nbsp;            Gauge.builder(&quot;tomcat.threads.current&quot;, this.mBeanServer, (s) -&gt; this.safeDouble(() -&gt; s.getAttribute(name, &quot;currentThreadCount&quot;))).tags(allTags).baseUnit(&quot;threads&quot;).register(registry);</b>
+&nbsp;            Gauge.builder(&quot;tomcat.connections.current&quot;, this.mBeanServer, (s) -&gt; this.safeDouble(() -&gt; s.getAttribute(name, &quot;connectionCount&quot;))).tags(allTags).baseUnit(&quot;connections&quot;).register(registry);
+&nbsp;            Gauge.builder(&quot;tomcat.connections.keepalive.current&quot;, this.mBeanServer, (s) -&gt; this.safeDouble(() -&gt; s.getAttribute(name, &quot;keepAliveCount&quot;))).tags(allTags).baseUnit(&quot;connections&quot;).register(registry);
+&nbsp;            Gauge.builder(&quot;tomcat.connections.config.max&quot;, this.mBeanServer, (s) -&gt; this.safeDouble(() -&gt; s.getAttribute(name, &quot;maxConnections&quot;))).tags(allTags).baseUnit(&quot;connections&quot;).register(registry);
+<b class="nc">&nbsp;        });</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void registerCacheMetrics(MeterRegistry registry) {
+&nbsp;        this.registerMetricsEventually(&quot;:type=StringCache&quot;, (name, allTags) -&gt; {
+&nbsp;            FunctionCounter.builder(&quot;tomcat.cache.access&quot;, this.mBeanServer, (s) -&gt; this.safeDouble(() -&gt; s.getAttribute(name, &quot;accessCount&quot;))).tags(allTags).register(registry);
+<b class="nc">&nbsp;            FunctionCounter.builder(&quot;tomcat.cache.hit&quot;, this.mBeanServer, (s) -&gt; this.safeDouble(() -&gt; s.getAttribute(name, &quot;hitCount&quot;))).tags(allTags).register(registry);</b>
+<b class="nc">&nbsp;        });</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private void registerServletMetrics(MeterRegistry registry) {
+<b class="nc">&nbsp;        this.registerMetricsEventually(&quot;:j2eeType=Servlet,name=*,*&quot;, (name, allTags) -&gt; {</b>
+<b class="nc">&nbsp;            FunctionCounter.builder(&quot;tomcat.servlet.error&quot;, this.mBeanServer, (s) -&gt; this.safeDouble(() -&gt; s.getAttribute(name, &quot;errorCount&quot;))).tags(allTags).register(registry);</b>
+<b class="nc">&nbsp;            FunctionTimer.builder(&quot;tomcat.servlet.request&quot;, this.mBeanServer, (s) -&gt; this.safeLong(() -&gt; s.getAttribute(name, &quot;requestCount&quot;)), (s) -&gt; this.safeDouble(() -&gt; s.getAttribute(name, &quot;processingTime&quot;)), TimeUnit.MILLISECONDS).tags(allTags).register(registry);</b>
+<b class="nc">&nbsp;            TimeGauge.builder(&quot;tomcat.servlet.request.max&quot;, this.mBeanServer, TimeUnit.MILLISECONDS, (s) -&gt; this.safeDouble(() -&gt; s.getAttribute(name, &quot;maxTime&quot;))).tags(allTags).register(registry);</b>
+&nbsp;        });
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private void registerGlobalRequestMetrics(MeterRegistry registry) {</b>
+<b class="nc">&nbsp;        this.registerMetricsEventually(&quot;:type=GlobalRequestProcessor,name=*&quot;, (name, allTags) -&gt; {</b>
+&nbsp;            FunctionCounter.builder(&quot;tomcat.global.sent&quot;, this.mBeanServer, (s) -&gt; this.safeDouble(() -&gt; s.getAttribute(name, &quot;bytesSent&quot;))).tags(allTags).baseUnit(&quot;bytes&quot;).register(registry);
+<b class="nc">&nbsp;            FunctionCounter.builder(&quot;tomcat.global.received&quot;, this.mBeanServer, (s) -&gt; this.safeDouble(() -&gt; s.getAttribute(name, &quot;bytesReceived&quot;))).tags(allTags).baseUnit(&quot;bytes&quot;).register(registry);</b>
+<b class="nc">&nbsp;            FunctionCounter.builder(&quot;tomcat.global.error&quot;, this.mBeanServer, (s) -&gt; this.safeDouble(() -&gt; s.getAttribute(name, &quot;errorCount&quot;))).tags(allTags).register(registry);</b>
+<b class="nc">&nbsp;            FunctionTimer.builder(&quot;tomcat.global.request&quot;, this.mBeanServer, (s) -&gt; this.safeLong(() -&gt; s.getAttribute(name, &quot;requestCount&quot;)), (s) -&gt; this.safeDouble(() -&gt; s.getAttribute(name, &quot;processingTime&quot;)), TimeUnit.MILLISECONDS).tags(allTags).register(registry);</b>
+<b class="nc">&nbsp;            TimeGauge.builder(&quot;tomcat.global.request.max&quot;, this.mBeanServer, TimeUnit.MILLISECONDS, (s) -&gt; this.safeDouble(() -&gt; s.getAttribute(name, &quot;maxTime&quot;))).tags(allTags).register(registry);</b>
+&nbsp;        });
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private void registerMetricsEventually(final String namePatternSuffix, final BiConsumer&lt;ObjectName, Iterable&lt;Tag&gt;&gt; perObject) {</b>
+<b class="nc">&nbsp;        if (this.getJmxDomain() != null) {</b>
+&nbsp;            Set&lt;ObjectName&gt; objectNames = this.mBeanServer.queryNames(this.getNamePattern(namePatternSuffix), (QueryExp)null);
+<b class="nc">&nbsp;            if (!objectNames.isEmpty()) {</b>
+<b class="nc">&nbsp;                objectNames.forEach((objectName) -&gt; perObject.accept(objectName, Tags.concat(this.tags, this.nameTag(objectName))));</b>
+<b class="nc">&nbsp;                return;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        NotificationListener notificationListener = new NotificationListener() {</b>
+<b class="nc">&nbsp;            public void handleNotification(Notification notification, Object handback) {</b>
+<b class="nc">&nbsp;                MBeanServerNotification mBeanServerNotification = (MBeanServerNotification)notification;</b>
+<b class="nc">&nbsp;                ObjectName objectName = mBeanServerNotification.getMBeanName();</b>
+<b class="nc">&nbsp;                perObject.accept(objectName, Tags.concat(TomcatMetrics.this.tags, TomcatMetrics.this.nameTag(objectName)));</b>
+<b class="nc">&nbsp;                if (!TomcatMetrics.this.getNamePattern(namePatternSuffix).isPattern()) {</b>
+<b class="nc">&nbsp;                    try {</b>
+&nbsp;                        TomcatMetrics.this.mBeanServer.removeNotificationListener(MBeanServerDelegate.DELEGATE_NAME, this);
+<b class="nc">&nbsp;                        TomcatMetrics.this.notificationListeners.remove(this);</b>
+<b class="nc">&nbsp;                    } catch (ListenerNotFoundException | InstanceNotFoundException ex) {</b>
+<b class="nc">&nbsp;                        throw new RuntimeException(ex);</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        };
+<b class="nc">&nbsp;        this.notificationListeners.add(notificationListener);</b>
+<b class="nc">&nbsp;        NotificationFilter notificationFilter = (notification) -&gt; {</b>
+<b class="nc">&nbsp;            if (!&quot;JMX.mbean.registered&quot;.equals(notification.getType())) {</b>
+<b class="nc">&nbsp;                return false;</b>
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                ObjectName objectName = ((MBeanServerNotification)notification).getMBeanName();</b>
+&nbsp;                return this.getNamePattern(namePatternSuffix).apply(objectName);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        };</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        try {</b>
+<b class="nc">&nbsp;            this.mBeanServer.addNotificationListener(MBeanServerDelegate.DELEGATE_NAME, notificationListener, notificationFilter, (Object)null);</b>
+<b class="nc">&nbsp;        } catch (InstanceNotFoundException e) {</b>
+&nbsp;            throw new RuntimeException(&quot;Error registering MBean listener&quot;, e);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private ObjectName getNamePattern(String namePatternSuffix) {</b>
+<b class="nc">&nbsp;        try {</b>
+<b class="nc">&nbsp;            return new ObjectName(this.getJmxDomain() + namePatternSuffix);</b>
+&nbsp;        } catch (MalformedObjectNameException e) {
+<b class="nc">&nbsp;            throw new RuntimeException(&quot;Error registering Tomcat JMX based metrics&quot;, e);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private String getJmxDomain() {</b>
+<b class="nc">&nbsp;        if (this.jmxDomain == null) {</b>
+&nbsp;            if (this.hasObjectName(&quot;Tomcat:type=Server&quot;)) {
+&nbsp;                this.jmxDomain = &quot;Tomcat&quot;;
+&nbsp;            } else if (this.hasObjectName(&quot;Catalina:type=Server&quot;)) {
+&nbsp;                this.jmxDomain = &quot;Catalina&quot;;
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return this.jmxDomain;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public void setJmxDomain(String jmxDomain) {</b>
+<b class="nc">&nbsp;        this.jmxDomain = jmxDomain;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private boolean hasObjectName(String name) {
+&nbsp;        try {
+&nbsp;            return this.mBeanServer.queryNames(new ObjectName(name), (QueryExp)null).size() == 1;
+&nbsp;        } catch (MalformedObjectNameException ex) {
+<b class="nc">&nbsp;            throw new RuntimeException(ex);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private double safeDouble(Callable&lt;Object&gt; callable) {</b>
+&nbsp;        try {
+<b class="nc">&nbsp;            return Double.parseDouble(callable.call().toString());</b>
+<b class="nc">&nbsp;        } catch (Exception var3) {</b>
+<b class="nc">&nbsp;            return Double.NaN;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private long safeLong(Callable&lt;Object&gt; callable) {
+<b class="nc">&nbsp;        try {</b>
+<b class="nc">&nbsp;            return Long.parseLong(callable.call().toString());</b>
+<b class="nc">&nbsp;        } catch (Exception var3) {</b>
+<b class="nc">&nbsp;            return 0L;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private Iterable&lt;Tag&gt; nameTag(ObjectName name) {
+&nbsp;        String nameTagValue = name.getKeyProperty(&quot;name&quot;);
+<b class="nc">&nbsp;        return (Iterable&lt;Tag&gt;)(nameTagValue != null ? Tags.of(&quot;name&quot;, nameTagValue.replaceAll(&quot;\&quot;&quot;, &quot;&quot;)) : Collections.emptyList());</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void close() {</b>
+<b class="nc">&nbsp;        for(NotificationListener notificationListener : this.notificationListeners) {</b>
+<b class="nc">&nbsp;            try {</b>
+&nbsp;                this.mBeanServer.removeNotificationListener(MBeanServerDelegate.DELEGATE_NAME, notificationListener);
+<b class="nc">&nbsp;            } catch (ListenerNotFoundException | InstanceNotFoundException ex) {</b>
+<b class="nc">&nbsp;                throw new RuntimeException(ex);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;}
+</code>
+</pre>
 </div>
 
 <script type="text/javascript">
@@ -107,7 +353,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2025-03-20 13:42</div>
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
 </div>
 </body>
 </html>

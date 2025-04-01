@@ -5,7 +5,7 @@
 <html id="htmlId">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
-  <title>Coverage Report > ObjenesisStd</title>
+  <title>Coverage Report > ValueExpressionLiteral</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -19,10 +19,10 @@
 <div class="breadCrumbs">
 Current scope:     <a href="../../index.html">all classes</a>
     <span class="separator">|</span>
-    <a href="../index.html">org.objenesis</a>
+    <a href="../index.html">org.apache.el</a>
 </div>
 
-<h1>Coverage Summary for Class: ObjenesisStd (org.objenesis)</h1>
+<h1>Coverage Summary for Class: ValueExpressionLiteral (org.apache.el)</h1>
 
 <table class="coverageStats">
 <tr>
@@ -37,33 +37,45 @@ Current scope:     <a href="../../index.html">all classes</a>
 </th>
 <th class="coverageStat 
 ">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
   Line, %
 </th>
 </tr>
 <tr>
-  <td class="name">ObjenesisStd</td>
+  <td class="name">ValueExpressionLiteral</td>
 <td class="coverageStat">
   <span class="percent">
-    100%
+    0%
   </span>
   <span class="absValue">
-    (1/1)
+    (0/1)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    50%
+    0%
   </span>
   <span class="absValue">
-    (1/2)
+    (0/14)
   </span>
 </td>
 <td class="coverageStat">
   <span class="percent">
-    50%
+    0%
   </span>
   <span class="absValue">
-    (1/2)
+    (0/24)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/34)
   </span>
 </td>
 </tr>
@@ -80,19 +92,105 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;// (powered by FernFlower decompiler)
 &nbsp;//
 &nbsp;
-&nbsp;package org.objenesis;
+&nbsp;package org.apache.el;
 &nbsp;
-&nbsp;import org.objenesis.strategy.StdInstantiatorStrategy;
+&nbsp;import jakarta.el.ELContext;
+&nbsp;import jakarta.el.PropertyNotWritableException;
+&nbsp;import jakarta.el.ValueExpression;
+&nbsp;import java.io.Externalizable;
+&nbsp;import java.io.IOException;
+&nbsp;import java.io.ObjectInput;
+&nbsp;import java.io.ObjectOutput;
+&nbsp;import org.apache.el.util.MessageFactory;
+&nbsp;import org.apache.el.util.ReflectionUtil;
 &nbsp;
-&nbsp;public class ObjenesisStd extends ObjenesisBase {
-&nbsp;    public ObjenesisStd() {
-&nbsp;        super(new StdInstantiatorStrategy());
+&nbsp;public final class ValueExpressionLiteral extends ValueExpression implements Externalizable {
+&nbsp;    private static final long serialVersionUID = 1L;
+&nbsp;    private Object value;
+&nbsp;    private String valueString;
+&nbsp;    private Class&lt;?&gt; expectedType;
+&nbsp;
+&nbsp;    public ValueExpressionLiteral() {
 &nbsp;    }
 &nbsp;
-&nbsp;    public ObjenesisStd(boolean useCache) {
-&nbsp;        super(new StdInstantiatorStrategy(), useCache);
+&nbsp;    public ValueExpressionLiteral(Object value, Class&lt;?&gt; expectedType) {
+&nbsp;        this.value = value;
+&nbsp;        this.expectedType = expectedType;
 &nbsp;    }
-&nbsp;}
+&nbsp;
+&nbsp;    public &lt;T&gt; T getValue(ELContext context) {
+&nbsp;        context.notifyBeforeEvaluation(this.getExpressionString());
+&nbsp;        Object result;
+&nbsp;        if (this.expectedType != null) {
+&nbsp;            result = context.convertToType(this.value, this.expectedType);
+&nbsp;        } else {
+&nbsp;            result = this.value;
+&nbsp;        }
+&nbsp;
+&nbsp;        context.notifyAfterEvaluation(this.getExpressionString());
+<b class="nc">&nbsp;        return (T)result;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void setValue(ELContext context, Object value) {</b>
+<b class="nc">&nbsp;        context.notifyBeforeEvaluation(this.getExpressionString());</b>
+<b class="nc">&nbsp;        throw new PropertyNotWritableException(MessageFactory.get(&quot;error.value.literal.write&quot;, new Object[]{this.value}));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isReadOnly(ELContext context) {
+&nbsp;        context.notifyBeforeEvaluation(this.getExpressionString());
+&nbsp;        context.notifyAfterEvaluation(this.getExpressionString());
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public Class&lt;?&gt; getType(ELContext context) {</b>
+&nbsp;        context.notifyBeforeEvaluation(this.getExpressionString());
+<b class="nc">&nbsp;        Class&lt;?&gt; result = this.value != null ? this.value.getClass() : null;</b>
+&nbsp;        context.notifyAfterEvaluation(this.getExpressionString());
+<b class="nc">&nbsp;        return result;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public Class&lt;?&gt; getExpectedType() {
+&nbsp;        return this.expectedType;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public String getExpressionString() {</b>
+&nbsp;        if (this.valueString == null) {
+&nbsp;            this.valueString = this.value != null ? this.value.toString() : null;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return this.valueString;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public boolean equals(Object obj) {
+&nbsp;        return obj instanceof ValueExpressionLiteral &amp;&amp; this.equals((ValueExpressionLiteral)obj);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public boolean equals(ValueExpressionLiteral ve) {</b>
+<b class="nc">&nbsp;        return ve != null &amp;&amp; this.value != null &amp;&amp; ve.value != null &amp;&amp; (this.value == ve.value || this.value.equals(ve.value));</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public int hashCode() {
+&nbsp;        return this.value != null ? this.value.hashCode() : 0;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public boolean isLiteralText() {</b>
+&nbsp;        return true;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void writeExternal(ObjectOutput out) throws IOException {
+<b class="nc">&nbsp;        out.writeObject(this.value);</b>
+<b class="nc">&nbsp;        out.writeUTF(this.expectedType != null ? this.expectedType.getName() : &quot;&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+&nbsp;        this.value = in.readObject();
+&nbsp;        String type = in.readUTF();
+&nbsp;        if (!type.isEmpty()) {
+<b class="nc">&nbsp;            this.expectedType = ReflectionUtil.forName(type);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+<b class="nc">&nbsp;}</b>
 </code>
 </pre>
 </div>
@@ -116,7 +214,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2025-03-20 13:42</div>
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
 </div>
 </body>
 </html>

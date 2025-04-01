@@ -1,0 +1,315 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > EntityHierarchyBuilder</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.boot.model.source.internal.hbm</a>
+</div>
+
+<h1>Coverage Summary for Class: EntityHierarchyBuilder (org.hibernate.boot.model.source.internal.hbm)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">EntityHierarchyBuilder</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    23.1%
+  </span>
+  <span class="absValue">
+    (3/13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    2%
+  </span>
+  <span class="absValue">
+    (1/50)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    6.2%
+  </span>
+  <span class="absValue">
+    (6/97)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.boot.model.source.internal.hbm;
+&nbsp;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import org.hibernate.HibernateException;
+&nbsp;import org.hibernate.boot.jaxb.hbm.spi.JaxbHbmDiscriminatorSubclassEntityType;
+&nbsp;import org.hibernate.boot.jaxb.hbm.spi.JaxbHbmEntityBaseDefinition;
+&nbsp;import org.hibernate.boot.jaxb.hbm.spi.JaxbHbmHibernateMapping;
+&nbsp;import org.hibernate.boot.jaxb.hbm.spi.JaxbHbmJoinedSubclassEntityType;
+&nbsp;import org.hibernate.boot.jaxb.hbm.spi.JaxbHbmRootEntityType;
+&nbsp;import org.hibernate.boot.jaxb.hbm.spi.JaxbHbmSubclassEntityBaseDefinition;
+&nbsp;import org.hibernate.boot.jaxb.hbm.spi.JaxbHbmUnionSubclassEntityType;
+&nbsp;import org.hibernate.boot.model.source.spi.EntitySource;
+&nbsp;import org.hibernate.internal.util.StringHelper;
+&nbsp;import org.jboss.logging.Logger;
+&nbsp;
+&nbsp;public class EntityHierarchyBuilder {
+&nbsp;    private static final Logger log = Logger.getLogger(EntityHierarchyBuilder.class);
+&nbsp;    private final List&lt;EntityHierarchySourceImpl&gt; entityHierarchyList = new ArrayList();
+&nbsp;    private final Map&lt;String, AbstractEntitySourceImpl&gt; entitySourceByNameMap = new HashMap();
+&nbsp;    private Map&lt;String, List&lt;ExtendsQueueEntry&gt;&gt; toBeLinkedQueue;
+&nbsp;
+&nbsp;    public EntityHierarchyBuilder() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public List&lt;EntityHierarchySourceImpl&gt; buildHierarchies() throws HibernateException {
+&nbsp;        if (this.toBeLinkedQueue != null &amp;&amp; !this.toBeLinkedQueue.isEmpty()) {
+&nbsp;            if (log.isDebugEnabled()) {
+&nbsp;                for(Map.Entry&lt;String, List&lt;ExtendsQueueEntry&gt;&gt; waitingListEntry : this.toBeLinkedQueue.entrySet()) {
+&nbsp;                    for(ExtendsQueueEntry waitingEntry : (List)waitingListEntry.getValue()) {
+&nbsp;                        log.debugf(&quot;Entity super-type named as extends [%s] for subclass [%s:%s] not found&quot;, waitingListEntry.getKey(), waitingEntry.sourceMappingDocument.getOrigin(), waitingEntry.sourceMappingDocument.determineEntityName(waitingEntry.jaxbSubEntityMapping));
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            throw new HibernateException(&quot;Not all named super-types (extends) were found : &quot; + this.toBeLinkedQueue.keySet());
+<b class="fc">&nbsp;        } else {</b>
+&nbsp;            return this.entityHierarchyList;
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public void indexMappingDocument(MappingDocument mappingDocument) {
+&nbsp;        log.tracef(&quot;Indexing mapping document [%s] for purpose of building entity hierarchy ordering&quot;, mappingDocument.getOrigin());
+<b class="fc">&nbsp;        JaxbHbmHibernateMapping mappingBinding = mappingDocument.getDocumentRoot();</b>
+&nbsp;
+&nbsp;        for(JaxbHbmRootEntityType jaxbRootEntity : mappingBinding.getClazz()) {
+&nbsp;            RootEntitySourceImpl rootEntitySource = new RootEntitySourceImpl(mappingDocument, jaxbRootEntity);
+&nbsp;            this.entitySourceByNameMap.put(rootEntitySource.getEntityNamingSource().getEntityName(), rootEntitySource);
+&nbsp;            EntityHierarchySourceImpl hierarchy = new EntityHierarchySourceImpl(rootEntitySource, mappingDocument);
+&nbsp;            this.entityHierarchyList.add(hierarchy);
+&nbsp;            this.linkAnyWaiting(mappingDocument, rootEntitySource);
+&nbsp;            this.processRootEntitySubEntityElements(mappingDocument, jaxbRootEntity, rootEntitySource);
+&nbsp;        }
+&nbsp;
+<b class="pc">&nbsp;        for(JaxbHbmDiscriminatorSubclassEntityType discriminatorSubclassEntityBinding : mappingBinding.getSubclass()) {</b>
+<b class="nc">&nbsp;            this.processTopLevelSubClassBinding(mappingDocument, discriminatorSubclassEntityBinding);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        for(JaxbHbmJoinedSubclassEntityType joinedSubclassEntityBinding : mappingBinding.getJoinedSubclass()) {</b>
+&nbsp;            this.processTopLevelSubClassBinding(mappingDocument, joinedSubclassEntityBinding);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        for(JaxbHbmUnionSubclassEntityType unionSubclassEntityBinding : mappingBinding.getUnionSubclass()) {</b>
+&nbsp;            this.processTopLevelSubClassBinding(mappingDocument, unionSubclassEntityBinding);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private void processRootEntitySubEntityElements(MappingDocument mappingDocument, JaxbHbmRootEntityType jaxbRootEntity, RootEntitySourceImpl rootEntitySource) {</b>
+&nbsp;        this.processElements(mappingDocument, jaxbRootEntity.getSubclass(), rootEntitySource);
+&nbsp;        this.processElements(mappingDocument, jaxbRootEntity.getJoinedSubclass(), rootEntitySource);
+&nbsp;        this.processElements(mappingDocument, jaxbRootEntity.getUnionSubclass(), rootEntitySource);
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private void processSubEntityElements(MappingDocument mappingDocument, JaxbHbmEntityBaseDefinition entityBinding, AbstractEntitySourceImpl container) {
+&nbsp;        if (entityBinding instanceof JaxbHbmDiscriminatorSubclassEntityType) {
+&nbsp;            JaxbHbmDiscriminatorSubclassEntityType jaxbSubclass = (JaxbHbmDiscriminatorSubclassEntityType)entityBinding;
+&nbsp;            this.processElements(mappingDocument, jaxbSubclass.getSubclass(), container);
+&nbsp;        } else if (entityBinding instanceof JaxbHbmJoinedSubclassEntityType) {
+&nbsp;            JaxbHbmJoinedSubclassEntityType jaxbJoinedSubclass = (JaxbHbmJoinedSubclassEntityType)entityBinding;
+&nbsp;            this.processElements(mappingDocument, jaxbJoinedSubclass.getJoinedSubclass(), container);
+<b class="nc">&nbsp;        } else if (entityBinding instanceof JaxbHbmUnionSubclassEntityType) {</b>
+<b class="nc">&nbsp;            JaxbHbmUnionSubclassEntityType jaxbUnionSubclass = (JaxbHbmUnionSubclassEntityType)entityBinding;</b>
+&nbsp;            this.processElements(mappingDocument, jaxbUnionSubclass.getUnionSubclass(), container);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private void processElements(MappingDocument mappingDocument, List&lt;? extends JaxbHbmSubclassEntityBaseDefinition&gt; nestedSubEntityList, AbstractEntitySourceImpl container) {</b>
+<b class="nc">&nbsp;        for(JaxbHbmSubclassEntityBaseDefinition jaxbSubEntity : nestedSubEntityList) {</b>
+&nbsp;            SubclassEntitySourceImpl subClassEntitySource = this.createSubClassEntitySource(mappingDocument, jaxbSubEntity, container);
+<b class="nc">&nbsp;            this.entitySourceByNameMap.put(subClassEntitySource.getEntityNamingSource().getEntityName(), subClassEntitySource);</b>
+&nbsp;            container.add(subClassEntitySource);
+&nbsp;            this.linkAnyWaiting(mappingDocument, subClassEntitySource);
+&nbsp;            this.processSubEntityElements(mappingDocument, jaxbSubEntity, subClassEntitySource);
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private SubclassEntitySourceImpl createSubClassEntitySource(MappingDocument mappingDocument, JaxbHbmSubclassEntityBaseDefinition jaxbSubEntity, EntitySource superEntity) {
+<b class="nc">&nbsp;        return (SubclassEntitySourceImpl)(jaxbSubEntity instanceof JaxbHbmJoinedSubclassEntityType ? new JoinedSubclassEntitySourceImpl(mappingDocument, (JaxbHbmJoinedSubclassEntityType)JaxbHbmJoinedSubclassEntityType.class.cast(jaxbSubEntity), superEntity) : new SubclassEntitySourceImpl(mappingDocument, jaxbSubEntity, superEntity));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void processTopLevelSubClassBinding(MappingDocument mappingDocument, JaxbHbmSubclassEntityBaseDefinition jaxbSubEntityMapping) {
+<b class="nc">&nbsp;        AbstractEntitySourceImpl entityItExtends = this.locateExtendedEntitySource(mappingDocument, jaxbSubEntityMapping);</b>
+<b class="nc">&nbsp;        if (entityItExtends == null) {</b>
+&nbsp;            this.addToToBeLinkedQueue(mappingDocument, jaxbSubEntityMapping);
+&nbsp;        } else {
+&nbsp;            SubclassEntitySourceImpl subEntitySource = this.createSubClassEntitySource(mappingDocument, jaxbSubEntityMapping, entityItExtends);
+<b class="nc">&nbsp;            this.entitySourceByNameMap.put(subEntitySource.getEntityNamingSource().getEntityName(), subEntitySource);</b>
+<b class="nc">&nbsp;            entityItExtends.add(subEntitySource);</b>
+&nbsp;            this.linkAnyWaiting(mappingDocument, subEntitySource);
+&nbsp;            this.processSubEntityElements(mappingDocument, jaxbSubEntityMapping, subEntitySource);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private AbstractEntitySourceImpl locateExtendedEntitySource(MappingDocument mappingDocument, JaxbHbmSubclassEntityBaseDefinition jaxbSubEntityMapping) {
+&nbsp;        AbstractEntitySourceImpl entityItExtends = (AbstractEntitySourceImpl)this.entitySourceByNameMap.get(jaxbSubEntityMapping.getExtends());
+&nbsp;        if (entityItExtends == null) {
+&nbsp;            entityItExtends = (AbstractEntitySourceImpl)this.entitySourceByNameMap.get(mappingDocument.qualifyClassName(jaxbSubEntityMapping.getExtends()));
+&nbsp;        }
+&nbsp;
+&nbsp;        return entityItExtends;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private void addToToBeLinkedQueue(MappingDocument mappingDocument, JaxbHbmSubclassEntityBaseDefinition jaxbSubEntityMapping) {</b>
+<b class="nc">&nbsp;        List&lt;ExtendsQueueEntry&gt; waitingList = null;</b>
+&nbsp;        if (this.toBeLinkedQueue == null) {
+&nbsp;            this.toBeLinkedQueue = new HashMap();
+&nbsp;        } else {
+&nbsp;            waitingList = (List)this.toBeLinkedQueue.get(jaxbSubEntityMapping.getExtends());
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if (waitingList == null) {</b>
+<b class="nc">&nbsp;            waitingList = new ArrayList();</b>
+<b class="nc">&nbsp;            this.toBeLinkedQueue.put(jaxbSubEntityMapping.getExtends(), waitingList);</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        waitingList.add(new ExtendsQueueEntry(mappingDocument, jaxbSubEntityMapping));</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private void linkAnyWaiting(MappingDocument mappingDocument, AbstractEntitySourceImpl entitySource) {</b>
+<b class="nc">&nbsp;        if (this.toBeLinkedQueue != null) {</b>
+<b class="nc">&nbsp;            List&lt;ExtendsQueueEntry&gt; waitingList = (List)this.toBeLinkedQueue.remove(entitySource.jaxbEntityMapping().getEntityName());</b>
+&nbsp;            if (waitingList != null) {
+&nbsp;                this.processWaitingSubEntityMappings(entitySource, waitingList);
+&nbsp;                waitingList.clear();
+&nbsp;            }
+&nbsp;
+&nbsp;            if (StringHelper.isNotEmpty(entitySource.jaxbEntityMapping().getName())) {
+&nbsp;                String entityClassName = entitySource.jaxbEntityMapping().getName();
+<b class="nc">&nbsp;                waitingList = (List)this.toBeLinkedQueue.remove(entityClassName);</b>
+<b class="nc">&nbsp;                if (waitingList != null) {</b>
+&nbsp;                    this.processWaitingSubEntityMappings(entitySource, waitingList);
+&nbsp;                    waitingList.clear();
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                String qualifiedEntityClassName = mappingDocument.qualifyClassName(entityClassName);</b>
+<b class="nc">&nbsp;                if (!entityClassName.equals(qualifiedEntityClassName)) {</b>
+&nbsp;                    waitingList = (List)this.toBeLinkedQueue.remove(qualifiedEntityClassName);
+&nbsp;                    if (waitingList != null) {
+<b class="nc">&nbsp;                        this.processWaitingSubEntityMappings(entitySource, waitingList);</b>
+<b class="nc">&nbsp;                        waitingList.clear();</b>
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void processWaitingSubEntityMappings(AbstractEntitySourceImpl entitySource, List&lt;ExtendsQueueEntry&gt; waitingList) {
+&nbsp;        for(ExtendsQueueEntry entry : waitingList) {
+&nbsp;            SubclassEntitySourceImpl subEntitySource = this.createSubClassEntitySource(entry.sourceMappingDocument, entry.jaxbSubEntityMapping, entitySource);
+<b class="nc">&nbsp;            this.entitySourceByNameMap.put(subEntitySource.getEntityNamingSource().getEntityName(), subEntitySource);</b>
+<b class="nc">&nbsp;            entitySource.add(subEntitySource);</b>
+&nbsp;            this.linkAnyWaiting(entry.sourceMappingDocument, subEntitySource);
+<b class="nc">&nbsp;            this.processSubEntityElements(entry.sourceMappingDocument, entry.jaxbSubEntityMapping, subEntitySource);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private static class ExtendsQueueEntry {</b>
+&nbsp;        private final MappingDocument sourceMappingDocument;
+&nbsp;        private final JaxbHbmSubclassEntityBaseDefinition jaxbSubEntityMapping;
+&nbsp;
+&nbsp;        public ExtendsQueueEntry(MappingDocument sourceMappingDocument, JaxbHbmSubclassEntityBaseDefinition jaxbSubEntityMapping) {
+&nbsp;            this.sourceMappingDocument = sourceMappingDocument;
+&nbsp;            this.jaxbSubEntityMapping = jaxbSubEntityMapping;
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:58</div>
+</div>
+</body>
+</html>

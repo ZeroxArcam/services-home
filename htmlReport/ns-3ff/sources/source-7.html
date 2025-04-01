@@ -1,0 +1,261 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ServerHttpObservationFilter</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.web.filter</a>
+</div>
+
+<h1>Coverage Summary for Class: ServerHttpObservationFilter (org.springframework.web.filter)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ServerHttpObservationFilter</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/22)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/34)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.web.filter;
+&nbsp;
+&nbsp;import io.micrometer.observation.Observation;
+&nbsp;import io.micrometer.observation.ObservationRegistry;
+&nbsp;import jakarta.servlet.AsyncEvent;
+&nbsp;import jakarta.servlet.AsyncListener;
+&nbsp;import jakarta.servlet.DispatcherType;
+&nbsp;import jakarta.servlet.FilterChain;
+&nbsp;import jakarta.servlet.ServletException;
+&nbsp;import jakarta.servlet.ServletRequest;
+&nbsp;import jakarta.servlet.http.HttpServletRequest;
+&nbsp;import jakarta.servlet.http.HttpServletResponse;
+&nbsp;import java.io.IOException;
+&nbsp;import java.util.Optional;
+&nbsp;import org.springframework.http.HttpStatus;
+&nbsp;import org.springframework.http.server.observation.DefaultServerRequestObservationConvention;
+&nbsp;import org.springframework.http.server.observation.ServerHttpObservationDocumentation;
+&nbsp;import org.springframework.http.server.observation.ServerRequestObservationContext;
+&nbsp;import org.springframework.http.server.observation.ServerRequestObservationConvention;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;
+&nbsp;public class ServerHttpObservationFilter extends OncePerRequestFilter {
+&nbsp;    public static final String CURRENT_OBSERVATION_CONTEXT_ATTRIBUTE = ServerHttpObservationFilter.class.getName() + &quot;.context&quot;;
+&nbsp;    private static final ServerRequestObservationConvention DEFAULT_OBSERVATION_CONVENTION = new DefaultServerRequestObservationConvention();
+&nbsp;    private static final String CURRENT_OBSERVATION_ATTRIBUTE = ServerHttpObservationFilter.class.getName() + &quot;.observation&quot;;
+&nbsp;    private final ObservationRegistry observationRegistry;
+&nbsp;    private final ServerRequestObservationConvention observationConvention;
+&nbsp;
+&nbsp;    public ServerHttpObservationFilter(ObservationRegistry observationRegistry) {
+&nbsp;        this(observationRegistry, DEFAULT_OBSERVATION_CONVENTION);
+&nbsp;    }
+&nbsp;
+&nbsp;    public ServerHttpObservationFilter(ObservationRegistry observationRegistry, ServerRequestObservationConvention observationConvention) {
+&nbsp;        this.observationRegistry = observationRegistry;
+&nbsp;        this.observationConvention = observationConvention;
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Optional&lt;ServerRequestObservationContext&gt; findObservationContext(HttpServletRequest request) {
+&nbsp;        return Optional.ofNullable((ServerRequestObservationContext)request.getAttribute(CURRENT_OBSERVATION_CONTEXT_ATTRIBUTE));
+&nbsp;    }
+&nbsp;
+&nbsp;    protected boolean shouldNotFilterAsyncDispatch() {
+&nbsp;        return false;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+&nbsp;        Observation observation = this.createOrFetchObservation(request, response);
+&nbsp;
+&nbsp;        try {
+&nbsp;            Observation.Scope scope = observation.openScope();
+&nbsp;
+&nbsp;            try {
+&nbsp;                this.onScopeOpened(scope, request, response);
+&nbsp;                filterChain.doFilter(request, response);
+<b class="nc">&nbsp;            } catch (Throwable var15) {</b>
+&nbsp;                if (scope != null) {
+<b class="nc">&nbsp;                    try {</b>
+&nbsp;                        scope.close();
+<b class="nc">&nbsp;                    } catch (Throwable var14) {</b>
+&nbsp;                        var15.addSuppressed(var14);
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                throw var15;
+&nbsp;            }
+&nbsp;
+&nbsp;            if (scope != null) {
+&nbsp;                scope.close();
+&nbsp;            }
+&nbsp;        } catch (Exception ex) {
+&nbsp;            observation.error(unwrapServletException(ex));
+&nbsp;            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+<b class="nc">&nbsp;            throw ex;</b>
+&nbsp;        } finally {
+&nbsp;            if (request.isAsyncStarted() &amp;&amp; request.getDispatcherType() == DispatcherType.REQUEST) {
+&nbsp;                request.getAsyncContext().addListener(new ObservationAsyncListener(observation));
+&nbsp;            } else if (!this.isAsyncDispatch(request)) {
+&nbsp;                Throwable error = fetchException(request);
+&nbsp;                if (error != null) {
+&nbsp;                    observation.error(error);
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                observation.stop();</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void onScopeOpened(Observation.Scope scope, HttpServletRequest request, HttpServletResponse response) {
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private Observation createOrFetchObservation(HttpServletRequest request, HttpServletResponse response) {</b>
+&nbsp;        Observation observation = (Observation)request.getAttribute(CURRENT_OBSERVATION_ATTRIBUTE);
+&nbsp;        if (observation == null) {
+&nbsp;            ServerRequestObservationContext context = new ServerRequestObservationContext(request, response);
+&nbsp;            observation = ServerHttpObservationDocumentation.HTTP_SERVLET_SERVER_REQUESTS.observation(this.observationConvention, DEFAULT_OBSERVATION_CONVENTION, () -&gt; context, this.observationRegistry).start();
+<b class="nc">&nbsp;            request.setAttribute(CURRENT_OBSERVATION_ATTRIBUTE, observation);</b>
+&nbsp;            if (!observation.isNoop()) {
+&nbsp;                request.setAttribute(CURRENT_OBSERVATION_CONTEXT_ATTRIBUTE, observation.getContext());
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return observation;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    @Nullable</b>
+<b class="nc">&nbsp;    static Throwable unwrapServletException(Throwable ex) {</b>
+<b class="nc">&nbsp;        return ex instanceof ServletException ? ex.getCause() : ex;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    @Nullable</b>
+<b class="nc">&nbsp;    static Throwable fetchException(ServletRequest request) {</b>
+&nbsp;        return (Throwable)request.getAttribute(&quot;jakarta.servlet.error.exception&quot;);
+&nbsp;    }
+&nbsp;
+&nbsp;    private static class ObservationAsyncListener implements AsyncListener {
+<b class="nc">&nbsp;        private final Observation currentObservation;</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        public ObservationAsyncListener(Observation currentObservation) {
+&nbsp;            this.currentObservation = currentObservation;
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        public void onStartAsync(AsyncEvent event) {</b>
+<b class="nc">&nbsp;            event.getAsyncContext().addListener(this);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        public void onTimeout(AsyncEvent event) {</b>
+&nbsp;            this.currentObservation.stop();
+&nbsp;        }
+&nbsp;
+&nbsp;        public void onComplete(AsyncEvent event) {
+&nbsp;            this.currentObservation.stop();
+&nbsp;        }
+&nbsp;
+&nbsp;        public void onError(AsyncEvent event) {
+&nbsp;            this.currentObservation.error(ServerHttpObservationFilter.unwrapServletException(event.getThrowable()));
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:58</div>
+</div>
+</body>
+</html>

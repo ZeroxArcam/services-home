@@ -1,0 +1,465 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > TypeResolver</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.fasterxml.classmate</a>
+</div>
+
+<h1>Coverage Summary for Class: TypeResolver (com.fasterxml.classmate)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TypeResolver</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (10/20)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    16.7%
+  </span>
+  <span class="absValue">
+    (17/102)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    23.8%
+  </span>
+  <span class="absValue">
+    (45/189)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package com.fasterxml.classmate;
+&nbsp;
+&nbsp;import com.fasterxml.classmate.types.ResolvedArrayType;
+&nbsp;import com.fasterxml.classmate.types.ResolvedInterfaceType;
+&nbsp;import com.fasterxml.classmate.types.ResolvedObjectType;
+&nbsp;import com.fasterxml.classmate.types.ResolvedPrimitiveType;
+&nbsp;import com.fasterxml.classmate.types.ResolvedRecursiveType;
+&nbsp;import com.fasterxml.classmate.types.TypePlaceHolder;
+&nbsp;import com.fasterxml.classmate.util.ClassKey;
+&nbsp;import com.fasterxml.classmate.util.ClassStack;
+&nbsp;import com.fasterxml.classmate.util.ResolvedTypeCache;
+&nbsp;import com.fasterxml.classmate.util.ResolvedTypeKey;
+&nbsp;import java.io.Serializable;
+&nbsp;import java.lang.reflect.Array;
+&nbsp;import java.lang.reflect.GenericArrayType;
+&nbsp;import java.lang.reflect.ParameterizedType;
+&nbsp;import java.lang.reflect.Type;
+&nbsp;import java.lang.reflect.TypeVariable;
+&nbsp;import java.lang.reflect.WildcardType;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.List;
+<b class="fc">&nbsp;</b>
+&nbsp;public class TypeResolver implements Serializable {
+&nbsp;    private static final ResolvedType[] NO_TYPES = new ResolvedType[0];
+&nbsp;    private static final ResolvedObjectType sJavaLangObject = ResolvedObjectType.create(Object.class, (TypeBindings)null, (ResolvedType)null, (List)null);
+&nbsp;    protected static final HashMap&lt;ClassKey, ResolvedType&gt; _primitiveTypes = new HashMap(16);
+&nbsp;    protected final ResolvedTypeCache _resolvedTypes;
+&nbsp;
+&nbsp;    public TypeResolver() {
+&nbsp;        this(ResolvedTypeCache.lruCache(200));
+&nbsp;    }
+&nbsp;
+&nbsp;    public TypeResolver(ResolvedTypeCache typeCache) {
+&nbsp;        this._resolvedTypes = typeCache;
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    public ResolvedType resolve(Type type, Type... typeParameters) {
+&nbsp;        boolean noParams = typeParameters == null || typeParameters.length == 0;
+&nbsp;        TypeBindings bindings;
+&nbsp;        Class&lt;?&gt; rawBase;
+&nbsp;        if (type instanceof Class) {
+&nbsp;            bindings = TypeBindings.emptyBindings();
+&nbsp;            if (noParams) {
+&nbsp;                return this._fromClass((ClassStack)null, (Class)type, bindings);
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;            rawBase = (Class)type;</b>
+&nbsp;        } else if (type instanceof GenericType) {
+&nbsp;            bindings = TypeBindings.emptyBindings();
+<b class="fc">&nbsp;            if (noParams) {</b>
+&nbsp;                return this._fromGenericType((ClassStack)null, (GenericType)type, bindings);
+<b class="fc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            ResolvedType rt = this._fromAny((ClassStack)null, type, bindings);
+&nbsp;            rawBase = rt.getErasedType();
+&nbsp;        } else if (type instanceof ResolvedType) {
+&nbsp;            ResolvedType rt = (ResolvedType)type;
+&nbsp;            if (noParams) {
+&nbsp;                return rt;
+&nbsp;            }
+&nbsp;
+&nbsp;            bindings = rt.getTypeBindings();
+&nbsp;            rawBase = rt.getErasedType();
+&nbsp;        } else {
+&nbsp;            bindings = TypeBindings.emptyBindings();
+&nbsp;            if (noParams) {
+&nbsp;                return this.resolve(bindings, type);
+&nbsp;            }
+&nbsp;
+&nbsp;            ResolvedType rt = this._fromAny((ClassStack)null, type, bindings);
+&nbsp;            rawBase = rt.getErasedType();
+&nbsp;        }
+&nbsp;
+&nbsp;        int len = typeParameters.length;
+&nbsp;        ResolvedType[] resolvedParams = new ResolvedType[len];
+&nbsp;
+&nbsp;        for(int i = 0; i &lt; len; ++i) {
+&nbsp;            resolvedParams[i] = this._fromAny((ClassStack)null, typeParameters[i], bindings);
+&nbsp;        }
+&nbsp;
+&nbsp;        return this._fromClass((ClassStack)null, rawBase, TypeBindings.create(rawBase, resolvedParams));
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public ResolvedArrayType arrayType(Type elementType) {
+&nbsp;        ResolvedType resolvedElementType = this.resolve(TypeBindings.emptyBindings(), elementType);
+&nbsp;        Object emptyArray = Array.newInstance(resolvedElementType.getErasedType(), 0);
+&nbsp;        return new ResolvedArrayType(emptyArray.getClass(), TypeBindings.emptyBindings(), resolvedElementType);
+&nbsp;    }
+&nbsp;
+&nbsp;    public ResolvedType resolve(TypeBindings typeBindings, Type jdkType) {
+&nbsp;        return this._fromAny((ClassStack)null, jdkType, typeBindings);
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public ResolvedType resolveSubtype(ResolvedType supertype, Class&lt;?&gt; subtype) throws IllegalArgumentException, UnsupportedOperationException {</b>
+<b class="fc">&nbsp;        ResolvedType refType = supertype.getSelfReferencedType();</b>
+&nbsp;        if (refType != null) {
+&nbsp;            supertype = refType;
+&nbsp;        }
+&nbsp;
+&nbsp;        Class&lt;?&gt; superclass = supertype.getErasedType();
+&nbsp;        if (superclass == subtype) {
+&nbsp;            return supertype;
+&nbsp;        } else if (!supertype.canCreateSubtypes()) {
+&nbsp;            throw new UnsupportedOperationException(&quot;Can not subtype primitive or array types (type &quot; + supertype.getFullDescription() + &quot;)&quot;);
+&nbsp;        } else if (!superclass.isAssignableFrom(subtype)) {
+&nbsp;            throw new IllegalArgumentException(&quot;Can not sub-class &quot; + supertype.getBriefDescription() + &quot; into &quot; + subtype.getName());
+&nbsp;        } else {
+&nbsp;            int paramCount = subtype.getTypeParameters().length;
+&nbsp;            TypePlaceHolder[] placeholders;
+&nbsp;            TypeBindings tbForPlaceholders;
+&nbsp;            if (paramCount == 0) {
+&nbsp;                placeholders = null;
+&nbsp;                tbForPlaceholders = TypeBindings.emptyBindings();
+&nbsp;            } else {
+&nbsp;                placeholders = new TypePlaceHolder[paramCount];
+&nbsp;                ResolvedType[] resolvedParams = new ResolvedType[paramCount];
+&nbsp;
+&nbsp;                for(int i = 0; i &lt; paramCount; ++i) {
+&nbsp;                    resolvedParams[i] = placeholders[i] = new TypePlaceHolder(i);
+&nbsp;                }
+<b class="pc">&nbsp;</b>
+&nbsp;                tbForPlaceholders = TypeBindings.create(subtype, resolvedParams);
+&nbsp;            }
+&nbsp;
+<b class="pc">&nbsp;            ResolvedType resolvedSubtype = this._fromClass((ClassStack)null, subtype, tbForPlaceholders);</b>
+<b class="fc">&nbsp;            ResolvedType resolvedSupertype = resolvedSubtype.findSupertype(superclass);</b>
+<b class="pc">&nbsp;            if (resolvedSupertype == null) {</b>
+<b class="fc">&nbsp;                throw new IllegalArgumentException(&quot;Internal error: unable to locate supertype (&quot; + subtype.getName() + &quot;) for type &quot; + supertype.getBriefDescription());</b>
+&nbsp;            } else {
+<b class="nc">&nbsp;                this._resolveTypePlaceholders(supertype, resolvedSupertype);</b>
+<b class="nc">&nbsp;                if (paramCount == 0) {</b>
+<b class="nc">&nbsp;                    return resolvedSubtype;</b>
+<b class="nc">&nbsp;                } else {</b>
+<b class="nc">&nbsp;                    ResolvedType[] typeParams = new ResolvedType[paramCount];</b>
+&nbsp;
+<b class="nc">&nbsp;                    for(int i = 0; i &lt; paramCount; ++i) {</b>
+<b class="nc">&nbsp;                        ResolvedType t = placeholders[i].actualType();</b>
+<b class="nc">&nbsp;                        if (t == null) {</b>
+<b class="nc">&nbsp;                            throw new IllegalArgumentException(&quot;Failed to find type parameter #&quot; + (i + 1) + &quot;/&quot; + paramCount + &quot; for &quot; + subtype.getName());</b>
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                        typeParams[i] = t;
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                    return this.resolve((Type)subtype, (Type[])typeParams);
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public static boolean isSelfReference(ResolvedType type) {</b>
+<b class="nc">&nbsp;        return type instanceof ResolvedRecursiveType;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private ResolvedType _fromAny(ClassStack context, Type mainType, TypeBindings typeBindings) {
+<b class="nc">&nbsp;        if (mainType instanceof Class) {</b>
+<b class="nc">&nbsp;            return this._fromClass(context, (Class)mainType, typeBindings);</b>
+<b class="nc">&nbsp;        } else if (mainType instanceof ParameterizedType) {</b>
+<b class="nc">&nbsp;            return this._fromParamType(context, (ParameterizedType)mainType, typeBindings);</b>
+&nbsp;        } else if (mainType instanceof ResolvedType) {
+<b class="nc">&nbsp;            return (ResolvedType)mainType;</b>
+&nbsp;        } else if (mainType instanceof GenericType) {
+&nbsp;            return this._fromGenericType(context, (GenericType)mainType, typeBindings);
+&nbsp;        } else if (mainType instanceof GenericArrayType) {
+&nbsp;            return this._fromArrayType(context, (GenericArrayType)mainType, typeBindings);
+&nbsp;        } else if (mainType instanceof TypeVariable) {
+&nbsp;            return this._fromVariable(context, (TypeVariable)mainType, typeBindings);
+&nbsp;        } else if (mainType instanceof WildcardType) {
+<b class="nc">&nbsp;            return this._fromWildcard(context, (WildcardType)mainType, typeBindings);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            throw new IllegalArgumentException(&quot;Unrecognized type class: &quot; + mainType.getClass().getName());</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private ResolvedType _fromClass(ClassStack context, Class&lt;?&gt; rawType, TypeBindings typeBindings) {
+&nbsp;        ResolvedType type = (ResolvedType)_primitiveTypes.get(new ClassKey(rawType));
+&nbsp;        if (type != null) {
+&nbsp;            return type;
+&nbsp;        } else {
+&nbsp;            if (context == null) {
+&nbsp;                context = new ClassStack(rawType);
+&nbsp;            } else {
+&nbsp;                ClassStack prev = context.find(rawType);
+&nbsp;                if (prev != null) {
+&nbsp;                    ResolvedRecursiveType selfRef = new ResolvedRecursiveType(rawType, typeBindings);
+&nbsp;                    prev.addSelfReference(selfRef);
+&nbsp;                    return selfRef;
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                context = context.child(rawType);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            ResolvedType[] typeParameters = typeBindings.typeParameterArray();
+&nbsp;            ResolvedTypeKey key = this._resolvedTypes.key(rawType, typeParameters);
+&nbsp;            if (key == null) {
+&nbsp;                type = this._constructType(context, rawType, typeBindings);
+&nbsp;            } else {
+&nbsp;                type = this._resolvedTypes.find(key);
+&nbsp;                if (type == null) {
+&nbsp;                    type = this._constructType(context, rawType, typeBindings);
+&nbsp;                    this._resolvedTypes.put(key, type);
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            context.resolveSelfReferences(type);
+&nbsp;            return type;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private ResolvedType _fromGenericType(ClassStack context, GenericType&lt;?&gt; generic, TypeBindings typeBindings) {
+&nbsp;        ResolvedType type = this._fromClass(context, generic.getClass(), typeBindings);
+&nbsp;        ResolvedType genType = type.findSupertype(GenericType.class);
+&nbsp;        if (genType == null) {
+&nbsp;            throw new IllegalArgumentException(&quot;Unparameterized GenericType instance (&quot; + generic.getClass().getName() + &quot;)&quot;);
+&nbsp;        } else {
+&nbsp;            TypeBindings b = genType.getTypeBindings();
+&nbsp;            ResolvedType[] params = b.typeParameterArray();
+&nbsp;            if (params.length == 0) {
+&nbsp;                throw new IllegalArgumentException(&quot;Unparameterized GenericType instance (&quot; + generic.getClass().getName() + &quot;)&quot;);
+&nbsp;            } else {
+&nbsp;                return params[0];
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private ResolvedType _constructType(ClassStack context, Class&lt;?&gt; rawType, TypeBindings typeBindings) {
+&nbsp;        if (rawType.isArray()) {
+&nbsp;            ResolvedType elementType = this._fromAny(context, rawType.getComponentType(), typeBindings);
+&nbsp;            return new ResolvedArrayType(rawType, typeBindings, elementType);
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            if (!typeBindings.isEmpty() &amp;&amp; rawType.getTypeParameters().length == 0) {</b>
+<b class="nc">&nbsp;                typeBindings = TypeBindings.emptyBindings();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            return (ResolvedType)(rawType.isInterface() ? new ResolvedInterfaceType(rawType, typeBindings, this._resolveSuperInterfaces(context, rawType, typeBindings)) : new ResolvedObjectType(rawType, typeBindings, this._resolveSuperClass(context, rawType, typeBindings), this._resolveSuperInterfaces(context, rawType, typeBindings)));</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private ResolvedType[] _resolveSuperInterfaces(ClassStack context, Class&lt;?&gt; rawType, TypeBindings typeBindings) {
+<b class="nc">&nbsp;        Type[] types = rawType.getGenericInterfaces();</b>
+<b class="nc">&nbsp;        if (types != null &amp;&amp; types.length != 0) {</b>
+&nbsp;            int len = types.length;
+&nbsp;            ResolvedType[] resolved = new ResolvedType[len];
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; len; ++i) {</b>
+<b class="nc">&nbsp;                resolved[i] = this._fromAny(context, types[i], typeBindings);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            return resolved;
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            return NO_TYPES;
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private ResolvedType _resolveSuperClass(ClassStack context, Class&lt;?&gt; rawType, TypeBindings typeBindings) {</b>
+&nbsp;        Type parent = rawType.getGenericSuperclass();
+&nbsp;        return parent == null ? null : this._fromAny(context, parent, typeBindings);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private ResolvedType _fromParamType(ClassStack context, ParameterizedType ptype, TypeBindings parentBindings) {
+<b class="nc">&nbsp;        Class&lt;?&gt; rawType = (Class)ptype.getRawType();</b>
+<b class="nc">&nbsp;        Type[] params = ptype.getActualTypeArguments();</b>
+<b class="nc">&nbsp;        int len = params.length;</b>
+<b class="nc">&nbsp;        ResolvedType[] types = new ResolvedType[len];</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; len; ++i) {</b>
+&nbsp;            types[i] = this._fromAny(context, params[i], parentBindings);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        TypeBindings newBindings = TypeBindings.create(rawType, types);</b>
+<b class="nc">&nbsp;        return this._fromClass(context, rawType, newBindings);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private ResolvedType _fromArrayType(ClassStack context, GenericArrayType arrayType, TypeBindings typeBindings) {
+<b class="nc">&nbsp;        ResolvedType elementType = this._fromAny(context, arrayType.getGenericComponentType(), typeBindings);</b>
+&nbsp;        Object emptyArray = Array.newInstance(elementType.getErasedType(), 0);
+<b class="nc">&nbsp;        return new ResolvedArrayType(emptyArray.getClass(), typeBindings, elementType);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private ResolvedType _fromWildcard(ClassStack context, WildcardType wildType, TypeBindings typeBindings) {
+<b class="nc">&nbsp;        return this._fromAny(context, wildType.getUpperBounds()[0], typeBindings);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private ResolvedType _fromVariable(ClassStack context, TypeVariable&lt;?&gt; variable, TypeBindings typeBindings) {
+&nbsp;        String name = variable.getName();
+&nbsp;        ResolvedType type = typeBindings.findBoundType(name);
+&nbsp;        if (type != null) {
+<b class="nc">&nbsp;            return type;</b>
+<b class="nc">&nbsp;        } else if (typeBindings.hasUnbound(name)) {</b>
+<b class="nc">&nbsp;            return sJavaLangObject;</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            typeBindings = typeBindings.withUnboundVariable(name);</b>
+&nbsp;            Type[] bounds = variable.getBounds();
+<b class="nc">&nbsp;            return this._fromAny(context, bounds[0], typeBindings);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void _resolveTypePlaceholders(ResolvedType sourceType, ResolvedType actualType) throws IllegalArgumentException {
+&nbsp;        List&lt;ResolvedType&gt; expectedTypes = sourceType.getTypeParameters();
+&nbsp;        List&lt;ResolvedType&gt; actualTypes = actualType.getTypeParameters();
+&nbsp;        int i = 0;
+&nbsp;
+&nbsp;        for(int len = expectedTypes.size(); i &lt; len; ++i) {
+&nbsp;            ResolvedType exp = (ResolvedType)expectedTypes.get(i);
+&nbsp;            ResolvedType act = (ResolvedType)actualTypes.get(i);
+&nbsp;            if (!this._verifyAndResolve(exp, act)) {
+&nbsp;                throw new IllegalArgumentException(&quot;Type parameter #&quot; + (i + 1) + &quot;/&quot; + len + &quot; differs; expected &quot; + exp.getBriefDescription() + &quot;, got &quot; + act.getBriefDescription());
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private boolean _verifyAndResolve(ResolvedType exp, ResolvedType act) {</b>
+&nbsp;        if (act instanceof TypePlaceHolder) {
+&nbsp;            ((TypePlaceHolder)act).actualType(exp);
+&nbsp;            return true;
+&nbsp;        } else if (exp.getErasedType() != act.getErasedType()) {
+&nbsp;            return false;
+&nbsp;        } else {
+&nbsp;            List&lt;ResolvedType&gt; expectedTypes = exp.getTypeParameters();
+&nbsp;            List&lt;ResolvedType&gt; actualTypes = act.getTypeParameters();
+&nbsp;            int i = 0;
+&nbsp;
+<b class="pc">&nbsp;            for(int len = expectedTypes.size(); i &lt; len; ++i) {</b>
+<b class="fc">&nbsp;                ResolvedType exp2 = (ResolvedType)expectedTypes.get(i);</b>
+&nbsp;                ResolvedType act2 = (ResolvedType)actualTypes.get(i);
+<b class="nc">&nbsp;                if (!this._verifyAndResolve(exp2, act2)) {</b>
+<b class="nc">&nbsp;                    return false;</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            return true;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    static {</b>
+<b class="nc">&nbsp;        for(ResolvedPrimitiveType type : ResolvedPrimitiveType.all()) {</b>
+&nbsp;            _primitiveTypes.put(new ClassKey(type.getErasedType()), type);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        _primitiveTypes.put(new ClassKey(Void.TYPE), ResolvedPrimitiveType.voidType());
+<b class="nc">&nbsp;        _primitiveTypes.put(new ClassKey(Object.class), sJavaLangObject);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
+</div>
+</body>
+</html>

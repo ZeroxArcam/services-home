@@ -5,7 +5,7 @@
 <html id="htmlId">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
-  <title>Coverage Report > ModuleRemapper</title>
+  <title>Coverage Report > DelegatingDeserializer</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -19,10 +19,10 @@
 <div class="breadCrumbs">
 Current scope:     <a href="../../index.html">all classes</a>
     <span class="separator">|</span>
-    <a href="../index.html">net.bytebuddy.jar.asm.commons</a>
+    <a href="../index.html">com.fasterxml.jackson.databind.deser.std</a>
 </div>
 
-<h1>Coverage Summary for Class: ModuleRemapper (net.bytebuddy.jar.asm.commons)</h1>
+<h1>Coverage Summary for Class: DelegatingDeserializer (com.fasterxml.jackson.databind.deser.std)</h1>
 
 <table class="coverageStats">
 <tr>
@@ -45,7 +45,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 </th>
 </tr>
 <tr>
-  <td class="name">ModuleRemapper</td>
+  <td class="name">DelegatingDeserializer</td>
 <td class="coverageStat">
   <span class="percent">
     0%
@@ -59,7 +59,7 @@ Current scope:     <a href="../../index.html">all classes</a>
     0%
   </span>
   <span class="absValue">
-    (0/9)
+    (0/20)
   </span>
 </td>
 <td class="coverageStat">
@@ -67,7 +67,7 @@ Current scope:     <a href="../../index.html">all classes</a>
     0%
   </span>
   <span class="absValue">
-    (0/10)
+    (0/8)
   </span>
 </td>
 <td class="coverageStat">
@@ -75,7 +75,7 @@ Current scope:     <a href="../../index.html">all classes</a>
     0%
   </span>
   <span class="absValue">
-    (0/23)
+    (0/31)
   </span>
 </td>
 </tr>
@@ -92,72 +92,117 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;// (powered by FernFlower decompiler)
 &nbsp;//
 &nbsp;
-&nbsp;package net.bytebuddy.jar.asm.commons;
+&nbsp;package com.fasterxml.jackson.databind.deser.std;
 &nbsp;
-&nbsp;import net.bytebuddy.jar.asm.ModuleVisitor;
+&nbsp;import com.fasterxml.jackson.core.JsonParser;
+&nbsp;import com.fasterxml.jackson.databind.BeanProperty;
+&nbsp;import com.fasterxml.jackson.databind.DeserializationConfig;
+&nbsp;import com.fasterxml.jackson.databind.DeserializationContext;
+&nbsp;import com.fasterxml.jackson.databind.JavaType;
+&nbsp;import com.fasterxml.jackson.databind.JsonDeserializer;
+&nbsp;import com.fasterxml.jackson.databind.JsonMappingException;
+&nbsp;import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
+&nbsp;import com.fasterxml.jackson.databind.deser.ResolvableDeserializer;
+&nbsp;import com.fasterxml.jackson.databind.deser.SettableBeanProperty;
+&nbsp;import com.fasterxml.jackson.databind.deser.impl.ObjectIdReader;
+&nbsp;import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
+&nbsp;import com.fasterxml.jackson.databind.type.LogicalType;
+&nbsp;import com.fasterxml.jackson.databind.util.AccessPattern;
+&nbsp;import com.fasterxml.jackson.databind.util.NameTransformer;
+&nbsp;import java.io.IOException;
+&nbsp;import java.util.Collection;
 &nbsp;
-&nbsp;public class ModuleRemapper extends ModuleVisitor {
-&nbsp;    protected final Remapper remapper;
+&nbsp;public abstract class DelegatingDeserializer extends StdDeserializer&lt;Object&gt; implements ContextualDeserializer, ResolvableDeserializer {
+&nbsp;    private static final long serialVersionUID = 1L;
+&nbsp;    protected final JsonDeserializer&lt;?&gt; _delegatee;
 &nbsp;
-&nbsp;    public ModuleRemapper(ModuleVisitor moduleVisitor, Remapper remapper) {
-&nbsp;        this(589824, moduleVisitor, remapper);
+&nbsp;    public DelegatingDeserializer(JsonDeserializer&lt;?&gt; d) {
+&nbsp;        super(d.handledType());
+&nbsp;        this._delegatee = d;
 &nbsp;    }
 &nbsp;
-&nbsp;    protected ModuleRemapper(int api, ModuleVisitor moduleVisitor, Remapper remapper) {
-&nbsp;        super(api, moduleVisitor);
-&nbsp;        this.remapper = remapper;
+&nbsp;    protected abstract JsonDeserializer&lt;?&gt; newDelegatingInstance(JsonDeserializer&lt;?&gt; var1);
+&nbsp;
+&nbsp;    public void resolve(DeserializationContext ctxt) throws JsonMappingException {
+&nbsp;        if (this._delegatee instanceof ResolvableDeserializer) {
+<b class="nc">&nbsp;            ((ResolvableDeserializer)this._delegatee).resolve(ctxt);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
 &nbsp;    }
 &nbsp;
-&nbsp;    public void visitMainClass(String mainClass) {
-&nbsp;        super.visitMainClass(this.remapper.mapType(mainClass));
+&nbsp;    public JsonDeserializer&lt;?&gt; createContextual(DeserializationContext ctxt, BeanProperty property) throws JsonMappingException {
+&nbsp;        JavaType vt = ctxt.constructType(this._delegatee.handledType());
+&nbsp;        JsonDeserializer&lt;?&gt; del = ctxt.handleSecondaryContextualization(this._delegatee, property, vt);
+&nbsp;        return (JsonDeserializer&lt;?&gt;)(del == this._delegatee ? this : this.newDelegatingInstance(del));
 &nbsp;    }
 &nbsp;
-&nbsp;    public void visitPackage(String packaze) {
-&nbsp;        super.visitPackage(this.remapper.mapPackageName(packaze));
+&nbsp;    public JsonDeserializer&lt;Object&gt; unwrappingDeserializer(NameTransformer unwrapper) {
+&nbsp;        JsonDeserializer&lt;?&gt; unwrapping = this._delegatee.unwrappingDeserializer(unwrapper);
+&nbsp;        return (JsonDeserializer&lt;Object&gt;)(unwrapping == this._delegatee ? this : this.newDelegatingInstance(unwrapping));
 &nbsp;    }
 &nbsp;
-&nbsp;    public void visitRequire(String module, int access, String version) {
-&nbsp;        super.visitRequire(this.remapper.mapModuleName(module), access, version);
+&nbsp;    public JsonDeserializer&lt;?&gt; replaceDelegatee(JsonDeserializer&lt;?&gt; delegatee) {
+&nbsp;        return (JsonDeserializer&lt;?&gt;)(delegatee == this._delegatee ? this : this.newDelegatingInstance(delegatee));
 &nbsp;    }
 &nbsp;
-&nbsp;    public void visitExport(String packaze, int access, String... modules) {
-&nbsp;        String[] remappedModules = null;
-&nbsp;        if (modules != null) {
-&nbsp;            remappedModules = new String[modules.length];
-&nbsp;
-&nbsp;            for(int i = 0; i &lt; modules.length; ++i) {
-&nbsp;                remappedModules[i] = this.remapper.mapModuleName(modules[i]);
-&nbsp;            }
-&nbsp;        }
-&nbsp;
-&nbsp;        super.visitExport(this.remapper.mapPackageName(packaze), access, remappedModules);
+<b class="nc">&nbsp;    public Object deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {</b>
+<b class="nc">&nbsp;        return this._delegatee.deserialize(p, ctxt);</b>
 &nbsp;    }
 &nbsp;
-&nbsp;    public void visitOpen(String packaze, int access, String... modules) {
-&nbsp;        String[] remappedModules = null;
-&nbsp;        if (modules != null) {
-&nbsp;            remappedModules = new String[modules.length];
-&nbsp;
-<b class="nc">&nbsp;            for(int i = 0; i &lt; modules.length; ++i) {</b>
-&nbsp;                remappedModules[i] = this.remapper.mapModuleName(modules[i]);
-&nbsp;            }
-&nbsp;        }
-&nbsp;
-&nbsp;        super.visitOpen(this.remapper.mapPackageName(packaze), access, remappedModules);
+&nbsp;    public Object deserialize(JsonParser p, DeserializationContext ctxt, Object intoValue) throws IOException {
+&nbsp;        return this._delegatee.deserialize(p, ctxt, intoValue);
 &nbsp;    }
 &nbsp;
-&nbsp;    public void visitUse(String service) {
-&nbsp;        super.visitUse(this.remapper.mapType(service));
-&nbsp;    }
-&nbsp;
-&nbsp;    public void visitProvide(String service, String... providers) {
-<b class="nc">&nbsp;        String[] remappedProviders = new String[providers.length];</b>
+&nbsp;    public Object deserializeWithType(JsonParser p, DeserializationContext ctxt, TypeDeserializer typeDeserializer) throws IOException {
+&nbsp;        return this._delegatee.deserializeWithType(p, ctxt, typeDeserializer);
+<b class="nc">&nbsp;    }</b>
 <b class="nc">&nbsp;</b>
-&nbsp;        for(int i = 0; i &lt; providers.length; ++i) {
-&nbsp;            remappedProviders[i] = this.remapper.mapType(providers[i]);
-&nbsp;        }
+&nbsp;    public boolean isCachable() {
+<b class="nc">&nbsp;        return this._delegatee.isCachable();</b>
+<b class="nc">&nbsp;    }</b>
 &nbsp;
-<b class="nc">&nbsp;        super.visitProvide(this.remapper.mapType(service), remappedProviders);</b>
+<b class="nc">&nbsp;    public Boolean supportsUpdate(DeserializationConfig config) {</b>
+&nbsp;        return this._delegatee.supportsUpdate(config);
+&nbsp;    }
+&nbsp;
+&nbsp;    public JsonDeserializer&lt;?&gt; getDelegatee() {
+&nbsp;        return this._delegatee;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public SettableBeanProperty findBackReference(String logicalName) {</b>
+&nbsp;        return this._delegatee.findBackReference(logicalName);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public Object getNullValue(DeserializationContext ctxt) throws JsonMappingException {
+&nbsp;        return this._delegatee.getNullValue(ctxt);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public AccessPattern getNullAccessPattern() {</b>
+<b class="nc">&nbsp;        return this._delegatee.getNullAccessPattern();</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public Object getAbsentValue(DeserializationContext ctxt) throws JsonMappingException {
+&nbsp;        return this._delegatee.getAbsentValue(ctxt);
+&nbsp;    }
+&nbsp;
+&nbsp;    public Object getEmptyValue(DeserializationContext ctxt) throws JsonMappingException {
+&nbsp;        return this._delegatee.getEmptyValue(ctxt);
+&nbsp;    }
+&nbsp;
+&nbsp;    public AccessPattern getEmptyAccessPattern() {
+&nbsp;        return this._delegatee.getEmptyAccessPattern();
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public LogicalType logicalType() {</b>
+&nbsp;        return this._delegatee.logicalType();
+&nbsp;    }
+&nbsp;
+&nbsp;    public Collection&lt;Object&gt; getKnownPropertyNames() {
+&nbsp;        return this._delegatee.getKnownPropertyNames();
+&nbsp;    }
+&nbsp;
+&nbsp;    public ObjectIdReader getObjectIdReader() {
+<b class="nc">&nbsp;        return this._delegatee.getObjectIdReader();</b>
 &nbsp;    }
 &nbsp;}
 </code>
@@ -183,7 +228,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2025-03-20 13:42</div>
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
 </div>
 </body>
 </html>

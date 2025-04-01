@@ -1,0 +1,298 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > EnvironmentPostProcessorApplicationListener</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.boot.env</a>
+</div>
+
+<h1>Coverage Summary for Class: EnvironmentPostProcessorApplicationListener (org.springframework.boot.env)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">EnvironmentPostProcessorApplicationListener</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    78.6%
+  </span>
+  <span class="absValue">
+    (11/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    70%
+  </span>
+  <span class="absValue">
+    (14/20)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    72.5%
+  </span>
+  <span class="absValue">
+    (29/40)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.boot.env;
+&nbsp;
+&nbsp;import java.util.Arrays;
+&nbsp;import java.util.List;
+&nbsp;import java.util.function.Function;
+&nbsp;import javax.lang.model.element.Modifier;
+&nbsp;import org.springframework.aot.AotDetector;
+&nbsp;import org.springframework.aot.generate.GeneratedClass;
+&nbsp;import org.springframework.aot.generate.GenerationContext;
+&nbsp;import org.springframework.beans.BeanInstantiationException;
+&nbsp;import org.springframework.beans.BeanUtils;
+&nbsp;import org.springframework.beans.factory.aot.BeanFactoryInitializationAotContribution;
+&nbsp;import org.springframework.beans.factory.aot.BeanFactoryInitializationAotProcessor;
+&nbsp;import org.springframework.beans.factory.aot.BeanFactoryInitializationCode;
+&nbsp;import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+&nbsp;import org.springframework.boot.ConfigurableBootstrapContext;
+&nbsp;import org.springframework.boot.SpringApplication;
+&nbsp;import org.springframework.boot.context.event.ApplicationEnvironmentPreparedEvent;
+&nbsp;import org.springframework.boot.context.event.ApplicationFailedEvent;
+&nbsp;import org.springframework.boot.context.event.ApplicationPreparedEvent;
+&nbsp;import org.springframework.boot.logging.DeferredLogs;
+&nbsp;import org.springframework.context.ApplicationEvent;
+&nbsp;import org.springframework.context.event.SmartApplicationListener;
+&nbsp;import org.springframework.core.Ordered;
+&nbsp;import org.springframework.core.env.ConfigurableEnvironment;
+&nbsp;import org.springframework.core.env.Environment;
+&nbsp;import org.springframework.core.io.ResourceLoader;
+&nbsp;import org.springframework.javapoet.CodeBlock;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.ClassUtils;
+&nbsp;import org.springframework.util.ObjectUtils;
+&nbsp;
+&nbsp;public class EnvironmentPostProcessorApplicationListener implements SmartApplicationListener, Ordered {
+&nbsp;    private static final String AOT_FEATURE_NAME = &quot;EnvironmentPostProcessor&quot;;
+&nbsp;    public static final int DEFAULT_ORDER = -2147483638;
+&nbsp;    private final DeferredLogs deferredLogs;
+&nbsp;    private int order;
+&nbsp;    private final Function&lt;ClassLoader, EnvironmentPostProcessorsFactory&gt; postProcessorsFactory;
+&nbsp;
+&nbsp;    public EnvironmentPostProcessorApplicationListener() {
+&nbsp;        this(EnvironmentPostProcessorsFactory::fromSpringFactories);
+&nbsp;    }
+&nbsp;
+&nbsp;    private EnvironmentPostProcessorApplicationListener(Function&lt;ClassLoader, EnvironmentPostProcessorsFactory&gt; postProcessorsFactory) {
+&nbsp;        this.order = -2147483638;
+&nbsp;        this.postProcessorsFactory = postProcessorsFactory;
+&nbsp;        this.deferredLogs = new DeferredLogs();
+&nbsp;    }
+&nbsp;
+&nbsp;    public static EnvironmentPostProcessorApplicationListener with(EnvironmentPostProcessorsFactory postProcessorsFactory) {
+&nbsp;        return new EnvironmentPostProcessorApplicationListener((classloader) -&gt; postProcessorsFactory);
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean supportsEventType(Class&lt;? extends ApplicationEvent&gt; eventType) {
+&nbsp;        return ApplicationEnvironmentPreparedEvent.class.isAssignableFrom(eventType) || ApplicationPreparedEvent.class.isAssignableFrom(eventType) || ApplicationFailedEvent.class.isAssignableFrom(eventType);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void onApplicationEvent(ApplicationEvent event) {
+&nbsp;        if (event instanceof ApplicationEnvironmentPreparedEvent environmentPreparedEvent) {
+&nbsp;            this.onApplicationEnvironmentPreparedEvent(environmentPreparedEvent);
+&nbsp;        }
+&nbsp;
+&nbsp;        if (event instanceof ApplicationPreparedEvent) {
+&nbsp;            this.onApplicationPreparedEvent();
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+&nbsp;        if (event instanceof ApplicationFailedEvent) {
+&nbsp;            this.onApplicationFailedEvent();
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private void onApplicationEnvironmentPreparedEvent(ApplicationEnvironmentPreparedEvent event) {
+&nbsp;        ConfigurableEnvironment environment = event.getEnvironment();
+<b class="fc">&nbsp;        SpringApplication application = event.getSpringApplication();</b>
+&nbsp;        List&lt;EnvironmentPostProcessor&gt; postProcessors = this.getEnvironmentPostProcessors(application.getResourceLoader(), event.getBootstrapContext());
+&nbsp;        this.addAotGeneratedEnvironmentPostProcessorIfNecessary(postProcessors, application);
+&nbsp;
+&nbsp;        for(EnvironmentPostProcessor postProcessor : postProcessors) {
+&nbsp;            postProcessor.postProcessEnvironment(environment, application);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private void onApplicationPreparedEvent() {</b>
+<b class="fc">&nbsp;        this.finish();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void onApplicationFailedEvent() {
+&nbsp;        this.finish();
+&nbsp;    }
+&nbsp;
+&nbsp;    private void finish() {
+&nbsp;        this.deferredLogs.switchOverAll();
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    List&lt;EnvironmentPostProcessor&gt; getEnvironmentPostProcessors(ResourceLoader resourceLoader, ConfigurableBootstrapContext bootstrapContext) {</b>
+&nbsp;        ClassLoader classLoader = resourceLoader != null ? resourceLoader.getClassLoader() : null;
+&nbsp;        EnvironmentPostProcessorsFactory postProcessorsFactory = (EnvironmentPostProcessorsFactory)this.postProcessorsFactory.apply(classLoader);
+&nbsp;        return postProcessorsFactory.getEnvironmentPostProcessors(this.deferredLogs, bootstrapContext);
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private void addAotGeneratedEnvironmentPostProcessorIfNecessary(List&lt;EnvironmentPostProcessor&gt; postProcessors, SpringApplication springApplication) {</b>
+<b class="fc">&nbsp;        if (AotDetector.useGeneratedArtifacts()) {</b>
+&nbsp;            ClassLoader classLoader = springApplication.getResourceLoader() != null ? springApplication.getResourceLoader().getClassLoader() : null;
+&nbsp;            String postProcessorClassName = springApplication.getMainApplicationClass().getName() + &quot;__EnvironmentPostProcessor&quot;;
+&nbsp;            if (ClassUtils.isPresent(postProcessorClassName, classLoader)) {
+&nbsp;                postProcessors.add(0, this.instantiateEnvironmentPostProcessor(postProcessorClassName, classLoader));
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    private EnvironmentPostProcessor instantiateEnvironmentPostProcessor(String postProcessorClassName, ClassLoader classLoader) {
+<b class="fc">&nbsp;        try {</b>
+<b class="fc">&nbsp;            Class&lt;?&gt; initializerClass = ClassUtils.resolveClassName(postProcessorClassName, classLoader);</b>
+&nbsp;            Assert.isAssignable(EnvironmentPostProcessor.class, initializerClass);
+&nbsp;            return (EnvironmentPostProcessor)BeanUtils.instantiateClass(initializerClass);
+&nbsp;        } catch (BeanInstantiationException ex) {
+&nbsp;            throw new IllegalArgumentException(&quot;Failed to instantiate EnvironmentPostProcessor: &quot; + postProcessorClassName, ex);
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public int getOrder() {</b>
+<b class="fc">&nbsp;        return this.order;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    public void setOrder(int order) {
+&nbsp;        this.order = order;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    static class EnvironmentBeanFactoryInitializationAotProcessor implements BeanFactoryInitializationAotProcessor {</b>
+&nbsp;        EnvironmentBeanFactoryInitializationAotProcessor() {
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        public BeanFactoryInitializationAotContribution processAheadOfTime(ConfigurableListableBeanFactory beanFactory) {</b>
+&nbsp;            Environment environment = (Environment)beanFactory.getBean(&quot;environment&quot;, Environment.class);
+&nbsp;            String[] activeProfiles = environment.getActiveProfiles();
+&nbsp;            String[] defaultProfiles = environment.getDefaultProfiles();
+<b class="fc">&nbsp;            return !ObjectUtils.isEmpty(activeProfiles) &amp;&amp; !Arrays.equals(activeProfiles, defaultProfiles) ? new EnvironmentAotContribution(activeProfiles) : null;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static final class EnvironmentAotContribution implements BeanFactoryInitializationAotContribution {
+<b class="pc">&nbsp;        private static final String ENVIRONMENT_VARIABLE = &quot;environment&quot;;</b>
+<b class="fc">&nbsp;        private final String[] activeProfiles;</b>
+<b class="fc">&nbsp;</b>
+&nbsp;        private EnvironmentAotContribution(String[] activeProfiles) {
+&nbsp;            this.activeProfiles = activeProfiles;
+&nbsp;        }
+&nbsp;
+<b class="pc">&nbsp;        public void applyTo(GenerationContext generationContext, BeanFactoryInitializationCode beanFactoryInitializationCode) {</b>
+<b class="nc">&nbsp;            GeneratedClass generatedClass = generationContext.getGeneratedClasses().addForFeature(&quot;EnvironmentPostProcessor&quot;, (type) -&gt; {</b>
+<b class="nc">&nbsp;                type.addModifiers(new Modifier[]{Modifier.PUBLIC});</b>
+<b class="nc">&nbsp;                type.addJavadoc(&quot;Configure the environment with AOT optimizations.&quot;, new Object[0]);</b>
+&nbsp;                type.addSuperinterface(EnvironmentPostProcessor.class);
+<b class="nc">&nbsp;            });</b>
+<b class="nc">&nbsp;            generatedClass.getMethods().add(&quot;postProcessEnvironment&quot;, (method) -&gt; {</b>
+&nbsp;                method.addModifiers(new Modifier[]{Modifier.PUBLIC});
+&nbsp;                method.addAnnotation(Override.class);
+&nbsp;                method.addParameter(ConfigurableEnvironment.class, &quot;environment&quot;, new Modifier[0]);
+&nbsp;                method.addParameter(SpringApplication.class, &quot;application&quot;, new Modifier[0]);
+&nbsp;                method.addCode(this.generateActiveProfilesInitializeCode());
+&nbsp;            });
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        private CodeBlock generateActiveProfilesInitializeCode() {</b>
+<b class="nc">&nbsp;            CodeBlock.Builder code = CodeBlock.builder();</b>
+&nbsp;
+&nbsp;            for(String activeProfile : this.activeProfiles) {
+<b class="nc">&nbsp;                code.addStatement(&quot;$L.addActiveProfile($S)&quot;, new Object[]{&quot;environment&quot;, activeProfile});</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            return code.build();
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:54</div>
+</div>
+</body>
+</html>

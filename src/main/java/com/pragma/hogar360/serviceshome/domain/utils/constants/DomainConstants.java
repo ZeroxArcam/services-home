@@ -1,5 +1,8 @@
 package com.pragma.hogar360.serviceshome.domain.utils.constants;
 
+import java.util.Arrays;
+import java.util.List;
+
 public final class DomainConstants {
 
     private DomainConstants() {throw new IllegalStateException("Utility class");}
@@ -29,5 +32,17 @@ public final class DomainConstants {
     public static final String ADDRESS_ALREADY_EXISTS = "Address already exists.";
     public static final String ADDRESS_NULL_OR_EMPTY = "Address cannot be null or empty.";
     public static final String INVALID_NUMBER_OF_ROOMS = "Invalid number of rooms";
+    public static final String INVALID_SORT_BY_MESSAGE = "Invalid sortBy value: %s. Use price, numberOfRooms, numberOfBathrooms, locationId, or categoryId.";
+    public static final String MIN_ROOMS_NEGATIVE_MESSAGE = "minRooms cannot be negative.";
+    public static final String MAX_ROOMS_NEGATIVE_MESSAGE = "maxRooms cannot be negative.";
+    public static final String MIN_BATHROOMS_NEGATIVE_MESSAGE = "minBathrooms cannot be negative.";
+    public static final String MAX_BATHROOMS_NEGATIVE_MESSAGE = "maxBathrooms cannot be negative.";
+    public static final String MIN_PRICE_NEGATIVE_MESSAGE = "minPrice cannot be negative.";
+    public static final String MAX_PRICE_NEGATIVE_MESSAGE = "maxPrice cannot be negative.";
+    public static final String INVALID_SORT_DIRECTION_MESSAGE = "Invalid sortDirection parameter: %s";
+    public static final String SORT_ASC="ASC";
+    public static final String SORT_DESC="DESC";
+    public static final List<String> VALID_SORT_BY_VALUES = Arrays.asList("price", "numberOfRooms", "numberOfBathrooms", "locationId", "categoryId");
+
 
 }

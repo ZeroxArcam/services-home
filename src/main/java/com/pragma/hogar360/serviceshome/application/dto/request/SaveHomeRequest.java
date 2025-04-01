@@ -11,5 +11,4 @@ public record SaveHomeRequest(String name,
                               Double price,
                               Long cityId,
                               LocalDate activePublicationDate,
-                              //String publicationStatus,
                               LocalDate publicationDate) {}

@@ -5,7 +5,7 @@
 <html id="htmlId">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
-  <title>Coverage Report > LineNumberPrependingMethodVisitor</title>
+  <title>Coverage Report > BinaryNode</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -19,10 +19,10 @@
 <div class="breadCrumbs">
 Current scope:     <a href="../../index.html">all classes</a>
     <span class="separator">|</span>
-    <a href="../index.html">net.bytebuddy.utility.visitor</a>
+    <a href="../index.html">com.fasterxml.jackson.databind.node</a>
 </div>
 
-<h1>Coverage Summary for Class: LineNumberPrependingMethodVisitor (net.bytebuddy.utility.visitor)</h1>
+<h1>Coverage Summary for Class: BinaryNode (com.fasterxml.jackson.databind.node)</h1>
 
 <table class="coverageStats">
 <tr>
@@ -45,7 +45,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 </th>
 </tr>
 <tr>
-  <td class="name">LineNumberPrependingMethodVisitor</td>
+  <td class="name">BinaryNode</td>
 <td class="coverageStat">
   <span class="percent">
     0%
@@ -59,7 +59,7 @@ Current scope:     <a href="../../index.html">all classes</a>
     0%
   </span>
   <span class="absValue">
-    (0/3)
+    (0/12)
   </span>
 </td>
 <td class="coverageStat">
@@ -67,7 +67,7 @@ Current scope:     <a href="../../index.html">all classes</a>
     0%
   </span>
   <span class="absValue">
-    (0/2)
+    (0/28)
   </span>
 </td>
 <td class="coverageStat">
@@ -75,7 +75,7 @@ Current scope:     <a href="../../index.html">all classes</a>
     0%
   </span>
   <span class="absValue">
-    (0/8)
+    (0/36)
   </span>
 </td>
 </tr>
@@ -92,31 +92,93 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;// (powered by FernFlower decompiler)
 &nbsp;//
 &nbsp;
-&nbsp;package net.bytebuddy.utility.visitor;
+&nbsp;package com.fasterxml.jackson.databind.node;
 &nbsp;
-&nbsp;import net.bytebuddy.jar.asm.Label;
-&nbsp;import net.bytebuddy.jar.asm.MethodVisitor;
-&nbsp;import net.bytebuddy.utility.OpenedClassReader;
+&nbsp;import com.fasterxml.jackson.core.Base64Variants;
+&nbsp;import com.fasterxml.jackson.core.JsonGenerator;
+&nbsp;import com.fasterxml.jackson.core.JsonToken;
+&nbsp;import com.fasterxml.jackson.databind.SerializerProvider;
+&nbsp;import java.io.IOException;
+&nbsp;import java.util.Arrays;
 &nbsp;
-&nbsp;public class LineNumberPrependingMethodVisitor extends ExceptionTableSensitiveMethodVisitor {
-&nbsp;    private final Label startOfMethod = new Label();
-&nbsp;    private boolean prependLineNumber = true;
-&nbsp;
-&nbsp;    public LineNumberPrependingMethodVisitor(MethodVisitor methodVisitor) {
-&nbsp;        super(OpenedClassReader.ASM_API, methodVisitor);
+&nbsp;public class BinaryNode extends ValueNode {
+&nbsp;    private static final long serialVersionUID = 2L;
+&nbsp;    static final BinaryNode EMPTY_BINARY_NODE = new BinaryNode(new byte[0]);
+&nbsp;    protected final byte[] _data;
+<b class="nc">&nbsp;</b>
+&nbsp;    public BinaryNode(byte[] data) {
+&nbsp;        this._data = data;
 &nbsp;    }
 &nbsp;
-&nbsp;    protected void onAfterExceptionTable() {
-&nbsp;        super.visitLabel(this.startOfMethod);
+<b class="nc">&nbsp;    public BinaryNode(byte[] data, int offset, int length) {</b>
+<b class="nc">&nbsp;        if (offset == 0 &amp;&amp; length == data.length) {</b>
+&nbsp;            this._data = data;
+&nbsp;        } else {
+&nbsp;            this._data = new byte[length];
+<b class="nc">&nbsp;            System.arraycopy(data, offset, this._data, 0, length);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
 &nbsp;    }
-&nbsp;
-&nbsp;    public void visitLineNumber(int line, Label start) {
-&nbsp;        if (this.prependLineNumber) {
-&nbsp;            start = this.startOfMethod;
-&nbsp;            this.prependLineNumber = false;
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public static BinaryNode valueOf(byte[] data) {</b>
+&nbsp;        if (data == null) {
+&nbsp;            return null;
+&nbsp;        } else {
+&nbsp;            return data.length == 0 ? EMPTY_BINARY_NODE : new BinaryNode(data);
 &nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public static BinaryNode valueOf(byte[] data, int offset, int length) {
+<b class="nc">&nbsp;        if (data == null) {</b>
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            return length == 0 ? EMPTY_BINARY_NODE : new BinaryNode(data, offset, length);</b>
+&nbsp;        }
+&nbsp;    }
 &nbsp;
-&nbsp;        super.visitLineNumber(line, start);
+&nbsp;    public JsonNodeType getNodeType() {
+<b class="nc">&nbsp;        return JsonNodeType.BINARY;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public JsonToken asToken() {</b>
+<b class="nc">&nbsp;        return JsonToken.VALUE_EMBEDDED_OBJECT;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public byte[] binaryValue() {
+&nbsp;        return this._data;
+&nbsp;    }
+&nbsp;
+&nbsp;    public String asText() {
+<b class="nc">&nbsp;        return Base64Variants.getDefaultVariant().encode(this._data, false);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public final void serialize(JsonGenerator g, SerializerProvider provider) throws IOException {
+&nbsp;        if (this._data == null) {
+&nbsp;            g.writeNull();
+&nbsp;        } else {
+&nbsp;            g.writeBinary(provider.getConfig().getBase64Variant(), this._data, 0, this._data.length);
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public boolean equals(Object o) {
+&nbsp;        if (o == this) {
+&nbsp;            return true;
+&nbsp;        } else if (o == null) {
+&nbsp;            return false;
+&nbsp;        } else if (o instanceof BinaryNode) {
+&nbsp;            byte[] otherData = ((BinaryNode)o)._data;
+<b class="nc">&nbsp;            if (this._data == otherData) {</b>
+&nbsp;                return true;
+&nbsp;            } else {
+&nbsp;                return this._data != null &amp;&amp; otherData != null ? Arrays.equals(this._data, otherData) : false;
+&nbsp;            }
+&nbsp;        } else {
+&nbsp;            return false;
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public int hashCode() {
+&nbsp;        return this._data == null ? -1 : this._data.length;
 &nbsp;    }
 &nbsp;}
 </code>
@@ -142,7 +204,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 
 <div class="footer">
     
-    <div style="float:right;">generated on 2025-03-20 13:42</div>
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
 </div>
 </body>
 </html>

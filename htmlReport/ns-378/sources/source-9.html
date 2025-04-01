@@ -1,0 +1,653 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > AnnotationUtils</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.core.annotation</a>
+</div>
+
+<h1>Coverage Summary for Class: AnnotationUtils (org.springframework.core.annotation)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AnnotationUtils</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    30.9%
+  </span>
+  <span class="absValue">
+    (17/55)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    20.5%
+  </span>
+  <span class="absValue">
+    (34/166)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    24.2%
+  </span>
+  <span class="absValue">
+    (58/240)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.core.annotation;
+&nbsp;
+&nbsp;import java.lang.annotation.Annotation;
+&nbsp;import java.lang.reflect.AnnotatedElement;
+&nbsp;import java.lang.reflect.Array;
+&nbsp;import java.lang.reflect.InvocationHandler;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;import java.lang.reflect.Modifier;
+&nbsp;import java.lang.reflect.Proxy;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.NoSuchElementException;
+&nbsp;import java.util.Objects;
+&nbsp;import java.util.Set;
+&nbsp;import org.springframework.core.BridgeMethodResolver;
+&nbsp;import org.springframework.core.annotation.MergedAnnotation.Adapt;
+&nbsp;import org.springframework.core.annotation.MergedAnnotations.SearchStrategy;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.CollectionUtils;
+&nbsp;import org.springframework.util.ConcurrentReferenceHashMap;
+&nbsp;import org.springframework.util.ReflectionUtils;
+&nbsp;import org.springframework.util.StringUtils;
+&nbsp;
+&nbsp;public abstract class AnnotationUtils {
+&nbsp;    public static final String VALUE = &quot;value&quot;;
+&nbsp;    private static final AnnotationFilter JAVA_LANG_ANNOTATION_FILTER = AnnotationFilter.packages(new String[]{&quot;java.lang.annotation&quot;});
+&nbsp;    private static final Map&lt;Class&lt;? extends Annotation&gt;, Map&lt;String, DefaultValueHolder&gt;&gt; defaultValuesCache = new ConcurrentReferenceHashMap();
+&nbsp;
+&nbsp;    public AnnotationUtils() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public static boolean isCandidateClass(Class&lt;?&gt; clazz, Collection&lt;Class&lt;? extends Annotation&gt;&gt; annotationTypes) {
+&nbsp;        for(Class&lt;? extends Annotation&gt; annotationType : annotationTypes) {
+&nbsp;            if (isCandidateClass(clazz, annotationType)) {
+&nbsp;                return true;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return false;
+&nbsp;    }
+&nbsp;
+&nbsp;    public static boolean isCandidateClass(Class&lt;?&gt; clazz, @Nullable Class&lt;? extends Annotation&gt; annotationType) {
+&nbsp;        return annotationType != null &amp;&amp; isCandidateClass(clazz, annotationType.getName());
+&nbsp;    }
+&nbsp;
+&nbsp;    public static boolean isCandidateClass(Class&lt;?&gt; clazz, String annotationName) {
+&nbsp;        if (annotationName.startsWith(&quot;java.&quot;)) {
+&nbsp;            return true;
+&nbsp;        } else {
+&nbsp;            return !AnnotationsScanner.hasPlainJavaAnnotationsOnly(clazz);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public static &lt;A extends Annotation&gt; A getAnnotation(Annotation annotation, Class&lt;A&gt; annotationType) {
+&nbsp;        if (annotationType.isInstance(annotation)) {
+&nbsp;            return (A)synthesizeAnnotation(annotation, annotationType);
+&nbsp;        } else {
+&nbsp;            return (A)(AnnotationsScanner.hasPlainJavaAnnotationsOnly(annotation) ? null : (Annotation)MergedAnnotations.from(annotation, new Annotation[]{annotation}, RepeatableContainers.none()).get(annotationType).withNonMergedAttributes().synthesize(AnnotationUtils::isSingleLevelPresent).orElse((Object)null));
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public static &lt;A extends Annotation&gt; A getAnnotation(AnnotatedElement annotatedElement, Class&lt;A&gt; annotationType) {
+&nbsp;        return (A)(!AnnotationFilter.PLAIN.matches(annotationType) &amp;&amp; !AnnotationsScanner.hasPlainJavaAnnotationsOnly(annotatedElement) ? (Annotation)MergedAnnotations.from(annotatedElement, SearchStrategy.INHERITED_ANNOTATIONS, RepeatableContainers.none()).get(annotationType).withNonMergedAttributes().synthesize(AnnotationUtils::isSingleLevelPresent).orElse((Object)null) : annotatedElement.getAnnotation(annotationType));
+&nbsp;    }
+&nbsp;
+&nbsp;    private static &lt;A extends Annotation&gt; boolean isSingleLevelPresent(MergedAnnotation&lt;A&gt; mergedAnnotation) {
+&nbsp;        int distance = mergedAnnotation.getDistance();
+&nbsp;        return distance == 0 || distance == 1;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public static &lt;A extends Annotation&gt; A getAnnotation(Method method, Class&lt;A&gt; annotationType) {
+&nbsp;        Method resolvedMethod = BridgeMethodResolver.findBridgedMethod(method);
+&nbsp;        return (A)getAnnotation((AnnotatedElement)resolvedMethod, annotationType);
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @deprecated */
+&nbsp;    @Deprecated
+&nbsp;    @Nullable
+&nbsp;    public static Annotation[] getAnnotations(AnnotatedElement annotatedElement) {
+&nbsp;        try {
+&nbsp;            return synthesizeAnnotationArray(annotatedElement.getAnnotations(), annotatedElement);
+&nbsp;        } catch (Throwable ex) {
+&nbsp;            handleIntrospectionFailure(annotatedElement, ex);
+&nbsp;            return null;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @deprecated */
+&nbsp;    @Deprecated
+&nbsp;    @Nullable
+&nbsp;    public static Annotation[] getAnnotations(Method method) {
+&nbsp;        try {
+&nbsp;            return synthesizeAnnotationArray(BridgeMethodResolver.findBridgedMethod(method).getAnnotations(), method);
+&nbsp;        } catch (Throwable ex) {
+&nbsp;            handleIntrospectionFailure(method, ex);
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @deprecated */
+&nbsp;    @Deprecated
+&nbsp;    public static &lt;A extends Annotation&gt; Set&lt;A&gt; getRepeatableAnnotations(AnnotatedElement annotatedElement, Class&lt;A&gt; annotationType) {
+<b class="fc">&nbsp;        return getRepeatableAnnotations(annotatedElement, annotationType, (Class)null);</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+<b class="fc">&nbsp;    /** @deprecated */</b>
+&nbsp;    @Deprecated
+&nbsp;    public static &lt;A extends Annotation&gt; Set&lt;A&gt; getRepeatableAnnotations(AnnotatedElement annotatedElement, Class&lt;A&gt; annotationType, @Nullable Class&lt;? extends Annotation&gt; containerAnnotationType) {
+&nbsp;        RepeatableContainers repeatableContainers = containerAnnotationType != null ? RepeatableContainers.of(annotationType, containerAnnotationType) : RepeatableContainers.standardRepeatables();
+&nbsp;        return (Set)MergedAnnotations.from(annotatedElement, SearchStrategy.SUPERCLASS, repeatableContainers).stream(annotationType).filter(MergedAnnotationPredicates.firstRunOf(MergedAnnotation::getAggregateIndex)).map(MergedAnnotation::withNonMergedAttributes).collect(MergedAnnotationCollectors.toAnnotationSet());
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @deprecated */
+&nbsp;    @Deprecated
+&nbsp;    public static &lt;A extends Annotation&gt; Set&lt;A&gt; getDeclaredRepeatableAnnotations(AnnotatedElement annotatedElement, Class&lt;A&gt; annotationType) {
+&nbsp;        return getDeclaredRepeatableAnnotations(annotatedElement, annotationType, (Class)null);
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @deprecated */
+&nbsp;    @Deprecated
+&nbsp;    public static &lt;A extends Annotation&gt; Set&lt;A&gt; getDeclaredRepeatableAnnotations(AnnotatedElement annotatedElement, Class&lt;A&gt; annotationType, @Nullable Class&lt;? extends Annotation&gt; containerAnnotationType) {
+&nbsp;        RepeatableContainers repeatableContainers = containerAnnotationType != null ? RepeatableContainers.of(annotationType, containerAnnotationType) : RepeatableContainers.standardRepeatables();
+<b class="pc">&nbsp;        return (Set)MergedAnnotations.from(annotatedElement, SearchStrategy.DIRECT, repeatableContainers).stream(annotationType).map(MergedAnnotation::withNonMergedAttributes).collect(MergedAnnotationCollectors.toAnnotationSet());</b>
+<b class="pc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    @Nullable
+&nbsp;    public static &lt;A extends Annotation&gt; A findAnnotation(AnnotatedElement annotatedElement, @Nullable Class&lt;A&gt; annotationType) {
+<b class="nc">&nbsp;        if (annotationType == null) {</b>
+&nbsp;            return null;
+&nbsp;        } else {
+&nbsp;            return (A)(!AnnotationFilter.PLAIN.matches(annotationType) &amp;&amp; !AnnotationsScanner.hasPlainJavaAnnotationsOnly(annotatedElement) ? (Annotation)MergedAnnotations.from(annotatedElement, SearchStrategy.INHERITED_ANNOTATIONS, RepeatableContainers.none()).get(annotationType).withNonMergedAttributes().synthesize(MergedAnnotation::isPresent).orElse((Object)null) : annotatedElement.getDeclaredAnnotation(annotationType));
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public static &lt;A extends Annotation&gt; A findAnnotation(Method method, @Nullable Class&lt;A&gt; annotationType) {
+&nbsp;        if (annotationType == null) {
+&nbsp;            return null;
+&nbsp;        } else {
+&nbsp;            return (A)(!AnnotationFilter.PLAIN.matches(annotationType) &amp;&amp; !AnnotationsScanner.hasPlainJavaAnnotationsOnly(method) ? (Annotation)MergedAnnotations.from(method, SearchStrategy.TYPE_HIERARCHY, RepeatableContainers.none()).get(annotationType).withNonMergedAttributes().synthesize(MergedAnnotation::isPresent).orElse((Object)null) : method.getDeclaredAnnotation(annotationType));
+&nbsp;        }
+&nbsp;    }
+<b class="pc">&nbsp;</b>
+&nbsp;    @Nullable
+&nbsp;    public static &lt;A extends Annotation&gt; A findAnnotation(Class&lt;?&gt; clazz, @Nullable Class&lt;A&gt; annotationType) {
+&nbsp;        if (annotationType == null) {
+&nbsp;            return null;
+&nbsp;        } else if (!AnnotationFilter.PLAIN.matches(annotationType) &amp;&amp; !AnnotationsScanner.hasPlainJavaAnnotationsOnly(clazz)) {
+&nbsp;            return (A)(MergedAnnotations.from(clazz, SearchStrategy.TYPE_HIERARCHY, RepeatableContainers.none()).get(annotationType).withNonMergedAttributes().synthesize(MergedAnnotation::isPresent).orElse((Object)null));
+&nbsp;        } else {
+&nbsp;            A annotation = clazz.getDeclaredAnnotation(annotationType);
+&nbsp;            if (annotation != null) {
+&nbsp;                return annotation;
+&nbsp;            } else {
+&nbsp;                Class&lt;?&gt; superclass = clazz.getSuperclass();
+&nbsp;                return (A)(superclass != null &amp;&amp; superclass != Object.class ? findAnnotation(superclass, annotationType) : null);
+&nbsp;            }
+<b class="pc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="fc">&nbsp;    /** @deprecated */</b>
+<b class="fc">&nbsp;    @Deprecated</b>
+&nbsp;    @Nullable
+<b class="fc">&nbsp;    public static Class&lt;?&gt; findAnnotationDeclaringClass(Class&lt;? extends Annotation&gt; annotationType, @Nullable Class&lt;?&gt; clazz) {</b>
+&nbsp;        return clazz == null ? null : (Class)MergedAnnotations.from(clazz, SearchStrategy.SUPERCLASS).get(annotationType, MergedAnnotation::isDirectlyPresent).getSource();
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @deprecated */
+&nbsp;    @Deprecated
+&nbsp;    @Nullable
+&nbsp;    public static Class&lt;?&gt; findAnnotationDeclaringClassForTypes(List&lt;Class&lt;? extends Annotation&gt;&gt; annotationTypes, @Nullable Class&lt;?&gt; clazz) {
+&nbsp;        if (clazz == null) {
+&nbsp;            return null;
+&nbsp;        } else {
+&nbsp;            MergedAnnotation&lt;?&gt; merged = (MergedAnnotation)MergedAnnotations.from(clazz, SearchStrategy.SUPERCLASS).stream().filter(MergedAnnotationPredicates.typeIn(annotationTypes).and(MergedAnnotation::isDirectlyPresent)).findFirst().orElse((Object)null);
+&nbsp;            Class var10000;
+&nbsp;            if (merged != null) {
+&nbsp;                Object var4 = merged.getSource();
+&nbsp;                if (var4 instanceof Class) {
+&nbsp;                    Class&lt;?&gt; sourceClass = (Class)var4;
+&nbsp;                    var10000 = sourceClass;
+&nbsp;                    return var10000;
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            var10000 = null;
+<b class="nc">&nbsp;            return var10000;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public static boolean isAnnotationDeclaredLocally(Class&lt;? extends Annotation&gt; annotationType, Class&lt;?&gt; clazz) {</b>
+<b class="nc">&nbsp;        return MergedAnnotations.from(clazz).get(annotationType).isDirectlyPresent();</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    /** @deprecated */
+&nbsp;    @Deprecated
+&nbsp;    public static boolean isAnnotationInherited(Class&lt;? extends Annotation&gt; annotationType, Class&lt;?&gt; clazz) {
+&nbsp;        return ((MergedAnnotation)MergedAnnotations.from(clazz, SearchStrategy.INHERITED_ANNOTATIONS).stream(annotationType).filter(MergedAnnotation::isDirectlyPresent).findFirst().orElseGet(MergedAnnotation::missing)).getAggregateIndex() &gt; 0;
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @deprecated */
+&nbsp;    @Deprecated
+&nbsp;    public static boolean isAnnotationMetaPresent(Class&lt;? extends Annotation&gt; annotationType, @Nullable Class&lt;? extends Annotation&gt; metaAnnotationType) {
+&nbsp;        if (metaAnnotationType == null) {
+&nbsp;            return false;
+&nbsp;        } else {
+&nbsp;            return !AnnotationFilter.PLAIN.matches(metaAnnotationType) &amp;&amp; !AnnotationsScanner.hasPlainJavaAnnotationsOnly(annotationType) ? MergedAnnotations.from(annotationType, SearchStrategy.INHERITED_ANNOTATIONS, RepeatableContainers.none()).isPresent(metaAnnotationType) : annotationType.isAnnotationPresent(metaAnnotationType);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="pc">&nbsp;    public static boolean isInJavaLangAnnotationPackage(@Nullable Annotation annotation) {</b>
+<b class="pc">&nbsp;        return annotation != null &amp;&amp; JAVA_LANG_ANNOTATION_FILTER.matches(annotation);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public static boolean isInJavaLangAnnotationPackage(@Nullable String annotationType) {
+<b class="fc">&nbsp;        return annotationType != null &amp;&amp; JAVA_LANG_ANNOTATION_FILTER.matches(annotationType);</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    public static void validateAnnotation(Annotation annotation) {
+&nbsp;        AttributeMethods.forAnnotationType(annotation.annotationType()).validate(annotation);
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="pc">&nbsp;    public static Map&lt;String, Object&gt; getAnnotationAttributes(Annotation annotation) {</b>
+&nbsp;        return getAnnotationAttributes((AnnotatedElement)null, annotation);
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Map&lt;String, Object&gt; getAnnotationAttributes(Annotation annotation, boolean classValuesAsString) {
+&nbsp;        return getAnnotationAttributes(annotation, classValuesAsString, false);
+&nbsp;    }
+&nbsp;
+&nbsp;    public static AnnotationAttributes getAnnotationAttributes(Annotation annotation, boolean classValuesAsString, boolean nestedAnnotationsAsMap) {
+&nbsp;        return getAnnotationAttributes((AnnotatedElement)null, annotation, classValuesAsString, nestedAnnotationsAsMap);
+&nbsp;    }
+&nbsp;
+&nbsp;    public static AnnotationAttributes getAnnotationAttributes(@Nullable AnnotatedElement annotatedElement, Annotation annotation) {
+&nbsp;        return getAnnotationAttributes(annotatedElement, annotation, false, false);
+&nbsp;    }
+&nbsp;
+&nbsp;    public static AnnotationAttributes getAnnotationAttributes(@Nullable AnnotatedElement annotatedElement, Annotation annotation, boolean classValuesAsString, boolean nestedAnnotationsAsMap) {
+&nbsp;        MergedAnnotation.Adapt[] adaptations = Adapt.values(classValuesAsString, nestedAnnotationsAsMap);
+&nbsp;        return (AnnotationAttributes)MergedAnnotation.from(annotatedElement, annotation).withNonMergedAttributes().asMap((mergedAnnotation) -&gt; new AnnotationAttributes(mergedAnnotation.getType(), true), adaptations);
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    public static void registerDefaultValues(AnnotationAttributes attributes) {
+&nbsp;        Class&lt;? extends Annotation&gt; annotationType = attributes.annotationType();
+&nbsp;        if (annotationType != null &amp;&amp; Modifier.isPublic(annotationType.getModifiers()) &amp;&amp; !AnnotationFilter.PLAIN.matches(annotationType)) {
+&nbsp;            Map&lt;String, DefaultValueHolder&gt; defaultValues = getDefaultValues(annotationType);
+&nbsp;            Objects.requireNonNull(attributes);
+&nbsp;            defaultValues.forEach(attributes::putIfAbsent);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private static Map&lt;String, DefaultValueHolder&gt; getDefaultValues(Class&lt;? extends Annotation&gt; annotationType) {
+&nbsp;        return (Map)defaultValuesCache.computeIfAbsent(annotationType, AnnotationUtils::computeDefaultValues);
+&nbsp;    }
+&nbsp;
+&nbsp;    private static Map&lt;String, DefaultValueHolder&gt; computeDefaultValues(Class&lt;? extends Annotation&gt; annotationType) {
+&nbsp;        AttributeMethods methods = AttributeMethods.forAnnotationType(annotationType);
+&nbsp;        if (!methods.hasDefaultValueMethod()) {
+&nbsp;            return Collections.emptyMap();
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            Map&lt;String, DefaultValueHolder&gt; result = CollectionUtils.newLinkedHashMap(methods.size());
+&nbsp;            if (!methods.hasNestedAnnotation()) {
+<b class="nc">&nbsp;                for(int i = 0; i &lt; methods.size(); ++i) {</b>
+<b class="nc">&nbsp;                    Method method = methods.get(i);</b>
+&nbsp;                    Object defaultValue = method.getDefaultValue();
+&nbsp;                    if (defaultValue != null) {
+&nbsp;                        result.put(method.getName(), new DefaultValueHolder(defaultValue));
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            } else {
+&nbsp;                AnnotationAttributes attributes = (AnnotationAttributes)MergedAnnotation.of(annotationType).asMap((annotation) -&gt; new AnnotationAttributes(annotation.getType(), true), new MergedAnnotation.Adapt[]{Adapt.ANNOTATION_TO_MAP});
+&nbsp;
+&nbsp;                for(Map.Entry&lt;String, Object&gt; element : attributes.entrySet()) {
+&nbsp;                    result.put((String)element.getKey(), new DefaultValueHolder(element.getValue()));
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            return result;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void postProcessAnnotationAttributes(@Nullable Object annotatedElement, @Nullable AnnotationAttributes attributes, boolean classValuesAsString) {
+&nbsp;        if (attributes != null) {
+&nbsp;            if (!attributes.validated) {
+<b class="nc">&nbsp;                Class&lt;? extends Annotation&gt; annotationType = attributes.annotationType();</b>
+&nbsp;                if (annotationType == null) {
+&nbsp;                    return;
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                AnnotationTypeMapping mapping = AnnotationTypeMappings.forAnnotationType(annotationType).get(0);
+&nbsp;
+&nbsp;                for(int i = 0; i &lt; mapping.getMirrorSets().size(); ++i) {
+&nbsp;                    AnnotationTypeMapping.MirrorSets.MirrorSet mirrorSet = mapping.getMirrorSets().get(i);
+&nbsp;                    int resolved = mirrorSet.resolve(attributes.displayName, attributes, AnnotationUtils::getAttributeValueForMirrorResolution);
+&nbsp;                    if (resolved != -1) {
+&nbsp;                        Method attribute = mapping.getAttributes().get(resolved);
+&nbsp;                        Object value = attributes.get(attribute.getName());
+&nbsp;
+&nbsp;                        for(int j = 0; j &lt; mirrorSet.size(); ++j) {
+&nbsp;                            Method mirror = mirrorSet.get(j);
+&nbsp;                            if (mirror != attribute) {
+&nbsp;                                attributes.put(mirror.getName(), adaptValue(annotatedElement, value, classValuesAsString));
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            for(Map.Entry&lt;String, Object&gt; attributeEntry : attributes.entrySet()) {
+&nbsp;                String attributeName = (String)attributeEntry.getKey();
+&nbsp;                Object value = attributeEntry.getValue();
+&nbsp;                if (value instanceof DefaultValueHolder) {
+&nbsp;                    DefaultValueHolder defaultValueHolder = (DefaultValueHolder)value;
+&nbsp;                    value = defaultValueHolder.defaultValue;
+&nbsp;                    attributes.put(attributeName, adaptValue(annotatedElement, value, classValuesAsString));
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    private static Object getAttributeValueForMirrorResolution(Method attribute, @Nullable Object attributes) {
+&nbsp;        if (attributes instanceof AnnotationAttributes annotationAttributes) {
+<b class="nc">&nbsp;            Object result = annotationAttributes.get(attribute.getName());</b>
+&nbsp;            Object var10000;
+&nbsp;            if (result instanceof DefaultValueHolder defaultValueHolder) {
+&nbsp;                var10000 = defaultValueHolder.defaultValue;
+&nbsp;            } else {
+&nbsp;                var10000 = result;
+&nbsp;            }
+&nbsp;
+&nbsp;            return var10000;
+&nbsp;        } else {
+&nbsp;            return null;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    private static Object adaptValue(@Nullable Object annotatedElement, @Nullable Object value, boolean classValuesAsString) {
+&nbsp;        if (classValuesAsString) {
+&nbsp;            if (value instanceof Class) {
+&nbsp;                Class&lt;?&gt; clazz = (Class)value;
+&nbsp;                return clazz.getName();
+&nbsp;            }
+&nbsp;
+&nbsp;            if (value instanceof Class[]) {
+&nbsp;                Class&lt;?&gt;[] classes = (Class[])value;
+&nbsp;                String[] names = new String[classes.length];
+&nbsp;
+&nbsp;                for(int i = 0; i &lt; classes.length; ++i) {
+&nbsp;                    names[i] = classes[i].getName();
+&nbsp;                }
+&nbsp;
+&nbsp;                return names;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        if (value instanceof Annotation annotation) {
+&nbsp;            return MergedAnnotation.from(annotatedElement, annotation).synthesize();
+&nbsp;        } else if (!(value instanceof Annotation[] annotations)) {
+&nbsp;            return value;
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            Annotation[] synthesized = (Annotation[])Array.newInstance(annotations.getClass().componentType(), annotations.length);</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            for(int i = 0; i &lt; annotations.length; ++i) {
+<b class="nc">&nbsp;                synthesized[i] = MergedAnnotation.from(annotatedElement, annotations[i]).synthesize();</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            return synthesized;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public static Object getValue(Annotation annotation) {
+&nbsp;        return getValue(annotation, &quot;value&quot;);
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public static Object getValue(@Nullable Annotation annotation, @Nullable String attributeName) {
+&nbsp;        if (annotation != null &amp;&amp; StringUtils.hasText(attributeName)) {
+&nbsp;            try {
+&nbsp;                for(Method method : annotation.annotationType().getDeclaredMethods()) {
+&nbsp;                    if (method.getName().equals(attributeName) &amp;&amp; method.getParameterCount() == 0) {
+&nbsp;                        return invokeAnnotationMethod(method, annotation);
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            } catch (Throwable ex) {
+&nbsp;                handleValueRetrievalFailure(annotation, ex);
+&nbsp;            }
+&nbsp;
+&nbsp;            return null;
+&nbsp;        } else {
+&nbsp;            return null;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    static Object invokeAnnotationMethod(Method method, @Nullable Object annotation) {
+&nbsp;        if (annotation == null) {
+&nbsp;            return null;
+&nbsp;        } else {
+&nbsp;            if (Proxy.isProxyClass(annotation.getClass())) {
+&nbsp;                try {
+&nbsp;                    InvocationHandler handler = Proxy.getInvocationHandler(annotation);
+&nbsp;                    return handler.invoke(annotation, method, (Object[])null);
+<b class="nc">&nbsp;                } catch (Throwable var3) {</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            return ReflectionUtils.invokeMethod(method, annotation);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    static void rethrowAnnotationConfigurationException(Throwable ex) {
+&nbsp;        if (ex instanceof AnnotationConfigurationException exception) {
+&nbsp;            throw exception;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    static void handleIntrospectionFailure(AnnotatedElement element, Throwable ex) {
+&nbsp;        rethrowAnnotationConfigurationException(ex);
+&nbsp;        IntrospectionFailureLogger logger = IntrospectionFailureLogger.INFO;
+&nbsp;        boolean meta = false;
+&nbsp;        if (element instanceof Class&lt;?&gt; clazz) {
+&nbsp;            if (Annotation.class.isAssignableFrom(clazz)) {
+&nbsp;                logger = IntrospectionFailureLogger.DEBUG;
+&nbsp;                meta = true;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        if (logger.isEnabled()) {
+&nbsp;            logger.log(&quot;Failed to &quot; + (meta ? &quot;meta-introspect annotation &quot; : &quot;introspect annotations on &quot;) + String.valueOf(element) + &quot;: &quot; + String.valueOf(ex));
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private static void handleValueRetrievalFailure(Annotation annotation, Throwable ex) {
+&nbsp;        rethrowAnnotationConfigurationException(ex);
+&nbsp;        IntrospectionFailureLogger logger = IntrospectionFailureLogger.INFO;
+&nbsp;        if (logger.isEnabled()) {
+&nbsp;            String var10001 = String.valueOf(annotation);
+&nbsp;            logger.log(&quot;Failed to retrieve value from &quot; + var10001 + &quot;: &quot; + String.valueOf(ex));
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    @Nullable
+<b class="nc">&nbsp;    public static Object getDefaultValue(Annotation annotation) {</b>
+<b class="nc">&nbsp;        return getDefaultValue(annotation, &quot;value&quot;);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    @Nullable
+&nbsp;    public static Object getDefaultValue(@Nullable Annotation annotation, @Nullable String attributeName) {
+&nbsp;        return annotation != null ? getDefaultValue(annotation.annotationType(), attributeName) : null;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public static Object getDefaultValue(Class&lt;? extends Annotation&gt; annotationType) {
+&nbsp;        return getDefaultValue(annotationType, &quot;value&quot;);
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public static Object getDefaultValue(@Nullable Class&lt;? extends Annotation&gt; annotationType, @Nullable String attributeName) {
+&nbsp;        return annotationType != null &amp;&amp; StringUtils.hasText(attributeName) ? MergedAnnotation.of(annotationType).getDefaultValue(attributeName).orElse((Object)null) : null;
+&nbsp;    }
+&nbsp;
+&nbsp;    public static &lt;A extends Annotation&gt; A synthesizeAnnotation(A annotation, @Nullable AnnotatedElement annotatedElement) {
+&nbsp;        return (A)(!isSynthesizedAnnotation(annotation) &amp;&amp; !AnnotationFilter.PLAIN.matches(annotation) ? MergedAnnotation.from(annotatedElement, annotation).synthesize() : annotation);
+&nbsp;    }
+&nbsp;
+&nbsp;    public static &lt;A extends Annotation&gt; A synthesizeAnnotation(Class&lt;A&gt; annotationType) {
+&nbsp;        return (A)synthesizeAnnotation(Collections.emptyMap(), annotationType, (AnnotatedElement)null);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public static &lt;A extends Annotation&gt; A synthesizeAnnotation(Map&lt;String, Object&gt; attributes, Class&lt;A&gt; annotationType, @Nullable AnnotatedElement annotatedElement) {</b>
+&nbsp;        try {
+&nbsp;            return (A)MergedAnnotation.of(annotatedElement, annotationType, attributes).synthesize();
+&nbsp;        } catch (IllegalStateException | NoSuchElementException ex) {
+<b class="nc">&nbsp;            throw new IllegalArgumentException(ex);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    static Annotation[] synthesizeAnnotationArray(Annotation[] annotations, AnnotatedElement annotatedElement) {
+&nbsp;        if (AnnotationsScanner.hasPlainJavaAnnotationsOnly(annotatedElement)) {
+<b class="nc">&nbsp;            return annotations;</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            Annotation[] synthesized = (Annotation[])Array.newInstance(annotations.getClass().componentType(), annotations.length);</b>
+&nbsp;
+&nbsp;            for(int i = 0; i &lt; annotations.length; ++i) {
+&nbsp;                synthesized[i] = synthesizeAnnotation(annotations[i], annotatedElement);
+&nbsp;            }
+&nbsp;
+&nbsp;            return synthesized;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static boolean isSynthesizedAnnotation(@Nullable Annotation annotation) {
+&nbsp;        try {
+&nbsp;            return annotation != null &amp;&amp; Proxy.isProxyClass(annotation.getClass()) &amp;&amp; Proxy.getInvocationHandler(annotation) instanceof SynthesizedMergedAnnotationInvocationHandler;
+&nbsp;        } catch (SecurityException var2) {
+&nbsp;            return false;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void clearCache() {
+&nbsp;        AnnotationTypeMappings.clearCache();
+<b class="pc">&nbsp;        AnnotationsScanner.clearCache();</b>
+<b class="nc">&nbsp;        AttributeMethods.cache.clear();</b>
+&nbsp;        RepeatableContainers.cache.clear();
+&nbsp;        OrderUtils.orderCache.clear();
+&nbsp;    }
+<b class="pc">&nbsp;</b>
+<b class="pc">&nbsp;    private static class DefaultValueHolder {</b>
+<b class="nc">&nbsp;        final Object defaultValue;</b>
+&nbsp;
+&nbsp;        public DefaultValueHolder(Object defaultValue) {
+&nbsp;            this.defaultValue = defaultValue;
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;        public String toString() {</b>
+&nbsp;            return &quot;*&quot; + String.valueOf(this.defaultValue);
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:58</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,584 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > TypeHelper</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.validator.internal.util</a>
+</div>
+
+<h1>Coverage Summary for Class: TypeHelper (org.hibernate.validator.internal.util)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TypeHelper</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    22.2%
+  </span>
+  <span class="absValue">
+    (8/36)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    16.9%
+  </span>
+  <span class="absValue">
+    (30/178)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    26.4%
+  </span>
+  <span class="absValue">
+    (62/235)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.validator.internal.util;
+&nbsp;
+&nbsp;import jakarta.validation.ConstraintValidator;
+&nbsp;import java.io.Serializable;
+&nbsp;import java.lang.annotation.Annotation;
+&nbsp;import java.lang.invoke.MethodHandles;
+&nbsp;import java.lang.reflect.Array;
+&nbsp;import java.lang.reflect.GenericArrayType;
+&nbsp;import java.lang.reflect.MalformedParameterizedTypeException;
+&nbsp;import java.lang.reflect.ParameterizedType;
+&nbsp;import java.lang.reflect.Type;
+&nbsp;import java.lang.reflect.TypeVariable;
+&nbsp;import java.lang.reflect.WildcardType;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.LinkedHashMap;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Set;
+&nbsp;import org.hibernate.validator.engine.HibernateValidatorEnhancedBean;
+&nbsp;import org.hibernate.validator.internal.engine.constraintvalidation.ConstraintValidatorDescriptor;
+&nbsp;import org.hibernate.validator.internal.util.logging.Log;
+&nbsp;import org.hibernate.validator.internal.util.logging.LoggerFactory;
+&nbsp;
+&nbsp;public final class TypeHelper {
+&nbsp;    private static final Map&lt;Class&lt;?&gt;, Set&lt;Class&lt;?&gt;&gt;&gt; SUBTYPES_BY_PRIMITIVE;
+&nbsp;    private static final int CONSTRAINT_TYPE_INDEX = 0;
+&nbsp;    private static final int VALIDATOR_TYPE_INDEX = 1;
+&nbsp;    private static final Log LOG = LoggerFactory.make(MethodHandles.lookup());
+&nbsp;
+&nbsp;    private TypeHelper() {
+&nbsp;        throw new AssertionError();
+&nbsp;    }
+&nbsp;
+&nbsp;    public static boolean isHibernateValidatorEnhancedBean(Class&lt;?&gt; clazz) {
+&nbsp;        return HibernateValidatorEnhancedBean.class.isAssignableFrom(clazz);
+&nbsp;    }
+&nbsp;
+&nbsp;    public static boolean isAssignable(Type supertype, Type type) {
+&nbsp;        Contracts.assertNotNull(supertype, &quot;supertype&quot;);
+&nbsp;        Contracts.assertNotNull(type, &quot;type&quot;);
+&nbsp;        if (supertype.equals(type)) {
+&nbsp;            return true;
+&nbsp;        } else if (supertype instanceof Class) {
+&nbsp;            if (type instanceof Class) {
+&nbsp;                return isClassAssignable((Class)supertype, (Class)type);
+&nbsp;            } else if (type instanceof ParameterizedType) {
+&nbsp;                return isAssignable(supertype, ((ParameterizedType)type).getRawType());
+&nbsp;            } else if (type instanceof TypeVariable) {
+&nbsp;                return isTypeVariableAssignable(supertype, (TypeVariable)type);
+&nbsp;            } else if (type instanceof GenericArrayType) {
+&nbsp;                return ((Class)supertype).isArray() ? isAssignable(getComponentType(supertype), getComponentType(type)) : isArraySupertype((Class)supertype);
+<b class="fc">&nbsp;            } else {</b>
+&nbsp;                return type instanceof WildcardType ? isClassAssignableToWildcardType((Class)supertype, (WildcardType)type) : false;
+&nbsp;            }
+<b class="fc">&nbsp;        } else if (supertype instanceof ParameterizedType) {</b>
+&nbsp;            if (type instanceof Class) {
+<b class="fc">&nbsp;                return isSuperAssignable(supertype, type);</b>
+<b class="fc">&nbsp;            } else {</b>
+<b class="fc">&nbsp;                return type instanceof ParameterizedType ? isParameterizedTypeAssignable((ParameterizedType)supertype, (ParameterizedType)type) : false;</b>
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;        } else if (type instanceof TypeVariable) {</b>
+<b class="fc">&nbsp;            return isTypeVariableAssignable(supertype, (TypeVariable)type);</b>
+<b class="fc">&nbsp;        } else if (supertype instanceof GenericArrayType) {</b>
+<b class="fc">&nbsp;            return isArray(type) ? isAssignable(getComponentType(supertype), getComponentType(type)) : false;</b>
+<b class="fc">&nbsp;        } else {</b>
+&nbsp;            return supertype instanceof WildcardType ? isWildcardTypeAssignable((WildcardType)supertype, type) : false;
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Type getErasedType(Type type) {
+&nbsp;        if (type instanceof ParameterizedType) {
+&nbsp;            Type rawType = ((ParameterizedType)type).getRawType();
+&nbsp;            return getErasedType(rawType);
+&nbsp;        } else if (isArray(type)) {
+<b class="nc">&nbsp;            Type componentType = getComponentType(type);</b>
+&nbsp;            Type erasedComponentType = getErasedType(componentType);
+&nbsp;            return getArrayType(erasedComponentType);
+&nbsp;        } else if (type instanceof TypeVariable) {
+<b class="nc">&nbsp;            Type[] bounds = ((TypeVariable)type).getBounds();</b>
+<b class="nc">&nbsp;            return getErasedType(bounds[0]);</b>
+&nbsp;        } else if (type instanceof WildcardType) {
+<b class="nc">&nbsp;            Type[] upperBounds = ((WildcardType)type).getUpperBounds();</b>
+<b class="nc">&nbsp;            return getErasedType(upperBounds[0]);</b>
+&nbsp;        } else {
+&nbsp;            return type;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public static Class&lt;?&gt; getErasedReferenceType(Type type) {
+&nbsp;        Contracts.assertTrue(isReferenceType(type), &quot;type is not a reference type: %s&quot;, new Object[]{type});
+<b class="nc">&nbsp;        return (Class)getErasedType(type);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public static boolean isArray(Type type) {
+<b class="nc">&nbsp;        return type instanceof Class &amp;&amp; ((Class)type).isArray() || type instanceof GenericArrayType;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public static Type getComponentType(Type type) {
+<b class="nc">&nbsp;        if (type instanceof Class) {</b>
+<b class="nc">&nbsp;            Class&lt;?&gt; klass = (Class)type;</b>
+<b class="nc">&nbsp;            return klass.isArray() ? klass.getComponentType() : null;</b>
+&nbsp;        } else {
+&nbsp;            return type instanceof GenericArrayType ? ((GenericArrayType)type).getGenericComponentType() : null;
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private static Type getArrayType(Type componentType) {</b>
+<b class="nc">&nbsp;        Contracts.assertNotNull(componentType, &quot;componentType&quot;);</b>
+&nbsp;        return (Type)(componentType instanceof Class ? Array.newInstance((Class)componentType, 0).getClass() : genericArrayType(componentType));
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public static GenericArrayType genericArrayType(final Type componentType) {
+&nbsp;        return new GenericArrayType() {
+<b class="nc">&nbsp;            public Type getGenericComponentType() {</b>
+<b class="nc">&nbsp;                return componentType;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        };
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public static boolean isInstance(Type type, Object object) {</b>
+&nbsp;        return getErasedReferenceType(type).isInstance(object);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public static ParameterizedType parameterizedType(final Class&lt;?&gt; rawType, final Type... actualTypeArguments) {
+&nbsp;        return new ParameterizedType() {
+<b class="nc">&nbsp;            public Type[] getActualTypeArguments() {</b>
+<b class="nc">&nbsp;                return actualTypeArguments;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            public Type getRawType() {</b>
+<b class="nc">&nbsp;                return rawType;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            public Type getOwnerType() {
+<b class="nc">&nbsp;                return null;</b>
+&nbsp;            }
+&nbsp;        };
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private static Type getResolvedSuperclass(Type type) {
+&nbsp;        Contracts.assertNotNull(type, &quot;type&quot;);
+<b class="nc">&nbsp;        Class&lt;?&gt; rawType = getErasedReferenceType(type);</b>
+&nbsp;        Type supertype = rawType.getGenericSuperclass();
+&nbsp;        return supertype == null ? null : resolveTypeVariables(supertype, type);
+&nbsp;    }
+&nbsp;
+&nbsp;    private static Type[] getResolvedInterfaces(Type type) {
+&nbsp;        Contracts.assertNotNull(type, &quot;type&quot;);
+&nbsp;        Class&lt;?&gt; rawType = getErasedReferenceType(type);
+&nbsp;        Type[] interfaces = rawType.getGenericInterfaces();
+&nbsp;        Type[] resolvedInterfaces = new Type[interfaces.length];
+&nbsp;
+&nbsp;        for(int i = 0; i &lt; interfaces.length; ++i) {
+&nbsp;            resolvedInterfaces[i] = resolveTypeVariables(interfaces[i], type);
+&nbsp;        }
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;        return resolvedInterfaces;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public static &lt;A extends Annotation&gt; Map&lt;Type, ConstraintValidatorDescriptor&lt;A&gt;&gt; getValidatorTypes(Class&lt;A&gt; annotationType, List&lt;ConstraintValidatorDescriptor&lt;A&gt;&gt; validators) {
+&nbsp;        Map&lt;Type, ConstraintValidatorDescriptor&lt;A&gt;&gt; validatorsTypes = CollectionHelper.newHashMap();
+&nbsp;
+&nbsp;        for(ConstraintValidatorDescriptor&lt;A&gt; validator : validators) {
+&nbsp;            Type type = validator.getValidatedType();
+<b class="pc">&nbsp;            ConstraintValidatorDescriptor&lt;A&gt; previous = (ConstraintValidatorDescriptor)validatorsTypes.put(type, validator);</b>
+<b class="nc">&nbsp;            if (previous != null) {</b>
+<b class="nc">&nbsp;                throw LOG.getMultipleValidatorsForSameTypeException(annotationType, type, previous.getValidatorClass(), validator.getValidatorClass());</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return validatorsTypes;
+&nbsp;    }
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;    public static Type extractValidatedType(Class&lt;? extends ConstraintValidator&lt;?, ?&gt;&gt; validator) {</b>
+&nbsp;        return extractConstraintValidatorTypeArgumentType(validator, 1);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public static Type extractConstraintType(Class&lt;? extends ConstraintValidator&lt;?, ?&gt;&gt; validator) {
+&nbsp;        return extractConstraintValidatorTypeArgumentType(validator, 0);
+<b class="pc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public static Type extractConstraintValidatorTypeArgumentType(Class&lt;? extends ConstraintValidator&lt;?, ?&gt;&gt; validator, int typeArgumentIndex) {
+<b class="nc">&nbsp;        Map&lt;Type, Type&gt; resolvedTypes = new HashMap();</b>
+&nbsp;        Type constraintValidatorType = resolveTypes(resolvedTypes, validator);
+&nbsp;        Type type = ((ParameterizedType)constraintValidatorType).getActualTypeArguments()[typeArgumentIndex];
+&nbsp;        if (type == null) {
+<b class="fc">&nbsp;            throw LOG.getNullIsAnInvalidTypeForAConstraintValidatorException();</b>
+&nbsp;        } else {
+&nbsp;            if (type instanceof GenericArrayType) {
+&nbsp;                type = getArrayType(getComponentType(type));
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            while(resolvedTypes.containsKey(type)) {
+&nbsp;                type = (Type)resolvedTypes.get(type);
+&nbsp;            }
+<b class="pc">&nbsp;</b>
+&nbsp;            return type;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public static boolean isUnboundWildcard(Type type) {</b>
+<b class="nc">&nbsp;        if (!(type instanceof WildcardType)) {</b>
+&nbsp;            return false;
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            WildcardType wildcardType = (WildcardType)type;
+&nbsp;            return isEmptyBounds(wildcardType.getUpperBounds()) &amp;&amp; isEmptyBounds(wildcardType.getLowerBounds());
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private static Type resolveTypes(Map&lt;Type, Type&gt; resolvedTypes, Type type) {
+<b class="nc">&nbsp;        if (type == null) {</b>
+&nbsp;            return null;
+&nbsp;        } else {
+&nbsp;            if (type instanceof Class) {
+<b class="nc">&nbsp;                Class&lt;?&gt; clazz = (Class)type;</b>
+&nbsp;                Type returnedType = resolveTypeForClassAndHierarchy(resolvedTypes, clazz);
+<b class="nc">&nbsp;                if (returnedType != null) {</b>
+<b class="nc">&nbsp;                    return returnedType;</b>
+&nbsp;                }
+&nbsp;            } else if (type instanceof ParameterizedType) {
+<b class="nc">&nbsp;                ParameterizedType paramType = (ParameterizedType)type;</b>
+&nbsp;                if (!(paramType.getRawType() instanceof Class)) {
+&nbsp;                    return null;
+&nbsp;                }
+&nbsp;
+&nbsp;                Class&lt;?&gt; rawType = (Class)paramType.getRawType();
+&nbsp;                TypeVariable&lt;?&gt;[] originalTypes = rawType.getTypeParameters();
+&nbsp;                Type[] partiallyResolvedTypes = paramType.getActualTypeArguments();
+&nbsp;                int nbrOfParams = originalTypes.length;
+&nbsp;
+&nbsp;                for(int i = 0; i &lt; nbrOfParams; ++i) {
+<b class="nc">&nbsp;                    resolvedTypes.put(originalTypes[i], partiallyResolvedTypes[i]);</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                if (rawType.equals(ConstraintValidator.class)) {
+&nbsp;                    return type;
+&nbsp;                }
+&nbsp;
+&nbsp;                Type returnedType = resolveTypeForClassAndHierarchy(resolvedTypes, rawType);
+&nbsp;                if (returnedType != null) {
+&nbsp;                    return returnedType;
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            return null;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static Type resolveTypeForClassAndHierarchy(Map&lt;Type, Type&gt; resolvedTypes, Class&lt;?&gt; clazz) {
+&nbsp;        Type returnedType = resolveTypes(resolvedTypes, clazz.getGenericSuperclass());
+&nbsp;        if (returnedType != null) {
+&nbsp;            return returnedType;
+&nbsp;        } else {
+&nbsp;            for(Type genericInterface : clazz.getGenericInterfaces()) {
+&nbsp;                returnedType = resolveTypes(resolvedTypes, genericInterface);
+<b class="nc">&nbsp;                if (returnedType != null) {</b>
+&nbsp;                    return returnedType;
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            return null;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static void putPrimitiveSubtypes(Map&lt;Class&lt;?&gt;, Set&lt;Class&lt;?&gt;&gt;&gt; subtypesByPrimitive, Class&lt;?&gt; primitiveType, Class&lt;?&gt;... directSubtypes) {
+&nbsp;        Set&lt;Class&lt;?&gt;&gt; subtypes = CollectionHelper.newHashSet();
+&nbsp;
+&nbsp;        for(Class&lt;?&gt; directSubtype : directSubtypes) {
+&nbsp;            subtypes.add(directSubtype);
+&nbsp;            subtypes.addAll((Collection)subtypesByPrimitive.get(directSubtype));
+&nbsp;        }
+&nbsp;
+&nbsp;        subtypesByPrimitive.put(primitiveType, Collections.unmodifiableSet(subtypes));
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private static boolean isClassAssignable(Class&lt;?&gt; supertype, Class&lt;?&gt; type) {
+<b class="nc">&nbsp;        return supertype.isPrimitive() &amp;&amp; type.isPrimitive() ? ((Set)SUBTYPES_BY_PRIMITIVE.get(supertype)).contains(type) : supertype.isAssignableFrom(type);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private static boolean isClassAssignableToWildcardType(Class&lt;?&gt; supertype, WildcardType type) {</b>
+<b class="nc">&nbsp;        for(Type upperBound : type.getUpperBounds()) {</b>
+&nbsp;            if (!isAssignable(supertype, upperBound)) {
+&nbsp;                return false;
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        return true;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private static boolean isParameterizedTypeAssignable(ParameterizedType supertype, ParameterizedType type) {</b>
+<b class="nc">&nbsp;        Type rawSupertype = supertype.getRawType();</b>
+<b class="nc">&nbsp;        Type rawType = type.getRawType();</b>
+&nbsp;        if (!rawSupertype.equals(rawType)) {
+<b class="nc">&nbsp;            return rawSupertype instanceof Class &amp;&amp; rawType instanceof Class &amp;&amp; !((Class)rawSupertype).isAssignableFrom((Class)rawType) ? false : isSuperAssignable(supertype, type);</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            Type[] supertypeArgs = supertype.getActualTypeArguments();
+&nbsp;            Type[] typeArgs = type.getActualTypeArguments();
+<b class="nc">&nbsp;            if (supertypeArgs.length != typeArgs.length) {</b>
+&nbsp;                return false;
+&nbsp;            } else {
+&nbsp;                for(int i = 0; i &lt; supertypeArgs.length; ++i) {
+&nbsp;                    Type supertypeArg = supertypeArgs[i];
+&nbsp;                    Type typeArg = typeArgs[i];
+&nbsp;                    if (supertypeArg instanceof WildcardType) {
+&nbsp;                        if (!isWildcardTypeAssignable((WildcardType)supertypeArg, typeArg)) {
+&nbsp;                            return false;
+&nbsp;                        }
+&nbsp;                    } else if (!supertypeArg.equals(typeArg)) {
+&nbsp;                        return false;
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+&nbsp;                return true;
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private static boolean isTypeVariableAssignable(Type supertype, TypeVariable&lt;?&gt; type) {
+<b class="nc">&nbsp;        for(Type bound : type.getBounds()) {</b>
+<b class="nc">&nbsp;            if (isAssignable(supertype, bound)) {</b>
+&nbsp;                return true;
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        return false;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    private static boolean isWildcardTypeAssignable(WildcardType supertype, Type type) {</b>
+&nbsp;        for(Type upperBound : supertype.getUpperBounds()) {
+&nbsp;            if (!isAssignable(upperBound, type)) {
+&nbsp;                return false;
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        for(Type lowerBound : supertype.getLowerBounds()) {
+<b class="fc">&nbsp;            if (!isAssignable(type, lowerBound)) {</b>
+<b class="fc">&nbsp;                return false;</b>
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+<b class="pc">&nbsp;        return true;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="pc">&nbsp;    private static boolean isSuperAssignable(Type supertype, Type type) {</b>
+<b class="nc">&nbsp;        Type superclass = getResolvedSuperclass(type);</b>
+&nbsp;        if (superclass != null &amp;&amp; isAssignable(supertype, superclass)) {
+&nbsp;            return true;
+<b class="fc">&nbsp;        } else {</b>
+<b class="fc">&nbsp;            for(Type interphace : getResolvedInterfaces(type)) {</b>
+&nbsp;                if (isAssignable(supertype, interphace)) {
+&nbsp;                    return true;
+<b class="fc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            return false;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private static boolean isReferenceType(Type type) {</b>
+<b class="nc">&nbsp;        return type == null || type instanceof Class || type instanceof ParameterizedType || type instanceof TypeVariable || type instanceof GenericArrayType || type instanceof WildcardType;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static boolean isArraySupertype(Class&lt;?&gt; type) {
+<b class="fc">&nbsp;        return Object.class.equals(type) || Cloneable.class.equals(type) || Serializable.class.equals(type);</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+<b class="fc">&nbsp;    private static Type resolveTypeVariables(Type type, Type subtype) {</b>
+<b class="fc">&nbsp;        if (!(type instanceof ParameterizedType)) {</b>
+<b class="fc">&nbsp;            return type;</b>
+<b class="fc">&nbsp;        } else {</b>
+<b class="fc">&nbsp;            Map&lt;Type, Type&gt; actualTypeArgumentsByParameter = getActualTypeArgumentsByParameter(type, subtype);</b>
+&nbsp;            Class&lt;?&gt; rawType = getErasedReferenceType(type);
+&nbsp;            return parameterizeClass(rawType, actualTypeArgumentsByParameter);
+<b class="pc">&nbsp;        }</b>
+<b class="fc">&nbsp;    }</b>
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;    private static Map&lt;Type, Type&gt; getActualTypeArgumentsByParameter(Type... types) {</b>
+&nbsp;        Map&lt;Type, Type&gt; actualTypeArgumentsByParameter = new LinkedHashMap();
+<b class="fc">&nbsp;</b>
+&nbsp;        for(Type type : types) {
+<b class="fc">&nbsp;            actualTypeArgumentsByParameter.putAll(getActualTypeArgumentsByParameterInternal(type));</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;        return normalize(actualTypeArgumentsByParameter);</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private static Map&lt;Type, Type&gt; getActualTypeArgumentsByParameterInternal(Type type) {
+<b class="fc">&nbsp;        if (!(type instanceof ParameterizedType)) {</b>
+&nbsp;            return Collections.emptyMap();
+<b class="fc">&nbsp;        } else {</b>
+&nbsp;            TypeVariable&lt;?&gt;[] typeParameters = getErasedReferenceType(type).getTypeParameters();
+&nbsp;            Type[] typeArguments = ((ParameterizedType)type).getActualTypeArguments();
+<b class="fc">&nbsp;            if (typeParameters.length != typeArguments.length) {</b>
+<b class="pc">&nbsp;                throw new MalformedParameterizedTypeException();</b>
+<b class="fc">&nbsp;            } else {</b>
+&nbsp;                Map&lt;Type, Type&gt; actualTypeArgumentsByParameter = new LinkedHashMap();
+&nbsp;
+&nbsp;                for(int i = 0; i &lt; typeParameters.length; ++i) {
+&nbsp;                    if (!typeParameters[i].equals(typeArguments[i])) {
+<b class="fc">&nbsp;                        actualTypeArgumentsByParameter.put(typeParameters[i], typeArguments[i]);</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                return actualTypeArgumentsByParameter;</b>
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private static ParameterizedType parameterizeClass(Class&lt;?&gt; type, Map&lt;Type, Type&gt; actualTypeArgumentsByParameter) {</b>
+<b class="pc">&nbsp;        return parameterizeClassCapture(type, actualTypeArgumentsByParameter);</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private static &lt;T&gt; ParameterizedType parameterizeClassCapture(Class&lt;T&gt; type, Map&lt;Type, Type&gt; actualTypeArgumentsByParameter) {
+<b class="fc">&nbsp;        TypeVariable&lt;Class&lt;T&gt;&gt;[] typeParameters = type.getTypeParameters();</b>
+&nbsp;        Type[] actualTypeArguments = new Type[typeParameters.length];
+&nbsp;
+&nbsp;        for(int i = 0; i &lt; typeParameters.length; ++i) {
+&nbsp;            TypeVariable&lt;Class&lt;T&gt;&gt; typeParameter = typeParameters[i];
+<b class="fc">&nbsp;            Type actualTypeArgument = (Type)actualTypeArgumentsByParameter.get(typeParameter);</b>
+&nbsp;            if (actualTypeArgument == null) {
+<b class="fc">&nbsp;                throw LOG.getMissingActualTypeArgumentForTypeParameterException(typeParameter);</b>
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;            actualTypeArguments[i] = actualTypeArgument;
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+&nbsp;        return parameterizedType(getErasedReferenceType(type), actualTypeArguments);
+&nbsp;    }
+&nbsp;
+&nbsp;    private static &lt;K, V&gt; Map&lt;K, V&gt; normalize(Map&lt;K, V&gt; map) {
+<b class="nc">&nbsp;        for(Map.Entry&lt;K, V&gt; entry : map.entrySet()) {</b>
+<b class="nc">&nbsp;            K key = (K)entry.getKey();</b>
+&nbsp;
+&nbsp;            V value;
+<b class="nc">&nbsp;            for(value = (V)entry.getValue(); map.containsKey(value); value = (V)map.get(value)) {</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            map.put(key, value);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return map;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static boolean isEmptyBounds(Type[] bounds) {
+<b class="nc">&nbsp;        return bounds == null || bounds.length == 0 || bounds.length == 1 &amp;&amp; Object.class.equals(bounds[0]);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    static {
+<b class="nc">&nbsp;        Map&lt;Class&lt;?&gt;, Set&lt;Class&lt;?&gt;&gt;&gt; subtypesByPrimitive = CollectionHelper.newHashMap();</b>
+<b class="nc">&nbsp;        putPrimitiveSubtypes(subtypesByPrimitive, Void.TYPE);</b>
+&nbsp;        putPrimitiveSubtypes(subtypesByPrimitive, Boolean.TYPE);
+<b class="nc">&nbsp;        putPrimitiveSubtypes(subtypesByPrimitive, Byte.TYPE);</b>
+&nbsp;        putPrimitiveSubtypes(subtypesByPrimitive, Character.TYPE);
+<b class="nc">&nbsp;        putPrimitiveSubtypes(subtypesByPrimitive, Short.TYPE, Byte.TYPE);</b>
+<b class="nc">&nbsp;        putPrimitiveSubtypes(subtypesByPrimitive, Integer.TYPE, Character.TYPE, Short.TYPE);</b>
+<b class="nc">&nbsp;        putPrimitiveSubtypes(subtypesByPrimitive, Long.TYPE, Integer.TYPE);</b>
+&nbsp;        putPrimitiveSubtypes(subtypesByPrimitive, Float.TYPE, Long.TYPE);
+&nbsp;        putPrimitiveSubtypes(subtypesByPrimitive, Double.TYPE, Float.TYPE);
+<b class="nc">&nbsp;        SUBTYPES_BY_PRIMITIVE = Collections.unmodifiableMap(subtypesByPrimitive);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

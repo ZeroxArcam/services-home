@@ -1,0 +1,290 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > Parser</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">ch.qos.logback.core.subst</a>
+</div>
+
+<h1>Coverage Summary for Class: Parser (ch.qos.logback.core.subst)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Parser</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (13/13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    75.8%
+  </span>
+  <span class="absValue">
+    (25/33)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    85.9%
+  </span>
+  <span class="absValue">
+    (61/71)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Parser$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (14/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    75.8%
+  </span>
+  <span class="absValue">
+    (25/33)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    86.1%
+  </span>
+  <span class="absValue">
+    (62/72)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package ch.qos.logback.core.subst;
+&nbsp;
+&nbsp;import ch.qos.logback.core.CoreConstants;
+&nbsp;import ch.qos.logback.core.spi.ScanException;
+&nbsp;import ch.qos.logback.core.subst.Node.Type;
+&nbsp;import java.util.List;
+&nbsp;
+&nbsp;public class Parser {
+&nbsp;    public static final String EXPECTING_DATA_AFTER_LEFT_ACCOLADE = &quot;Expecting at least a literal between left accolade and &#39;:-&#39;&quot;;
+&nbsp;    final List&lt;Token&gt; tokenList;
+&nbsp;    int pointer = 0;
+&nbsp;
+&nbsp;    public Parser(List&lt;Token&gt; tokenList) {
+&nbsp;        this.tokenList = tokenList;
+&nbsp;    }
+&nbsp;
+&nbsp;    public Node parse() throws ScanException {
+&nbsp;        return this.tokenList != null &amp;&amp; !this.tokenList.isEmpty() ? this.E() : null;
+&nbsp;    }
+&nbsp;
+&nbsp;    private Node E() throws ScanException {
+&nbsp;        Node t = this.T();
+&nbsp;        if (t == null) {
+&nbsp;            return null;
+&nbsp;        } else {
+&nbsp;            Node eOpt = this.Eopt();
+&nbsp;            if (eOpt != null) {
+&nbsp;                t.append(eOpt);
+&nbsp;            }
+&nbsp;
+&nbsp;            return t;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private Node Eopt() throws ScanException {
+&nbsp;        Token next = this.peekAtCurentToken();
+&nbsp;        return next == null ? null : this.E();
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    private Node T() throws ScanException {</b>
+&nbsp;        Token t = this.peekAtCurentToken();
+<b class="fc">&nbsp;        if (t == null) {</b>
+<b class="fc">&nbsp;            return null;</b>
+&nbsp;        } else {
+&nbsp;            switch (t.type) {
+&nbsp;                case LITERAL:
+<b class="pc">&nbsp;                    this.advanceTokenPointer();</b>
+<b class="fc">&nbsp;                    return this.makeNewLiteralNode(t.payload);</b>
+<b class="fc">&nbsp;                case CURLY_LEFT:</b>
+&nbsp;                    this.advanceTokenPointer();
+&nbsp;                    Node innerNode = this.C();
+&nbsp;                    Token right = this.peekAtCurentToken();
+<b class="fc">&nbsp;                    this.expectCurlyRight(right);</b>
+<b class="fc">&nbsp;                    this.advanceTokenPointer();</b>
+<b class="fc">&nbsp;                    Node curlyLeft = this.makeNewLiteralNode(CoreConstants.LEFT_ACCOLADE);</b>
+&nbsp;                    curlyLeft.append(innerNode);
+<b class="fc">&nbsp;                    curlyLeft.append(this.makeNewLiteralNode(CoreConstants.RIGHT_ACCOLADE));</b>
+<b class="fc">&nbsp;                    return curlyLeft;</b>
+<b class="fc">&nbsp;                case START:</b>
+&nbsp;                    this.advanceTokenPointer();
+<b class="fc">&nbsp;                    Node v = this.V();</b>
+&nbsp;                    Token w = this.peekAtCurentToken();
+&nbsp;                    this.expectCurlyRight(w);
+&nbsp;                    this.advanceTokenPointer();
+&nbsp;                    return v;
+<b class="fc">&nbsp;                default:</b>
+<b class="fc">&nbsp;                    return null;</b>
+<b class="fc">&nbsp;            }</b>
+&nbsp;        }
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private Node makeNewLiteralNode(String s) {
+&nbsp;        return new Node(Type.LITERAL, s);
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    private Node V() throws ScanException {</b>
+<b class="pc">&nbsp;        Node e = this.E();</b>
+<b class="nc">&nbsp;        Node variable = new Node(Type.VARIABLE, e);</b>
+&nbsp;        Token t = this.peekAtCurentToken();
+<b class="fc">&nbsp;        if (this.isDefaultToken(t)) {</b>
+&nbsp;            this.advanceTokenPointer();
+<b class="fc">&nbsp;            Node def = this.Eopt();</b>
+<b class="fc">&nbsp;            if (def != null) {</b>
+&nbsp;                variable.defaultPart = def;
+<b class="fc">&nbsp;            } else {</b>
+<b class="fc">&nbsp;                variable.defaultPart = this.makeNewLiteralNode(&quot;&quot;);</b>
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;        return variable;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private Node C() throws ScanException {</b>
+&nbsp;        Node e0 = this.E();
+<b class="fc">&nbsp;        Token t = this.peekAtCurentToken();</b>
+<b class="fc">&nbsp;        if (this.isDefaultToken(t)) {</b>
+<b class="fc">&nbsp;            this.advanceTokenPointer();</b>
+<b class="fc">&nbsp;            Node literal = this.makeNewLiteralNode(&quot;:-&quot;);</b>
+<b class="fc">&nbsp;            if (e0 == null) {</b>
+<b class="fc">&nbsp;                throw new ScanException(&quot;Expecting at least a literal between left accolade and &#39;:-&#39;&quot;);</b>
+&nbsp;            }
+<b class="fc">&nbsp;</b>
+&nbsp;            e0.append(literal);
+&nbsp;            Node e1 = this.E();
+&nbsp;            e0.append(e1);
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+&nbsp;        return e0;
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean isDefaultToken(Token t) {
+<b class="fc">&nbsp;        return t != null &amp;&amp; t.type == ch.qos.logback.core.subst.Token.Type.DEFAULT;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    void advanceTokenPointer() {</b>
+<b class="fc">&nbsp;        ++this.pointer;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    void expectNotNull(Token t, String expected) {</b>
+&nbsp;        if (t == null) {
+<b class="fc">&nbsp;            throw new IllegalArgumentException(&quot;All tokens consumed but was expecting \&quot;&quot; + expected + &quot;\&quot;&quot;);</b>
+&nbsp;        }
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    void expectCurlyRight(Token t) throws ScanException {
+&nbsp;        this.expectNotNull(t, &quot;}&quot;);
+&nbsp;        if (t.type != ch.qos.logback.core.subst.Token.Type.CURLY_RIGHT) {
+&nbsp;            throw new ScanException(&quot;Expecting }&quot;);
+&nbsp;        }
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="pc">&nbsp;    Token peekAtCurentToken() {</b>
+<b class="nc">&nbsp;        return this.pointer &lt; this.tokenList.size() ? (Token)this.tokenList.get(this.pointer) : null;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
+</div>
+</body>
+</html>

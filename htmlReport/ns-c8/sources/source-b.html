@@ -1,0 +1,350 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > JoinPointSignatureIterator</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.aspectj.weaver</a>
+</div>
+
+<h1>Coverage Summary for Class: JoinPointSignatureIterator (org.aspectj.weaver)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">JoinPointSignatureIterator</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    58.3%
+  </span>
+  <span class="absValue">
+    (7/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    18.8%
+  </span>
+  <span class="absValue">
+    (18/96)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    31.5%
+  </span>
+  <span class="absValue">
+    (39/124)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.aspectj.weaver;
+&nbsp;
+&nbsp;import java.lang.reflect.Modifier;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.HashSet;
+&nbsp;import java.util.Iterator;
+&nbsp;import java.util.List;
+&nbsp;import java.util.NoSuchElementException;
+&nbsp;import java.util.Set;
+&nbsp;
+&nbsp;public class JoinPointSignatureIterator implements Iterator&lt;JoinPointSignature&gt; {
+&nbsp;    ResolvedType firstDefiningType;
+&nbsp;    private Member signaturesOfMember;
+&nbsp;    private ResolvedMember firstDefiningMember;
+&nbsp;    private World world;
+&nbsp;    private List&lt;JoinPointSignature&gt; discoveredSignatures = new ArrayList();
+&nbsp;    private List&lt;JoinPointSignature&gt; additionalSignatures = Collections.emptyList();
+&nbsp;    private Iterator&lt;JoinPointSignature&gt; discoveredSignaturesIterator = null;
+&nbsp;    private Iterator&lt;ResolvedType&gt; superTypeIterator = null;
+&nbsp;    private boolean isProxy = false;
+&nbsp;    private Set&lt;ResolvedType&gt; visitedSuperTypes = new HashSet();
+&nbsp;    private List&lt;SearchPair&gt; yetToBeProcessedSuperMembers = null;
+&nbsp;    private boolean iteratingOverDiscoveredSignatures = true;
+&nbsp;    private boolean couldBeFurtherAsYetUndiscoveredSignatures = true;
+&nbsp;    private static final UnresolvedType jlrProxy = UnresolvedType.forSignature(&quot;Ljava/lang/reflect/Proxy;&quot;);
+&nbsp;
+&nbsp;    public JoinPointSignatureIterator(Member joinPointSignature, World world) {
+<b class="fc">&nbsp;        this.signaturesOfMember = joinPointSignature;</b>
+<b class="fc">&nbsp;        this.world = world;</b>
+<b class="fc">&nbsp;        this.addSignaturesUpToFirstDefiningMember();</b>
+<b class="fc">&nbsp;        if (!this.shouldWalkUpHierarchy()) {</b>
+<b class="fc">&nbsp;            this.couldBeFurtherAsYetUndiscoveredSignatures = false;</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public void reset() {</b>
+<b class="fc">&nbsp;        this.discoveredSignaturesIterator = this.discoveredSignatures.iterator();</b>
+&nbsp;        this.additionalSignatures.clear();
+<b class="fc">&nbsp;        this.iteratingOverDiscoveredSignatures = true;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public boolean hasNext() {</b>
+<b class="fc">&nbsp;        if (this.iteratingOverDiscoveredSignatures &amp;&amp; this.discoveredSignaturesIterator.hasNext()) {</b>
+<b class="fc">&nbsp;            return true;</b>
+&nbsp;        } else if (this.couldBeFurtherAsYetUndiscoveredSignatures) {
+&nbsp;            return this.additionalSignatures.size() &gt; 0 ? true : this.findSignaturesFromSupertypes();
+&nbsp;        } else {
+&nbsp;            return false;
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    public JoinPointSignature next() {
+&nbsp;        if (this.iteratingOverDiscoveredSignatures &amp;&amp; this.discoveredSignaturesIterator.hasNext()) {
+&nbsp;            return (JoinPointSignature)this.discoveredSignaturesIterator.next();
+<b class="pc">&nbsp;        } else if (this.additionalSignatures.size() &gt; 0) {</b>
+<b class="fc">&nbsp;            return (JoinPointSignature)this.additionalSignatures.remove(0);</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            throw new NoSuchElementException();</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void remove() {
+&nbsp;        throw new UnsupportedOperationException(&quot;can&#39;t remove from JoinPointSignatureIterator&quot;);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private void addSignaturesUpToFirstDefiningMember() {
+&nbsp;        ResolvedType originalDeclaringType = this.signaturesOfMember.getDeclaringType().resolve(this.world);
+&nbsp;        ResolvedType superType = originalDeclaringType.getSuperclass();
+<b class="pc">&nbsp;        if (superType != null &amp;&amp; superType.equals(jlrProxy)) {</b>
+<b class="fc">&nbsp;            this.isProxy = true;</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if (this.world.isJoinpointArrayConstructionEnabled() &amp;&amp; originalDeclaringType.isArray()) {</b>
+&nbsp;            Member m = this.signaturesOfMember;
+&nbsp;            ResolvedMember rm = new ResolvedMemberImpl(m.getKind(), m.getDeclaringType(), m.getModifiers(), m.getReturnType(), m.getName(), m.getParameterTypes());
+<b class="nc">&nbsp;            this.discoveredSignatures.add(new JoinPointSignature(rm, originalDeclaringType));</b>
+&nbsp;            this.couldBeFurtherAsYetUndiscoveredSignatures = false;
+&nbsp;        } else {
+&nbsp;            this.firstDefiningMember = this.signaturesOfMember instanceof ResolvedMember ? (ResolvedMember)this.signaturesOfMember : this.signaturesOfMember.resolve(this.world);
+<b class="nc">&nbsp;            if (this.firstDefiningMember == null) {</b>
+&nbsp;                this.couldBeFurtherAsYetUndiscoveredSignatures = false;
+&nbsp;            } else {
+&nbsp;                this.firstDefiningType = this.firstDefiningMember.getDeclaringType().resolve(this.world);
+&nbsp;                if (this.firstDefiningType == originalDeclaringType || this.signaturesOfMember.getKind() != Member.CONSTRUCTOR) {
+&nbsp;                    if (originalDeclaringType == this.firstDefiningType) {
+&nbsp;                        this.discoveredSignatures.add(new JoinPointSignature(this.firstDefiningMember, originalDeclaringType));
+<b class="fc">&nbsp;                    } else {</b>
+<b class="fc">&nbsp;                        List&lt;ResolvedType&gt; declaringTypes = new ArrayList();</b>
+<b class="pc">&nbsp;                        this.accumulateTypesInBetween(originalDeclaringType, this.firstDefiningType, declaringTypes);</b>
+&nbsp;
+&nbsp;                        for(ResolvedType declaringType : declaringTypes) {
+<b class="nc">&nbsp;                            this.discoveredSignatures.add(new JoinPointSignature(this.firstDefiningMember, declaringType));</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+<b class="pc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private void accumulateTypesInBetween(ResolvedType subType, ResolvedType superType, List&lt;ResolvedType&gt; types) {</b>
+&nbsp;        types.add(subType);
+&nbsp;        if (subType != superType) {
+&nbsp;            Iterator&lt;ResolvedType&gt; iter = subType.getDirectSupertypes();
+<b class="pc">&nbsp;</b>
+<b class="fc">&nbsp;            while(iter.hasNext()) {</b>
+&nbsp;                ResolvedType parent = (ResolvedType)iter.next();
+<b class="pc">&nbsp;                if (superType.isAssignableFrom(parent, true)) {</b>
+<b class="nc">&nbsp;                    this.accumulateTypesInBetween(parent, superType, types);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    private boolean shouldWalkUpHierarchy() {</b>
+<b class="pc">&nbsp;        if (this.signaturesOfMember.getKind() == Member.CONSTRUCTOR) {</b>
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        } else if (this.signaturesOfMember.getKind() == Member.FIELD) {
+&nbsp;            return false;
+&nbsp;        } else {
+&nbsp;            return !Modifier.isStatic(this.signaturesOfMember.getModifiers());
+<b class="pc">&nbsp;        }</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    private boolean findSignaturesFromSupertypes() {
+<b class="nc">&nbsp;        this.iteratingOverDiscoveredSignatures = false;</b>
+<b class="nc">&nbsp;        if (this.superTypeIterator == null) {</b>
+<b class="nc">&nbsp;            this.superTypeIterator = this.firstDefiningType.getDirectSupertypes();</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        if (!this.superTypeIterator.hasNext()) {
+&nbsp;            if (this.yetToBeProcessedSuperMembers != null &amp;&amp; !this.yetToBeProcessedSuperMembers.isEmpty()) {
+&nbsp;                SearchPair nextUp = (SearchPair)this.yetToBeProcessedSuperMembers.remove(0);
+&nbsp;                this.firstDefiningType = nextUp.type;
+&nbsp;                this.firstDefiningMember = nextUp.member;
+&nbsp;                this.superTypeIterator = null;
+&nbsp;                return this.findSignaturesFromSupertypes();
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                this.couldBeFurtherAsYetUndiscoveredSignatures = false;</b>
+&nbsp;                return false;
+&nbsp;            }
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            ResolvedType superType = (ResolvedType)this.superTypeIterator.next();</b>
+<b class="nc">&nbsp;            if (this.isProxy &amp;&amp; (superType.isGenericType() || superType.isParameterizedType())) {</b>
+<b class="nc">&nbsp;                superType = superType.getRawType();</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            if (this.visitedSuperTypes.contains(superType)) {
+&nbsp;                return this.findSignaturesFromSupertypes();
+&nbsp;            } else {
+&nbsp;                this.visitedSuperTypes.add(superType);
+<b class="pc">&nbsp;                if (superType.isMissing()) {</b>
+<b class="nc">&nbsp;                    this.warnOnMissingType(superType);</b>
+&nbsp;                    return this.findSignaturesFromSupertypes();
+<b class="pc">&nbsp;                } else {</b>
+<b class="nc">&nbsp;                    ResolvedMemberImpl foundMember = (ResolvedMemberImpl)superType.lookupResolvedMember(this.firstDefiningMember, true, this.isProxy);</b>
+&nbsp;                    if (foundMember != null &amp;&amp; this.isVisibleTo(this.firstDefiningMember, foundMember)) {
+<b class="fc">&nbsp;                        List&lt;ResolvedType&gt; declaringTypes = new ArrayList();</b>
+<b class="fc">&nbsp;                        ResolvedType resolvedDeclaringType = foundMember.getDeclaringType().resolve(this.world);</b>
+&nbsp;                        this.accumulateTypesInBetween(superType, resolvedDeclaringType, declaringTypes);
+<b class="fc">&nbsp;</b>
+&nbsp;                        for(ResolvedType declaringType : declaringTypes) {
+&nbsp;                            JoinPointSignature member = null;
+&nbsp;                            if (this.isProxy &amp;&amp; (declaringType.isGenericType() || declaringType.isParameterizedType())) {
+<b class="nc">&nbsp;                                declaringType = declaringType.getRawType();</b>
+<b class="nc">&nbsp;                            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                            member = new JoinPointSignature(foundMember, declaringType);
+<b class="nc">&nbsp;                            this.discoveredSignatures.add(member);</b>
+<b class="nc">&nbsp;                            if (this.additionalSignatures == Collections.EMPTY_LIST) {</b>
+<b class="nc">&nbsp;                                this.additionalSignatures = new ArrayList();</b>
+<b class="nc">&nbsp;                            }</b>
+&nbsp;
+<b class="nc">&nbsp;                            this.additionalSignatures.add(member);</b>
+<b class="nc">&nbsp;                        }</b>
+&nbsp;
+&nbsp;                        if (!this.isProxy &amp;&amp; superType.isParameterizedType() &amp;&amp; foundMember.backingGenericMember != null) {
+<b class="nc">&nbsp;                            JoinPointSignature member = new JoinPointSignature(foundMember.backingGenericMember, foundMember.declaringType.resolve(this.world));</b>
+<b class="nc">&nbsp;                            this.discoveredSignatures.add(member);</b>
+&nbsp;                            if (this.additionalSignatures == Collections.EMPTY_LIST) {
+<b class="nc">&nbsp;                                this.additionalSignatures = new ArrayList();</b>
+<b class="nc">&nbsp;                            }</b>
+&nbsp;
+<b class="nc">&nbsp;                            this.additionalSignatures.add(member);</b>
+&nbsp;                        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                        if (this.yetToBeProcessedSuperMembers == null) {</b>
+&nbsp;                            this.yetToBeProcessedSuperMembers = new ArrayList();
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                        this.yetToBeProcessedSuperMembers.add(new SearchPair(foundMember, superType));</b>
+<b class="nc">&nbsp;                        return true;</b>
+<b class="nc">&nbsp;                    } else {</b>
+<b class="nc">&nbsp;                        return this.findSignaturesFromSupertypes();</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private boolean isVisibleTo(ResolvedMember childMember, ResolvedMember parentMember) {</b>
+&nbsp;        if (childMember.getDeclaringType().equals(parentMember.getDeclaringType())) {
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        } else {
+&nbsp;            return !Modifier.isPrivate(parentMember.getModifiers());
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private void warnOnMissingType(ResolvedType missing) {</b>
+<b class="nc">&nbsp;        if (missing instanceof MissingResolvedTypeWithKnownSignature) {</b>
+<b class="nc">&nbsp;            MissingResolvedTypeWithKnownSignature mrt = (MissingResolvedTypeWithKnownSignature)missing;</b>
+&nbsp;            mrt.raiseWarningOnJoinPointSignature(this.signaturesOfMember.toString());
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private static class SearchPair {
+<b class="nc">&nbsp;        public ResolvedMember member;</b>
+<b class="nc">&nbsp;        public ResolvedType type;</b>
+&nbsp;
+<b class="nc">&nbsp;        public SearchPair(ResolvedMember member, ResolvedType type) {</b>
+&nbsp;            this.member = member;
+&nbsp;            this.type = type;
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

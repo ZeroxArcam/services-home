@@ -1,0 +1,490 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ThreadPoolTaskScheduler</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.scheduling.concurrent</a>
+</div>
+
+<h1>Coverage Summary for Class: ThreadPoolTaskScheduler (org.springframework.scheduling.concurrent)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ThreadPoolTaskScheduler</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/33)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/32)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/105)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.scheduling.concurrent;
+&nbsp;
+&nbsp;import java.time.Clock;
+&nbsp;import java.time.Duration;
+&nbsp;import java.time.Instant;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.concurrent.Callable;
+&nbsp;import java.util.concurrent.Delayed;
+&nbsp;import java.util.concurrent.ExecutionException;
+&nbsp;import java.util.concurrent.Executor;
+&nbsp;import java.util.concurrent.ExecutorService;
+&nbsp;import java.util.concurrent.Future;
+&nbsp;import java.util.concurrent.RejectedExecutionException;
+&nbsp;import java.util.concurrent.RejectedExecutionHandler;
+&nbsp;import java.util.concurrent.RunnableScheduledFuture;
+&nbsp;import java.util.concurrent.ScheduledExecutorService;
+&nbsp;import java.util.concurrent.ScheduledFuture;
+&nbsp;import java.util.concurrent.ScheduledThreadPoolExecutor;
+&nbsp;import java.util.concurrent.ThreadFactory;
+&nbsp;import java.util.concurrent.TimeUnit;
+&nbsp;import java.util.concurrent.TimeoutException;
+&nbsp;import org.springframework.core.task.AsyncListenableTaskExecutor;
+&nbsp;import org.springframework.core.task.TaskDecorator;
+&nbsp;import org.springframework.core.task.TaskRejectedException;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.scheduling.SchedulingTaskExecutor;
+&nbsp;import org.springframework.scheduling.TaskScheduler;
+&nbsp;import org.springframework.scheduling.Trigger;
+&nbsp;import org.springframework.scheduling.support.TaskUtils;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.ConcurrentReferenceHashMap;
+&nbsp;import org.springframework.util.ErrorHandler;
+&nbsp;import org.springframework.util.ConcurrentReferenceHashMap.ReferenceType;
+&nbsp;import org.springframework.util.concurrent.ListenableFuture;
+&nbsp;import org.springframework.util.concurrent.ListenableFutureTask;
+&nbsp;
+&nbsp;public class ThreadPoolTaskScheduler extends ExecutorConfigurationSupport implements AsyncListenableTaskExecutor, SchedulingTaskExecutor, TaskScheduler {
+&nbsp;    private static final TimeUnit NANO;
+&nbsp;    private volatile int poolSize = 1;
+&nbsp;    private volatile boolean removeOnCancelPolicy;
+&nbsp;    private volatile boolean continueExistingPeriodicTasksAfterShutdownPolicy;
+&nbsp;    private volatile boolean executeExistingDelayedTasksAfterShutdownPolicy = true;
+&nbsp;    @Nullable
+&nbsp;    private TaskDecorator taskDecorator;
+&nbsp;    @Nullable
+&nbsp;    private volatile ErrorHandler errorHandler;
+&nbsp;    private Clock clock = Clock.systemDefaultZone();
+&nbsp;    @Nullable
+&nbsp;    private ScheduledExecutorService scheduledExecutor;
+&nbsp;    private final Map&lt;Object, ListenableFuture&lt;?&gt;&gt; listenableFutureMap;
+&nbsp;
+&nbsp;    public ThreadPoolTaskScheduler() {
+&nbsp;        this.listenableFutureMap = new ConcurrentReferenceHashMap(16, ReferenceType.WEAK);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setPoolSize(int poolSize) {
+&nbsp;        Assert.isTrue(poolSize &gt; 0, &quot;&#39;poolSize&#39; must be 1 or higher&quot;);
+&nbsp;        ScheduledExecutorService var3 = this.scheduledExecutor;
+&nbsp;        if (var3 instanceof ScheduledThreadPoolExecutor threadPoolExecutor) {
+&nbsp;            threadPoolExecutor.setCorePoolSize(poolSize);
+&nbsp;        }
+&nbsp;
+&nbsp;        this.poolSize = poolSize;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setRemoveOnCancelPolicy(boolean flag) {
+&nbsp;        ScheduledExecutorService var3 = this.scheduledExecutor;
+&nbsp;        if (var3 instanceof ScheduledThreadPoolExecutor threadPoolExecutor) {
+&nbsp;            threadPoolExecutor.setRemoveOnCancelPolicy(flag);
+&nbsp;        }
+&nbsp;
+&nbsp;        this.removeOnCancelPolicy = flag;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void setContinueExistingPeriodicTasksAfterShutdownPolicy(boolean flag) {
+<b class="nc">&nbsp;        ScheduledExecutorService var3 = this.scheduledExecutor;</b>
+&nbsp;        if (var3 instanceof ScheduledThreadPoolExecutor threadPoolExecutor) {
+&nbsp;            threadPoolExecutor.setContinueExistingPeriodicTasksAfterShutdownPolicy(flag);
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        this.continueExistingPeriodicTasksAfterShutdownPolicy = flag;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setExecuteExistingDelayedTasksAfterShutdownPolicy(boolean flag) {
+<b class="nc">&nbsp;        ScheduledExecutorService var3 = this.scheduledExecutor;</b>
+&nbsp;        if (var3 instanceof ScheduledThreadPoolExecutor threadPoolExecutor) {
+&nbsp;            threadPoolExecutor.setExecuteExistingDelayedTasksAfterShutdownPolicy(flag);
+&nbsp;        }
+&nbsp;
+&nbsp;        this.executeExistingDelayedTasksAfterShutdownPolicy = flag;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void setTaskDecorator(TaskDecorator taskDecorator) {</b>
+&nbsp;        this.taskDecorator = taskDecorator;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setErrorHandler(ErrorHandler errorHandler) {
+&nbsp;        this.errorHandler = errorHandler;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void setClock(Clock clock) {
+&nbsp;        Assert.notNull(clock, &quot;Clock must not be null&quot;);
+&nbsp;        this.clock = clock;
+&nbsp;    }
+&nbsp;
+&nbsp;    public Clock getClock() {
+&nbsp;        return this.clock;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected ExecutorService initializeExecutor(ThreadFactory threadFactory, RejectedExecutionHandler rejectedExecutionHandler) {</b>
+<b class="nc">&nbsp;        this.scheduledExecutor = this.createExecutor(this.poolSize, threadFactory, rejectedExecutionHandler);</b>
+&nbsp;        ScheduledExecutorService var4 = this.scheduledExecutor;
+<b class="nc">&nbsp;        if (var4 instanceof ScheduledThreadPoolExecutor threadPoolExecutor) {</b>
+&nbsp;            if (this.removeOnCancelPolicy) {
+&nbsp;                threadPoolExecutor.setRemoveOnCancelPolicy(true);
+&nbsp;            }
+&nbsp;
+&nbsp;            if (this.continueExistingPeriodicTasksAfterShutdownPolicy) {
+&nbsp;                threadPoolExecutor.setContinueExistingPeriodicTasksAfterShutdownPolicy(true);
+&nbsp;            }
+&nbsp;
+&nbsp;            if (!this.executeExistingDelayedTasksAfterShutdownPolicy) {
+&nbsp;                threadPoolExecutor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        return this.scheduledExecutor;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected ScheduledExecutorService createExecutor(int poolSize, ThreadFactory threadFactory, RejectedExecutionHandler rejectedExecutionHandler) {
+&nbsp;        return new ScheduledThreadPoolExecutor(poolSize, threadFactory, rejectedExecutionHandler) {
+&nbsp;            protected void beforeExecute(Thread thread, Runnable task) {
+&nbsp;                ThreadPoolTaskScheduler.this.beforeExecute(thread, task);
+&nbsp;            }
+&nbsp;
+&nbsp;            protected void afterExecute(Runnable task, Throwable ex) {
+&nbsp;                ThreadPoolTaskScheduler.this.afterExecute(task, ex);
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            protected &lt;V&gt; RunnableScheduledFuture&lt;V&gt; decorateTask(Runnable runnable, RunnableScheduledFuture&lt;V&gt; task) {</b>
+&nbsp;                return ThreadPoolTaskScheduler.this.&lt;V&gt;decorateTaskIfNecessary(task);
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            protected &lt;V&gt; RunnableScheduledFuture&lt;V&gt; decorateTask(Callable&lt;V&gt; callable, RunnableScheduledFuture&lt;V&gt; task) {
+&nbsp;                return ThreadPoolTaskScheduler.this.&lt;V&gt;decorateTaskIfNecessary(task);
+&nbsp;            }
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    public ScheduledExecutorService getScheduledExecutor() throws IllegalStateException {
+&nbsp;        Assert.state(this.scheduledExecutor != null, &quot;ThreadPoolTaskScheduler not initialized&quot;);
+&nbsp;        return this.scheduledExecutor;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public ScheduledThreadPoolExecutor getScheduledThreadPoolExecutor() throws IllegalStateException {</b>
+&nbsp;        Assert.state(this.scheduledExecutor instanceof ScheduledThreadPoolExecutor, &quot;No ScheduledThreadPoolExecutor available&quot;);
+<b class="nc">&nbsp;        return (ScheduledThreadPoolExecutor)this.scheduledExecutor;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getPoolSize() {
+&nbsp;        return this.scheduledExecutor == null ? this.poolSize : this.getScheduledThreadPoolExecutor().getPoolSize();
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getActiveCount() {
+&nbsp;        return this.scheduledExecutor == null ? 0 : this.getScheduledThreadPoolExecutor().getActiveCount();
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @deprecated */
+&nbsp;    @Deprecated
+&nbsp;    public boolean isRemoveOnCancelPolicy() {
+<b class="nc">&nbsp;        return this.scheduledExecutor == null ? this.removeOnCancelPolicy : this.getScheduledThreadPoolExecutor().getRemoveOnCancelPolicy();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void execute(Runnable task) {
+&nbsp;        Executor executor = this.getScheduledExecutor();
+&nbsp;
+&nbsp;        try {
+<b class="nc">&nbsp;            executor.execute(this.errorHandlingTask(task, false));</b>
+&nbsp;        } catch (RejectedExecutionException ex) {
+&nbsp;            throw new TaskRejectedException(executor, task, ex);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public Future&lt;?&gt; submit(Runnable task) {
+&nbsp;        ExecutorService executor = this.getScheduledExecutor();
+&nbsp;
+&nbsp;        try {
+<b class="nc">&nbsp;            return executor.submit(this.errorHandlingTask(task, false));</b>
+<b class="nc">&nbsp;        } catch (RejectedExecutionException ex) {</b>
+&nbsp;            throw new TaskRejectedException(executor, task, ex);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public &lt;T&gt; Future&lt;T&gt; submit(Callable&lt;T&gt; task) {</b>
+&nbsp;        ExecutorService executor = this.getScheduledExecutor();
+&nbsp;
+&nbsp;        try {
+&nbsp;            return executor.submit(new DelegatingErrorHandlingCallable(task, this.errorHandler));
+&nbsp;        } catch (RejectedExecutionException ex) {
+&nbsp;            throw new TaskRejectedException(executor, task, ex);
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public ListenableFuture&lt;?&gt; submitListenable(Runnable task) {</b>
+<b class="nc">&nbsp;        ExecutorService executor = this.getScheduledExecutor();</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        try {
+<b class="nc">&nbsp;            ListenableFutureTask&lt;Object&gt; listenableFuture = new ListenableFutureTask(task, (Object)null);</b>
+<b class="nc">&nbsp;            this.executeAndTrack(executor, listenableFuture);</b>
+&nbsp;            return listenableFuture;
+<b class="nc">&nbsp;        } catch (RejectedExecutionException ex) {</b>
+<b class="nc">&nbsp;            throw new TaskRejectedException(executor, task, ex);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public &lt;T&gt; ListenableFuture&lt;T&gt; submitListenable(Callable&lt;T&gt; task) {</b>
+&nbsp;        ExecutorService executor = this.getScheduledExecutor();
+&nbsp;
+&nbsp;        try {
+&nbsp;            ListenableFutureTask&lt;T&gt; listenableFuture = new ListenableFutureTask(task);
+&nbsp;            this.executeAndTrack(executor, listenableFuture);
+&nbsp;            return listenableFuture;
+&nbsp;        } catch (RejectedExecutionException ex) {
+&nbsp;            throw new TaskRejectedException(executor, task, ex);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void executeAndTrack(ExecutorService executor, ListenableFutureTask&lt;?&gt; listenableFuture) {
+&nbsp;        Future&lt;?&gt; scheduledFuture = executor.submit(this.errorHandlingTask(listenableFuture, false));
+&nbsp;        this.listenableFutureMap.put(scheduledFuture, listenableFuture);
+&nbsp;        listenableFuture.addCallback((result) -&gt; this.listenableFutureMap.remove(scheduledFuture), (ex) -&gt; this.listenableFutureMap.remove(scheduledFuture));
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected void cancelRemainingTask(Runnable task) {
+&nbsp;        super.cancelRemainingTask(task);
+&nbsp;        ListenableFuture&lt;?&gt; listenableFuture = (ListenableFuture)this.listenableFutureMap.get(task);
+&nbsp;        if (listenableFuture != null) {
+&nbsp;            listenableFuture.cancel(true);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public ScheduledFuture&lt;?&gt; schedule(Runnable task, Trigger trigger) {
+&nbsp;        ScheduledExecutorService executor = this.getScheduledExecutor();
+&nbsp;
+&nbsp;        try {
+&nbsp;            ErrorHandler errorHandler = this.errorHandler;
+&nbsp;            if (errorHandler == null) {
+&nbsp;                errorHandler = TaskUtils.getDefaultErrorHandler(true);
+&nbsp;            }
+&nbsp;
+&nbsp;            return (new ReschedulingRunnable(task, trigger, this.clock, executor, errorHandler)).schedule();
+&nbsp;        } catch (RejectedExecutionException ex) {
+&nbsp;            throw new TaskRejectedException(executor, task, ex);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public ScheduledFuture&lt;?&gt; schedule(Runnable task, Instant startTime) {</b>
+<b class="nc">&nbsp;        ScheduledExecutorService executor = this.getScheduledExecutor();</b>
+&nbsp;        Duration delay = Duration.between(this.clock.instant(), startTime);
+&nbsp;
+&nbsp;        try {
+&nbsp;            return executor.schedule(this.errorHandlingTask(task, false), NANO.convert(delay), NANO);
+&nbsp;        } catch (RejectedExecutionException ex) {
+&nbsp;            throw new TaskRejectedException(executor, task, ex);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public ScheduledFuture&lt;?&gt; scheduleAtFixedRate(Runnable task, Instant startTime, Duration period) {
+<b class="nc">&nbsp;        ScheduledExecutorService executor = this.getScheduledExecutor();</b>
+&nbsp;        Duration initialDelay = Duration.between(this.clock.instant(), startTime);
+<b class="nc">&nbsp;</b>
+&nbsp;        try {
+&nbsp;            return executor.scheduleAtFixedRate(this.errorHandlingTask(task, true), NANO.convert(initialDelay), NANO.convert(period), NANO);
+&nbsp;        } catch (RejectedExecutionException ex) {
+&nbsp;            throw new TaskRejectedException(executor, task, ex);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public ScheduledFuture&lt;?&gt; scheduleAtFixedRate(Runnable task, Duration period) {
+&nbsp;        ScheduledExecutorService executor = this.getScheduledExecutor();
+<b class="nc">&nbsp;</b>
+&nbsp;        try {
+<b class="nc">&nbsp;            return executor.scheduleAtFixedRate(this.errorHandlingTask(task, true), 0L, NANO.convert(period), NANO);</b>
+&nbsp;        } catch (RejectedExecutionException ex) {
+<b class="nc">&nbsp;            throw new TaskRejectedException(executor, task, ex);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public ScheduledFuture&lt;?&gt; scheduleWithFixedDelay(Runnable task, Instant startTime, Duration delay) {
+&nbsp;        ScheduledExecutorService executor = this.getScheduledExecutor();
+&nbsp;        Duration initialDelay = Duration.between(this.clock.instant(), startTime);
+&nbsp;
+&nbsp;        try {
+&nbsp;            return executor.scheduleWithFixedDelay(this.errorHandlingTask(task, true), NANO.convert(initialDelay), NANO.convert(delay), NANO);
+<b class="nc">&nbsp;        } catch (RejectedExecutionException ex) {</b>
+&nbsp;            throw new TaskRejectedException(executor, task, ex);
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public ScheduledFuture&lt;?&gt; scheduleWithFixedDelay(Runnable task, Duration delay) {
+&nbsp;        ScheduledExecutorService executor = this.getScheduledExecutor();
+&nbsp;
+&nbsp;        try {
+&nbsp;            return executor.scheduleWithFixedDelay(this.errorHandlingTask(task, true), 0L, NANO.convert(delay), NANO);
+&nbsp;        } catch (RejectedExecutionException ex) {
+&nbsp;            throw new TaskRejectedException(executor, task, ex);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private &lt;V&gt; RunnableScheduledFuture&lt;V&gt; decorateTaskIfNecessary(RunnableScheduledFuture&lt;V&gt; future) {</b>
+&nbsp;        return (RunnableScheduledFuture&lt;V&gt;)(this.taskDecorator != null ? new DelegatingRunnableScheduledFuture(future, this.taskDecorator) : future);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private Runnable errorHandlingTask(Runnable task, boolean isRepeatingTask) {</b>
+&nbsp;        return TaskUtils.decorateTaskWithErrorHandler(task, this.errorHandler, isRepeatingTask);
+&nbsp;    }
+&nbsp;
+&nbsp;    static {
+&nbsp;        NANO = TimeUnit.NANOSECONDS;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private static class DelegatingRunnableScheduledFuture&lt;V&gt; implements RunnableScheduledFuture&lt;V&gt; {</b>
+&nbsp;        private final RunnableScheduledFuture&lt;V&gt; future;
+<b class="nc">&nbsp;        private final Runnable decoratedRunnable;</b>
+&nbsp;
+&nbsp;        public DelegatingRunnableScheduledFuture(RunnableScheduledFuture&lt;V&gt; future, TaskDecorator taskDecorator) {
+<b class="nc">&nbsp;            this.future = future;</b>
+&nbsp;            this.decoratedRunnable = taskDecorator.decorate(this.future);
+&nbsp;        }
+&nbsp;
+&nbsp;        public void run() {
+&nbsp;            this.decoratedRunnable.run();
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        public boolean cancel(boolean mayInterruptIfRunning) {</b>
+&nbsp;            return this.future.cancel(mayInterruptIfRunning);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        public boolean isCancelled() {
+&nbsp;            return this.future.isCancelled();
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean isDone() {
+<b class="nc">&nbsp;            return this.future.isDone();</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        public V get() throws InterruptedException, ExecutionException {
+&nbsp;            return (V)this.future.get();
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        public V get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+&nbsp;            return (V)this.future.get(timeout, unit);
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        public boolean isPeriodic() {</b>
+&nbsp;            return this.future.isPeriodic();
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        public long getDelay(TimeUnit unit) {</b>
+&nbsp;            return this.future.getDelay(unit);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        public int compareTo(Delayed o) {
+&nbsp;            return this.future.compareTo(o);
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:57</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,613 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > AbstractAspectJAdvice</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.aop.aspectj</a>
+</div>
+
+<h1>Coverage Summary for Class: AbstractAspectJAdvice (org.springframework.aop.aspectj)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AbstractAspectJAdvice</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    17.1%
+  </span>
+  <span class="absValue">
+    (7/41)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    8.3%
+  </span>
+  <span class="absValue">
+    (8/96)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    15.6%
+  </span>
+  <span class="absValue">
+    (30/192)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.aop.aspectj;
+&nbsp;
+&nbsp;import java.io.IOException;
+&nbsp;import java.io.ObjectInputStream;
+&nbsp;import java.io.Serializable;
+&nbsp;import java.lang.reflect.InvocationTargetException;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;import java.lang.reflect.Type;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.Map;
+&nbsp;import org.aopalliance.aop.Advice;
+&nbsp;import org.aopalliance.intercept.MethodInvocation;
+&nbsp;import org.aspectj.lang.JoinPoint;
+&nbsp;import org.aspectj.lang.ProceedingJoinPoint;
+&nbsp;import org.aspectj.weaver.tools.JoinPointMatch;
+&nbsp;import org.aspectj.weaver.tools.PointcutParameter;
+&nbsp;import org.springframework.aop.AopInvocationException;
+&nbsp;import org.springframework.aop.MethodMatcher;
+&nbsp;import org.springframework.aop.Pointcut;
+&nbsp;import org.springframework.aop.ProxyMethodInvocation;
+&nbsp;import org.springframework.aop.interceptor.ExposeInvocationInterceptor;
+&nbsp;import org.springframework.aop.support.ComposablePointcut;
+&nbsp;import org.springframework.aop.support.MethodMatchers;
+&nbsp;import org.springframework.aop.support.StaticMethodMatcher;
+&nbsp;import org.springframework.core.DefaultParameterNameDiscoverer;
+&nbsp;import org.springframework.core.ParameterNameDiscoverer;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.ClassUtils;
+&nbsp;import org.springframework.util.CollectionUtils;
+&nbsp;import org.springframework.util.ReflectionUtils;
+&nbsp;import org.springframework.util.StringUtils;
+&nbsp;
+&nbsp;public abstract class AbstractAspectJAdvice implements Advice, AspectJPrecedenceInformation, Serializable {
+&nbsp;    protected static final String JOIN_POINT_KEY = JoinPoint.class.getName();
+&nbsp;    private final Class&lt;?&gt; declaringClass;
+&nbsp;    private final String methodName;
+&nbsp;    private final Class&lt;?&gt;[] parameterTypes;
+&nbsp;    protected transient Method aspectJAdviceMethod;
+&nbsp;    private final AspectJExpressionPointcut pointcut;
+&nbsp;    private final AspectInstanceFactory aspectInstanceFactory;
+&nbsp;    private String aspectName = &quot;&quot;;
+&nbsp;    private int declarationOrder;
+&nbsp;    @Nullable
+&nbsp;    private String[] argumentNames;
+&nbsp;    @Nullable
+&nbsp;    private String throwingName;
+&nbsp;    @Nullable
+&nbsp;    private String returningName;
+&nbsp;    private Class&lt;?&gt; discoveredReturningType = Object.class;
+&nbsp;    private Class&lt;?&gt; discoveredThrowingType = Object.class;
+&nbsp;    private int joinPointArgumentIndex = -1;
+&nbsp;    private int joinPointStaticPartArgumentIndex = -1;
+&nbsp;    @Nullable
+&nbsp;    private Map&lt;String, Integer&gt; argumentBindings;
+&nbsp;    private boolean argumentsIntrospected = false;
+&nbsp;    @Nullable
+&nbsp;    private Type discoveredReturningGenericType;
+&nbsp;
+&nbsp;    public static JoinPoint currentJoinPoint() {
+&nbsp;        MethodInvocation mi = ExposeInvocationInterceptor.currentInvocation();
+&nbsp;        if (mi instanceof ProxyMethodInvocation pmi) {
+<b class="fc">&nbsp;            JoinPoint jp = (JoinPoint)pmi.getUserAttribute(JOIN_POINT_KEY);</b>
+&nbsp;            if (jp == null) {
+&nbsp;                jp = new MethodInvocationProceedingJoinPoint(pmi);
+&nbsp;                pmi.setUserAttribute(JOIN_POINT_KEY, jp);
+&nbsp;            }
+&nbsp;
+&nbsp;            return jp;
+&nbsp;        } else {
+&nbsp;            throw new IllegalStateException(&quot;MethodInvocation is not a Spring ProxyMethodInvocation: &quot; + String.valueOf(mi));
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public AbstractAspectJAdvice(Method aspectJAdviceMethod, AspectJExpressionPointcut pointcut, AspectInstanceFactory aspectInstanceFactory) {</b>
+<b class="nc">&nbsp;        Assert.notNull(aspectJAdviceMethod, &quot;Advice method must not be null&quot;);</b>
+<b class="nc">&nbsp;        this.declaringClass = aspectJAdviceMethod.getDeclaringClass();</b>
+&nbsp;        this.methodName = aspectJAdviceMethod.getName();
+<b class="nc">&nbsp;        this.parameterTypes = aspectJAdviceMethod.getParameterTypes();</b>
+<b class="nc">&nbsp;        this.aspectJAdviceMethod = aspectJAdviceMethod;</b>
+<b class="nc">&nbsp;        this.pointcut = pointcut;</b>
+<b class="nc">&nbsp;        this.aspectInstanceFactory = aspectInstanceFactory;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public final Method getAspectJAdviceMethod() {
+&nbsp;        return this.aspectJAdviceMethod;
+&nbsp;    }
+&nbsp;
+&nbsp;    public final AspectJExpressionPointcut getPointcut() {
+&nbsp;        this.calculateArgumentBindings();
+&nbsp;        return this.pointcut;
+&nbsp;    }
+&nbsp;
+&nbsp;    public final Pointcut buildSafePointcut() {
+&nbsp;        Pointcut pc = this.getPointcut();
+&nbsp;        MethodMatcher safeMethodMatcher = MethodMatchers.intersection(new AdviceExcludingMethodMatcher(this.aspectJAdviceMethod), pc.getMethodMatcher());
+&nbsp;        return new ComposablePointcut(pc.getClassFilter(), safeMethodMatcher);
+&nbsp;    }
+&nbsp;
+&nbsp;    public final AspectInstanceFactory getAspectInstanceFactory() {
+&nbsp;        return this.aspectInstanceFactory;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+<b class="fc">&nbsp;    public final ClassLoader getAspectClassLoader() {</b>
+&nbsp;        return this.aspectInstanceFactory.getAspectClassLoader();
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getOrder() {
+&nbsp;        return this.aspectInstanceFactory.getOrder();
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setAspectName(String name) {
+&nbsp;        this.aspectName = name;
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getAspectName() {
+&nbsp;        return this.aspectName;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setDeclarationOrder(int order) {
+&nbsp;        this.declarationOrder = order;
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getDeclarationOrder() {
+&nbsp;        return this.declarationOrder;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+<b class="fc">&nbsp;    public void setArgumentNames(String argumentNames) {</b>
+&nbsp;        String[] tokens = StringUtils.commaDelimitedListToStringArray(argumentNames);
+&nbsp;        this.setArgumentNamesFromStringArray(tokens);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setArgumentNamesFromStringArray(String... argumentNames) {
+<b class="fc">&nbsp;        this.argumentNames = new String[argumentNames.length];</b>
+&nbsp;
+&nbsp;        for(int i = 0; i &lt; argumentNames.length; ++i) {
+&nbsp;            this.argumentNames[i] = argumentNames[i].strip();
+&nbsp;            if (!isVariableName(this.argumentNames[i])) {
+&nbsp;                String var10002 = this.argumentNames[i];
+<b class="fc">&nbsp;                throw new IllegalArgumentException(&quot;&#39;argumentNames&#39; property of AbstractAspectJAdvice contains an argument name &#39;&quot; + var10002 + &quot;&#39; that is not a valid Java identifier&quot;);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        if (this.aspectJAdviceMethod.getParameterCount() == this.argumentNames.length + 1) {
+<b class="fc">&nbsp;            for(int i = 0; i &lt; this.aspectJAdviceMethod.getParameterCount(); ++i) {</b>
+&nbsp;                Class&lt;?&gt; argType = this.aspectJAdviceMethod.getParameterTypes()[i];
+&nbsp;                if (argType == JoinPoint.class || argType == ProceedingJoinPoint.class || argType == JoinPoint.StaticPart.class) {
+&nbsp;                    String[] oldNames = this.argumentNames;
+&nbsp;                    this.argumentNames = new String[oldNames.length + 1];
+&nbsp;                    System.arraycopy(oldNames, 0, this.argumentNames, 0, i);
+&nbsp;                    this.argumentNames[i] = &quot;THIS_JOIN_POINT&quot;;
+&nbsp;                    System.arraycopy(oldNames, i, this.argumentNames, i + 1, oldNames.length - i);
+&nbsp;                    break;
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public void setReturningName(String name) {</b>
+&nbsp;        throw new UnsupportedOperationException(&quot;Only afterReturning advice can be used to bind a return value&quot;);
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    protected void setReturningNameNoCheck(String name) {</b>
+<b class="fc">&nbsp;        if (isVariableName(name)) {</b>
+<b class="fc">&nbsp;            this.returningName = name;</b>
+<b class="fc">&nbsp;        } else {</b>
+<b class="fc">&nbsp;            try {</b>
+&nbsp;                this.discoveredReturningType = ClassUtils.forName(name, this.getAspectClassLoader());
+&nbsp;            } catch (Throwable ex) {
+&nbsp;                throw new IllegalArgumentException(&quot;Returning name &#39;&quot; + name + &quot;&#39; is neither a valid argument name nor the fully-qualified name of a Java type on the classpath. Root cause: &quot; + String.valueOf(ex));
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected Class&lt;?&gt; getDiscoveredReturningType() {
+&nbsp;        return this.discoveredReturningType;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    protected Type getDiscoveredReturningGenericType() {
+<b class="nc">&nbsp;        return this.discoveredReturningGenericType;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void setThrowingName(String name) {
+&nbsp;        throw new UnsupportedOperationException(&quot;Only afterThrowing advice can be used to bind a thrown exception&quot;);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void setThrowingNameNoCheck(String name) {
+&nbsp;        if (isVariableName(name)) {
+&nbsp;            this.throwingName = name;
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            try {</b>
+<b class="nc">&nbsp;                this.discoveredThrowingType = ClassUtils.forName(name, this.getAspectClassLoader());</b>
+<b class="nc">&nbsp;            } catch (Throwable ex) {</b>
+&nbsp;                throw new IllegalArgumentException(&quot;Throwing name &#39;&quot; + name + &quot;&#39; is neither a valid argument name nor the fully-qualified name of a Java type on the classpath. Root cause: &quot; + String.valueOf(ex));
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected Class&lt;?&gt; getDiscoveredThrowingType() {</b>
+&nbsp;        return this.discoveredThrowingType;
+&nbsp;    }
+&nbsp;
+&nbsp;    private static boolean isVariableName(String name) {
+&nbsp;        return AspectJProxyUtils.isVariableName(name);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public final void calculateArgumentBindings() {</b>
+&nbsp;        if (!this.argumentsIntrospected &amp;&amp; this.parameterTypes.length != 0) {
+&nbsp;            int numUnboundArgs = this.parameterTypes.length;
+&nbsp;            Class&lt;?&gt;[] parameterTypes = this.aspectJAdviceMethod.getParameterTypes();
+&nbsp;            if (this.maybeBindJoinPoint(parameterTypes[0]) || this.maybeBindProceedingJoinPoint(parameterTypes[0]) || this.maybeBindJoinPointStaticPart(parameterTypes[0])) {
+<b class="nc">&nbsp;                --numUnboundArgs;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            if (numUnboundArgs &gt; 0) {
+&nbsp;                this.bindArgumentsByName(numUnboundArgs);
+&nbsp;            }
+&nbsp;
+&nbsp;            this.argumentsIntrospected = true;
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean maybeBindJoinPoint(Class&lt;?&gt; candidateParameterType) {
+&nbsp;        if (JoinPoint.class == candidateParameterType) {
+<b class="nc">&nbsp;            this.joinPointArgumentIndex = 0;</b>
+&nbsp;            return true;
+&nbsp;        } else {
+&nbsp;            return false;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    private boolean maybeBindProceedingJoinPoint(Class&lt;?&gt; candidateParameterType) {</b>
+&nbsp;        if (ProceedingJoinPoint.class == candidateParameterType) {
+&nbsp;            if (!this.supportsProceedingJoinPoint()) {
+&nbsp;                throw new IllegalArgumentException(&quot;ProceedingJoinPoint is only supported for around advice&quot;);
+&nbsp;            } else {
+<b class="nc">&nbsp;                this.joinPointArgumentIndex = 0;</b>
+&nbsp;                return true;
+&nbsp;            }
+&nbsp;        } else {
+&nbsp;            return false;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected boolean supportsProceedingJoinPoint() {
+&nbsp;        return false;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private boolean maybeBindJoinPointStaticPart(Class&lt;?&gt; candidateParameterType) {
+&nbsp;        if (JoinPoint.StaticPart.class == candidateParameterType) {
+&nbsp;            this.joinPointStaticPartArgumentIndex = 0;
+&nbsp;            return true;
+&nbsp;        } else {
+&nbsp;            return false;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private void bindArgumentsByName(int numArgumentsExpectingToBind) {</b>
+<b class="nc">&nbsp;        if (this.argumentNames == null) {</b>
+<b class="nc">&nbsp;            this.argumentNames = this.createParameterNameDiscoverer().getParameterNames(this.aspectJAdviceMethod);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        if (this.argumentNames != null) {
+&nbsp;            this.bindExplicitArguments(numArgumentsExpectingToBind);
+&nbsp;        } else {
+&nbsp;            String var10002 = this.aspectJAdviceMethod.getName();
+<b class="nc">&nbsp;            throw new IllegalStateException(&quot;Advice method [&quot; + var10002 + &quot;] requires &quot; + numArgumentsExpectingToBind + &quot; arguments to be bound by name, but the argument names were not specified and could not be discovered.&quot;);</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected ParameterNameDiscoverer createParameterNameDiscoverer() {</b>
+&nbsp;        DefaultParameterNameDiscoverer discoverer = new DefaultParameterNameDiscoverer();
+&nbsp;        AspectJAdviceParameterNameDiscoverer adviceParameterNameDiscoverer = new AspectJAdviceParameterNameDiscoverer(this.pointcut.getExpression());
+<b class="nc">&nbsp;        adviceParameterNameDiscoverer.setReturningName(this.returningName);</b>
+<b class="nc">&nbsp;        adviceParameterNameDiscoverer.setThrowingName(this.throwingName);</b>
+<b class="nc">&nbsp;        adviceParameterNameDiscoverer.setRaiseExceptions(true);</b>
+<b class="nc">&nbsp;        discoverer.addDiscoverer(adviceParameterNameDiscoverer);</b>
+<b class="nc">&nbsp;        return discoverer;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void bindExplicitArguments(int numArgumentsLeftToBind) {
+&nbsp;        Assert.state(this.argumentNames != null, &quot;No argument names available&quot;);
+&nbsp;        this.argumentBindings = new HashMap();
+&nbsp;        int numExpectedArgumentNames = this.aspectJAdviceMethod.getParameterCount();
+&nbsp;        if (this.argumentNames.length != numExpectedArgumentNames) {
+<b class="nc">&nbsp;            throw new IllegalStateException(&quot;Expecting to find &quot; + numExpectedArgumentNames + &quot; arguments to bind by name in advice, but actually found &quot; + this.argumentNames.length + &quot; arguments.&quot;);</b>
+&nbsp;        } else {
+&nbsp;            int argumentIndexOffset = this.parameterTypes.length - numArgumentsLeftToBind;
+&nbsp;
+&nbsp;            for(int i = argumentIndexOffset; i &lt; this.argumentNames.length; ++i) {
+&nbsp;                this.argumentBindings.put(this.argumentNames[i], i);
+&nbsp;            }
+&nbsp;
+&nbsp;            if (this.returningName != null) {
+<b class="nc">&nbsp;                if (!this.argumentBindings.containsKey(this.returningName)) {</b>
+<b class="nc">&nbsp;                    throw new IllegalStateException(&quot;Returning argument name &#39;&quot; + this.returningName + &quot;&#39; was not bound in advice arguments&quot;);</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                Integer index = (Integer)this.argumentBindings.get(this.returningName);
+&nbsp;                this.discoveredReturningType = this.aspectJAdviceMethod.getParameterTypes()[index];
+<b class="nc">&nbsp;                this.discoveredReturningGenericType = this.aspectJAdviceMethod.getGenericParameterTypes()[index];</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if (this.throwingName != null) {</b>
+&nbsp;                if (!this.argumentBindings.containsKey(this.throwingName)) {
+&nbsp;                    throw new IllegalStateException(&quot;Throwing argument name &#39;&quot; + this.throwingName + &quot;&#39; was not bound in advice arguments&quot;);
+&nbsp;                }
+&nbsp;
+&nbsp;                Integer index = (Integer)this.argumentBindings.get(this.throwingName);
+&nbsp;                this.discoveredThrowingType = this.aspectJAdviceMethod.getParameterTypes()[index];
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            this.configurePointcutParameters(this.argumentNames, argumentIndexOffset);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private void configurePointcutParameters(String[] argumentNames, int argumentIndexOffset) {</b>
+&nbsp;        int numParametersToRemove = argumentIndexOffset;
+&nbsp;        if (this.returningName != null) {
+&nbsp;            numParametersToRemove = argumentIndexOffset + 1;
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        if (this.throwingName != null) {
+&nbsp;            ++numParametersToRemove;
+&nbsp;        }
+&nbsp;
+&nbsp;        String[] pointcutParameterNames = new String[argumentNames.length - numParametersToRemove];
+&nbsp;        Class&lt;?&gt;[] pointcutParameterTypes = new Class[pointcutParameterNames.length];
+&nbsp;        Class&lt;?&gt;[] methodParameterTypes = this.aspectJAdviceMethod.getParameterTypes();
+<b class="nc">&nbsp;        int index = 0;</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        for(int i = 0; i &lt; argumentNames.length; ++i) {
+&nbsp;            if (i &gt;= argumentIndexOffset &amp;&amp; !argumentNames[i].equals(this.returningName) &amp;&amp; !argumentNames[i].equals(this.throwingName)) {
+&nbsp;                pointcutParameterNames[index] = argumentNames[i];
+&nbsp;                pointcutParameterTypes[index] = methodParameterTypes[i];
+<b class="nc">&nbsp;                ++index;</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        this.pointcut.setParameterNames(pointcutParameterNames);
+&nbsp;        this.pointcut.setParameterTypes(pointcutParameterTypes);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Object[] argBinding(JoinPoint jp, @Nullable JoinPointMatch jpMatch, @Nullable Object returnValue, @Nullable Throwable ex) {
+&nbsp;        this.calculateArgumentBindings();
+&nbsp;        Object[] adviceInvocationArgs = new Object[this.parameterTypes.length];
+<b class="nc">&nbsp;        int numBound = 0;</b>
+&nbsp;        if (this.joinPointArgumentIndex != -1) {
+&nbsp;            adviceInvocationArgs[this.joinPointArgumentIndex] = jp;
+&nbsp;            ++numBound;
+<b class="nc">&nbsp;        } else if (this.joinPointStaticPartArgumentIndex != -1) {</b>
+&nbsp;            adviceInvocationArgs[this.joinPointStaticPartArgumentIndex] = jp.getStaticPart();
+&nbsp;            ++numBound;
+&nbsp;        }
+&nbsp;
+&nbsp;        if (!CollectionUtils.isEmpty(this.argumentBindings)) {
+&nbsp;            if (jpMatch != null) {
+&nbsp;                PointcutParameter[] parameterBindings = jpMatch.getParameterBindings();
+&nbsp;
+&nbsp;                for(PointcutParameter parameter : parameterBindings) {
+&nbsp;                    String name = parameter.getName();
+&nbsp;                    Integer index = (Integer)this.argumentBindings.get(name);
+&nbsp;                    adviceInvocationArgs[index] = parameter.getBinding();
+&nbsp;                    ++numBound;
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            if (this.returningName != null) {
+&nbsp;                Integer index = (Integer)this.argumentBindings.get(this.returningName);
+<b class="pc">&nbsp;                adviceInvocationArgs[index] = returnValue;</b>
+&nbsp;                ++numBound;
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if (this.throwingName != null) {</b>
+<b class="fc">&nbsp;                Integer index = (Integer)this.argumentBindings.get(this.throwingName);</b>
+<b class="pc">&nbsp;                adviceInvocationArgs[index] = ex;</b>
+<b class="nc">&nbsp;                ++numBound;</b>
+<b class="fc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+<b class="pc">&nbsp;        if (numBound != this.parameterTypes.length) {</b>
+&nbsp;            throw new IllegalStateException(&quot;Required to bind &quot; + this.parameterTypes.length + &quot; arguments, but only bound &quot; + numBound + &quot; (JoinPointMatch &quot; + (jpMatch == null ? &quot;was NOT&quot; : &quot;WAS&quot;) + &quot; bound in invocation)&quot;);
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            return adviceInvocationArgs;
+&nbsp;        }
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected Object invokeAdviceMethod(@Nullable JoinPointMatch jpMatch, @Nullable Object returnValue, @Nullable Throwable ex) throws Throwable {
+&nbsp;        return this.invokeAdviceMethodWithGivenArgs(this.argBinding(this.getJoinPoint(), jpMatch, returnValue, ex));
+<b class="pc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected Object invokeAdviceMethod(JoinPoint jp, @Nullable JoinPointMatch jpMatch, @Nullable Object returnValue, @Nullable Throwable t) throws Throwable {</b>
+&nbsp;        return this.invokeAdviceMethodWithGivenArgs(this.argBinding(jp, jpMatch, returnValue, t));
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    protected Object invokeAdviceMethodWithGivenArgs(Object[] args) throws Throwable {
+&nbsp;        Object[] actualArgs = args;
+&nbsp;        if (this.aspectJAdviceMethod.getParameterCount() == 0) {
+&nbsp;            actualArgs = null;
+<b class="pc">&nbsp;        }</b>
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            ReflectionUtils.makeAccessible(this.aspectJAdviceMethod);
+<b class="fc">&nbsp;            return this.aspectJAdviceMethod.invoke(this.aspectInstanceFactory.getAspectInstance(), actualArgs);</b>
+<b class="fc">&nbsp;        } catch (IllegalArgumentException ex) {</b>
+&nbsp;            throw new AopInvocationException(&quot;Mismatch on arguments to advice method [&quot; + String.valueOf(this.aspectJAdviceMethod) + &quot;]; pointcut expression [&quot; + String.valueOf(this.pointcut.getPointcutExpression()) + &quot;]&quot;, ex);
+&nbsp;        } catch (InvocationTargetException ex) {
+<b class="nc">&nbsp;            throw ex.getTargetException();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected JoinPoint getJoinPoint() {
+<b class="nc">&nbsp;        return currentJoinPoint();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+<b class="nc">&nbsp;    protected JoinPointMatch getJoinPointMatch() {</b>
+<b class="nc">&nbsp;        MethodInvocation mi = ExposeInvocationInterceptor.currentInvocation();</b>
+<b class="nc">&nbsp;        if (mi instanceof ProxyMethodInvocation pmi) {</b>
+&nbsp;            return this.getJoinPointMatch(pmi);
+&nbsp;        } else {
+<b class="nc">&nbsp;            throw new IllegalStateException(&quot;MethodInvocation is not a Spring ProxyMethodInvocation: &quot; + String.valueOf(mi));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+<b class="nc">&nbsp;    protected JoinPointMatch getJoinPointMatch(ProxyMethodInvocation pmi) {</b>
+<b class="nc">&nbsp;        String expression = this.pointcut.getExpression();</b>
+&nbsp;        return expression != null ? (JoinPointMatch)pmi.getUserAttribute(expression) : null;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public String toString() {</b>
+&nbsp;        String var10000 = this.getClass().getName();
+&nbsp;        return var10000 + &quot;: advice method [&quot; + String.valueOf(this.aspectJAdviceMethod) + &quot;]; aspect name &#39;&quot; + this.aspectName + &quot;&#39;&quot;;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private void readObject(ObjectInputStream inputStream) throws IOException, ClassNotFoundException {
+&nbsp;        inputStream.defaultReadObject();
+&nbsp;
+&nbsp;        try {
+&nbsp;            this.aspectJAdviceMethod = this.declaringClass.getMethod(this.methodName, this.parameterTypes);
+&nbsp;        } catch (NoSuchMethodException ex) {
+&nbsp;            throw new IllegalStateException(&quot;Failed to find advice method on deserialization&quot;, ex);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static class AdviceExcludingMethodMatcher extends StaticMethodMatcher {
+&nbsp;        private final Method adviceMethod;
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        public AdviceExcludingMethodMatcher(Method adviceMethod) {</b>
+<b class="nc">&nbsp;            this.adviceMethod = adviceMethod;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        public boolean matches(Method method, Class&lt;?&gt; targetClass) {
+<b class="nc">&nbsp;            return !this.adviceMethod.equals(method);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        public boolean equals(@Nullable Object other) {
+&nbsp;            boolean var10000;
+&nbsp;            if (this != other) {
+<b class="nc">&nbsp;                label26: {</b>
+<b class="nc">&nbsp;                    if (other instanceof AdviceExcludingMethodMatcher) {</b>
+&nbsp;                        AdviceExcludingMethodMatcher that = (AdviceExcludingMethodMatcher)other;
+<b class="nc">&nbsp;                        if (this.adviceMethod.equals(that.adviceMethod)) {</b>
+<b class="nc">&nbsp;                            break label26;</b>
+<b class="nc">&nbsp;                        }</b>
+&nbsp;                    }
+&nbsp;
+&nbsp;                    var10000 = false;
+&nbsp;                    return var10000;
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            var10000 = true;</b>
+&nbsp;            return var10000;
+&nbsp;        }
+&nbsp;
+&nbsp;        public int hashCode() {
+<b class="nc">&nbsp;            return this.adviceMethod.hashCode();</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        public String toString() {
+&nbsp;            String var10000 = this.getClass().getName();
+&nbsp;            return var10000 + &quot;: &quot; + String.valueOf(this.adviceMethod);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:54</div>
+</div>
+</body>
+</html>
