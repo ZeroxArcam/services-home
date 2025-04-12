@@ -23,7 +23,7 @@ public class LocationController {
 
     private final LocationService locationService;
 
-    @PostMapping("/")
+    @PostMapping("/create")
     @Operation(summary = "Save a new location", description = "Saves a new location in the system. The city and department must exist. The combination of city and department must be unique. Notes = Ensure that the city and department names are properly formatted and exist in the system.")
     @ApiResponse(responseCode = "201", description = "Location created", content = @Content(schema = @Schema(implementation = SaveLocationResponse.class), examples = @ExampleObject(value = "{\"id\": 1, \"cityName\": \"Valledupar\", \"departmentName\": \"Cesar\"}")))
     @ApiResponse(responseCode = "400", description = "Bad request", content = @Content(schema = @Schema(implementation = String.class), examples = @ExampleObject(value = "\"Name cannot exceed 50 characters.\"\n \"Description cannot exceed 90 characters.\" ")))

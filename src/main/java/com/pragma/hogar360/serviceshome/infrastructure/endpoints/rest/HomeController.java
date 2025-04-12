@@ -28,7 +28,7 @@ public class HomeController {
 
     private final HomeService homeService;
 
-    @PostMapping("/")
+    @PostMapping("/create")
     @Operation(summary = "Save a new home", description = "Saves a new home in the system.")
     @ApiResponse(responseCode = "201", description = "Home created", content = @Content(schema = @Schema(implementation = SaveHomeResponse.class), examples = @ExampleObject(value = "{\"id\": 1, \"message\": \"Home created successfully\"}")))
     @ApiResponse(responseCode = "400", description = "Bad request", content = @Content(schema = @Schema(implementation = String.class), examples = @ExampleObject(value = "\"Invalid input data\"")))

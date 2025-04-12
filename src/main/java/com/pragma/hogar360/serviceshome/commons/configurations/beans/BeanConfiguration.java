@@ -19,50 +19,31 @@ import org.springframework.context.annotation.Configuration;
 public class BeanConfiguration {
     private final CategoryRepository categoryRepository;
     private final CategoryEntityMapper categoryEntityMapper;
-    private final CityRepository cityRepository; //Inyecta CityRepository
-    private final CityEntityMapper cityEntityMapper; //Inyecta CityEntityMapper
-    private final DepartmentRepository departmentRepository; //Inyecta DepartmentRepository
-    private final DepartmentEntityMapper departmentEntityMapper; //Inyecta DepartmentEntityMapper
-    private final LocationRepository locationRepository; // Añade LocationRepository
-    private final LocationEntityMapper locationEntityMapper; // Añade LocationEntityMapper
+    private final CityRepository cityRepository;
+    private final CityEntityMapper cityEntityMapper;
+    private final DepartmentRepository departmentRepository;
+    private final DepartmentEntityMapper departmentEntityMapper;
+    private final LocationRepository locationRepository;
+    private final LocationEntityMapper locationEntityMapper;
     private final HomeRepository homeRepository;
     private final HomeEntityMapper homeEntityMapper;
 
-    /**
-     * Defines the CategoryServicePort bean.
-     *
-     * @return An instance of CategoryServicePort.
-     */
+
     @Bean
     public CategoryServicePort categoryServicePort() {
         return new CategoryUseCase(categoryPersistencePort());
     }
 
-    /**
-     * Defines the CategoryPersistencePort bean.
-     *
-     * @return An instance of CategoryPersistencePort.
-     */
     @Bean
     public CategoryPersistencePort categoryPersistencePort() {
         return new CategoryPersistenceAdapter(categoryRepository, categoryEntityMapper);
     }
 
-    /**
-     * Defines the CityServicePort bean.
-     *
-     * @return An instance of CityServicePort.
-     */
     @Bean
     public CityServicePort cityServicePort() {
         return new CityUseCase(cityPersistencePort(), departmentPersistencePort());
     }
 
-    /**
-     * Defines the CityPersistencePort bean.
-     *
-     * @return An instance of CityPersistencePort.
-     */
     @Bean
     public CityPersistencePort cityPersistencePort() {
         return new CityPersistenceAdapter(cityRepository, cityEntityMapper);

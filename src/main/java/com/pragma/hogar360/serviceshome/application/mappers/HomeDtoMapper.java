@@ -19,23 +19,9 @@ public interface HomeDtoMapper {
     @Mapping(target = "propertyDetails.numberOfRooms", source = "numberOfRooms")
     @Mapping(target = "propertyDetails.numberOfBathrooms", source = "numberOfBathrooms")
     @Mapping(target = "publicationInfo.activePublicationDate", source = "activePublicationDate")
-    //@Mapping(target = "publicationInfo.publicationStatus", source = "publicationStatus")
     @Mapping(target = "publicationInfo.publicationDate", source = "publicationDate")
     HomeModel requestToModel(SaveHomeRequest homeModel);
 
-    //Long id,
-    //                           String neighborhood,
-    //                           String address,
-    //                           String description,
-    //                           String category,
-    //                           Integer numberOfRooms,
-    //                           Integer numberOfBathrooms,
-    //                           Double price,
-    //                           //Long cityId,
-    //                           String cityName,
-    //                           String departmentName,
-    //                           LocalDate activePublicationDate
-    //                           ){}
 
 
     default HomeResponse modelToResponse(HomeModel homeModel) {
@@ -53,5 +39,4 @@ public interface HomeDtoMapper {
                 homeModel.getPublicationInfo().getActivePublicationDate()
         );
     }
-    //HomeResponse modelToResponse(HomeModel homeModel);
 }

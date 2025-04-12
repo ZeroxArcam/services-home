@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HomeUseCase.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Tests in 'services-home.test' Coverage Results</a> &gt; <a href="index.source.html" class="el_package">com.pragma.hogar360.serviceshome.domain.usecases</a> &gt; <span class="el_source">HomeUseCase.java</span></div><h1>HomeUseCase.java</h1><pre class="source lang-java linenums">package com.pragma.hogar360.serviceshome.domain.usecases;
+import com.pragma.hogar360.serviceshome.domain.exceptions.*;
+import com.pragma.hogar360.serviceshome.domain.model.*;
+import com.pragma.hogar360.serviceshome.domain.ports.in.HomeServicePort;
+import com.pragma.hogar360.serviceshome.domain.ports.out.CategoryPersistencePort;
+import com.pragma.hogar360.serviceshome.domain.ports.out.HomePersistencePort;
+import com.pragma.hogar360.serviceshome.domain.ports.out.LocationPersistencePort;
+import com.pragma.hogar360.serviceshome.domain.utils.constants.DomainConstants;
+import com.pragma.hogar360.serviceshome.domain.utils.constants.Pagination;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+
+public class HomeUseCase implements HomeServicePort {
+
+    private final HomePersistencePort homePersistencePort;
+    private final CategoryPersistencePort categoryPersistencePort;
+    private final LocationPersistencePort locationPersistencePort;
+
+<span class="fc" id="L21">    public HomeUseCase(HomePersistencePort homePersistencePort, CategoryPersistencePort categoryPersistencePort, LocationPersistencePort locationPersistencePort) {</span>
+<span class="fc" id="L22">        this.homePersistencePort = homePersistencePort;</span>
+<span class="fc" id="L23">        this.categoryPersistencePort = categoryPersistencePort;</span>
+<span class="fc" id="L24">        this.locationPersistencePort = locationPersistencePort;</span>
+<span class="fc" id="L25">    }</span>
+
+    @Override
+    public void save(HomeModel homeModel) {
+<span class="fc" id="L29">        CategoryModel category=categoryExists(homeModel.getPropertyDetails().getCategory().getName());</span>
+<span class="fc" id="L30">        LocationModel location=locationExists(homeModel.getBasicInfo().getLocation());</span>
+<span class="fc" id="L31">        homeModel.getPropertyDetails().setCategory(category);</span>
+<span class="fc" id="L32">        homeModel.getBasicInfo().setLocation(location);</span>
+<span class="fc" id="L33">        validateAndSetPublicationStatus(homeModel);</span>
+<span class="fc" id="L34">        validateAddress(homeModel.getBasicInfo().getAddress());</span>
+<span class="fc" id="L35">        validateFields(homeModel);</span>
+<span class="fc" id="L36">        homePersistencePort.save(homeModel);</span>
+<span class="fc" id="L37">    }</span>
+    private void validateAddress(String address) {
+<span class="pc bpc" id="L39" title="1 of 4 branches missed.">        if (address == null || address.trim().isEmpty()) {</span>
+<span class="fc" id="L40">            throw new EmptyAddressException(DomainConstants.ADDRESS_NULL_OR_EMPTY);</span>
+        }
+<span class="fc bfc" id="L42" title="All 2 branches covered.">        if (homePersistencePort.existsAddress(address)) {</span>
+<span class="fc" id="L43">            throw new DuplicateAddressException(DomainConstants.ADDRESS_ALREADY_EXISTS);</span>
+        }
+<span class="fc" id="L45">    }</span>
+    private void validateFields(HomeModel homeModel) {
+<span class="fc bfc" id="L47" title="All 4 branches covered.">        if(homeModel.getPropertyDetails().getNumberOfRooms()==null  || homeModel.getPropertyDetails().getNumberOfBathrooms()==null){</span>
+<span class="fc" id="L48">            throw new InvalidNumberException(DomainConstants.INVALID_NUMBER_OF_ROOMS);</span>
+        }
+<span class="fc bfc" id="L50" title="All 4 branches covered.">        if(homeModel.getPropertyDetails().getNumberOfRooms()&lt;DomainConstants.NUMBER_OF_ROOM_INT  || homeModel.getPropertyDetails().getNumberOfBathrooms()&lt;DomainConstants.NUMBER_OF_ROOM_INT) {</span>
+<span class="fc" id="L51">            throw new InvalidNumberException(DomainConstants.INVALID_NUMBER_OF_ROOMS);</span>
+        }
+
+<span class="pc bpc" id="L54" title="2 of 8 branches missed.">        if(homeModel.getBasicInfo().getName()==null || homeModel.getBasicInfo().getName().trim().isEmpty() || homeModel.getBasicInfo().getPrice()==null || homeModel.getBasicInfo().getPrice()&lt;DomainConstants.NUMBER_OF_ROOM_INT){</span>
+<span class="fc" id="L55">            throw new InvalidParameters(DomainConstants.INVALID_PARAMETERS);</span>
+        }
+<span class="pc bpc" id="L57" title="1 of 4 branches missed.">        if (homeModel.getPropertyDetails().getDescription()==null || homeModel.getPropertyDetails().getDescription().trim().isEmpty()) {</span>
+<span class="fc" id="L58">            throw new InvalidParameters(DomainConstants.INVALID_PARAMETERS);</span>
+        }
+<span class="fc" id="L60">    }</span>
+
+    public CategoryModel categoryExists(String categoryName) {
+<span class="fc" id="L63">        CategoryModel categoryModel = categoryPersistencePort.getCategoryByName(categoryName);</span>
+<span class="fc bfc" id="L64" title="All 2 branches covered.">        if (categoryModel == null) {</span>
+
+<span class="fc" id="L66">            throw new CategoryNotFoundException(DomainConstants.NOT_FOUND);</span>
+        }
+<span class="fc" id="L68">        return categoryModel;</span>
+    }
+
+    public LocationModel locationExists(LocationModel locationModel) {
+<span class="fc bfc" id="L72" title="All 4 branches covered.">        if (locationModel == null || locationModel.getId() == null) {</span>
+<span class="fc" id="L73">            throw new InvalidParameters(DomainConstants.ID_LOCATION_HOME_INVALID);</span>
+        }
+<span class="fc" id="L75">        return locationPersistencePort.findById(locationModel.getId())</span>
+<span class="fc" id="L76">                .orElseThrow(() -&gt; new LocationNotFoundException(DomainConstants.NOT_FOUND));</span>
+    }
+
+    public void validateAndSetPublicationStatus(HomeModel homeModel) {
+<span class="fc" id="L80">        LocalDate publicationDate = homeModel.getPublicationInfo().getPublicationDate();</span>
+<span class="fc" id="L81">        LocalDate activePublicationDate = homeModel.getPublicationInfo().getActivePublicationDate();</span>
+<span class="fc" id="L82">        LocalDate currentDate = LocalDate.now();</span>
+<span class="fc" id="L83">        LocalDate maxAllowedDate = currentDate.plusDays(DomainConstants.MAX_ALLOWED_DATE);</span>
+
+<span class="pc bpc" id="L85" title="1 of 4 branches missed.">        if (publicationDate.isBefore(currentDate) || publicationDate.isAfter(maxAllowedDate)) {</span>
+<span class="fc" id="L86">            throw new InvalidPublicationDateException(DomainConstants.PUBLICATION_DATE_PAST_ERROR);</span>
+        }
+<span class="pc bpc" id="L88" title="1 of 4 branches missed.">        if (activePublicationDate.isBefore(publicationDate) || activePublicationDate.isAfter(maxAllowedDate)) {</span>
+<span class="fc" id="L89">            throw new InvalidPublicationDateException(DomainConstants.ACTIVE_DATE_BEFORE_PUBLICATION_ERROR);</span>
+        }
+<span class="fc bfc" id="L91" title="All 2 branches covered.">        if (activePublicationDate.isEqual(publicationDate)) {</span>
+<span class="fc" id="L92">            homeModel.getPublicationInfo().setPublicationStatus(</span>
+                    HomePublicationInfoModel.PublicationStatus.PUBLISHED
+            );
+        } else {
+<span class="fc" id="L96">            homeModel.getPublicationInfo().setPublicationStatus(</span>
+                    HomePublicationInfoModel.PublicationStatus.PUBLICATION_PAUSED
+            );
+        }
+<span class="fc" id="L100">    }</span>
+    public void activateScheduledPublications() {
+<span class="fc" id="L102">        LocalDate today = LocalDate.now();</span>
+<span class="fc" id="L103">        List&lt;HomeModel&gt; homesToActivate = homePersistencePort.findHomesToActivate(</span>
+                today,
+                HomePublicationInfoModel.PublicationStatus.PUBLICATION_PAUSED
+        );
+<span class="fc" id="L107">        homesToActivate.forEach(home -&gt;</span>
+<span class="fc" id="L108">                home.getPublicationInfo().setPublicationStatus(</span>
+                        HomePublicationInfoModel.PublicationStatus.PUBLISHED
+                )
+        );
+<span class="fc" id="L112">        homePersistencePort.saveAll(homesToActivate);</span>
+<span class="fc" id="L113">    }</span>
+    @Override
+    public Pagination&lt;HomeModel&gt; findHomesByFilters(
+            HomeQueryModel queryModel,
+            Integer page,
+            Integer size,
+            String sortBy,
+            String sortDirection
+    ) {
+<span class="fc bfc" id="L122" title="All 2 branches covered.">        if (!DomainConstants.VALID_SORT_BY_VALUES.contains(sortBy)) {</span>
+<span class="fc" id="L123">            throw new InvalidSortByException(String.format(DomainConstants.INVALID_SORT_BY_MESSAGE, sortBy));</span>
+        }
+
+<span class="pc bpc" id="L126" title="1 of 4 branches missed.">        if (queryModel.getMinRooms() != null &amp;&amp; queryModel.getMinRooms() &lt; DomainConstants.NUMBER_OF_ROOM_INT) {</span>
+<span class="fc" id="L127">            throw new InvalidParameters(DomainConstants.MIN_ROOMS_NEGATIVE_MESSAGE);</span>
+        }
+<span class="pc bpc" id="L129" title="1 of 4 branches missed.">        if (queryModel.getMaxRooms() != null &amp;&amp; queryModel.getMaxRooms() &lt; DomainConstants.NUMBER_OF_ROOM_INT) {</span>
+<span class="fc" id="L130">            throw new InvalidParameters(DomainConstants.MAX_ROOMS_NEGATIVE_MESSAGE);</span>
+        }
+<span class="pc bpc" id="L132" title="1 of 4 branches missed.">        if (queryModel.getMinBathrooms() != null &amp;&amp; queryModel.getMinBathrooms() &lt; DomainConstants.NUMBER_OF_ROOM_INT) {</span>
+<span class="fc" id="L133">            throw new InvalidParameters(DomainConstants.MIN_BATHROOMS_NEGATIVE_MESSAGE);</span>
+        }
+<span class="pc bpc" id="L135" title="1 of 4 branches missed.">        if (queryModel.getMaxBathrooms() != null &amp;&amp; queryModel.getMaxBathrooms() &lt; DomainConstants.NUMBER_OF_ROOM_INT) {</span>
+<span class="fc" id="L136">            throw new InvalidParameters(DomainConstants.MAX_BATHROOMS_NEGATIVE_MESSAGE);</span>
+        }
+<span class="pc bpc" id="L138" title="1 of 4 branches missed.">        if (queryModel.getMinPrice() != null &amp;&amp; queryModel.getMinPrice().compareTo(BigDecimal.ZERO) &lt; DomainConstants.NUMBER_OF_ROOM_INT) {</span>
+<span class="fc" id="L139">            throw new InvalidParameters(DomainConstants.MIN_PRICE_NEGATIVE_MESSAGE);</span>
+        }
+<span class="pc bpc" id="L141" title="1 of 4 branches missed.">        if (queryModel.getMaxPrice() != null &amp;&amp; queryModel.getMaxPrice().compareTo(BigDecimal.ZERO) &lt; DomainConstants.NUMBER_OF_ROOM_INT) {</span>
+<span class="fc" id="L142">            throw new InvalidParameters(DomainConstants.MAX_PRICE_NEGATIVE_MESSAGE);</span>
+        }
+<span class="pc bpc" id="L144" title="1 of 4 branches missed.">        if (!sortDirection.equalsIgnoreCase(DomainConstants.SORT_ASC) &amp;&amp; !sortDirection.equalsIgnoreCase(DomainConstants.SORT_DESC)) {</span>
+<span class="fc" id="L145">            throw new InvalidParameters(String.format(DomainConstants.INVALID_SORT_DIRECTION_MESSAGE, sortDirection));</span>
+        }
+<span class="fc" id="L147">        return homePersistencePort.findHomesByFilters(queryModel, page, size, sortBy, sortDirection);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

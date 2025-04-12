@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CategoryUseCaseTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Tests in 'services-home.test' Coverage Results</a> &gt; <a href="index.source.html" class="el_package">com.pragma.hogar360.serviceshome.domain.usecases</a> &gt; <span class="el_source">CategoryUseCaseTest.java</span></div><h1>CategoryUseCaseTest.java</h1><pre class="source lang-java linenums">package com.pragma.hogar360.serviceshome.domain.usecases;
+
+import com.pragma.hogar360.serviceshome.domain.exceptions.CategoryAlreadyExistsException;
+import com.pragma.hogar360.serviceshome.domain.model.CategoryModel;
+import com.pragma.hogar360.serviceshome.domain.ports.out.CategoryPersistencePort;
+import com.pragma.hogar360.serviceshome.domain.utils.constants.Pagination;
+import com.pragma.hogar360.serviceshome.domain.utils.constants.Validation;
+import com.pragma.hogar360.serviceshome.factory.CategoryModelFactory;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.MockedStatic;
+import static org.mockito.Mockito.mockStatic;
+import java.util.ArrayList;
+import java.util.List;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+<span class="fc" id="L21">class CategoryUseCaseTest {</span>
+
+    @Mock
+    private CategoryPersistencePort categoryPersistencePort;
+
+    @InjectMocks
+    private CategoryUseCase categoryUseCase;
+
+    @BeforeEach
+    void setUp() {
+<span class="fc" id="L31">        MockitoAnnotations.openMocks(this);</span>
+<span class="fc" id="L32">    }</span>
+
+    @Test
+    void testSave_Success() {
+        // Arrange
+<span class="fc" id="L37">        CategoryModel categoryModel = CategoryModelFactory.createDefaultCategoryModel();</span>
+<span class="fc" id="L38">        when(categoryPersistencePort.getCategoryByName(categoryModel.getName())).thenReturn(null);</span>
+
+        // Act
+<span class="fc" id="L41">        categoryUseCase.save(categoryModel);</span>
+
+        // Assert
+<span class="fc" id="L44">        verify(categoryPersistencePort, times(1)).save(categoryModel);</span>
+<span class="fc" id="L45">    }</span>
+
+    @Test
+    void testSave_CategoryAlreadyExists() {
+        // Arrange
+<span class="fc" id="L50">        CategoryModel categoryModel = CategoryModelFactory.createDefaultCategoryModel();</span>
+<span class="fc" id="L51">        when(categoryPersistencePort.getCategoryByName(categoryModel.getName())).thenReturn(categoryModel);</span>
+
+        // Act &amp; Assert
+<span class="pc" id="L54">        assertThrows(CategoryAlreadyExistsException.class, () -&gt; categoryUseCase.save(categoryModel));</span>
+<span class="fc" id="L55">        verify(categoryPersistencePort, never()).save(categoryModel);</span>
+<span class="fc" id="L56">    }</span>
+
+    @Test
+    void testGetCategories_Success() {
+        // Arrange
+<span class="fc" id="L61">        int page = 0;</span>
+<span class="fc" id="L62">        int size = 10;</span>
+<span class="fc" id="L63">        boolean orderAsc = true;</span>
+<span class="fc" id="L64">        List&lt;CategoryModel&gt; categoryList = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L65">        categoryList.add(CategoryModelFactory.createDefaultCategoryModel());</span>
+<span class="fc" id="L66">        long totalElements = 1;</span>
+<span class="fc" id="L67">        int totalPages = 1;</span>
+<span class="fc" id="L68">        int pageNumber = 0;</span>
+<span class="fc" id="L69">        int pageSize = 10;</span>
+
+<span class="fc" id="L71">        Pagination&lt;CategoryModel&gt; pagination = new Pagination&lt;&gt;(categoryList, totalElements, totalPages, pageNumber, pageSize);</span>
+<span class="fc" id="L72">        when(categoryPersistencePort.getCategories(page, size, orderAsc)).thenReturn(pagination);</span>
+
+        // Act
+<span class="fc" id="L75">        Pagination&lt;CategoryModel&gt; result = categoryUseCase.getCategories(page, size, orderAsc);</span>
+
+        // Assert
+<span class="fc" id="L78">        assertNotNull(result);</span>
+<span class="fc" id="L79">        assertEquals(pagination, result);</span>
+<span class="fc" id="L80">        verify(categoryPersistencePort, times(1)).getCategories(page, size, orderAsc);</span>
+<span class="fc" id="L81">    }</span>
+
+    @Test
+    void testGetCategoryByName_Success() {
+        // Arrange
+<span class="fc" id="L86">        CategoryModel categoryModel = CategoryModelFactory.createDefaultCategoryModel();</span>
+<span class="fc" id="L87">        when(categoryPersistencePort.getCategoryByName(categoryModel.getName())).thenReturn(categoryModel);</span>
+
+        // Act
+<span class="fc" id="L90">        CategoryModel result = categoryUseCase.getCategoryByName(categoryModel.getName());</span>
+
+        // Assert
+<span class="fc" id="L93">        assertNotNull(result);</span>
+<span class="fc" id="L94">        assertEquals(categoryModel, result);</span>
+<span class="fc" id="L95">        verify(categoryPersistencePort, times(1)).getCategoryByName(categoryModel.getName());</span>
+<span class="fc" id="L96">    }</span>
+
+    @Test
+    void testGetCategoryByName_NotFound() {
+        // Arrange
+<span class="fc" id="L101">        String categoryName = &quot;Nonexistent Category&quot;;</span>
+<span class="fc" id="L102">        when(categoryPersistencePort.getCategoryByName(categoryName)).thenReturn(null);</span>
+
+        // Act
+<span class="fc" id="L105">        CategoryModel result = categoryUseCase.getCategoryByName(categoryName);</span>
+
+        // Assert
+<span class="fc" id="L108">        assertNull(result);</span>
+<span class="fc" id="L109">        verify(categoryPersistencePort, times(1)).getCategoryByName(categoryName);</span>
+<span class="fc" id="L110">    }</span>
+
+    @Test
+    void testSave_ValidCategory_SavesCategory() {
+        // Arrange
+<span class="fc" id="L115">        CategoryModel categoryModel = CategoryModelFactory.createDefaultCategoryModel();</span>
+<span class="fc" id="L116">        when(categoryPersistencePort.getCategoryByName(categoryModel.getName())).thenReturn(null);</span>
+
+<span class="fc" id="L118">        try (MockedStatic&lt;Validation&gt; mockedValidation = mockStatic(Validation.class)) {</span>
+<span class="fc" id="L119">            mockedValidation.when(() -&gt; Validation.validateName(categoryModel.getName())).thenAnswer(invocation -&gt; null);</span>
+<span class="fc" id="L120">            mockedValidation.when(() -&gt; Validation.validateDescription(categoryModel.getDescription())).thenAnswer(invocation -&gt; null);</span>
+
+            // Act
+<span class="fc" id="L123">            categoryUseCase.save(categoryModel);</span>
+
+            // Assert
+<span class="fc" id="L126">            verify(categoryPersistencePort, times(1)).save(categoryModel);</span>
+<span class="fc" id="L127">            mockedValidation.verify(() -&gt; Validation.validateName(categoryModel.getName()));</span>
+<span class="fc" id="L128">            mockedValidation.verify(() -&gt; Validation.validateDescription(categoryModel.getDescription()));</span>
+        }
+<span class="fc" id="L130">    }</span>
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

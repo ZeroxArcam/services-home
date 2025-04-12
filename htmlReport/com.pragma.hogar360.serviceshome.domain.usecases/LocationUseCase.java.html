@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LocationUseCase.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Tests in 'services-home.test' Coverage Results</a> &gt; <a href="index.source.html" class="el_package">com.pragma.hogar360.serviceshome.domain.usecases</a> &gt; <span class="el_source">LocationUseCase.java</span></div><h1>LocationUseCase.java</h1><pre class="source lang-java linenums">package com.pragma.hogar360.serviceshome.domain.usecases;
+
+import com.pragma.hogar360.serviceshome.domain.exceptions.*;
+import com.pragma.hogar360.serviceshome.domain.model.LocationModel;
+import com.pragma.hogar360.serviceshome.domain.ports.in.LocationServicePort;
+import com.pragma.hogar360.serviceshome.domain.ports.out.CityPersistencePort;
+import com.pragma.hogar360.serviceshome.domain.ports.out.LocationPersistencePort;
+import com.pragma.hogar360.serviceshome.domain.utils.constants.DomainConstants;
+import com.pragma.hogar360.serviceshome.domain.utils.constants.Pagination;
+import com.pragma.hogar360.serviceshome.domain.utils.constants.Validation;
+
+public class LocationUseCase implements LocationServicePort {
+
+    private final LocationPersistencePort locationPersistencePort;
+    private final CityPersistencePort cityPersistencePort;
+
+    public LocationUseCase(LocationPersistencePort locationPersistencePort,
+<span class="fc" id="L18">                           CityPersistencePort cityPersistencePort) {</span>
+<span class="fc" id="L19">        this.locationPersistencePort = locationPersistencePort;</span>
+<span class="fc" id="L20">        this.cityPersistencePort = cityPersistencePort;</span>
+<span class="fc" id="L21">    }</span>
+
+    @Override
+    public void save(LocationModel location) {
+<span class="fc bfc" id="L25" title="All 4 branches covered.">        if (location.getCity() == null || location.getCity().getId() == null) {</span>
+<span class="fc" id="L26">            throw new CityNotFoundException(DomainConstants.NOT_FOUND);</span>
+        }
+<span class="pc bpc" id="L28" title="1 of 4 branches missed.">        if (location.getNeighborhood()==null || location.getNeighborhood().isEmpty()) {</span>
+<span class="fc" id="L29">            throw new IllegalArgumentException(DomainConstants.INVALID_PARAMETERS);</span>
+        }
+<span class="fc" id="L31">        validateCityExists(location.getCity().getId());</span>
+<span class="fc" id="L32">        validateLocation(location.getNeighborhood(), location.getCity().getId());</span>
+<span class="fc" id="L33">        locationPersistencePort.save(location);</span>
+<span class="fc" id="L34">    }</span>
+
+    private void validateCityExists(Long id){
+<span class="fc bfc" id="L37" title="All 2 branches covered.">        if (!cityPersistencePort.existsById(id)) {</span>
+<span class="fc" id="L38">            throw new CityNotFoundException(DomainConstants.NOT_FOUND);</span>
+        }
+<span class="fc" id="L40">    }</span>
+    private void validateLocation(String neighborhood,Long id){
+<span class="pc bpc" id="L42" title="1 of 4 branches missed.">        if (locationPersistencePort.existsByNeighborhood(neighborhood) &amp;&amp; locationPersistencePort.existsByCityId(id) ) {</span>
+<span class="fc" id="L43">            throw new DuplicateLocationException(DomainConstants.ALREADY_EXISTS);</span>
+        }
+<span class="fc" id="L45">    }</span>
+
+    @Override
+    public Pagination&lt;LocationModel&gt; getLocations(Integer page, Integer size, String sortBy, String sortDirection, String text){
+<span class="fc" id="L49">        Validation.validatePageAndSize(page,size);</span>
+<span class="pc bpc" id="L50" title="1 of 4 branches missed.">        if (!sortBy.equalsIgnoreCase(&quot;cityName&quot;) &amp;&amp; !sortBy.equalsIgnoreCase(&quot;departmentName&quot;)) {</span>
+<span class="fc" id="L51">            throw new InvalidParameters(&quot;Invalid sortBy parameter: &quot; + sortBy);</span>
+        }
+<span class="pc bpc" id="L53" title="1 of 4 branches missed.">        if (!sortDirection.equalsIgnoreCase(&quot;ASC&quot;) &amp;&amp; !sortDirection.equalsIgnoreCase(&quot;DESC&quot;)) {</span>
+<span class="fc" id="L54">            throw new InvalidParameters(&quot;Invalid sortDirection parameter: &quot; + sortDirection);</span>
+        }
+<span class="fc" id="L56">        return locationPersistencePort.getLocations(page, size, sortBy,sortDirection,text);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

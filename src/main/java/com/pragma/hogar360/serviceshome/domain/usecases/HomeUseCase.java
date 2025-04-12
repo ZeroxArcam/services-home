@@ -98,6 +98,8 @@ public class HomeUseCase implements HomeServicePort {
             );
         }
     }
+
+    @Override
     public void activateScheduledPublications() {
         LocalDate today = LocalDate.now();
         List<HomeModel> homesToActivate = homePersistencePort.findHomesToActivate(
@@ -111,6 +113,7 @@ public class HomeUseCase implements HomeServicePort {
         );
         homePersistencePort.saveAll(homesToActivate);
     }
+
     @Override
     public Pagination<HomeModel> findHomesByFilters(
             HomeQueryModel queryModel,

@@ -15,13 +15,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/category")
+@RequestMapping("/api/v1/categories")
 @RequiredArgsConstructor
 @Tag(name = "Categories", description = "Operations related to categories")
 public class CategoryController {
     private final CategoryService categoryService;
 
-    @PostMapping("/")
+    @PostMapping("/create")
     @Operation(summary = "Save a new category", description = "Saves a new category in the system.")
     @ApiResponse(responseCode = "201", description = "Category created", content = @Content(schema = @Schema(implementation = SaveCategoryResponse.class)))
     @ApiResponse(responseCode = "400", description = "Bad request", content = @Content(schema = @Schema(implementation = String.class)))
@@ -31,7 +31,7 @@ public class CategoryController {
         return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.save(saveCategoryRequest));
     }
 
-    @GetMapping("")
+    @GetMapping("/read")
     @Operation(summary = "Get all categories paginated", description = "Retrieves a list of all categories with pagination and metadata.")
     @ApiResponse(responseCode = "200", description = "Paged list of categories with metadata", content = @Content(schema = @Schema(implementation = PagedCategoryResponse.class)))
     public ResponseEntity<PagedCategoryResponse> getAllCategories(

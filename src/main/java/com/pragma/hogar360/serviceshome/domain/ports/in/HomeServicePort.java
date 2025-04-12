@@ -12,4 +12,6 @@ public interface HomeServicePort {
             String sortBy,
             String sortDirection
     );
+    void activateScheduledPublications();
+
 }
