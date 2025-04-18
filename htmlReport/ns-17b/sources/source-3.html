@@ -1,0 +1,202 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > PersistenceUnitUtilImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.jpa.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: PersistenceUnitUtilImpl (org.hibernate.jpa.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PersistenceUnitUtilImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (2/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    12.5%
+  </span>
+  <span class="absValue">
+    (4/32)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.jpa.internal;
+&nbsp;
+&nbsp;import jakarta.persistence.PersistenceUnitUtil;
+&nbsp;import jakarta.persistence.spi.LoadState;
+&nbsp;import java.io.Serializable;
+&nbsp;import org.hibernate.Hibernate;
+&nbsp;import org.hibernate.MappingException;
+&nbsp;import org.hibernate.engine.internal.ManagedTypeHelper;
+&nbsp;import org.hibernate.engine.spi.EntityEntry;
+&nbsp;import org.hibernate.engine.spi.SessionFactoryImplementor;
+&nbsp;import org.hibernate.engine.spi.SharedSessionContractImplementor;
+&nbsp;import org.hibernate.jpa.internal.util.PersistenceUtilHelper;
+&nbsp;import org.hibernate.persister.entity.EntityPersister;
+&nbsp;import org.hibernate.proxy.HibernateProxy;
+&nbsp;import org.hibernate.proxy.LazyInitializer;
+&nbsp;import org.jboss.logging.Logger;
+&nbsp;
+&nbsp;public class PersistenceUnitUtilImpl implements PersistenceUnitUtil, Serializable {
+&nbsp;    private static final Logger log = Logger.getLogger(PersistenceUnitUtilImpl.class);
+&nbsp;    private final SessionFactoryImplementor sessionFactory;
+&nbsp;    private final transient PersistenceUtilHelper.MetadataCache cache = new PersistenceUtilHelper.MetadataCache();
+&nbsp;
+&nbsp;    public PersistenceUnitUtilImpl(SessionFactoryImplementor sessionFactory) {
+&nbsp;        this.sessionFactory = sessionFactory;
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isLoaded(Object entity, String attributeName) {
+&nbsp;        log.debug(&quot;PersistenceUnitUtil#isLoaded is not always accurate; consider using EntityManager#contains instead&quot;);
+&nbsp;        switch (PersistenceUtilHelper.isLoadedWithoutReference(entity, attributeName, this.cache)) {
+<b class="fc">&nbsp;            case LOADED:</b>
+&nbsp;                return true;
+&nbsp;            case NOT_LOADED:
+<b class="fc">&nbsp;                return false;</b>
+&nbsp;            default:
+<b class="fc">&nbsp;                return PersistenceUtilHelper.isLoadedWithReference(entity, attributeName, this.cache) != LoadState.NOT_LOADED;</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isLoaded(Object entity) {
+&nbsp;        log.debug(&quot;PersistenceUnitUtil#isLoaded is not always accurate; consider using EntityManager#contains instead&quot;);
+&nbsp;        return PersistenceUtilHelper.getLoadState(entity) != LoadState.NOT_LOADED;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public Object getIdentifier(Object entity) {
+<b class="nc">&nbsp;        if (entity == null) {</b>
+&nbsp;            throw new IllegalArgumentException(&quot;Passed entity cannot be null&quot;);
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            LazyInitializer lazyInitializer = HibernateProxy.extractLazyInitializer(entity);
+<b class="nc">&nbsp;            if (lazyInitializer != null) {</b>
+&nbsp;                return lazyInitializer.getInternalIdentifier();
+&nbsp;            } else if (ManagedTypeHelper.isManagedEntity(entity)) {
+&nbsp;                EntityEntry entityEntry = ManagedTypeHelper.asManagedEntity(entity).$$_hibernate_getEntityEntry();
+&nbsp;                if (entityEntry != null) {
+&nbsp;                    return entityEntry.getId();
+&nbsp;                } else {
+<b class="nc">&nbsp;                    log.debug(&quot;jakarta.persistence.PersistenceUnitUtil.getIdentifier may not be able to read identifier of a detached entity&quot;);</b>
+<b class="nc">&nbsp;                    return this.getIdentifierFromPersister(entity);</b>
+&nbsp;                }
+&nbsp;            } else {
+&nbsp;                log.debug(&quot;jakarta.persistence.PersistenceUnitUtil.getIdentifier is only intended to work with enhanced entities (although Hibernate also adapts this support to its proxies); however the passed entity was not enhanced (nor a proxy).. may not be able to read identifier&quot;);
+&nbsp;                return this.getIdentifierFromPersister(entity);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private Object getIdentifierFromPersister(Object entity) {</b>
+<b class="nc">&nbsp;        Class&lt;?&gt; entityClass = Hibernate.getClass(entity);</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        EntityPersister persister;
+<b class="nc">&nbsp;        try {</b>
+<b class="nc">&nbsp;            persister = this.sessionFactory.getRuntimeMetamodels().getMappingMetamodel().getEntityDescriptor(entityClass);</b>
+<b class="nc">&nbsp;            if (persister == null) {</b>
+<b class="nc">&nbsp;                throw new IllegalArgumentException(entityClass.getName() + &quot; is not an entity&quot;);</b>
+&nbsp;            }
+&nbsp;        } catch (MappingException ex) {
+&nbsp;            throw new IllegalArgumentException(entityClass.getName() + &quot; is not an entity&quot;, ex);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return persister.getIdentifier(entity, (SharedSessionContractImplementor)null);
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:58</div>
+</div>
+</body>
+</html>

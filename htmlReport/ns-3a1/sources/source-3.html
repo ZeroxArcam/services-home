@@ -1,0 +1,253 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > Lazy</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.data.util</a>
+</div>
+
+<h1>Coverage Summary for Class: Lazy (org.springframework.data.util)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Lazy</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    36.8%
+  </span>
+  <span class="absValue">
+    (7/19)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    13.6%
+  </span>
+  <span class="absValue">
+    (3/22)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    31.4%
+  </span>
+  <span class="absValue">
+    (16/51)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.data.util;
+&nbsp;
+&nbsp;import java.util.Optional;
+&nbsp;import java.util.function.Function;
+&nbsp;import java.util.function.Supplier;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.ObjectUtils;
+&nbsp;
+&nbsp;public class Lazy&lt;T&gt; implements Supplier&lt;T&gt; {
+&nbsp;    private static final Lazy&lt;?&gt; EMPTY = new Lazy(() -&gt; null, (Object)null, true);
+&nbsp;    static final String UNRESOLVED = &quot;[Unresolved]&quot;;
+&nbsp;    private final Supplier&lt;? extends T&gt; supplier;
+&nbsp;    @Nullable
+&nbsp;    private T value;
+&nbsp;    private volatile boolean resolved;
+&nbsp;
+&nbsp;    private Lazy(Supplier&lt;? extends T&gt; supplier) {
+&nbsp;        this(supplier, (Object)null, false);
+&nbsp;    }
+&nbsp;
+&nbsp;    private Lazy(Supplier&lt;? extends T&gt; supplier, @Nullable T value, boolean resolved) {
+&nbsp;        this.supplier = supplier;
+&nbsp;        this.value = value;
+&nbsp;        this.resolved = resolved;
+&nbsp;    }
+&nbsp;
+&nbsp;    public static &lt;T&gt; Lazy&lt;T&gt; of(Supplier&lt;? extends T&gt; supplier) {
+&nbsp;        return new Lazy&lt;T&gt;(supplier);
+&nbsp;    }
+&nbsp;
+&nbsp;    public static &lt;T&gt; Lazy&lt;T&gt; of(T value) {
+&nbsp;        Assert.notNull(value, &quot;Value must not be null&quot;);
+&nbsp;        return new Lazy&lt;T&gt;(() -&gt; value);
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public static &lt;T&gt; Lazy&lt;T&gt; empty() {</b>
+&nbsp;        return EMPTY;
+&nbsp;    }
+&nbsp;
+&nbsp;    public T get() {
+&nbsp;        T value = (T)this.getNullable();
+&nbsp;        if (value == null) {
+&nbsp;            throw new IllegalStateException(&quot;Expected lazy evaluation to yield a non-null value but got null&quot;);
+&nbsp;        } else {
+<b class="fc">&nbsp;            return value;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public T getNullable() {
+&nbsp;        if (this.resolved) {
+&nbsp;            return this.value;
+&nbsp;        } else {
+&nbsp;            this.value = (T)this.supplier.get();
+<b class="fc">&nbsp;            this.resolved = true;</b>
+&nbsp;            return this.value;
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    public Optional&lt;T&gt; getOptional() {
+&nbsp;        return Optional.ofNullable(this.getNullable());
+&nbsp;    }
+&nbsp;
+&nbsp;    public Lazy&lt;T&gt; or(T other) {
+&nbsp;        Assert.notNull(other, &quot;Other value must not be null&quot;);
+&nbsp;        return of((Supplier)(() -&gt; this.orElse(other)));
+&nbsp;    }
+&nbsp;
+&nbsp;    public Lazy&lt;T&gt; or(Supplier&lt;? extends T&gt; supplier) {
+<b class="fc">&nbsp;        Assert.notNull(supplier, &quot;Supplier must not be null&quot;);</b>
+&nbsp;        return of((Supplier)(() -&gt; this.orElseGet(supplier)));
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public T orElse(@Nullable T other) {
+&nbsp;        T nullable = (T)this.getNullable();
+&nbsp;        return (T)(nullable == null ? other : nullable);
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public T orElseGet(Supplier&lt;? extends T&gt; supplier) {
+<b class="nc">&nbsp;        Assert.notNull(supplier, &quot;Default value supplier must not be null&quot;);</b>
+&nbsp;        T value = (T)this.getNullable();
+<b class="nc">&nbsp;        return (T)(value == null ? supplier.get() : value);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;S&gt; Lazy&lt;S&gt; map(Function&lt;? super T, ? extends S&gt; function) {
+&nbsp;        Assert.notNull(function, &quot;Function must not be null&quot;);
+&nbsp;        return of((Supplier)(() -&gt; function.apply(this.get())));
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;S&gt; Lazy&lt;S&gt; flatMap(Function&lt;? super T, Lazy&lt;? extends S&gt;&gt; function) {
+&nbsp;        Assert.notNull(function, &quot;Function must not be null&quot;);
+&nbsp;        return of((Supplier)(() -&gt; ((Lazy)function.apply(this.get())).get()));
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public boolean equals(@Nullable Object o) {
+&nbsp;        if (this == o) {
+&nbsp;            return true;
+&nbsp;        } else if (o instanceof Lazy) {
+&nbsp;            Lazy&lt;?&gt; lazy = (Lazy)o;
+&nbsp;            if (this.resolved != lazy.resolved) {
+&nbsp;                return false;
+&nbsp;            } else {
+&nbsp;                return !ObjectUtils.nullSafeEquals(this.supplier, lazy.supplier) ? false : ObjectUtils.nullSafeEquals(this.value, lazy.value);
+&nbsp;            }
+<b class="fc">&nbsp;        } else {</b>
+&nbsp;            return false;
+<b class="pc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public int hashCode() {
+<b class="fc">&nbsp;        int result = ObjectUtils.nullSafeHashCode(this.supplier);</b>
+&nbsp;        result = 31 * result + ObjectUtils.nullSafeHashCode(this.value);
+&nbsp;        result = 31 * result + (this.resolved ? 1 : 0);
+&nbsp;        return result;
+&nbsp;    }
+&nbsp;
+&nbsp;    public String toString() {
+&nbsp;        if (!this.resolved) {
+&nbsp;            return &quot;[Unresolved]&quot;;
+&nbsp;        } else {
+&nbsp;            return this.value == null ? &quot;null&quot; : this.value.toString();
+&nbsp;        }
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    public String toString(Supplier&lt;String&gt; fallback) {
+&nbsp;        Assert.notNull(fallback, &quot;Fallback must not be null!&quot;);
+<b class="fc">&nbsp;        return this.resolved ? this.toString() : (String)fallback.get();</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 21:00</div>
+</div>
+</body>
+</html>

@@ -1,74 +1,157 @@
 package com.pragma.hogar360.serviceshome.infrastructure.exceptionshandler;
-
 import com.pragma.hogar360.serviceshome.domain.exceptions.*;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
-/**
- * Global exception handler for REST controllers.
- */
 @ControllerAdvice
 public class ControllerAdvisor {
 
-    /**
-     * Handles NameMaxSizeExceededException.
-     *
-     * @param exception The exception to handle.
-     * @return A ResponseEntity with the error response.
-     */
     @ExceptionHandler(NameMaxSizeExceededException.class)
     public ResponseEntity<ExceptionResponse> handleNameMaxSizeExceededException(NameMaxSizeExceededException exception) {
         return ResponseEntity.badRequest().body(new ExceptionResponse(ExceptionConstants.NAME_MAX_SIZE_MESSAGE,
                 LocalDateTime.now()));
     }
 
-    /**
-     * Handles DescriptionMaxSizeExceededException.
-     *
-     * @param exception The exception to handle.
-     * @return A ResponseEntity with the error response.
-     */
     @ExceptionHandler(DescriptionMaxSizeExceededException.class)
     public ResponseEntity<ExceptionResponse> handleDescriptionMaxSizeExceededException(DescriptionMaxSizeExceededException exception) {
         return ResponseEntity.badRequest().body(new ExceptionResponse(ExceptionConstants.DESCRIPTION_MAX_SIZE_MESSAGE,
                 LocalDateTime.now()));
     }
-    /**
-     * Handles EmptyNameException.
-     *
-     * @param exception The exception to handle.
-     * @return A ResponseEntity with the error response.
-     */
+
     @ExceptionHandler(EmptyNameException.class)
     public ResponseEntity<ExceptionResponse> handleEmptyNameException(EmptyNameException exception) {
         return ResponseEntity.badRequest().body(new ExceptionResponse(ExceptionConstants.NAME_EMPTY,
                 LocalDateTime.now()));
     }
 
-    /**
-     * Handles EmptyDescriptionException.
-     *
-     * @param exception The exception to handle.
-     * @return A ResponseEntity with the error response.
-     */
     @ExceptionHandler(EmptyDescriptionException.class)
     public ResponseEntity<ExceptionResponse> handleEmptyDescriptionException(EmptyDescriptionException exception) {
         return ResponseEntity.badRequest().body(new ExceptionResponse(ExceptionConstants.DESCRIPTION_EMPTY,
                 LocalDateTime.now()));
     }
 
-    /**
-     * Handles CategoryAlreadyExistsException.
-     *
-     * @param exception The exception to handle.
-     * @return A ResponseEntity with the error response.
-     */
     @ExceptionHandler(CategoryAlreadyExistsException.class)
     public ResponseEntity<ExceptionResponse> handleCategoryAlreadyExistsException(CategoryAlreadyExistsException exception) {
-        return ResponseEntity.badRequest().body(new ExceptionResponse(ExceptionConstants.CATEGORY_EXISTS_EXCEPTION,
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ExceptionResponse(ExceptionConstants.CATEGORY_EXISTS_EXCEPTION,
                 LocalDateTime.now()));
     }
+
+    @ExceptionHandler(NumberPageException.class)
+    public ResponseEntity<ExceptionResponse> handleNumberPageException(NumberPageException exception) {
+        return ResponseEntity.badRequest().body(new ExceptionResponse(ExceptionConstants.NUMBER_PAGE,
+                LocalDateTime.now()));
+    }
+    @ExceptionHandler(SizePageException.class)
+    public ResponseEntity<ExceptionResponse> handleSizePageException(SizePageException exception) {
+        return ResponseEntity.badRequest().body(new ExceptionResponse(ExceptionConstants.SIZE_PAGE,
+                LocalDateTime.now()));
+    }
+    @ExceptionHandler(CityNotFoundException.class)
+    public ResponseEntity<ExceptionResponse> hanleCityNotFoundException(CityNotFoundException exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ExceptionResponse(ExceptionConstants.CITY_NAME_NOT_FOUND,
+                LocalDateTime.now()));
+    }
+    @ExceptionHandler(DepartmentNotFoundException.class)
+    public ResponseEntity<ExceptionResponse> hanleDepartmentNotFoundException(DepartmentNotFoundException exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ExceptionResponse(ExceptionConstants.DEPARTMENT_NOT_FOUND,
+                LocalDateTime.now()));
+    }
+    @ExceptionHandler(CategoryNotFoundException.class)
+    public ResponseEntity<ExceptionResponse> handleCategoryNotFoundException(CategoryNotFoundException exception){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ExceptionResponse(ExceptionConstants.CATEGORY_NOT_FOUND_EXCEPTION,
+                LocalDateTime.now()));
+    }
+//    @ExceptionHandler(BusinessException.class)
+//    public ResponseEntity<ExceptionResponse> handleBusinessException(BusinessException exception){
+//        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ExceptionResponse(ExceptionConstants.CATEGORY_NOT_FOUND_EXCEPTION,
+//                LocalDateTime.now()));
+//    }
+
+    @ExceptionHandler(DuplicateLocationException.class)
+    public ResponseEntity<ExceptionResponse> handleDuplicateLocationException(DuplicateLocationException exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ExceptionResponse(ExceptionConstants.DUPLICATE_ENTITY_EXCEPTION,
+                LocalDateTime.now()));
+    }
+
+
+    @ExceptionHandler(DuplicateCityNameException.class)
+    public ResponseEntity<ExceptionResponse> handleDuplicateLocationException(DuplicateCityNameException exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ExceptionResponse(ExceptionConstants.DUPLICATE_ENTITY_EXCEPTION,
+                LocalDateTime.now()));
+    }
+    @ExceptionHandler(DuplicateAddressException.class)
+    public ResponseEntity<ExceptionResponse> handleDuplicateAddressException(DuplicateAddressException exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ExceptionResponse(ExceptionConstants.ADDRESS_ALREADY_EXISTS,
+                LocalDateTime.now()));
+    }
+    @ExceptionHandler(DuplicateDepartmentNameException.class)
+    public ResponseEntity<ExceptionResponse> handleDuplicateDepartmentNameException(DuplicateDepartmentNameException exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ExceptionResponse(ExceptionConstants.DUPLICATE_ENTITY_EXCEPTION,
+                LocalDateTime.now()));
+    }
+
+    @ExceptionHandler(CityDepartmentDescriptionMaxSizeExceededException.class)
+    public ResponseEntity<ExceptionResponse> handleCityMaxSizeExceededException(CityDepartmentDescriptionMaxSizeExceededException exception) {
+        return ResponseEntity.badRequest().body(new ExceptionResponse(ExceptionConstants.DESCRIPTION_LOCATION_MAX_SIZE_MESSAGE,
+                LocalDateTime.now()));
+    }
+    @ExceptionHandler(InvalidParameters.class)
+    public ResponseEntity<ExceptionResponse> handleInvalidParameters(InvalidParameters invalidParameters) {
+        return ResponseEntity.badRequest().body(new ExceptionResponse(ExceptionConstants.INVALID_PARAMETERS,
+                LocalDateTime.now()));
+    }
+    @ExceptionHandler(InvalidPublicationDateException.class)
+    public ResponseEntity<ExceptionResponse> handleInvalidPublicationDateException(InvalidPublicationDateException exception ) {
+        return ResponseEntity.badRequest().body(new ExceptionResponse(ExceptionConstants.INVALID_DATE,
+                LocalDateTime.now()));
+    }
+    @ExceptionHandler(EmptyAddressException.class)
+    public ResponseEntity<ExceptionResponse> handleEmptyAddressException(EmptyAddressException exception) {
+        return ResponseEntity.badRequest().body(new ExceptionResponse(ExceptionConstants.ADDRESS_NULL_OR_EMPTY,
+                LocalDateTime.now()));
+    }
+    @ExceptionHandler(InvalidNumberException.class)
+    public ResponseEntity<ExceptionResponse> handleInvalidNumberException(InvalidNumberException exception) {
+        return ResponseEntity.badRequest().body(new ExceptionResponse(ExceptionConstants.INVALID_NUMBER_OF_ROOMS,
+                LocalDateTime.now()));
+    }
+    @ExceptionHandler(InvalidSortByException.class)
+    public ResponseEntity<ExceptionResponse> handleInvalidSortByException(InvalidSortByException exception) {
+        return ResponseEntity.badRequest().body(new ExceptionResponse(ExceptionConstants.INVALID_SORT_BY,
+                LocalDateTime.now()));
+    }
+
+//    @ExceptionHandler(MethodArgumentNotValidException.class)
+//    public ResponseEntity<Map<String, Object>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+//        List<String> errors = ex.getBindingResult()
+//                .getFieldErrors()
+//                .stream()
+//                .map(error -> {
+//                    String field = error.getField();
+//                    String message = error.getDefaultMessage();
+//                    return String.format("%s: %s", field, message);
+//                })
+//                .collect(Collectors.toList());
+//
+//        Map<String, Object> response = new LinkedHashMap<>();
+//        response.put("timestamp", LocalDateTime.now());
+//        response.put("status", HttpStatus.BAD_REQUEST.value());
+//        response.put("error", HttpStatus.BAD_REQUEST.getReasonPhrase());
+//        response.put("message", "Error de validación en los datos de entrada");
+//        response.put("errores", errors);
+//
+//        return ResponseEntity.badRequest().body(response);
+//    }
+
+
+
+
 }

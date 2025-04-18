@@ -1,0 +1,199 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ApplicationAvailabilityBean</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.boot.availability</a>
+</div>
+
+<h1>Coverage Summary for Class: ApplicationAvailabilityBean (org.springframework.boot.availability)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ApplicationAvailabilityBean</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/27)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.boot.availability;
+&nbsp;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import org.apache.commons.logging.Log;
+&nbsp;import org.apache.commons.logging.LogFactory;
+&nbsp;import org.springframework.context.ApplicationEventPublisher;
+&nbsp;import org.springframework.context.ApplicationListener;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;
+&nbsp;public class ApplicationAvailabilityBean implements ApplicationAvailability, ApplicationListener&lt;AvailabilityChangeEvent&lt;?&gt;&gt; {
+&nbsp;    private final Map&lt;Class&lt;? extends AvailabilityState&gt;, AvailabilityChangeEvent&lt;?&gt;&gt; events;
+&nbsp;    private final Log logger;
+&nbsp;
+&nbsp;    public ApplicationAvailabilityBean() {
+&nbsp;        this(LogFactory.getLog(ApplicationAvailabilityBean.class));
+&nbsp;    }
+&nbsp;
+&nbsp;    ApplicationAvailabilityBean(Log logger) {
+&nbsp;        this.events = new ConcurrentHashMap();
+&nbsp;        this.logger = logger;
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;S extends AvailabilityState&gt; S getState(Class&lt;S&gt; stateType, S defaultState) {
+&nbsp;        Assert.notNull(stateType, &quot;StateType must not be null&quot;);
+&nbsp;        Assert.notNull(defaultState, &quot;DefaultState must not be null&quot;);
+&nbsp;        S state = this.getState(stateType);
+&nbsp;        return (S)(state != null ? state : defaultState);
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;S extends AvailabilityState&gt; S getState(Class&lt;S&gt; stateType) {
+&nbsp;        AvailabilityChangeEvent&lt;S&gt; event = this.&lt;S&gt;getLastChangeEvent(stateType);
+&nbsp;        return (S)(event != null ? event.getState() : null);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public &lt;S extends AvailabilityState&gt; AvailabilityChangeEvent&lt;S&gt; getLastChangeEvent(Class&lt;S&gt; stateType) {</b>
+&nbsp;        return (AvailabilityChangeEvent)this.events.get(stateType);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void onApplicationEvent(AvailabilityChangeEvent&lt;?&gt; event) {
+<b class="nc">&nbsp;        Class&lt;? extends AvailabilityState&gt; type = this.getStateType(event.getState());</b>
+&nbsp;        if (this.logger.isDebugEnabled()) {
+&nbsp;            this.logger.debug(this.getLogMessage(type, event));
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        this.events.put(type, event);
+&nbsp;    }
+&nbsp;
+&nbsp;    private &lt;S extends AvailabilityState&gt; Object getLogMessage(Class&lt;S&gt; type, AvailabilityChangeEvent&lt;?&gt; event) {
+<b class="nc">&nbsp;        AvailabilityChangeEvent&lt;S&gt; lastChangeEvent = this.&lt;S&gt;getLastChangeEvent(type);</b>
+<b class="nc">&nbsp;        StringBuilder message = new StringBuilder(&quot;Application availability state &quot; + type.getSimpleName() + &quot; changed&quot;);</b>
+<b class="nc">&nbsp;        message.append(lastChangeEvent != null ? &quot; from &quot; + String.valueOf(lastChangeEvent.getState()) : &quot;&quot;);</b>
+<b class="nc">&nbsp;        message.append(&quot; to &quot; + String.valueOf(event.getState()));</b>
+&nbsp;        message.append(this.getSourceDescription(event.getSource()));
+&nbsp;        return message;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private String getSourceDescription(Object source) {</b>
+<b class="nc">&nbsp;        if (source != null &amp;&amp; !(source instanceof ApplicationEventPublisher)) {</b>
+&nbsp;            Object var10000 = source instanceof Throwable ? source : source.getClass().getName();
+&nbsp;            return &quot;: &quot; + String.valueOf(var10000);
+&nbsp;        } else {
+&nbsp;            return &quot;&quot;;
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private Class&lt;? extends AvailabilityState&gt; getStateType(AvailabilityState state) {
+&nbsp;        Class var10000;
+&nbsp;        if (state instanceof Enum&lt;?&gt; enumState) {
+<b class="nc">&nbsp;            var10000 = enumState.getDeclaringClass();</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            var10000 = state.getClass();</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        Class&lt;?&gt; type = var10000;
+&nbsp;        return type;
+&nbsp;    }
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,244 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > LocationUseCaseTest</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.pragma.hogar360.serviceshome.domain.usecases</a>
+</div>
+
+<h1>Coverage Summary for Class: LocationUseCaseTest (com.pragma.hogar360.serviceshome.domain.usecases)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LocationUseCaseTest</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (9/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (50/50)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.pragma.hogar360.serviceshome.domain.usecases;
+&nbsp;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.exceptions.*;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.model.CityModel;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.model.LocationModel;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.ports.out.CityPersistencePort;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.ports.out.LocationPersistencePort;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.utils.constants.Pagination;
+&nbsp;import com.pragma.hogar360.serviceshome.factory.CityModelFactory;
+&nbsp;import com.pragma.hogar360.serviceshome.factory.LocationModelFactory;
+&nbsp;import org.junit.jupiter.api.BeforeEach;
+&nbsp;import org.junit.jupiter.api.Test;
+&nbsp;import org.mockito.InjectMocks;
+&nbsp;import org.mockito.Mock;
+&nbsp;import org.mockito.MockitoAnnotations;
+&nbsp;
+&nbsp;import static org.junit.jupiter.api.Assertions.*;
+&nbsp;import static org.mockito.Mockito.*;
+&nbsp;
+<b class="fc">&nbsp;class LocationUseCaseTest {</b>
+&nbsp;
+&nbsp;    @Mock
+&nbsp;    private LocationPersistencePort locationPersistencePort;
+&nbsp;
+&nbsp;    @Mock
+&nbsp;    private CityPersistencePort cityPersistencePort;
+&nbsp;
+&nbsp;    @InjectMocks
+&nbsp;    private LocationUseCase locationUseCase;
+&nbsp;
+&nbsp;    @BeforeEach
+&nbsp;    void setUp() {
+<b class="fc">&nbsp;        MockitoAnnotations.openMocks(this);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Test
+&nbsp;    void testSave_Success() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        CityModel city = CityModelFactory.createDefaultCityModel();</b>
+<b class="fc">&nbsp;        LocationModel location = LocationModelFactory.createLocationModel(1L, city, &quot;Test Neighborhood&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;        when(cityPersistencePort.existsById(city.getId())).thenReturn(true);</b>
+<b class="fc">&nbsp;        when(locationPersistencePort.existsByNeighborhood(location.getNeighborhood())).thenReturn(false);</b>
+<b class="fc">&nbsp;        when(locationPersistencePort.existsByCityId(city.getId())).thenReturn(false);</b>
+&nbsp;
+&nbsp;        // Act
+<b class="fc">&nbsp;        locationUseCase.save(location);</b>
+&nbsp;
+&nbsp;        // Assert
+<b class="fc">&nbsp;        verify(locationPersistencePort, times(1)).save(location);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Test
+&nbsp;    void testSave_CityNotFound() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        CityModel city = CityModelFactory.createDefaultCityModel();</b>
+<b class="fc">&nbsp;        LocationModel location = LocationModelFactory.createLocationModel(1L, city, &quot;Test Neighborhood&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;        when(cityPersistencePort.existsById(city.getId())).thenReturn(false);</b>
+&nbsp;
+&nbsp;        // Act &amp; Assert
+<b class="fc">&nbsp;        assertThrows(CityNotFoundException.class, () -&gt; locationUseCase.save(location));</b>
+<b class="fc">&nbsp;        verify(locationPersistencePort, never()).save(location);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Test
+&nbsp;    void testSave_DuplicateLocation() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        CityModel city = CityModelFactory.createDefaultCityModel();</b>
+<b class="fc">&nbsp;        LocationModel location = LocationModelFactory.createLocationModel(1L, city, &quot;Test Neighborhood&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;        when(cityPersistencePort.existsById(city.getId())).thenReturn(true);</b>
+<b class="fc">&nbsp;        when(locationPersistencePort.existsByNeighborhood(location.getNeighborhood())).thenReturn(true);</b>
+<b class="fc">&nbsp;        when(locationPersistencePort.existsByCityId(city.getId())).thenReturn(true);</b>
+&nbsp;
+&nbsp;        // Act &amp; Assert
+<b class="fc">&nbsp;        assertThrows(DuplicateLocationException.class, () -&gt; locationUseCase.save(location));</b>
+<b class="fc">&nbsp;        verify(locationPersistencePort, never()).save(location);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Test
+&nbsp;    void testSave_IllegalArgumentException() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        CityModel city = CityModelFactory.createDefaultCityModel();</b>
+<b class="fc">&nbsp;        LocationModel location = LocationModelFactory.createLocationModel(1L, city, null);</b>
+&nbsp;
+&nbsp;        // Act &amp; Assert
+<b class="fc">&nbsp;        assertThrows(IllegalArgumentException.class, () -&gt; locationUseCase.save(location));</b>
+<b class="fc">&nbsp;        verify(locationPersistencePort, never()).save(location);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Test
+&nbsp;    void testGetLocations_Success() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        int page = 0;</b>
+<b class="fc">&nbsp;        int size = 10;</b>
+<b class="fc">&nbsp;        String sortBy = &quot;cityName&quot;;</b>
+<b class="fc">&nbsp;        String sortDirection = &quot;ASC&quot;;</b>
+<b class="fc">&nbsp;        String text = &quot;&quot;;</b>
+<b class="fc">&nbsp;        Pagination&lt;LocationModel&gt; pagination = new Pagination&lt;&gt;();</b>
+&nbsp;
+<b class="fc">&nbsp;        when(locationPersistencePort.getLocations(page, size, sortBy, sortDirection, text)).thenReturn(pagination);</b>
+&nbsp;
+&nbsp;        // Act
+<b class="fc">&nbsp;        Pagination&lt;LocationModel&gt; result = locationUseCase.getLocations(page, size, sortBy, sortDirection, text);</b>
+&nbsp;
+&nbsp;        // Assert
+<b class="fc">&nbsp;        assertNotNull(result);</b>
+<b class="fc">&nbsp;        assertEquals(pagination, result);</b>
+<b class="fc">&nbsp;        verify(locationPersistencePort, times(1)).getLocations(page, size, sortBy, sortDirection, text);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Test
+&nbsp;    void testGetLocations_InvalidSortBy() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        int page = 0;</b>
+<b class="fc">&nbsp;        int size = 10;</b>
+<b class="fc">&nbsp;        String sortBy = &quot;invalidSortBy&quot;;</b>
+<b class="fc">&nbsp;        String sortDirection = &quot;ASC&quot;;</b>
+<b class="fc">&nbsp;        String text = &quot;&quot;;</b>
+&nbsp;
+&nbsp;        // Act &amp; Assert
+<b class="fc">&nbsp;        assertThrows(InvalidParameters.class, () -&gt; locationUseCase.getLocations(page, size, sortBy, sortDirection, text));</b>
+<b class="fc">&nbsp;        verify(locationPersistencePort, never()).getLocations(anyInt(), anyInt(), anyString(), anyString(), anyString());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Test
+&nbsp;    void testGetLocations_InvalidSortDirection() {
+&nbsp;        // Arrange
+<b class="fc">&nbsp;        int page = 0;</b>
+<b class="fc">&nbsp;        int size = 10;</b>
+<b class="fc">&nbsp;        String sortBy = &quot;cityName&quot;;</b>
+<b class="fc">&nbsp;        String sortDirection = &quot;invalidSortDirection&quot;;</b>
+<b class="fc">&nbsp;        String text = &quot;&quot;;</b>
+&nbsp;
+&nbsp;        // Act &amp; Assert
+<b class="fc">&nbsp;        assertThrows(InvalidParameters.class, () -&gt; locationUseCase.getLocations(page, size, sortBy, sortDirection, text));</b>
+<b class="fc">&nbsp;        verify(locationPersistencePort, never()).getLocations(anyInt(), anyInt(), anyString(), anyString(), anyString());</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
+</div>
+</body>
+</html>

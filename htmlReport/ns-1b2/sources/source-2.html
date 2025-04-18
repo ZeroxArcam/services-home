@@ -1,0 +1,233 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ManagedBeanRegistryImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.resource.beans.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: ManagedBeanRegistryImpl (org.hibernate.resource.beans.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ManagedBeanRegistryImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (3/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    7.1%
+  </span>
+  <span class="absValue">
+    (1/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    20.6%
+  </span>
+  <span class="absValue">
+    (7/34)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.resource.beans.internal;
+&nbsp;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.Map;
+&nbsp;import org.hibernate.resource.beans.container.spi.BeanContainer;
+&nbsp;import org.hibernate.resource.beans.container.spi.ContainedBean;
+&nbsp;import org.hibernate.resource.beans.container.spi.FallbackContainedBean;
+&nbsp;import org.hibernate.resource.beans.spi.BeanInstanceProducer;
+&nbsp;import org.hibernate.resource.beans.spi.ManagedBean;
+&nbsp;import org.hibernate.resource.beans.spi.ManagedBeanRegistry;
+&nbsp;import org.hibernate.service.spi.Stoppable;
+&nbsp;
+&nbsp;public class ManagedBeanRegistryImpl implements ManagedBeanRegistry, BeanContainer.LifecycleOptions, Stoppable {
+&nbsp;    private final Map&lt;String, ManagedBean&lt;?&gt;&gt; registrations = new HashMap();
+&nbsp;    private final BeanContainer beanContainer;
+&nbsp;
+&nbsp;    public ManagedBeanRegistryImpl(BeanContainer beanContainer) {
+&nbsp;        this.beanContainer = beanContainer;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public BeanContainer getBeanContainer() {</b>
+&nbsp;        return this.beanContainer;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public boolean canUseCachedReferences() {</b>
+<b class="fc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean useJpaCompliantCreation() {
+&nbsp;        return true;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public &lt;T&gt; ManagedBean&lt;T&gt; getBean(Class&lt;T&gt; beanClass) {
+&nbsp;        return this.getBean(beanClass, FallbackBeanInstanceProducer.INSTANCE);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public &lt;T&gt; ManagedBean&lt;T&gt; getBean(Class&lt;T&gt; beanClass, BeanInstanceProducer fallbackBeanInstanceProducer) {
+&nbsp;        ManagedBean&lt;?&gt; existing = (ManagedBean)this.registrations.get(beanClass.getName());
+&nbsp;        if (existing != null) {
+&nbsp;            return existing;
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            ManagedBean&lt;T&gt; bean;
+&nbsp;            if (this.beanContainer == null) {
+&nbsp;                bean = new FallbackContainedBean(beanClass, fallbackBeanInstanceProducer);
+&nbsp;            } else {
+<b class="nc">&nbsp;                ContainedBean&lt;T&gt; containedBean = this.beanContainer.getBean(beanClass, this, fallbackBeanInstanceProducer);</b>
+&nbsp;                if (containedBean instanceof ManagedBean) {
+&nbsp;                    bean = (ManagedBean)containedBean;
+&nbsp;                } else {
+&nbsp;                    bean = new ContainedBeanManagedBeanAdapter&lt;T&gt;(beanClass, containedBean);
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            this.registrations.put(beanClass.getName(), bean);</b>
+&nbsp;            return bean;
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public &lt;T&gt; ManagedBean&lt;T&gt; getBean(String beanName, Class&lt;T&gt; beanContract) {</b>
+&nbsp;        return this.&lt;T&gt;getBean(beanName, beanContract, FallbackBeanInstanceProducer.INSTANCE);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public &lt;T&gt; ManagedBean&lt;T&gt; getBean(String beanName, Class&lt;T&gt; beanContract, BeanInstanceProducer fallbackBeanInstanceProducer) {
+&nbsp;        String var10000 = beanContract.getName();
+&nbsp;        String key = var10000 + &quot;:&quot; + beanName;
+&nbsp;        ManagedBean&lt;?&gt; existing = (ManagedBean)this.registrations.get(key);
+&nbsp;        if (existing != null) {
+<b class="nc">&nbsp;            return existing;</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            ManagedBean&lt;T&gt; bean;</b>
+&nbsp;            if (this.beanContainer == null) {
+&nbsp;                bean = new FallbackContainedBean(beanName, beanContract, fallbackBeanInstanceProducer);
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                ContainedBean&lt;T&gt; containedBean = this.beanContainer.getBean(beanName, beanContract, this, fallbackBeanInstanceProducer);
+&nbsp;                if (containedBean instanceof ManagedBean) {
+&nbsp;                    bean = (ManagedBean)containedBean;
+<b class="nc">&nbsp;                } else {</b>
+&nbsp;                    bean = new ContainedBeanManagedBeanAdapter&lt;T&gt;(beanContract, containedBean);
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            this.registrations.put(key, bean);
+&nbsp;            return bean;
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void stop() {
+&nbsp;        if (this.beanContainer != null) {
+&nbsp;            this.beanContainer.stop();
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        this.registrations.clear();</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private static class ContainedBeanManagedBeanAdapter&lt;B&gt; implements ManagedBean&lt;B&gt; {</b>
+&nbsp;        private final Class&lt;B&gt; beanClass;
+<b class="nc">&nbsp;        private final ContainedBean&lt;B&gt; containedBean;</b>
+&nbsp;
+&nbsp;        private ContainedBeanManagedBeanAdapter(Class&lt;B&gt; beanClass, ContainedBean&lt;B&gt; containedBean) {
+&nbsp;            this.beanClass = beanClass;
+<b class="nc">&nbsp;            this.containedBean = containedBean;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        public Class&lt;B&gt; getBeanClass() {
+<b class="nc">&nbsp;            return this.beanClass;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public B getBeanInstance() {
+&nbsp;            return (B)this.containedBean.getBeanInstance();
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
+</div>
+</body>
+</html>

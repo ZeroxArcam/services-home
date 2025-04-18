@@ -1,0 +1,201 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > HomePersistenceAdapter</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.pragma.hogar360.serviceshome.infrastructure.adapters.persistence</a>
+</div>
+
+<h1>Coverage Summary for Class: HomePersistenceAdapter (com.pragma.hogar360.serviceshome.infrastructure.adapters.persistence)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">HomePersistenceAdapter</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/31)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.pragma.hogar360.serviceshome.infrastructure.adapters.persistence;
+&nbsp;import com.pragma.hogar360.serviceshome.commons.configurations.utils.Auxiliary;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.model.HomeModel;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.model.HomePublicationInfoModel;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.model.HomeQueryModel;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.ports.out.HomePersistencePort;
+&nbsp;import com.pragma.hogar360.serviceshome.domain.utils.constants.Pagination;
+&nbsp;import com.pragma.hogar360.serviceshome.infrastructure.entities.HomeEntity;
+&nbsp;import com.pragma.hogar360.serviceshome.infrastructure.mappers.HomeEntityMapper;
+&nbsp;import com.pragma.hogar360.serviceshome.infrastructure.repositories.mysql.HomeRepository;
+&nbsp;import lombok.RequiredArgsConstructor;
+&nbsp;import lombok.extern.slf4j.Slf4j;
+&nbsp;import org.springframework.data.domain.Page;
+&nbsp;import org.springframework.data.domain.PageRequest;
+&nbsp;import org.springframework.data.domain.Pageable;
+&nbsp;import org.springframework.data.domain.Sort;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;import org.springframework.transaction.annotation.Transactional;
+&nbsp;
+&nbsp;import java.time.LocalDate;
+&nbsp;import java.util.List;
+&nbsp;
+&nbsp;@Service
+&nbsp;@Transactional
+&nbsp;@RequiredArgsConstructor
+<b class="nc">&nbsp;@Slf4j</b>
+&nbsp;public class HomePersistenceAdapter implements HomePersistencePort {
+&nbsp;
+&nbsp;    private final HomeRepository homeRepository;
+&nbsp;    private final HomeEntityMapper homeEntityMapper;
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void save(HomeModel homeModel){
+<b class="nc">&nbsp;        homeRepository.save(homeEntityMapper.toEntity(homeModel));</b>
+&nbsp;    }
+&nbsp;    @Override
+&nbsp;    public boolean existsAddress(String address) {
+<b class="nc">&nbsp;        return homeRepository.existsByAddress(address);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public List&lt;HomeModel&gt; findHomesToActivate(LocalDate date, HomePublicationInfoModel.PublicationStatus domainStatus) {
+<b class="nc">&nbsp;        HomeEntity.PublicationStatus entityStatus = homeEntityMapper.mapPublicationStatus(domainStatus);</b>
+<b class="nc">&nbsp;        return homeRepository.findByActivePublicationDateAndPublicationStatus(date, entityStatus)</b>
+<b class="nc">&nbsp;                .stream()</b>
+<b class="nc">&nbsp;                .map(homeEntityMapper::toModel)</b>
+<b class="nc">&nbsp;                .toList();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void saveAll(List&lt;HomeModel&gt; homes) {
+<b class="nc">&nbsp;        List&lt;HomeEntity&gt; entities = homes.stream()</b>
+<b class="nc">&nbsp;                .map(homeEntityMapper::toEntity)</b>
+<b class="nc">&nbsp;                .toList();</b>
+&nbsp;
+<b class="nc">&nbsp;        homeRepository.saveAll(entities);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public Pagination&lt;HomeModel&gt; findHomesByFilters(
+&nbsp;            HomeQueryModel queryModel,
+&nbsp;            Integer page,
+&nbsp;            Integer size,
+&nbsp;            String sortBy,
+&nbsp;            String sortDirection
+&nbsp;    ) {
+<b class="nc">&nbsp;        Sort sort = Auxiliary.createHomeSort(sortBy, sortDirection);</b>
+<b class="nc">&nbsp;        Pageable pageable = PageRequest.of(page, size, sort);</b>
+&nbsp;
+<b class="nc">&nbsp;        log.info(&quot;Fetching homes from DB - Page: {}, Size: {}, SortBy: {}, SortDirection: {}, Query: {}&quot;,</b>
+&nbsp;                page, size, sortBy, sortDirection, queryModel);
+&nbsp;
+<b class="nc">&nbsp;        Page&lt;HomeEntity&gt; homePages = homeRepository.findFilteredHomes(</b>
+<b class="nc">&nbsp;                queryModel.getCurrentDate(),</b>
+<b class="nc">&nbsp;                queryModel.getLocationId(),</b>
+<b class="nc">&nbsp;                queryModel.getCategoryId(),</b>
+<b class="nc">&nbsp;                queryModel.getMinRooms(),</b>
+<b class="nc">&nbsp;                queryModel.getMaxRooms(),</b>
+<b class="nc">&nbsp;                queryModel.getMinBathrooms(),</b>
+<b class="nc">&nbsp;                queryModel.getMaxBathrooms(),</b>
+<b class="nc">&nbsp;                queryModel.getMinPrice(),</b>
+<b class="nc">&nbsp;                queryModel.getMaxPrice(),</b>
+&nbsp;                pageable
+&nbsp;        );
+&nbsp;
+<b class="nc">&nbsp;        log.info(&quot;Homes fetched. Total Elements: {}, Total Pages: {}&quot;,</b>
+<b class="nc">&nbsp;                homePages.getTotalElements(), homePages.getTotalPages());</b>
+&nbsp;
+<b class="nc">&nbsp;        Pagination&lt;HomeModel&gt; result = homeEntityMapper.homeEntityPageToHomeModelPagination(homePages);</b>
+&nbsp;
+<b class="nc">&nbsp;        log.info(&quot;Mapped Homes: {}&quot;, result.getItems());</b>
+<b class="nc">&nbsp;        log.info(&quot;Pagination mapped successfully. Returning response...&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:44</div>
+</div>
+</body>
+</html>

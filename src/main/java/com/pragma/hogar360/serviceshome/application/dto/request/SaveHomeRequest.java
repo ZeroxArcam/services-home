@@ -1,4 +1,14 @@
 package com.pragma.hogar360.serviceshome.application.dto.request;
 
-public class SaveHomeRequest {
-}
+import java.time.LocalDate;
+
+public record SaveHomeRequest(String name,
+                              String address,
+                              String description,
+                              String category,
+                              Integer numberOfRooms,
+                              Integer numberOfBathrooms,
+                              Double price,
+                              Long cityId,
+                              LocalDate activePublicationDate,
+                              LocalDate publicationDate) {}

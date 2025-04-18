@@ -1,0 +1,256 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > AggregatedServiceLoader</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.boot.registry.classloading.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: AggregatedServiceLoader (org.hibernate.boot.registry.classloading.internal)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AggregatedServiceLoader</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (3/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (3/3)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">AggregatedServiceLoader$ClassPathAndModulePathAggregatedServiceLoader</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (6/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (12/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    96.8%
+  </span>
+  <span class="absValue">
+    (30/31)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (9/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (12/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    97.1%
+  </span>
+  <span class="absValue">
+    (33/34)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.boot.registry.classloading.internal;
+&nbsp;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.HashSet;
+&nbsp;import java.util.Iterator;
+&nbsp;import java.util.LinkedHashSet;
+&nbsp;import java.util.List;
+&nbsp;import java.util.ServiceConfigurationError;
+&nbsp;import java.util.ServiceLoader;
+&nbsp;import java.util.Set;
+&nbsp;import org.hibernate.internal.CoreLogging;
+&nbsp;import org.hibernate.internal.CoreMessageLogger;
+&nbsp;
+&nbsp;abstract class AggregatedServiceLoader&lt;S&gt; {
+&nbsp;    private static final CoreMessageLogger log = CoreLogging.messageLogger(AggregatedServiceLoader.class);
+&nbsp;
+&nbsp;    AggregatedServiceLoader() {
+&nbsp;    }
+&nbsp;
+&nbsp;    static &lt;S&gt; AggregatedServiceLoader&lt;S&gt; create(AggregatedClassLoader aggregatedClassLoader, Class&lt;S&gt; serviceContract) {
+<b class="fc">&nbsp;        return new ClassPathAndModulePathAggregatedServiceLoader&lt;S&gt;(aggregatedClassLoader, serviceContract);</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public abstract Collection&lt;S&gt; getAll();
+&nbsp;
+&nbsp;    public abstract void close();
+<b class="fc">&nbsp;</b>
+&nbsp;    private static class ClassPathAndModulePathAggregatedServiceLoader&lt;S&gt; extends AggregatedServiceLoader&lt;S&gt; {
+&nbsp;        private final Class&lt;S&gt; serviceContract;
+&nbsp;        private final ServiceLoader&lt;S&gt; aggregatedClassLoaderServiceLoader;
+&nbsp;        private final List&lt;ServiceLoader&lt;S&gt;&gt; delegates;
+&nbsp;        private Collection&lt;S&gt; cache = null;
+&nbsp;
+&nbsp;        private ClassPathAndModulePathAggregatedServiceLoader(AggregatedClassLoader aggregatedClassLoader, Class&lt;S&gt; serviceContract) {
+&nbsp;            this.serviceContract = serviceContract;
+&nbsp;            this.delegates = new ArrayList();
+&nbsp;            this.aggregatedClassLoaderServiceLoader = ServiceLoader.load(serviceContract, aggregatedClassLoader);
+&nbsp;            Iterator&lt;ClassLoader&gt; clIterator = aggregatedClassLoader.newClassLoaderIterator();
+&nbsp;
+&nbsp;            while(clIterator.hasNext()) {
+&nbsp;                this.delegates.add(ServiceLoader.load(serviceContract, (ClassLoader)clIterator.next()));
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;
+&nbsp;        public Collection&lt;S&gt; getAll() {
+&nbsp;            if (this.cache == null) {
+&nbsp;                this.cache = Collections.unmodifiableCollection(this.loadAll());
+&nbsp;            }
+&nbsp;
+&nbsp;            return this.cache;
+&nbsp;        }
+&nbsp;
+&nbsp;        private Collection&lt;S&gt; loadAll() {
+&nbsp;            Set&lt;String&gt; alreadyEncountered = new HashSet();
+&nbsp;            Set&lt;S&gt; result = new LinkedHashSet();
+&nbsp;            Iterator&lt;ServiceLoader.Provider&lt;S&gt;&gt; providerIterator = this.aggregatedClassLoaderServiceLoader.stream().iterator();
+&nbsp;
+&nbsp;            while(providerIterator.hasNext()) {
+&nbsp;                ServiceLoader.Provider&lt;S&gt; provider = (ServiceLoader.Provider)providerIterator.next();
+&nbsp;                this.collectServiceIfNotDuplicate(result, alreadyEncountered, provider);
+&nbsp;            }
+&nbsp;
+&nbsp;            for(ServiceLoader&lt;S&gt; delegate : this.delegates) {
+&nbsp;                providerIterator = delegate.stream().iterator();
+&nbsp;
+&nbsp;                while(this.hasNextIgnoringServiceConfigurationError(providerIterator)) {
+&nbsp;                    ServiceLoader.Provider&lt;S&gt; provider = (ServiceLoader.Provider)providerIterator.next();
+&nbsp;                    this.collectServiceIfNotDuplicate(result, alreadyEncountered, provider);
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            return result;
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        private boolean hasNextIgnoringServiceConfigurationError(Iterator&lt;?&gt; iterator) {
+<b class="fc">&nbsp;            while(true) {</b>
+<b class="fc">&nbsp;                try {</b>
+<b class="fc">&nbsp;                    return iterator.hasNext();</b>
+<b class="fc">&nbsp;                } catch (ServiceConfigurationError e) {</b>
+<b class="fc">&nbsp;                    AggregatedServiceLoader.log.ignoringServiceConfigurationError(this.serviceContract, e);</b>
+<b class="fc">&nbsp;                }</b>
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        private void collectServiceIfNotDuplicate(Set&lt;S&gt; result, Set&lt;String&gt; alreadyEncountered, ServiceLoader.Provider&lt;S&gt; provider) {
+&nbsp;            Class&lt;? extends S&gt; type = provider.type();
+&nbsp;            String typeName = type.getName();
+&nbsp;            if (alreadyEncountered.add(typeName)) {
+&nbsp;                result.add(provider.get());
+<b class="fc">&nbsp;            }</b>
+&nbsp;
+&nbsp;        }
+&nbsp;
+&nbsp;        public void close() {
+&nbsp;            this.cache = null;
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
+</div>
+</body>
+</html>

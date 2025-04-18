@@ -1,0 +1,502 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > MySQLSqlAstTranslator</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.dialect</a>
+</div>
+
+<h1>Coverage Summary for Class: MySQLSqlAstTranslator (org.hibernate.dialect)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MySQLSqlAstTranslator</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    27%
+  </span>
+  <span class="absValue">
+    (10/37)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    7.7%
+  </span>
+  <span class="absValue">
+    (8/104)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    9.9%
+  </span>
+  <span class="absValue">
+    (17/172)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.dialect;
+&nbsp;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Locale;
+&nbsp;import org.hibernate.engine.spi.SessionFactoryImplementor;
+&nbsp;import org.hibernate.internal.util.collections.Stack;
+&nbsp;import org.hibernate.query.sqm.ComparisonOperator;
+&nbsp;import org.hibernate.sql.ast.Clause;
+&nbsp;import org.hibernate.sql.ast.spi.AbstractSqlAstTranslator;
+&nbsp;import org.hibernate.sql.ast.tree.MutationStatement;
+&nbsp;import org.hibernate.sql.ast.tree.Statement;
+&nbsp;import org.hibernate.sql.ast.tree.delete.DeleteStatement;
+&nbsp;import org.hibernate.sql.ast.tree.expression.BinaryArithmeticExpression;
+&nbsp;import org.hibernate.sql.ast.tree.expression.CastTarget;
+&nbsp;import org.hibernate.sql.ast.tree.expression.ColumnReference;
+&nbsp;import org.hibernate.sql.ast.tree.expression.Expression;
+&nbsp;import org.hibernate.sql.ast.tree.expression.Literal;
+&nbsp;import org.hibernate.sql.ast.tree.expression.Summarization;
+&nbsp;import org.hibernate.sql.ast.tree.from.NamedTableReference;
+&nbsp;import org.hibernate.sql.ast.tree.from.QueryPartTableReference;
+&nbsp;import org.hibernate.sql.ast.tree.from.ValuesTableReference;
+&nbsp;import org.hibernate.sql.ast.tree.insert.ConflictClause;
+&nbsp;import org.hibernate.sql.ast.tree.insert.InsertSelectStatement;
+&nbsp;import org.hibernate.sql.ast.tree.predicate.BooleanExpressionPredicate;
+&nbsp;import org.hibernate.sql.ast.tree.predicate.LikePredicate;
+&nbsp;import org.hibernate.sql.ast.tree.select.QueryGroup;
+&nbsp;import org.hibernate.sql.ast.tree.select.QueryPart;
+&nbsp;import org.hibernate.sql.ast.tree.select.QuerySpec;
+&nbsp;import org.hibernate.sql.ast.tree.select.SelectStatement;
+&nbsp;import org.hibernate.sql.ast.tree.update.UpdateStatement;
+&nbsp;import org.hibernate.sql.exec.internal.JdbcOperationQueryInsertImpl;
+&nbsp;import org.hibernate.sql.exec.spi.JdbcOperation;
+&nbsp;import org.hibernate.sql.exec.spi.JdbcOperationQueryInsert;
+&nbsp;
+&nbsp;public class MySQLSqlAstTranslator&lt;T extends JdbcOperation&gt; extends AbstractSqlAstTranslator&lt;T&gt; {
+&nbsp;    public MySQLSqlAstTranslator(SessionFactoryImplementor sessionFactory, Statement statement) {
+&nbsp;        super(sessionFactory, statement);
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @deprecated */
+&nbsp;    @Deprecated(
+&nbsp;        forRemoval = true
+&nbsp;    )
+&nbsp;    public static String getSqlType(CastTarget castTarget, Dialect dialect) {
+&nbsp;        return getSqlType(castTarget, castTarget.getSqlType(), dialect);
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public static String getSqlType(CastTarget castTarget, SessionFactoryImplementor factory) {
+&nbsp;        String sqlType = getCastTypeName(castTarget, factory.getTypeConfiguration());
+&nbsp;        return getSqlType(castTarget, sqlType, factory.getJdbcServices().getDialect());
+&nbsp;    }
+&nbsp;
+&nbsp;    private static String getSqlType(CastTarget castTarget, String sqlType, Dialect dialect) {
+<b class="nc">&nbsp;        if (sqlType != null) {</b>
+&nbsp;            int parenthesesIndex = sqlType.indexOf(40);
+&nbsp;            String baseName = parenthesesIndex == -1 ? sqlType : sqlType.substring(0, parenthesesIndex);
+&nbsp;            switch (baseName.toLowerCase(Locale.ROOT)) {
+<b class="nc">&nbsp;                case &quot;bit&quot;:</b>
+<b class="nc">&nbsp;                    return &quot;unsigned&quot;;</b>
+&nbsp;                case &quot;tinyint&quot;:
+&nbsp;                case &quot;smallint&quot;:
+&nbsp;                case &quot;integer&quot;:
+<b class="nc">&nbsp;                case &quot;bigint&quot;:</b>
+<b class="nc">&nbsp;                    return &quot;signed&quot;;</b>
+<b class="nc">&nbsp;                case &quot;float&quot;:</b>
+<b class="nc">&nbsp;                case &quot;real&quot;:</b>
+&nbsp;                case &quot;double precision&quot;:
+<b class="nc">&nbsp;                    int precision = castTarget.getPrecision() == null ? dialect.getDefaultDecimalPrecision() : castTarget.getPrecision();</b>
+&nbsp;                    int scale = castTarget.getScale() == null ? 2 : castTarget.getScale();
+&nbsp;                    return &quot;decimal(&quot; + precision + &quot;,&quot; + scale + &quot;)&quot;;
+&nbsp;                case &quot;char&quot;:
+&nbsp;                case &quot;varchar&quot;:
+<b class="nc">&nbsp;                case &quot;nchar&quot;:</b>
+&nbsp;                case &quot;nvarchar&quot;:
+&nbsp;                    return castTarget.getLength() == null ? &quot;char&quot; : &quot;char(&quot; + castTarget.getLength() + &quot;)&quot;;
+&nbsp;                case &quot;binary&quot;:
+<b class="nc">&nbsp;                case &quot;varbinary&quot;:</b>
+<b class="nc">&nbsp;                    return castTarget.getLength() == null ? &quot;binary&quot; : &quot;binary(&quot; + castTarget.getLength() + &quot;)&quot;;</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return sqlType;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void visitBinaryArithmeticExpression(BinaryArithmeticExpression arithmeticExpression) {
+<b class="nc">&nbsp;        if (this.isIntegerDivisionEmulationRequired(arithmeticExpression)) {</b>
+<b class="nc">&nbsp;            this.appendSql(&#39;(&#39;);</b>
+<b class="nc">&nbsp;            this.visitArithmeticOperand(arithmeticExpression.getLeftHandOperand());</b>
+&nbsp;            this.appendSql(&quot; div &quot;);
+&nbsp;            this.visitArithmeticOperand(arithmeticExpression.getRightHandOperand());
+<b class="nc">&nbsp;            this.appendSql(&#39;)&#39;);</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            super.visitBinaryArithmeticExpression(arithmeticExpression);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected void visitInsertSource(InsertSelectStatement statement) {
+&nbsp;        if (statement.getSourceSelectStatement() != null) {
+&nbsp;            if (statement.getConflictClause() != null) {
+<b class="nc">&nbsp;                List&lt;ColumnReference&gt; targetColumnReferences = statement.getTargetColumns();</b>
+<b class="nc">&nbsp;                List&lt;String&gt; columnNames = new ArrayList(targetColumnReferences.size());</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                for(ColumnReference targetColumnReference : targetColumnReferences) {</b>
+<b class="nc">&nbsp;                    columnNames.add(targetColumnReference.getColumnExpression());</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                this.appendSql(&quot;select * from &quot;);
+<b class="nc">&nbsp;                this.emulateQueryPartTableReferenceColumnAliasing(new QueryPartTableReference(new SelectStatement(statement.getSourceSelectStatement()), &quot;excluded&quot;, columnNames, false, this.getSessionFactory()));</b>
+&nbsp;            } else {
+&nbsp;                statement.getSourceSelectStatement().accept(this);
+&nbsp;            }
+&nbsp;        } else {
+&nbsp;            this.visitValuesList(statement.getValuesList());
+<b class="nc">&nbsp;            if (statement.getConflictClause() != null &amp;&amp; this.getDialect().getMySQLVersion().isSameOrAfter(8, 0, 19)) {</b>
+<b class="nc">&nbsp;                this.appendSql(&quot; as excluded&quot;);</b>
+<b class="nc">&nbsp;                char separator = &#39;(&#39;;</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                for(ColumnReference targetColumn : statement.getTargetColumns()) {</b>
+<b class="nc">&nbsp;                    this.appendSql(separator);</b>
+&nbsp;                    this.appendSql(targetColumn.getColumnExpression());
+<b class="nc">&nbsp;                    separator = &#39;,&#39;;</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="nc">&nbsp;                this.appendSql(&#39;)&#39;);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void visitColumnReference(ColumnReference columnReference) {
+&nbsp;        Statement currentStatement;
+&nbsp;        if (this.getDialect().getMySQLVersion().isBefore(8, 0, 19) &amp;&amp; &quot;excluded&quot;.equals(columnReference.getQualifier()) &amp;&amp; (currentStatement = (Statement)this.getStatementStack().getCurrent()) instanceof InsertSelectStatement &amp;&amp; ((InsertSelectStatement)currentStatement).getSourceSelectStatement() == null) {
+<b class="nc">&nbsp;            this.appendSql(&quot;values(&quot;);</b>
+&nbsp;            columnReference.appendReadExpression(this, (String)null);
+&nbsp;            this.append(&#39;)&#39;);
+&nbsp;        } else {
+<b class="nc">&nbsp;            super.visitColumnReference(columnReference);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected void renderDeleteClause(DeleteStatement statement) {</b>
+<b class="nc">&nbsp;        this.appendSql(&quot;delete&quot;);</b>
+<b class="nc">&nbsp;        Stack&lt;Clause&gt; clauseStack = this.getClauseStack();</b>
+&nbsp;
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            clauseStack.push(Clause.DELETE);
+&nbsp;            this.renderTableReferenceIdentificationVariable(statement.getTargetTable());
+&nbsp;            if (statement.getFromClause().getRoots().isEmpty()) {
+&nbsp;                this.appendSql(&quot; from &quot;);
+&nbsp;                this.renderDmlTargetTableExpression(statement.getTargetTable());
+&nbsp;            } else {
+&nbsp;                this.visitFromClause(statement.getFromClause());
+<b class="pc">&nbsp;            }</b>
+<b class="pc">&nbsp;        } finally {</b>
+<b class="nc">&nbsp;            clauseStack.pop();</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected void renderUpdateClause(UpdateStatement updateStatement) {</b>
+&nbsp;        if (updateStatement.getFromClause().getRoots().isEmpty()) {
+&nbsp;            super.renderUpdateClause(updateStatement);
+<b class="fc">&nbsp;        } else {</b>
+&nbsp;            this.appendSql(&quot;update &quot;);
+&nbsp;            this.renderFromClauseSpaces(updateStatement.getFromClause());
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected void renderDmlTargetTableExpression(NamedTableReference tableReference) {</b>
+&nbsp;        super.renderDmlTargetTableExpression(tableReference);
+<b class="nc">&nbsp;        if (this.getClauseStack().getCurrent() != Clause.INSERT) {</b>
+<b class="nc">&nbsp;            this.renderTableReferenceIdentificationVariable(tableReference);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected boolean supportsJoinsInDelete() {
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected JdbcOperationQueryInsert translateInsert(InsertSelectStatement sqlAst) {
+<b class="nc">&nbsp;        this.visitInsertStatement(sqlAst);</b>
+&nbsp;        return new JdbcOperationQueryInsertImpl(this.getSql(), this.getParameterBinders(), this.getAffectedTableNames(), this.getUniqueConstraintNameThatMayFail(sqlAst));
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void visitConflictClause(ConflictClause conflictClause) {
+&nbsp;        this.visitOnDuplicateKeyConflictClause(conflictClause);
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    protected String determineColumnReferenceQualifier(ColumnReference columnReference) {
+&nbsp;        DmlTargetColumnQualifierSupport qualifierSupport = this.getDialect().getDmlTargetColumnQualifierSupport();
+<b class="nc">&nbsp;        MutationStatement currentDmlStatement;</b>
+<b class="nc">&nbsp;        String dmlAlias;</b>
+&nbsp;        if (this.getClauseStack().getCurrent() == Clause.SET &amp;&amp; (currentDmlStatement = this.getCurrentDmlStatement()) instanceof InsertSelectStatement &amp;&amp; (dmlAlias = currentDmlStatement.getTargetTable().getIdentificationVariable()) != null &amp;&amp; dmlAlias.equals(columnReference.getQualifier())) {
+&nbsp;            return qualifierSupport == DmlTargetColumnQualifierSupport.NONE &amp;&amp; this.getQueryPartStack().isEmpty() ? null : this.getCurrentDmlStatement().getTargetTable().getTableExpression();
+&nbsp;        } else {
+&nbsp;            return columnReference.getQualifier();
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected void renderExpressionAsClauseItem(Expression expression) {</b>
+&nbsp;        expression.accept(this);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void visitRecursivePath(Expression recursivePath, int sizeEstimate) {
+&nbsp;        if (sizeEstimate == -1) {
+<b class="nc">&nbsp;            super.visitRecursivePath(recursivePath, sizeEstimate);</b>
+&nbsp;        } else {
+&nbsp;            this.appendSql(&quot;cast(&quot;);
+&nbsp;            recursivePath.accept(this);
+&nbsp;            this.appendSql(&quot; as char(&quot;);
+<b class="nc">&nbsp;            this.appendSql(sizeEstimate);</b>
+&nbsp;            this.appendSql(&quot;))&quot;);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void visitBooleanExpressionPredicate(BooleanExpressionPredicate booleanExpressionPredicate) {</b>
+&nbsp;        boolean isNegated = booleanExpressionPredicate.isNegated();
+&nbsp;        if (isNegated) {
+&nbsp;            this.appendSql(&quot;not(&quot;);
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        booleanExpressionPredicate.getExpression().accept(this);</b>
+&nbsp;        if (isNegated) {
+&nbsp;            this.appendSql(&#39;)&#39;);
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected String getForShare(int timeoutMillis) {
+&nbsp;        return &quot; for share&quot;;
+&nbsp;    }
+&nbsp;
+<b class="pc">&nbsp;    protected boolean shouldEmulateFetchClause(QueryPart queryPart) {</b>
+<b class="nc">&nbsp;        return this.useOffsetFetchClause(queryPart) &amp;&amp; this.getQueryPartForRowNumbering() != queryPart &amp;&amp; this.getDialect().supportsWindowFunctions() &amp;&amp; !this.isRowsOnlyFetchClauseType(queryPart);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="fc">&nbsp;    public void visitQueryGroup(QueryGroup queryGroup) {</b>
+&nbsp;        if (this.shouldEmulateFetchClause(queryGroup)) {
+&nbsp;            this.emulateFetchOffsetWithWindowFunctions(queryGroup, true);
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            super.visitQueryGroup(queryGroup);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void visitQuerySpec(QuerySpec querySpec) {
+&nbsp;        if (this.shouldEmulateFetchClause(querySpec)) {
+&nbsp;            this.emulateFetchOffsetWithWindowFunctions(querySpec, true);
+&nbsp;        } else {
+<b class="fc">&nbsp;            super.visitQuerySpec(querySpec);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void visitValuesTableReference(ValuesTableReference tableReference) {
+&nbsp;        this.emulateValuesTableReferenceColumnAliasing(tableReference);
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public void visitOffsetFetchClause(QueryPart queryPart) {
+&nbsp;        if (!this.isRowNumberingCurrentQueryPart()) {
+<b class="nc">&nbsp;            this.renderCombinedLimitClause(queryPart);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    protected void renderComparison(Expression lhs, ComparisonOperator operator, Expression rhs) {
+&nbsp;        this.renderComparisonDistinctOperator(lhs, operator, rhs);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void renderPartitionItem(Expression expression) {
+<b class="nc">&nbsp;        if (expression instanceof Literal) {</b>
+<b class="nc">&nbsp;            this.appendSql(&quot;&#39;0&#39;&quot;);</b>
+<b class="nc">&nbsp;        } else if (expression instanceof Summarization) {</b>
+&nbsp;            Summarization summarization = (Summarization)expression;
+<b class="nc">&nbsp;            this.renderCommaSeparated(summarization.getGroupings());</b>
+<b class="nc">&nbsp;            this.appendSql(&quot; with &quot;);</b>
+<b class="nc">&nbsp;            this.appendSql(summarization.getKind().sqlText());</b>
+&nbsp;        } else {
+&nbsp;            expression.accept(this);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void visitLikePredicate(LikePredicate likePredicate) {
+&nbsp;        if (this.getDialect().getVersion().isSameOrAfter(8, 0, 24)) {
+&nbsp;            super.visitLikePredicate(likePredicate);
+&nbsp;            if (!this.getDialect().isNoBackslashEscapesEnabled() &amp;&amp; likePredicate.getEscapeCharacter() == null) {
+<b class="pc">&nbsp;                this.appendSql(&quot; escape &#39;&#39;&quot;);</b>
+<b class="pc">&nbsp;            }</b>
+&nbsp;        } else {
+&nbsp;            if (likePredicate.isCaseSensitive()) {
+&nbsp;                likePredicate.getMatchExpression().accept(this);
+&nbsp;                if (likePredicate.isNegated()) {
+<b class="nc">&nbsp;                    this.appendSql(&quot; not&quot;);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                this.appendSql(&quot; like &quot;);
+<b class="nc">&nbsp;                this.renderBackslashEscapedLikePattern(likePredicate.getPattern(), likePredicate.getEscapeCharacter(), this.getDialect().isNoBackslashEscapesEnabled());</b>
+&nbsp;            } else {
+&nbsp;                this.appendSql(this.getDialect().getLowercaseFunction());
+&nbsp;                this.appendSql(&#39;(&#39;);
+&nbsp;                likePredicate.getMatchExpression().accept(this);
+&nbsp;                this.appendSql(&#39;)&#39;);
+<b class="pc">&nbsp;                if (likePredicate.isNegated()) {</b>
+<b class="nc">&nbsp;                    this.appendSql(&quot; not&quot;);</b>
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                this.appendSql(&quot; like &quot;);</b>
+&nbsp;                this.appendSql(this.getDialect().getLowercaseFunction());
+&nbsp;                this.appendSql(&#39;(&#39;);
+&nbsp;                this.renderBackslashEscapedLikePattern(likePredicate.getPattern(), likePredicate.getEscapeCharacter(), this.getDialect().isNoBackslashEscapesEnabled());
+&nbsp;                this.appendSql(&#39;)&#39;);
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            if (likePredicate.getEscapeCharacter() != null) {
+&nbsp;                this.appendSql(&quot; escape &quot;);
+&nbsp;                likePredicate.getEscapeCharacter().accept(this);
+&nbsp;            }
+<b class="pc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean supportsRowValueConstructorSyntaxInSet() {
+&nbsp;        return false;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public boolean supportsRowValueConstructorSyntaxInInList() {
+&nbsp;        return true;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected boolean supportsRowValueConstructorSyntaxInQuantifiedPredicates() {</b>
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected boolean supportsIntersect() {</b>
+<b class="nc">&nbsp;        return false;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    protected boolean supportsDistinctFromPredicate() {
+&nbsp;        return true;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected boolean supportsSimpleQueryGrouping() {
+&nbsp;        return true;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected boolean supportsNestedSubqueryCorrelation() {
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected boolean supportsWithClause() {</b>
+<b class="nc">&nbsp;        return true;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public MySQLDialect getDialect() {
+&nbsp;        return (MySQLDialect)DialectDelegateWrapper.extractRealDialect(super.getDialect());
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void visitCastTarget(CastTarget castTarget) {</b>
+<b class="nc">&nbsp;        String sqlType = getSqlType(castTarget, this.getSessionFactory());</b>
+&nbsp;        if (sqlType != null) {
+<b class="nc">&nbsp;            this.appendSql(sqlType);</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            super.visitCastTarget(castTarget);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void renderStringContainsExactlyPredicate(Expression haystack, Expression needle) {
+<b class="nc">&nbsp;        haystack.accept(this);</b>
+<b class="nc">&nbsp;        this.appendSql(&quot; like concat(&#39;%&#39;,replace(replace(replace(&quot;);</b>
+<b class="nc">&nbsp;        needle.accept(this);</b>
+<b class="nc">&nbsp;        this.appendSql(&quot;,&#39;~&#39;,&#39;~~&#39;),&#39;?&#39;,&#39;~?&#39;),&#39;%&#39;,&#39;~%&#39;),&#39;%&#39;) escape &#39;~&#39;&quot;);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

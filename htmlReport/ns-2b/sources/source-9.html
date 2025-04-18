@@ -1,0 +1,199 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > BufferRecycler</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.fasterxml.jackson.core.util</a>
+</div>
+
+<h1>Coverage Summary for Class: BufferRecycler (com.fasterxml.jackson.core.util)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+</tr>
+  <tr>
+    <td class="name">BufferRecycler$Gettable</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package com.fasterxml.jackson.core.util;
+&nbsp;
+&nbsp;import java.util.Objects;
+&nbsp;import java.util.concurrent.atomic.AtomicReferenceArray;
+&nbsp;
+&nbsp;public class BufferRecycler implements RecyclerPool.WithPool&lt;BufferRecycler&gt; {
+&nbsp;    public static final int BYTE_READ_IO_BUFFER = 0;
+&nbsp;    public static final int BYTE_WRITE_ENCODING_BUFFER = 1;
+&nbsp;    public static final int BYTE_WRITE_CONCAT_BUFFER = 2;
+&nbsp;    public static final int BYTE_BASE64_CODEC_BUFFER = 3;
+&nbsp;    public static final int CHAR_TOKEN_BUFFER = 0;
+&nbsp;    public static final int CHAR_CONCAT_BUFFER = 1;
+&nbsp;    public static final int CHAR_TEXT_BUFFER = 2;
+&nbsp;    public static final int CHAR_NAME_COPY_BUFFER = 3;
+&nbsp;    private static final int[] BYTE_BUFFER_LENGTHS = new int[]{8000, 8000, 2000, 2000};
+&nbsp;    private static final int[] CHAR_BUFFER_LENGTHS = new int[]{4000, 4000, 200, 200};
+&nbsp;    protected final AtomicReferenceArray&lt;byte[]&gt; _byteBuffers;
+&nbsp;    protected final AtomicReferenceArray&lt;char[]&gt; _charBuffers;
+&nbsp;    private RecyclerPool&lt;BufferRecycler&gt; _pool;
+&nbsp;
+&nbsp;    public BufferRecycler() {
+&nbsp;        this(4, 4);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected BufferRecycler(int bbCount, int cbCount) {
+&nbsp;        this._byteBuffers = new AtomicReferenceArray(bbCount);
+&nbsp;        this._charBuffers = new AtomicReferenceArray(cbCount);
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isLinkedWithPool() {
+&nbsp;        return this._pool != null;
+&nbsp;    }
+&nbsp;
+&nbsp;    public final byte[] allocByteBuffer(int ix) {
+&nbsp;        return this.allocByteBuffer(ix, 0);
+&nbsp;    }
+&nbsp;
+&nbsp;    public byte[] allocByteBuffer(int ix, int minSize) {
+&nbsp;        int DEF_SIZE = this.byteBufferLength(ix);
+&nbsp;        if (minSize &lt; DEF_SIZE) {
+&nbsp;            minSize = DEF_SIZE;
+&nbsp;        }
+&nbsp;
+&nbsp;        byte[] buffer = (byte[])this._byteBuffers.getAndSet(ix, (Object)null);
+&nbsp;        if (buffer == null || buffer.length &lt; minSize) {
+&nbsp;            buffer = this.balloc(minSize);
+&nbsp;        }
+&nbsp;
+&nbsp;        return buffer;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void releaseByteBuffer(int ix, byte[] buffer) {
+&nbsp;        byte[] oldBuffer = (byte[])this._byteBuffers.get(ix);
+&nbsp;        if (oldBuffer == null || buffer.length &gt; oldBuffer.length) {
+&nbsp;            this._byteBuffers.set(ix, buffer);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public final char[] allocCharBuffer(int ix) {
+&nbsp;        return this.allocCharBuffer(ix, 0);
+&nbsp;    }
+&nbsp;
+&nbsp;    public char[] allocCharBuffer(int ix, int minSize) {
+&nbsp;        int DEF_SIZE = this.charBufferLength(ix);
+&nbsp;        if (minSize &lt; DEF_SIZE) {
+&nbsp;            minSize = DEF_SIZE;
+&nbsp;        }
+&nbsp;
+&nbsp;        char[] buffer = (char[])this._charBuffers.getAndSet(ix, (Object)null);
+&nbsp;        if (buffer == null || buffer.length &lt; minSize) {
+&nbsp;            buffer = this.calloc(minSize);
+&nbsp;        }
+&nbsp;
+&nbsp;        return buffer;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void releaseCharBuffer(int ix, char[] buffer) {
+&nbsp;        char[] oldBuffer = (char[])this._charBuffers.get(ix);
+&nbsp;        if (oldBuffer == null || buffer.length &gt; oldBuffer.length) {
+&nbsp;            this._charBuffers.set(ix, buffer);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected int byteBufferLength(int ix) {
+&nbsp;        return BYTE_BUFFER_LENGTHS[ix];
+&nbsp;    }
+&nbsp;
+&nbsp;    protected int charBufferLength(int ix) {
+&nbsp;        return CHAR_BUFFER_LENGTHS[ix];
+&nbsp;    }
+&nbsp;
+&nbsp;    protected byte[] balloc(int size) {
+&nbsp;        return new byte[size];
+&nbsp;    }
+&nbsp;
+&nbsp;    protected char[] calloc(int size) {
+&nbsp;        return new char[size];
+&nbsp;    }
+&nbsp;
+&nbsp;    public BufferRecycler withPool(RecyclerPool&lt;BufferRecycler&gt; pool) {
+&nbsp;        if (this._pool != null) {
+&nbsp;            throw new IllegalStateException(&quot;BufferRecycler already linked to pool: &quot; + pool);
+&nbsp;        } else {
+&nbsp;            this._pool = (RecyclerPool)Objects.requireNonNull(pool);
+&nbsp;            return this;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void releaseToPool() {
+&nbsp;        if (this._pool != null) {
+&nbsp;            RecyclerPool&lt;BufferRecycler&gt; tmpPool = this._pool;
+&nbsp;            this._pool = null;
+&nbsp;            tmpPool.releasePooled(this);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public interface Gettable {
+&nbsp;        BufferRecycler bufferRecycler();
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:58</div>
+</div>
+</body>
+</html>

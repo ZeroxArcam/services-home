@@ -1,0 +1,455 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > AggregateComponentSecondPass</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.boot.model.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: AggregateComponentSecondPass (org.hibernate.boot.model.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AggregateComponentSecondPass</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/15)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/116)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/196)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.boot.model.internal;
+&nbsp;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Objects;
+&nbsp;import java.util.TreeSet;
+&nbsp;import org.hibernate.AnnotationException;
+&nbsp;import org.hibernate.MappingException;
+&nbsp;import org.hibernate.annotations.Comment;
+&nbsp;import org.hibernate.annotations.common.reflection.XClass;
+&nbsp;import org.hibernate.boot.model.relational.Database;
+&nbsp;import org.hibernate.boot.model.relational.Namespace;
+&nbsp;import org.hibernate.boot.model.relational.QualifiedName;
+&nbsp;import org.hibernate.boot.spi.InFlightMetadataCollector;
+&nbsp;import org.hibernate.boot.spi.MetadataBuildingContext;
+&nbsp;import org.hibernate.boot.spi.SecondPass;
+&nbsp;import org.hibernate.dialect.Dialect;
+&nbsp;import org.hibernate.dialect.aggregate.AggregateSupport;
+&nbsp;import org.hibernate.internal.util.ReflectHelper;
+&nbsp;import org.hibernate.internal.util.StringHelper;
+&nbsp;import org.hibernate.mapping.AggregateColumn;
+&nbsp;import org.hibernate.mapping.Collection;
+&nbsp;import org.hibernate.mapping.Column;
+&nbsp;import org.hibernate.mapping.Component;
+&nbsp;import org.hibernate.mapping.PersistentClass;
+&nbsp;import org.hibernate.mapping.Property;
+&nbsp;import org.hibernate.mapping.Selectable;
+&nbsp;import org.hibernate.mapping.ToOne;
+&nbsp;import org.hibernate.mapping.UserDefinedObjectType;
+&nbsp;import org.hibernate.mapping.Value;
+&nbsp;import org.hibernate.metamodel.internal.EmbeddableHelper;
+&nbsp;import org.hibernate.query.sqm.function.SqmFunctionRegistry;
+&nbsp;import org.hibernate.type.spi.TypeConfiguration;
+&nbsp;
+&nbsp;public class AggregateComponentSecondPass implements SecondPass {
+&nbsp;    private final PropertyHolder propertyHolder;
+&nbsp;    private final Component component;
+&nbsp;    private final XClass componentXClass;
+&nbsp;    private final String propertyName;
+&nbsp;    private final MetadataBuildingContext context;
+&nbsp;
+&nbsp;    public AggregateComponentSecondPass(PropertyHolder propertyHolder, Component component, XClass componentXClass, String propertyName, MetadataBuildingContext context) {
+&nbsp;        this.propertyHolder = propertyHolder;
+&nbsp;        this.component = component;
+&nbsp;        this.componentXClass = componentXClass;
+&nbsp;        this.propertyName = propertyName;
+&nbsp;        this.context = context;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void doSecondPass(Map&lt;String, PersistentClass&gt; persistentClasses) throws MappingException {
+&nbsp;        validateComponent(this.component, StringHelper.qualify(this.propertyHolder.getPath(), this.propertyName), this.isAggregateArray());
+&nbsp;        InFlightMetadataCollector metadataCollector = this.context.getMetadataCollector();
+&nbsp;        TypeConfiguration typeConfiguration = metadataCollector.getTypeConfiguration();
+<b class="nc">&nbsp;        Database database = metadataCollector.getDatabase();</b>
+<b class="nc">&nbsp;        Dialect dialect = database.getDialect();</b>
+<b class="nc">&nbsp;        AggregateSupport aggregateSupport = dialect.getAggregateSupport();</b>
+<b class="nc">&nbsp;        int[] originalOrder = this.component.sortProperties();</b>
+<b class="nc">&nbsp;        List&lt;Column&gt; aggregatedColumns = this.component.getAggregatedColumns();</b>
+<b class="nc">&nbsp;        AggregateColumn aggregateColumn = this.component.getAggregateColumn();</b>
+&nbsp;        ensureInitialized(metadataCollector, aggregateColumn);
+&nbsp;        this.validateSupportedColumnTypes(this.propertyHolder.getPath(), this.component);
+&nbsp;        QualifiedName structName = this.component.getStructName();
+&nbsp;        boolean addAuxiliaryObjects;
+<b class="nc">&nbsp;        if (structName != null) {</b>
+&nbsp;            Namespace namespace = database.locateNamespace(structName.getCatalogName(), structName.getSchemaName());
+<b class="nc">&nbsp;            UserDefinedObjectType udt = new UserDefinedObjectType(&quot;orm&quot;, namespace, structName.getObjectName());</b>
+<b class="nc">&nbsp;            Comment comment = (Comment)this.componentXClass.getAnnotation(Comment.class);</b>
+<b class="nc">&nbsp;            if (comment != null) {</b>
+<b class="nc">&nbsp;                udt.setComment(comment.value());</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            for(Column aggregatedColumn : aggregatedColumns) {
+&nbsp;                udt.addColumn(aggregatedColumn);
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            UserDefinedObjectType registeredUdt = namespace.createUserDefinedType(structName.getObjectName(), (name) -&gt; udt);</b>
+<b class="nc">&nbsp;            if (registeredUdt == udt) {</b>
+&nbsp;                addAuxiliaryObjects = true;
+<b class="nc">&nbsp;                this.orderColumns(registeredUdt, originalOrder);</b>
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                addAuxiliaryObjects = false;
+<b class="nc">&nbsp;                this.validateEqual(registeredUdt, udt);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            addAuxiliaryObjects = true;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        String aggregateReadTemplate = aggregateColumn.getAggregateReadExpressionTemplate(dialect);
+<b class="nc">&nbsp;        String aggregateReadExpression = aggregateReadTemplate.replace(&quot;$PlaceHolder$.&quot;, &quot;&quot;);</b>
+<b class="nc">&nbsp;        String aggregateAssignmentExpression = aggregateColumn.getAggregateAssignmentExpressionTemplate(dialect).replace(&quot;$PlaceHolder$.&quot;, &quot;&quot;);</b>
+<b class="nc">&nbsp;        if (addAuxiliaryObjects) {</b>
+<b class="nc">&nbsp;            List var10000 = aggregateSupport.aggregateAuxiliaryDatabaseObjects(database.getDefaultNamespace(), aggregateReadExpression, aggregateColumn, aggregatedColumns);</b>
+&nbsp;            Objects.requireNonNull(database);
+<b class="nc">&nbsp;            var10000.forEach(database::addAuxiliaryDatabaseObject);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        aggregateColumn.setCustomWrite(aggregateSupport.aggregateCustomWriteExpression(aggregateColumn, aggregatedColumns));</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        for(Column subColumn : aggregatedColumns) {</b>
+&nbsp;            String selectableExpression = subColumn.getText(dialect);
+<b class="nc">&nbsp;            String assignmentExpression = aggregateSupport.aggregateComponentAssignmentExpression(aggregateAssignmentExpression, selectableExpression, aggregateColumn, subColumn);</b>
+<b class="nc">&nbsp;            String customReadExpression;</b>
+<b class="nc">&nbsp;            if (subColumn.getCustomReadExpression() == null) {</b>
+&nbsp;                if (subColumn.isFormula()) {
+&nbsp;                    customReadExpression = aggregateSupport.aggregateComponentCustomReadExpression(subColumn.getTemplate(dialect, typeConfiguration, (SqmFunctionRegistry)null), &quot;$PlaceHolder$.&quot;, aggregateReadTemplate, &quot;&quot;, aggregateColumn, subColumn);
+<b class="nc">&nbsp;                } else {</b>
+<b class="nc">&nbsp;                    customReadExpression = aggregateSupport.aggregateComponentCustomReadExpression(&quot;&quot;, &quot;&quot;, aggregateReadTemplate, selectableExpression, aggregateColumn, subColumn);</b>
+&nbsp;                }
+&nbsp;            } else {
+&nbsp;                customReadExpression = aggregateSupport.aggregateComponentCustomReadExpression(subColumn.getCustomReadExpression(), &quot;$PlaceHolder$.&quot;, aggregateReadTemplate, &quot;&quot;, aggregateColumn, subColumn);
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            subColumn.setAssignmentExpression(assignmentExpression);</b>
+<b class="nc">&nbsp;            subColumn.setCustomRead(customReadExpression);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        this.propertyHolder.getTable().getColumns().removeAll(aggregatedColumns);
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private static void validateComponent(Component component, String basePath, boolean inArray) {</b>
+<b class="nc">&nbsp;        for(Property property : component.getProperties()) {</b>
+<b class="nc">&nbsp;            Value value = property.getValue();</b>
+&nbsp;            if (value instanceof Component) {
+&nbsp;                Component c = (Component)value;
+&nbsp;                validateComponent(c, StringHelper.qualify(basePath, property.getName()), inArray);
+<b class="nc">&nbsp;            } else if (value instanceof ToOne) {</b>
+&nbsp;                ToOne toOne = (ToOne)value;
+&nbsp;                if (inArray &amp;&amp; toOne.getReferencedPropertyName() != null) {
+<b class="nc">&nbsp;                    String var10002 = StringHelper.qualify(basePath, property.getName());</b>
+<b class="nc">&nbsp;                    throw new AnnotationException(&quot;Property &#39;&quot; + var10002 + &quot;&#39; uses one-to-one mapping with mappedBy &#39;&quot; + toOne.getReferencedPropertyName() + &quot;&#39; in the aggregate component class &#39;&quot; + component.getComponentClassName() + &quot;&#39; within an array property, which is not allowed.&quot;);</b>
+&nbsp;                }
+&nbsp;            } else if (value instanceof Collection) {
+&nbsp;                Collection collection = (Collection)value;
+&nbsp;                if (inArray &amp;&amp; collection.getMappedByProperty() != null) {
+&nbsp;                    String var10 = StringHelper.qualify(basePath, property.getName());
+&nbsp;                    throw new AnnotationException(&quot;Property &#39;&quot; + var10 + &quot;&#39; uses *-to-many mapping with mappedBy &#39;&quot; + collection.getMappedByProperty() + &quot;&#39; in the aggregate component class &#39;&quot; + component.getComponentClassName() + &quot;&#39; within an array property, which is not allowed.&quot;);
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                if (inArray &amp;&amp; collection.getCollectionTable() != null) {
+<b class="nc">&nbsp;                    String var9 = StringHelper.qualify(basePath, property.getName());</b>
+&nbsp;                    throw new AnnotationException(&quot;Property &#39;&quot; + var9 + &quot;&#39; defines a collection table &#39;&quot; + collection.getCollectionTable() + &quot;&#39; in the aggregate component class &#39;&quot; + component.getComponentClassName() + &quot;&#39; within an array property, which is not allowed.&quot;);
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private boolean isAggregateArray() {</b>
+<b class="nc">&nbsp;        switch (this.component.getAggregateColumn().getSqlTypeCode(this.context.getMetadataCollector())) {</b>
+<b class="nc">&nbsp;            case 2003:</b>
+&nbsp;            case 3016:
+&nbsp;            case 3017:
+&nbsp;            case 3018:
+&nbsp;            case 3019:
+&nbsp;            case 4000:
+&nbsp;                return true;
+&nbsp;            default:
+&nbsp;                return false;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void orderColumns(UserDefinedObjectType userDefinedType, int[] originalOrder) {
+<b class="nc">&nbsp;        Class&lt;?&gt; componentClass = this.component.getComponentClass();</b>
+&nbsp;        String[] structColumnNames = this.component.getStructColumnNames();
+&nbsp;        if (structColumnNames != null &amp;&amp; structColumnNames.length != 0) {
+&nbsp;            ArrayList&lt;Column&gt; orderedColumns = new ArrayList(userDefinedType.getColumnSpan());
+&nbsp;
+&nbsp;            for(String structColumnName : structColumnNames) {
+&nbsp;                if (!addColumns(orderedColumns, this.component, structColumnName)) {
+&nbsp;                    throw new MappingException(&quot;Couldn&#39;t find column [&quot; + structColumnName + &quot;] that was defined in @Struct(attributes) in the component [&quot; + this.component.getComponentClassName() + &quot;]&quot;);
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            userDefinedType.reorderColumns(orderedColumns);</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            int[] propertyMappingIndex;
+&nbsp;            if (ReflectHelper.isRecord(componentClass)) {
+&nbsp;                if (originalOrder == null) {
+&nbsp;                    propertyMappingIndex = null;
+&nbsp;                } else {
+&nbsp;                    String[] componentNames = ReflectHelper.getRecordComponentNames(componentClass);
+&nbsp;                    propertyMappingIndex = EmbeddableHelper.determineMappingIndex(this.component.getPropertyNames(), componentNames);
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            } else if (this.component.getInstantiatorPropertyNames() != null) {</b>
+&nbsp;                propertyMappingIndex = EmbeddableHelper.determineMappingIndex(this.component.getPropertyNames(), this.component.getInstantiatorPropertyNames());
+&nbsp;            } else {
+<b class="nc">&nbsp;                propertyMappingIndex = null;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            ArrayList&lt;Column&gt; orderedColumns = new ArrayList(userDefinedType.getColumnSpan());
+<b class="nc">&nbsp;            if (propertyMappingIndex != null) {</b>
+<b class="nc">&nbsp;                List&lt;Property&gt; properties = this.component.getProperties();</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                for(int propertyIndex : propertyMappingIndex) {</b>
+<b class="nc">&nbsp;                    addColumns(orderedColumns, ((Property)properties.get(propertyIndex)).getValue());</b>
+&nbsp;                }
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                for(Property property : this.component.getProperties()) {</b>
+<b class="nc">&nbsp;                    addColumns(orderedColumns, property.getValue());</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                if (this.component.isPolymorphic()) {
+<b class="nc">&nbsp;                    addColumns(orderedColumns, this.component.getDiscriminator());</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            List&lt;Column&gt; reorderedColumn = this.context.getBuildingOptions().getColumnOrderingStrategy().orderUserDefinedTypeColumns(userDefinedType, this.context.getMetadataCollector());
+&nbsp;            userDefinedType.reorderColumns((List)(reorderedColumn != null ? reorderedColumn : orderedColumns));
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private static void addColumns(ArrayList&lt;Column&gt; orderedColumns, Value value) {</b>
+<b class="nc">&nbsp;        if (value instanceof Component) {</b>
+&nbsp;            Component subComponent = (Component)value;
+<b class="nc">&nbsp;            if (subComponent.getAggregateColumn() == null) {</b>
+&nbsp;                for(Property property : subComponent.getProperties()) {
+<b class="nc">&nbsp;                    addColumns(orderedColumns, property.getValue());</b>
+&nbsp;                }
+&nbsp;            } else {
+&nbsp;                orderedColumns.add(subComponent.getAggregateColumn());
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            orderedColumns.addAll(value.getColumns());</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private static boolean addColumns(ArrayList&lt;Column&gt; orderedColumns, Component component, String structColumnName) {
+&nbsp;        for(Property property : component.getProperties()) {
+&nbsp;            Value value = property.getValue();
+&nbsp;            if (value instanceof Component) {
+&nbsp;                Component subComponent = (Component)value;
+&nbsp;                if (subComponent.getAggregateColumn() == null) {
+&nbsp;                    if (addColumns(orderedColumns, subComponent, structColumnName)) {
+&nbsp;                        return true;
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                } else if (structColumnName.equals(subComponent.getAggregateColumn().getName())) {
+&nbsp;                    orderedColumns.add(subComponent.getAggregateColumn());
+&nbsp;                    return true;
+&nbsp;                }
+&nbsp;            } else {
+&nbsp;                for(Selectable selectable : value.getSelectables()) {
+<b class="nc">&nbsp;                    if (selectable instanceof Column &amp;&amp; structColumnName.equals(((Column)selectable).getName())) {</b>
+&nbsp;                        orderedColumns.add((Column)selectable);
+<b class="nc">&nbsp;                        return true;</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if (component.isPolymorphic()) {</b>
+<b class="nc">&nbsp;            Column column = (Column)component.getDiscriminator().getColumns().get(0);</b>
+&nbsp;            if (structColumnName.equals(column.getName())) {
+<b class="nc">&nbsp;                orderedColumns.add(column);</b>
+<b class="nc">&nbsp;                return true;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return false;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private void validateSupportedColumnTypes(String basePath, Component component) {
+&nbsp;        for(Property property : component.getProperties()) {
+&nbsp;            Value value = property.getValue();
+&nbsp;            if (value instanceof Component) {
+<b class="nc">&nbsp;                Component subComponent = (Component)value;</b>
+<b class="nc">&nbsp;                if (subComponent.getAggregateColumn() == null) {</b>
+<b class="nc">&nbsp;                    this.validateSupportedColumnTypes(StringHelper.qualify(basePath, property.getName()), subComponent);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private static void ensureInitialized(InFlightMetadataCollector metadataCollector, AggregateColumn aggregateColumn) {</b>
+<b class="nc">&nbsp;        ensureParentInitialized(metadataCollector, aggregateColumn);</b>
+&nbsp;        ensureChildrenInitialized(metadataCollector, aggregateColumn);
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private static void ensureChildrenInitialized(InFlightMetadataCollector metadataCollector, AggregateColumn aggregateColumn) {</b>
+&nbsp;        for(Column aggregatedColumn : aggregateColumn.getComponent().getAggregatedColumns()) {
+<b class="nc">&nbsp;            aggregatedColumn.getSqlTypeCode(metadataCollector);</b>
+<b class="nc">&nbsp;            aggregatedColumn.getSqlType(metadataCollector);</b>
+&nbsp;            if (aggregatedColumn instanceof AggregateColumn) {
+&nbsp;                ensureChildrenInitialized(metadataCollector, (AggregateColumn)aggregatedColumn);
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private static void ensureParentInitialized(InFlightMetadataCollector metadataCollector, AggregateColumn aggregateColumn) {
+<b class="nc">&nbsp;        do {</b>
+<b class="nc">&nbsp;            aggregateColumn.getValue().getType();</b>
+<b class="nc">&nbsp;            aggregateColumn.getSqlTypeCode(metadataCollector);</b>
+<b class="nc">&nbsp;            aggregateColumn.getSqlType(metadataCollector);</b>
+&nbsp;            aggregateColumn = aggregateColumn.getComponent().getParentAggregateColumn();
+&nbsp;        } while(aggregateColumn != null);
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private void validateEqual(UserDefinedObjectType udt1, UserDefinedObjectType udt2) {</b>
+&nbsp;        if (udt1.getColumnSpan() != udt2.getColumnSpan()) {
+&nbsp;            throw new MappingException(String.format(&quot;Struct [%s] is defined by multiple components %s with different number of mappings %d and %d&quot;, udt1.getName(), this.findComponentClasses(), udt1.getColumnSpan(), udt2.getColumnSpan()));
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            List&lt;Column&gt; missingColumns = new ArrayList();
+&nbsp;
+&nbsp;            for(Column column1 : udt1.getColumns()) {
+&nbsp;                Column column2 = udt2.getColumn(column1);
+<b class="nc">&nbsp;                if (column2 == null) {</b>
+<b class="nc">&nbsp;                    missingColumns.add(column1);</b>
+<b class="nc">&nbsp;                } else if (!column1.getSqlType().equals(column2.getSqlType())) {</b>
+<b class="nc">&nbsp;                    throw new MappingException(String.format(&quot;Struct [%s] of class [%s] is defined by multiple components with different mappings [%s] and [%s] for column [%s]&quot;, udt1.getName(), this.componentXClass.getName(), column1.getSqlType(), column2.getSqlType(), column1.getCanonicalName()));</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            if (!missingColumns.isEmpty()) {
+<b class="nc">&nbsp;                throw new MappingException(String.format(&quot;Struct [%s] is defined by multiple components %s but some columns are missing in [%s]: %s&quot;, udt1.getName(), this.findComponentClasses(), this.componentXClass.getName(), missingColumns));</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private TreeSet&lt;String&gt; findComponentClasses() {
+&nbsp;        TreeSet&lt;String&gt; componentClasses = new TreeSet();
+&nbsp;        this.context.getMetadataCollector().visitRegisteredComponents((c) -&gt; {
+&nbsp;            if (this.component.getStructName().equals(c.getStructName())) {
+<b class="nc">&nbsp;                componentClasses.add(c.getComponentClassName());</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        });</b>
+<b class="nc">&nbsp;        return componentClasses;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:57</div>
+</div>
+</body>
+</html>

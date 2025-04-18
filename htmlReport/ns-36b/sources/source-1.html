@@ -1,0 +1,234 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > AbstractCacheInvoker</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.cache.interceptor</a>
+</div>
+
+<h1>Coverage Summary for Class: AbstractCacheInvoker (org.springframework.cache.interceptor)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AbstractCacheInvoker</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/29)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.cache.interceptor;
+&nbsp;
+&nbsp;import java.util.concurrent.Callable;
+&nbsp;import java.util.concurrent.CompletableFuture;
+&nbsp;import java.util.function.Supplier;
+&nbsp;import org.springframework.cache.Cache;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.function.SingletonSupplier;
+&nbsp;
+&nbsp;public abstract class AbstractCacheInvoker {
+&nbsp;    protected SingletonSupplier&lt;CacheErrorHandler&gt; errorHandler;
+&nbsp;
+&nbsp;    protected AbstractCacheInvoker() {
+&nbsp;        this.errorHandler = SingletonSupplier.of(SimpleCacheErrorHandler::new);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected AbstractCacheInvoker(CacheErrorHandler errorHandler) {
+&nbsp;        this.errorHandler = SingletonSupplier.of(errorHandler);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setErrorHandler(CacheErrorHandler errorHandler) {
+&nbsp;        this.errorHandler = SingletonSupplier.of(errorHandler);
+&nbsp;    }
+&nbsp;
+&nbsp;    public CacheErrorHandler getErrorHandler() {
+&nbsp;        return (CacheErrorHandler)this.errorHandler.obtain();
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    protected Cache.ValueWrapper doGet(Cache cache, Object key) {
+&nbsp;        try {
+&nbsp;            return cache.get(key);
+&nbsp;        } catch (RuntimeException ex) {
+&nbsp;            this.getErrorHandler().handleCacheGetError(ex, cache, key);
+&nbsp;            return null;
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    @Nullable
+&nbsp;    protected &lt;T&gt; T doGet(Cache cache, Object key, Callable&lt;T&gt; valueLoader) {
+<b class="nc">&nbsp;        try {</b>
+<b class="nc">&nbsp;            return (T)cache.get(key, valueLoader);</b>
+&nbsp;        } catch (Cache.ValueRetrievalException ex) {
+&nbsp;            throw ex;
+&nbsp;        } catch (RuntimeException ex) {
+&nbsp;            this.getErrorHandler().handleCacheGetError(ex, cache, key);
+&nbsp;
+&nbsp;            try {
+&nbsp;                return (T)valueLoader.call();
+&nbsp;            } catch (Exception ex2) {
+&nbsp;                throw new RuntimeException(ex2);
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    protected CompletableFuture&lt;?&gt; doRetrieve(Cache cache, Object key) {
+&nbsp;        try {
+<b class="nc">&nbsp;            return cache.retrieve(key);</b>
+&nbsp;        } catch (Cache.ValueRetrievalException ex) {
+&nbsp;            throw ex;
+&nbsp;        } catch (RuntimeException ex) {
+&nbsp;            this.getErrorHandler().handleCacheGetError(ex, cache, key);
+&nbsp;            return null;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected &lt;T&gt; CompletableFuture&lt;T&gt; doRetrieve(Cache cache, Object key, Supplier&lt;CompletableFuture&lt;T&gt;&gt; valueLoader) {
+&nbsp;        try {
+&nbsp;            return cache.retrieve(key, valueLoader);
+&nbsp;        } catch (Cache.ValueRetrievalException ex) {
+&nbsp;            throw ex;
+<b class="nc">&nbsp;        } catch (RuntimeException ex) {</b>
+&nbsp;            this.getErrorHandler().handleCacheGetError(ex, cache, key);
+&nbsp;            return (CompletableFuture)valueLoader.get();
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected void doPut(Cache cache, Object key, @Nullable Object value) {
+&nbsp;        try {
+&nbsp;            cache.put(key, value);
+&nbsp;        } catch (RuntimeException ex) {
+&nbsp;            this.getErrorHandler().handleCachePutError(ex, cache, key, value);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void doEvict(Cache cache, Object key, boolean immediate) {
+&nbsp;        try {
+&nbsp;            if (immediate) {
+&nbsp;                cache.evictIfPresent(key);
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                cache.evict(key);
+&nbsp;            }
+&nbsp;        } catch (RuntimeException ex) {
+&nbsp;            this.getErrorHandler().handleCacheEvictError(ex, cache, key);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected void doClear(Cache cache, boolean immediate) {
+&nbsp;        try {
+<b class="nc">&nbsp;            if (immediate) {</b>
+&nbsp;                cache.invalidate();
+&nbsp;            } else {
+&nbsp;                cache.clear();
+&nbsp;            }
+&nbsp;        } catch (RuntimeException ex) {
+&nbsp;            this.getErrorHandler().handleCacheClearError(ex, cache);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:58</div>
+</div>
+</body>
+</html>

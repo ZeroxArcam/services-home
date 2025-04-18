@@ -1,0 +1,393 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > SqlScriptsTestExecutionListener</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.test.context.jdbc</a>
+</div>
+
+<h1>Coverage Summary for Class: SqlScriptsTestExecutionListener (org.springframework.test.context.jdbc)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SqlScriptsTestExecutionListener</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    29%
+  </span>
+  <span class="absValue">
+    (9/31)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/72)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    8.8%
+  </span>
+  <span class="absValue">
+    (11/125)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.test.context.jdbc;
+&nbsp;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;import java.util.Arrays;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Objects;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.stream.Stream;
+&nbsp;import javax.sql.DataSource;
+&nbsp;import org.apache.commons.logging.Log;
+&nbsp;import org.apache.commons.logging.LogFactory;
+&nbsp;import org.springframework.aot.hint.ResourceHints;
+&nbsp;import org.springframework.aot.hint.RuntimeHints;
+&nbsp;import org.springframework.context.ApplicationContext;
+&nbsp;import org.springframework.core.annotation.AnnotatedElementUtils;
+&nbsp;import org.springframework.core.io.ByteArrayResource;
+&nbsp;import org.springframework.core.io.ClassPathResource;
+&nbsp;import org.springframework.core.io.DefaultResourceLoader;
+&nbsp;import org.springframework.core.io.Resource;
+&nbsp;import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.test.context.TestContext;
+&nbsp;import org.springframework.test.context.TestContextAnnotationUtils;
+&nbsp;import org.springframework.test.context.aot.AotTestExecutionListener;
+&nbsp;import org.springframework.test.context.jdbc.Sql.ExecutionPhase;
+&nbsp;import org.springframework.test.context.jdbc.SqlConfig.ErrorMode;
+&nbsp;import org.springframework.test.context.jdbc.SqlConfig.TransactionMode;
+&nbsp;import org.springframework.test.context.jdbc.SqlMergeMode.MergeMode;
+&nbsp;import org.springframework.test.context.support.AbstractTestExecutionListener;
+&nbsp;import org.springframework.test.context.transaction.TestContextTransactionUtils;
+&nbsp;import org.springframework.test.context.util.TestContextResourceUtils;
+&nbsp;import org.springframework.transaction.PlatformTransactionManager;
+&nbsp;import org.springframework.transaction.interceptor.DefaultTransactionAttribute;
+&nbsp;import org.springframework.transaction.interceptor.TransactionAttribute;
+&nbsp;import org.springframework.transaction.support.TransactionSynchronizationUtils;
+&nbsp;import org.springframework.transaction.support.TransactionTemplate;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.ClassUtils;
+&nbsp;import org.springframework.util.ObjectUtils;
+&nbsp;import org.springframework.util.ReflectionUtils;
+&nbsp;import org.springframework.util.StringUtils;
+&nbsp;
+&nbsp;public class SqlScriptsTestExecutionListener extends AbstractTestExecutionListener implements AotTestExecutionListener {
+&nbsp;    public static final int ORDER = 5000;
+&nbsp;    private static final String SLASH = &quot;/&quot;;
+&nbsp;    private static final Log logger = LogFactory.getLog(SqlScriptsTestExecutionListener.class);
+&nbsp;    private static final ReflectionUtils.MethodFilter sqlMethodFilter;
+&nbsp;
+&nbsp;    public SqlScriptsTestExecutionListener() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public final int getOrder() {
+&nbsp;        return 5000;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void beforeTestClass(TestContext testContext) throws Exception {
+&nbsp;        this.executeClassLevelSqlScripts(testContext, ExecutionPhase.BEFORE_TEST_CLASS);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void afterTestClass(TestContext testContext) throws Exception {
+&nbsp;        this.executeClassLevelSqlScripts(testContext, ExecutionPhase.AFTER_TEST_CLASS);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void beforeTestMethod(TestContext testContext) {
+&nbsp;        this.executeSqlScripts(testContext, ExecutionPhase.BEFORE_TEST_METHOD);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void afterTestMethod(TestContext testContext) {
+&nbsp;        this.executeSqlScripts(testContext, ExecutionPhase.AFTER_TEST_METHOD);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void processAheadOfTime(RuntimeHints runtimeHints, Class&lt;?&gt; testClass, ClassLoader classLoader) {
+&nbsp;        this.getSqlAnnotationsFor(testClass).forEach((sql) -&gt; this.registerClasspathResources(this.getScripts(sql, testClass, (Method)null, true), runtimeHints, classLoader));
+&nbsp;        this.getSqlMethods(testClass).forEach((testMethod) -&gt; this.getSqlAnnotationsFor(testMethod).forEach((sql) -&gt; this.registerClasspathResources(this.getScripts(sql, testClass, testMethod, false), runtimeHints, classLoader)));
+&nbsp;    }
+&nbsp;
+&nbsp;    private void executeClassLevelSqlScripts(TestContext testContext, Sql.ExecutionPhase executionPhase) {
+&nbsp;        Class&lt;?&gt; testClass = testContext.getTestClass();
+&nbsp;        this.executeSqlScripts(this.getSqlAnnotationsFor(testClass), testContext, executionPhase, true);
+&nbsp;    }
+&nbsp;
+&nbsp;    private void executeSqlScripts(TestContext testContext, Sql.ExecutionPhase executionPhase) {
+&nbsp;        Method testMethod = testContext.getTestMethod();
+&nbsp;        Class&lt;?&gt; testClass = testContext.getTestClass();
+&nbsp;        if (this.mergeSqlAnnotations(testContext)) {
+&nbsp;            this.executeSqlScripts(this.getSqlAnnotationsFor(testClass), testContext, executionPhase, true);
+&nbsp;            this.executeSqlScripts(this.getSqlAnnotationsFor(testMethod), testContext, executionPhase, false);
+&nbsp;        } else {
+&nbsp;            Set&lt;Sql&gt; methodLevelSqlAnnotations = this.getSqlAnnotationsFor(testMethod);
+&nbsp;            if (!methodLevelSqlAnnotations.isEmpty()) {
+&nbsp;                this.executeSqlScripts(methodLevelSqlAnnotations, testContext, executionPhase, false);
+&nbsp;            } else {
+&nbsp;                this.executeSqlScripts(this.getSqlAnnotationsFor(testClass), testContext, executionPhase, true);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean mergeSqlAnnotations(TestContext testContext) {
+&nbsp;        SqlMergeMode sqlMergeMode = this.getSqlMergeModeFor(testContext.getTestMethod());
+&nbsp;        if (sqlMergeMode == null) {
+&nbsp;            sqlMergeMode = this.getSqlMergeModeFor(testContext.getTestClass());
+&nbsp;        }
+&nbsp;
+&nbsp;        return sqlMergeMode != null &amp;&amp; sqlMergeMode.value() == MergeMode.MERGE;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    private SqlMergeMode getSqlMergeModeFor(Class&lt;?&gt; clazz) {
+&nbsp;        return (SqlMergeMode)TestContextAnnotationUtils.findMergedAnnotation(clazz, SqlMergeMode.class);
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    @Nullable</b>
+&nbsp;    private SqlMergeMode getSqlMergeModeFor(Method method) {
+&nbsp;        return (SqlMergeMode)AnnotatedElementUtils.findMergedAnnotation(method, SqlMergeMode.class);
+&nbsp;    }
+&nbsp;
+&nbsp;    private Set&lt;Sql&gt; getSqlAnnotationsFor(Class&lt;?&gt; clazz) {
+&nbsp;        return TestContextAnnotationUtils.getMergedRepeatableAnnotations(clazz, Sql.class);
+&nbsp;    }
+&nbsp;
+&nbsp;    private Set&lt;Sql&gt; getSqlAnnotationsFor(Method method) {
+<b class="fc">&nbsp;        return AnnotatedElementUtils.getMergedRepeatableAnnotations(method, Sql.class, SqlGroup.class);</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private void executeSqlScripts(Set&lt;Sql&gt; sqlAnnotations, TestContext testContext, Sql.ExecutionPhase executionPhase, boolean classLevel) {</b>
+&nbsp;        sqlAnnotations.forEach((sql) -&gt; this.executeSqlScripts(sql, executionPhase, testContext, classLevel));
+&nbsp;    }
+&nbsp;
+&nbsp;    private void executeSqlScripts(Sql sql, Sql.ExecutionPhase executionPhase, TestContext testContext, boolean classLevel) {
+&nbsp;        Assert.isTrue(classLevel || isValidMethodLevelPhase(sql.executionPhase()), () -&gt; &quot;@SQL execution phase %s cannot be used on methods&quot;.formatted(sql.executionPhase()));
+&nbsp;        if (executionPhase == sql.executionPhase()) {
+&nbsp;            MergedSqlConfig mergedSqlConfig = new MergedSqlConfig(sql.config(), testContext.getTestClass());
+&nbsp;            if (logger.isTraceEnabled()) {
+&nbsp;                logger.trace(&quot;Processing %s for execution phase [%s] and test context %s&quot;.formatted(mergedSqlConfig, executionPhase, testContext));
+&nbsp;            } else if (logger.isDebugEnabled()) {
+&nbsp;                logger.debug(&quot;Processing merged @SqlConfig attributes for execution phase [%s] and test class [%s]&quot;.formatted(executionPhase, testContext.getTestClass().getName()));
+&nbsp;            }
+<b class="fc">&nbsp;</b>
+&nbsp;            boolean methodLevel = !classLevel;
+&nbsp;            Method testMethod = methodLevel ? testContext.getTestMethod() : null;
+&nbsp;            String[] scripts = this.getScripts(sql, testContext.getTestClass(), testMethod, classLevel);
+&nbsp;            ApplicationContext applicationContext = testContext.getApplicationContext();
+&nbsp;            List&lt;Resource&gt; scriptResources = TestContextResourceUtils.convertToResourceList(applicationContext, applicationContext.getEnvironment(), scripts);
+&nbsp;
+&nbsp;            for(String stmt : sql.statements()) {
+&nbsp;                if (StringUtils.hasText(stmt)) {
+&nbsp;                    stmt = stmt.trim();
+&nbsp;                    scriptResources.add(new ByteArrayResource(stmt.getBytes(), &quot;from inlined SQL statement: &quot; + stmt));
+<b class="fc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            ResourceDatabasePopulator populator = this.createDatabasePopulator(mergedSqlConfig);
+&nbsp;            populator.setScripts((Resource[])scriptResources.toArray(new Resource[0]));
+&nbsp;            if (logger.isDebugEnabled()) {
+&nbsp;                logger.debug(&quot;Executing SQL scripts: &quot; + String.valueOf(scriptResources));
+&nbsp;            }
+&nbsp;
+&nbsp;            String dsName = mergedSqlConfig.getDataSource();
+&nbsp;            String tmName = mergedSqlConfig.getTransactionManager();
+<b class="fc">&nbsp;            DataSource dataSource = TestContextTransactionUtils.retrieveDataSource(testContext, dsName);</b>
+&nbsp;            PlatformTransactionManager txMgr = TestContextTransactionUtils.retrieveTransactionManager(testContext, tmName);
+&nbsp;            boolean newTxRequired = mergedSqlConfig.getTransactionMode() == TransactionMode.ISOLATED;
+&nbsp;            if (txMgr == null) {
+&nbsp;                Assert.state(!newTxRequired, () -&gt; String.format(&quot;Failed to execute SQL scripts for test context %s: cannot execute SQL scripts using Transaction Mode [%s] without a PlatformTransactionManager.&quot;, testContext, TransactionMode.ISOLATED));
+&nbsp;                Assert.state(dataSource != null, () -&gt; String.format(&quot;Failed to execute SQL scripts for test context %s: supply at least a DataSource or PlatformTransactionManager.&quot;, testContext));
+&nbsp;                populator.execute(dataSource);
+&nbsp;            } else {
+&nbsp;                DataSource dataSourceFromTxMgr = this.getDataSourceFromTransactionManager(txMgr);
+<b class="nc">&nbsp;                if (dataSource != null &amp;&amp; dataSourceFromTxMgr != null &amp;&amp; !sameDataSource(dataSource, dataSourceFromTxMgr)) {</b>
+&nbsp;                    throw new IllegalStateException(String.format(&quot;Failed to execute SQL scripts for test context %s: the configured DataSource [%s] (named &#39;%s&#39;) is not the one associated with transaction manager [%s] (named &#39;%s&#39;).&quot;, testContext, dataSource.getClass().getName(), dsName, txMgr.getClass().getName(), tmName));
+&nbsp;                }
+&nbsp;
+&nbsp;                if (dataSource == null) {
+&nbsp;                    dataSource = dataSourceFromTxMgr;
+&nbsp;                    Assert.state(dataSourceFromTxMgr != null, () -&gt; String.format(&quot;Failed to execute SQL scripts for test context %s: could not obtain DataSource from transaction manager [%s] (named &#39;%s&#39;).&quot;, testContext, txMgr.getClass().getName(), tmName));
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                int propagation = newTxRequired ? 3 : 0;</b>
+&nbsp;                TransactionAttribute txAttr = TestContextTransactionUtils.createDelegatingTransactionAttribute(testContext, new DefaultTransactionAttribute(propagation), methodLevel);
+&nbsp;                (new TransactionTemplate(txMgr, txAttr)).executeWithoutResult((s) -&gt; populator.execute(dataSource));
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private ResourceDatabasePopulator createDatabasePopulator(MergedSqlConfig mergedSqlConfig) {
+&nbsp;        ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
+&nbsp;        populator.setSqlScriptEncoding(mergedSqlConfig.getEncoding());
+<b class="nc">&nbsp;        populator.setSeparator(mergedSqlConfig.getSeparator());</b>
+<b class="nc">&nbsp;        populator.setCommentPrefixes(mergedSqlConfig.getCommentPrefixes());</b>
+<b class="nc">&nbsp;        populator.setBlockCommentStartDelimiter(mergedSqlConfig.getBlockCommentStartDelimiter());</b>
+<b class="nc">&nbsp;        populator.setBlockCommentEndDelimiter(mergedSqlConfig.getBlockCommentEndDelimiter());</b>
+<b class="nc">&nbsp;        populator.setContinueOnError(mergedSqlConfig.getErrorMode() == ErrorMode.CONTINUE_ON_ERROR);</b>
+&nbsp;        populator.setIgnoreFailedDrops(mergedSqlConfig.getErrorMode() == ErrorMode.IGNORE_FAILED_DROPS);
+&nbsp;        return populator;
+&nbsp;    }
+&nbsp;
+&nbsp;    private static boolean sameDataSource(DataSource ds1, DataSource ds2) {
+&nbsp;        return TransactionSynchronizationUtils.unwrapResourceIfNecessary(ds1).equals(TransactionSynchronizationUtils.unwrapResourceIfNecessary(ds2));
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    private DataSource getDataSourceFromTransactionManager(PlatformTransactionManager transactionManager) {
+<b class="fc">&nbsp;        try {</b>
+<b class="fc">&nbsp;            Method getDataSourceMethod = transactionManager.getClass().getMethod(&quot;getDataSource&quot;);</b>
+&nbsp;            Object obj = ReflectionUtils.invokeMethod(getDataSourceMethod, transactionManager);
+&nbsp;            if (obj instanceof DataSource dataSource) {
+&nbsp;                return dataSource;
+&nbsp;            }
+&nbsp;        } catch (Exception var5) {
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return null;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private String[] getScripts(Sql sql, Class&lt;?&gt; testClass, @Nullable Method testMethod, boolean classLevel) {</b>
+<b class="nc">&nbsp;        String[] scripts = sql.scripts();</b>
+<b class="nc">&nbsp;        if (ObjectUtils.isEmpty(scripts) &amp;&amp; ObjectUtils.isEmpty(sql.statements())) {</b>
+&nbsp;            scripts = new String[]{this.detectDefaultScript(testClass, testMethod, classLevel)};
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return TestContextResourceUtils.convertToClasspathResourcePaths(testClass, scripts);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private String detectDefaultScript(Class&lt;?&gt; testClass, @Nullable Method testMethod, boolean classLevel) {
+<b class="nc">&nbsp;        Assert.state(classLevel || testMethod != null, &quot;Method-level @Sql requires a testMethod&quot;);</b>
+&nbsp;        String elementType = classLevel ? &quot;class&quot; : &quot;method&quot;;
+&nbsp;        String elementName = classLevel ? testClass.getName() : testMethod.toString();
+&nbsp;        String resourcePath = ClassUtils.convertClassNameToResourcePath(testClass.getName());
+&nbsp;        if (!classLevel) {
+&nbsp;            resourcePath = resourcePath + &quot;.&quot; + testMethod.getName();
+&nbsp;        }
+&nbsp;
+&nbsp;        resourcePath = resourcePath + &quot;.sql&quot;;
+&nbsp;        String prefixedResourcePath = &quot;classpath:/&quot; + resourcePath;
+<b class="nc">&nbsp;        ClassPathResource classPathResource = new ClassPathResource(resourcePath);</b>
+<b class="nc">&nbsp;        if (classPathResource.exists()) {</b>
+<b class="nc">&nbsp;            if (logger.isDebugEnabled()) {</b>
+&nbsp;                logger.debug(&quot;Detected default SQL script \&quot;%s\&quot; for test %s [%s]&quot;.formatted(prefixedResourcePath, elementType, elementName));
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            return prefixedResourcePath;
+&nbsp;        } else {
+&nbsp;            String msg = String.format(&quot;Could not detect default SQL script for test %s [%s]: %s does not exist. Either declare statements or scripts via @Sql or make the default SQL script available.&quot;, elementType, elementName, classPathResource);
+&nbsp;            logger.error(msg);
+&nbsp;            throw new IllegalStateException(msg);
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private Stream&lt;Method&gt; getSqlMethods(Class&lt;?&gt; testClass) {
+&nbsp;        return Arrays.stream(ReflectionUtils.getUniqueDeclaredMethods(testClass, sqlMethodFilter));
+&nbsp;    }
+&nbsp;
+&nbsp;    private void registerClasspathResources(String[] paths, RuntimeHints runtimeHints, ClassLoader classLoader) {
+&nbsp;        DefaultResourceLoader resourceLoader = new DefaultResourceLoader(classLoader);
+<b class="nc">&nbsp;        Stream var10000 = Arrays.stream(paths).filter((path) -&gt; path.startsWith(&quot;classpath:&quot;));</b>
+&nbsp;        Objects.requireNonNull(resourceLoader);
+&nbsp;        var10000 = var10000.map(resourceLoader::getResource);
+&nbsp;        ResourceHints var10001 = runtimeHints.resources();
+&nbsp;        Objects.requireNonNull(var10001);
+&nbsp;        var10000.forEach(var10001::registerResource);
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    private static boolean isValidMethodLevelPhase(Sql.ExecutionPhase executionPhase) {
+&nbsp;        return executionPhase == ExecutionPhase.BEFORE_TEST_METHOD || executionPhase == ExecutionPhase.AFTER_TEST_METHOD;
+&nbsp;    }
+&nbsp;
+&nbsp;    static {
+&nbsp;        sqlMethodFilter = ReflectionUtils.USER_DECLARED_METHODS.and((method) -&gt; AnnotatedElementUtils.hasAnnotation(method, Sql.class));
+<b class="nc">&nbsp;    }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:57</div>
+</div>
+</body>
+</html>

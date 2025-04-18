@@ -1,0 +1,1137 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ReferenceType</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.aspectj.weaver</a>
+</div>
+
+<h1>Coverage Summary for Class: ReferenceType (org.aspectj.weaver)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ReferenceType</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    27%
+  </span>
+  <span class="absValue">
+    (20/74)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    6.7%
+  </span>
+  <span class="absValue">
+    (26/386)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    14.5%
+  </span>
+  <span class="absValue">
+    (84/579)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.aspectj.weaver;
+&nbsp;
+&nbsp;import java.lang.ref.WeakReference;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import org.aspectj.bridge.ISourceLocation;
+&nbsp;import org.aspectj.weaver.UnresolvedType.TypeKind;
+&nbsp;import org.aspectj.weaver.World.TypeMap;
+&nbsp;import org.aspectj.weaver.patterns.Declare;
+&nbsp;import org.aspectj.weaver.patterns.PerClause;
+&nbsp;
+&nbsp;public class ReferenceType extends ResolvedType {
+&nbsp;    public static final ReferenceType[] EMPTY_ARRAY = new ReferenceType[0];
+&nbsp;    private final List&lt;WeakReference&lt;ReferenceType&gt;&gt; derivativeTypes = new ArrayList();
+&nbsp;    ReferenceType genericType = null;
+&nbsp;    ReferenceType rawType = null;
+&nbsp;    ReferenceTypeDelegate delegate = null;
+&nbsp;    int startPos = 0;
+&nbsp;    int endPos = 0;
+&nbsp;    ResolvedMember[] parameterizedMethods = null;
+&nbsp;    ResolvedMember[] parameterizedFields = null;
+&nbsp;    ResolvedMember[] parameterizedPointcuts = null;
+&nbsp;    WeakReference&lt;ResolvedType[]&gt; parameterizedInterfaces = new WeakReference((Object)null);
+&nbsp;    Collection&lt;Declare&gt; parameterizedDeclares = null;
+&nbsp;    private ResolvedType[] annotationTypes = null;
+&nbsp;    private AnnotationAJ[] annotations = null;
+&nbsp;    private ResolvedType newSuperclass;
+&nbsp;    private ResolvedType[] newInterfaces;
+&nbsp;    WeakReference&lt;ResolvedType&gt; superclassReference = new WeakReference((Object)null);
+<b class="fc">&nbsp;</b>
+&nbsp;    public ReferenceType(String signature, World world) {
+&nbsp;        super(signature, world);
+&nbsp;    }
+&nbsp;
+&nbsp;    public ReferenceType(String signature, String signatureErasure, World world) {
+&nbsp;        super(signature, signatureErasure, world);
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public static ReferenceType fromTypeX(UnresolvedType tx, World world) {
+&nbsp;        ReferenceType rt = new ReferenceType(tx.getErasureSignature(), world);
+&nbsp;        rt.typeKind = tx.typeKind;
+&nbsp;        return rt;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public ReferenceType(ResolvedType theGenericType, ResolvedType[] theParameters, World aWorld) {
+<b class="fc">&nbsp;        super(makeParameterizedSignature(theGenericType, theParameters), theGenericType.signatureErasure, aWorld);</b>
+&nbsp;        ReferenceType genericReferenceType = (ReferenceType)theGenericType;
+&nbsp;        this.typeParameters = theParameters;
+&nbsp;        this.genericType = genericReferenceType;
+<b class="fc">&nbsp;        this.typeKind = TypeKind.PARAMETERIZED;</b>
+<b class="fc">&nbsp;        this.delegate = genericReferenceType.getDelegate();</b>
+<b class="fc">&nbsp;        genericReferenceType.addDependentType(this);</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    synchronized void addDependentType(ReferenceType dependent) {</b>
+<b class="fc">&nbsp;        synchronized(this.derivativeTypes) {</b>
+<b class="fc">&nbsp;            this.derivativeTypes.add(new WeakReference(dependent));</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public void checkDuplicates(ReferenceType newRt) {
+&nbsp;        synchronized(this.derivativeTypes) {
+&nbsp;            List&lt;WeakReference&lt;ReferenceType&gt;&gt; forRemoval = new ArrayList();
+&nbsp;
+&nbsp;            for(WeakReference&lt;ReferenceType&gt; derivativeTypeReference : this.derivativeTypes) {
+&nbsp;                ReferenceType derivativeType = (ReferenceType)derivativeTypeReference.get();
+&nbsp;                if (derivativeType == null) {
+&nbsp;                    forRemoval.add(derivativeTypeReference);
+&nbsp;                } else if (derivativeType.getTypekind() == newRt.getTypekind() &amp;&amp; this.equal2(newRt.getTypeParameters(), derivativeType.getTypeParameters()) &amp;&amp; TypeMap.useExpendableMap) {
+<b class="fc">&nbsp;                    throw new IllegalStateException();</b>
+<b class="fc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            this.derivativeTypes.removeAll(forRemoval);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean equal2(UnresolvedType[] typeParameters, UnresolvedType[] resolvedParameters) {
+&nbsp;        if (typeParameters.length != resolvedParameters.length) {
+<b class="fc">&nbsp;            return false;</b>
+&nbsp;        } else {
+&nbsp;            int len = typeParameters.length;
+&nbsp;
+<b class="fc">&nbsp;            for(int p = 0; p &lt; len; ++p) {</b>
+&nbsp;                if (!typeParameters[p].equals(resolvedParameters[p])) {
+&nbsp;                    return false;
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getSignatureForAttribute() {
+&nbsp;        return this.genericType != null &amp;&amp; this.typeParameters != null ? makeDeclaredSignature(this.genericType, this.typeParameters) : this.getSignature();
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public ReferenceType(UnresolvedType genericType, World world) {</b>
+&nbsp;        super(genericType.getSignature(), world);
+<b class="nc">&nbsp;        this.typeKind = TypeKind.GENERIC;</b>
+<b class="nc">&nbsp;        this.typeVariables = genericType.typeVariables;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public boolean isClass() {</b>
+<b class="nc">&nbsp;        return this.getDelegate().isClass();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getCompilerVersion() {
+&nbsp;        return this.getDelegate().getCompilerVersion();
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public boolean isGenericType() {</b>
+<b class="fc">&nbsp;        return !this.isParameterizedType() &amp;&amp; !this.isRawType() &amp;&amp; this.getDelegate().isGeneric();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getGenericSignature() {
+<b class="nc">&nbsp;        String sig = this.getDelegate().getDeclaredGenericSignature();</b>
+<b class="nc">&nbsp;        return sig == null ? &quot;&quot; : sig;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public AnnotationAJ[] getAnnotations() {</b>
+<b class="nc">&nbsp;        return this.getDelegate().getAnnotations();</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public boolean hasAnnotations() {
+&nbsp;        return this.getDelegate().hasAnnotations();
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void addAnnotation(AnnotationAJ annotationX) {</b>
+<b class="nc">&nbsp;        if (this.annotations == null) {</b>
+&nbsp;            this.annotations = new AnnotationAJ[]{annotationX};
+&nbsp;        } else {
+&nbsp;            AnnotationAJ[] newAnnotations = new AnnotationAJ[this.annotations.length + 1];
+&nbsp;            System.arraycopy(this.annotations, 0, newAnnotations, 1, this.annotations.length);
+<b class="nc">&nbsp;            newAnnotations[0] = annotationX;</b>
+<b class="nc">&nbsp;            this.annotations = newAnnotations;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        this.addAnnotationType(annotationX.getType());
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public boolean hasAnnotation(UnresolvedType ofType) {</b>
+&nbsp;        boolean onDelegate = this.getDelegate().hasAnnotation(ofType);
+<b class="nc">&nbsp;        if (onDelegate) {</b>
+<b class="nc">&nbsp;            return true;</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            if (this.annotationTypes != null) {</b>
+&nbsp;                for(ResolvedType annotationType : this.annotationTypes) {
+&nbsp;                    if (annotationType.equals(ofType)) {
+<b class="nc">&nbsp;                        return true;</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            return false;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private void addAnnotationType(ResolvedType ofType) {
+&nbsp;        if (this.annotationTypes == null) {
+&nbsp;            this.annotationTypes = new ResolvedType[1];
+&nbsp;            this.annotationTypes[0] = ofType;
+&nbsp;        } else {
+&nbsp;            ResolvedType[] newAnnotationTypes = new ResolvedType[this.annotationTypes.length + 1];
+<b class="fc">&nbsp;            System.arraycopy(this.annotationTypes, 0, newAnnotationTypes, 1, this.annotationTypes.length);</b>
+<b class="fc">&nbsp;            newAnnotationTypes[0] = ofType;</b>
+<b class="fc">&nbsp;            this.annotationTypes = newAnnotationTypes;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public ResolvedType[] getAnnotationTypes() {</b>
+&nbsp;        if (this.getDelegate() == null) {
+&nbsp;            throw new BCException(&quot;Unexpected null delegate for type &quot; + this.getName());
+&nbsp;        } else if (this.annotationTypes == null) {
+&nbsp;            return this.getDelegate().getAnnotationTypes();
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            ResolvedType[] delegateAnnotationTypes = this.getDelegate().getAnnotationTypes();
+&nbsp;            ResolvedType[] result = new ResolvedType[this.annotationTypes.length + delegateAnnotationTypes.length];
+&nbsp;            System.arraycopy(delegateAnnotationTypes, 0, result, 0, delegateAnnotationTypes.length);
+&nbsp;            System.arraycopy(this.annotationTypes, 0, result, delegateAnnotationTypes.length, this.annotationTypes.length);
+<b class="pc">&nbsp;            return result;</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getNameAsIdentifier() {
+<b class="nc">&nbsp;        return this.getRawName().replace(&#39;.&#39;, &#39;_&#39;);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public AnnotationAJ getAnnotationOfType(UnresolvedType ofType) {
+&nbsp;        AnnotationAJ[] axs = this.getDelegate().getAnnotations();
+&nbsp;        if (axs != null) {
+<b class="nc">&nbsp;            for(AnnotationAJ ax : axs) {</b>
+&nbsp;                if (ax.getTypeSignature().equals(ofType.getSignature())) {
+&nbsp;                    return ax;
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        if (this.annotations != null) {
+&nbsp;            String searchSig = ofType.getSignature();
+&nbsp;
+<b class="nc">&nbsp;            for(AnnotationAJ annotation : this.annotations) {</b>
+<b class="nc">&nbsp;                if (annotation.getTypeSignature().equals(searchSig)) {</b>
+&nbsp;                    return annotation;
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public boolean isAspect() {
+&nbsp;        return this.getDelegate().isAspect();
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public boolean isAnnotationStyleAspect() {</b>
+<b class="fc">&nbsp;        return this.getDelegate().isAnnotationStyleAspect();</b>
+&nbsp;    }
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;    public boolean isEnum() {</b>
+<b class="nc">&nbsp;        return this.getDelegate().isEnum();</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public boolean isAnnotation() {
+&nbsp;        return this.getDelegate().isAnnotation();
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public boolean isAnonymous() {
+&nbsp;        return this.getDelegate().isAnonymous();
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public boolean isNested() {</b>
+&nbsp;        return this.getDelegate().isNested();
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public ResolvedType getOuterClass() {
+<b class="nc">&nbsp;        return this.getDelegate().getOuterClass();</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public String getRetentionPolicy() {
+&nbsp;        return this.getDelegate().getRetentionPolicy();
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public boolean isAnnotationWithRuntimeRetention() {</b>
+<b class="nc">&nbsp;        return this.getDelegate().isAnnotationWithRuntimeRetention();</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public boolean canAnnotationTargetType() {</b>
+&nbsp;        return this.getDelegate().canAnnotationTargetType();
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public AnnotationTargetKind[] getAnnotationTargetKinds() {</b>
+<b class="nc">&nbsp;        return this.getDelegate().getAnnotationTargetKinds();</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public boolean isCoerceableFrom(ResolvedType o) {</b>
+&nbsp;        ResolvedType other = o.resolve(this.world);
+<b class="nc">&nbsp;        if (!this.isAssignableFrom(other) &amp;&amp; !other.isAssignableFrom(this)) {</b>
+&nbsp;            if (this.isParameterizedType() &amp;&amp; other.isParameterizedType()) {
+<b class="nc">&nbsp;                return this.isCoerceableFromParameterizedType(other);</b>
+&nbsp;            } else if (this.isParameterizedType() &amp;&amp; other.isRawType()) {
+&nbsp;                return ((ReferenceType)this.getRawType()).isCoerceableFrom(other.getGenericType());
+&nbsp;            } else if (this.isRawType() &amp;&amp; other.isParameterizedType()) {
+&nbsp;                return this.getGenericType().isCoerceableFrom(other.getRawType());
+&nbsp;            } else if (!this.isInterface() &amp;&amp; !other.isInterface()) {
+<b class="nc">&nbsp;                return false;</b>
+&nbsp;            } else if (!this.isFinal() &amp;&amp; !other.isFinal()) {
+&nbsp;                ResolvedMember[] a = this.getDeclaredMethods();
+&nbsp;                ResolvedMember[] b = other.getDeclaredMethods();
+&nbsp;
+<b class="nc">&nbsp;                for(ResolvedMember member : a) {</b>
+<b class="nc">&nbsp;                    for(ResolvedMember resolvedMember : b) {</b>
+<b class="nc">&nbsp;                        if (!resolvedMember.isCompatibleWith(member)) {</b>
+<b class="nc">&nbsp;                            return false;</b>
+<b class="nc">&nbsp;                        }</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                return true;</b>
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                return false;</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            return true;
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private final boolean isCoerceableFromParameterizedType(ResolvedType other) {
+&nbsp;        if (!other.isParameterizedType()) {
+&nbsp;            return false;
+&nbsp;        } else {
+<b class="fc">&nbsp;            ResolvedType myRawType = this.getRawType();</b>
+&nbsp;            ResolvedType theirRawType = other.getRawType();
+&nbsp;            if ((myRawType == theirRawType || myRawType.isCoerceableFrom(theirRawType)) &amp;&amp; this.getTypeParameters().length == other.getTypeParameters().length) {
+&nbsp;                ResolvedType[] myTypeParameters = this.getResolvedTypeParameters();
+&nbsp;                ResolvedType[] theirTypeParameters = other.getResolvedTypeParameters();
+<b class="nc">&nbsp;</b>
+&nbsp;                for(int i = 0; i &lt; myTypeParameters.length; ++i) {
+&nbsp;                    if (myTypeParameters[i] != theirTypeParameters[i]) {
+&nbsp;                        if (myTypeParameters[i].isGenericWildcard()) {
+&nbsp;                            BoundedReferenceType wildcard = (BoundedReferenceType)myTypeParameters[i];
+<b class="nc">&nbsp;                            if (!wildcard.canBeCoercedTo(theirTypeParameters[i])) {</b>
+&nbsp;                                return false;
+&nbsp;                            }
+&nbsp;                        } else if (myTypeParameters[i].isTypeVariableReference()) {
+&nbsp;                            TypeVariableReferenceType tvrt = (TypeVariableReferenceType)myTypeParameters[i];
+<b class="fc">&nbsp;                            TypeVariable tv = tvrt.getTypeVariable();</b>
+&nbsp;                            tv.resolve(this.world);
+&nbsp;                            if (!tv.canBeBoundTo(theirTypeParameters[i])) {
+&nbsp;                                return false;
+&nbsp;                            }
+<b class="nc">&nbsp;                        } else if (theirTypeParameters[i].isTypeVariableReference()) {</b>
+&nbsp;                            TypeVariableReferenceType tvrt = (TypeVariableReferenceType)theirTypeParameters[i];
+&nbsp;                            TypeVariable tv = tvrt.getTypeVariable();
+&nbsp;                            tv.resolve(this.world);
+&nbsp;                            if (!tv.canBeBoundTo(myTypeParameters[i])) {
+<b class="nc">&nbsp;                                return false;</b>
+&nbsp;                            }
+&nbsp;                        } else {
+&nbsp;                            if (!theirTypeParameters[i].isGenericWildcard()) {
+<b class="nc">&nbsp;                                return false;</b>
+&nbsp;                            }
+&nbsp;
+&nbsp;                            BoundedReferenceType wildcard = (BoundedReferenceType)theirTypeParameters[i];
+<b class="nc">&nbsp;                            if (!wildcard.canBeCoercedTo(myTypeParameters[i])) {</b>
+&nbsp;                                return false;
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;                    }
+<b class="fc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                return true;
+&nbsp;            } else {
+&nbsp;                return false;
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isAssignableFrom(ResolvedType other) {
+<b class="fc">&nbsp;        return this.isAssignableFrom(other, false);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isAssignableFrom(ResolvedType other, boolean allowMissing) {
+&nbsp;        if (other.isPrimitiveType()) {
+&nbsp;            if (!this.world.isInJava5Mode()) {
+<b class="nc">&nbsp;                return false;</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            if (ResolvedType.validBoxing.contains(this.getSignature() + other.getSignature())) {</b>
+&nbsp;                return true;
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        if (this == other) {
+&nbsp;            return true;
+<b class="nc">&nbsp;        } else if (this.getSignature().equals(&quot;Ljava/lang/Object;&quot;)) {</b>
+<b class="nc">&nbsp;            return true;</b>
+<b class="nc">&nbsp;        } else if (!this.isTypeVariableReference() &amp;&amp; other.getSignature().equals(&quot;Ljava/lang/Object;&quot;)) {</b>
+&nbsp;            return false;
+&nbsp;        } else {
+<b class="nc">&nbsp;            boolean thisRaw = this.isRawType();</b>
+<b class="nc">&nbsp;            if (thisRaw &amp;&amp; other.isParameterizedOrGenericType()) {</b>
+&nbsp;                return this.isAssignableFrom(other.getRawType());
+&nbsp;            } else {
+<b class="nc">&nbsp;                boolean thisGeneric = this.isGenericType();</b>
+<b class="nc">&nbsp;                if (thisGeneric &amp;&amp; other.isParameterizedOrRawType()) {</b>
+&nbsp;                    return this.isAssignableFrom(other.getGenericType());
+<b class="nc">&nbsp;                } else {</b>
+<b class="nc">&nbsp;                    if (this.isParameterizedType() &amp;&amp; ((ReferenceType)this.getRawType()).isAssignableFrom(other)) {</b>
+&nbsp;                        boolean wildcardsAllTheWay = true;
+&nbsp;                        ResolvedType[] myParameters = this.getResolvedTypeParameters();
+&nbsp;
+&nbsp;                        for(ResolvedType myParameter : myParameters) {
+&nbsp;                            if (!myParameter.isGenericWildcard()) {
+&nbsp;                                wildcardsAllTheWay = false;
+&nbsp;                            } else {
+&nbsp;                                BoundedReferenceType boundedRT = (BoundedReferenceType)myParameter;
+&nbsp;                                if (boundedRT.isExtends() || boundedRT.isSuper()) {
+<b class="nc">&nbsp;                                    wildcardsAllTheWay = false;</b>
+<b class="nc">&nbsp;                                }</b>
+<b class="nc">&nbsp;                            }</b>
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                        if (wildcardsAllTheWay &amp;&amp; !other.isParameterizedType()) {</b>
+&nbsp;                            return true;
+&nbsp;                        }
+&nbsp;
+<b class="nc">&nbsp;                        ResolvedType[] theirParameters = other.getResolvedTypeParameters();</b>
+&nbsp;                        boolean parametersAssignable = true;
+&nbsp;                        if (myParameters.length != theirParameters.length) {
+&nbsp;                            parametersAssignable = false;
+<b class="nc">&nbsp;                        } else {</b>
+<b class="nc">&nbsp;                            for(int i = 0; i &lt; myParameters.length &amp;&amp; parametersAssignable; ++i) {</b>
+&nbsp;                                if (myParameters[i] != theirParameters[i]) {
+<b class="nc">&nbsp;                                    ResolvedType mp = myParameters[i];</b>
+<b class="nc">&nbsp;                                    ResolvedType tp = theirParameters[i];</b>
+<b class="nc">&nbsp;                                    if (mp.isParameterizedType() &amp;&amp; tp.isParameterizedType()) {</b>
+<b class="nc">&nbsp;                                        if (!mp.getGenericType().equals(tp.getGenericType())) {</b>
+<b class="nc">&nbsp;                                            parametersAssignable = false;</b>
+&nbsp;                                            break;
+<b class="nc">&nbsp;                                        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                                        UnresolvedType[] mtps = mp.getTypeParameters();</b>
+<b class="nc">&nbsp;                                        UnresolvedType[] ttps = tp.getTypeParameters();</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                                        for(int ii = 0; ii &lt; mtps.length; ++ii) {
+&nbsp;                                            if (!mtps[ii].isTypeVariableReference() || !ttps[ii].isTypeVariableReference()) {
+<b class="nc">&nbsp;                                                parametersAssignable = false;</b>
+<b class="nc">&nbsp;                                                break;</b>
+<b class="nc">&nbsp;                                            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                                            TypeVariable mtv = ((TypeVariableReferenceType)mtps[ii]).getTypeVariable();</b>
+&nbsp;                                            boolean b = mtv.canBeBoundTo((ResolvedType)ttps[ii]);
+<b class="nc">&nbsp;                                            if (!b) {</b>
+<b class="nc">&nbsp;                                                parametersAssignable = false;</b>
+<b class="nc">&nbsp;                                                break;</b>
+<b class="nc">&nbsp;                                            }</b>
+<b class="nc">&nbsp;                                        }</b>
+<b class="nc">&nbsp;                                    } else if (myParameters[i].isTypeVariableReference() &amp;&amp; theirParameters[i].isTypeVariableReference()) {</b>
+<b class="nc">&nbsp;                                        TypeVariable myTV = ((TypeVariableReferenceType)myParameters[i]).getTypeVariable();</b>
+&nbsp;                                        boolean b = myTV.canBeBoundTo(theirParameters[i]);
+<b class="nc">&nbsp;                                        if (!b) {</b>
+<b class="nc">&nbsp;                                            parametersAssignable = false;</b>
+<b class="nc">&nbsp;                                            break;</b>
+<b class="nc">&nbsp;                                        }</b>
+<b class="nc">&nbsp;                                    } else {</b>
+<b class="nc">&nbsp;                                        if (!myParameters[i].isGenericWildcard()) {</b>
+<b class="nc">&nbsp;                                            parametersAssignable = false;</b>
+&nbsp;                                            break;
+<b class="nc">&nbsp;                                        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                                        BoundedReferenceType wildcardType = (BoundedReferenceType)myParameters[i];</b>
+<b class="nc">&nbsp;                                        if (!wildcardType.alwaysMatches(theirParameters[i])) {</b>
+&nbsp;                                            parametersAssignable = false;
+&nbsp;                                            break;
+<b class="nc">&nbsp;                                        }</b>
+&nbsp;                                    }
+&nbsp;                                }
+&nbsp;                            }
+<b class="nc">&nbsp;                        }</b>
+&nbsp;
+&nbsp;                        if (parametersAssignable) {
+&nbsp;                            return true;
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+&nbsp;                    if (this.isTypeVariableReference() &amp;&amp; !other.isTypeVariableReference()) {
+&nbsp;                        TypeVariable aVar = ((TypeVariableReference)this).getTypeVariable();
+&nbsp;                        return aVar.resolve(this.world).canBeBoundTo(other);
+&nbsp;                    } else if (other.isTypeVariableReference()) {
+&nbsp;                        TypeVariableReferenceType otherType = (TypeVariableReferenceType)other;
+<b class="nc">&nbsp;                        return this instanceof TypeVariableReference ? ((TypeVariableReference)this).getTypeVariable().resolve(this.world).canBeBoundTo(otherType.getTypeVariable().getFirstBound().resolve(this.world)) : this.isAssignableFrom(otherType.getTypeVariable().getFirstBound().resolve(this.world));</b>
+&nbsp;                    } else if (allowMissing &amp;&amp; other.isMissing()) {
+&nbsp;                        return false;
+&nbsp;                    } else {
+&nbsp;                        ResolvedType[] interfaces = other.getDeclaredInterfaces();
+<b class="nc">&nbsp;</b>
+&nbsp;                        for(ResolvedType intface : interfaces) {
+&nbsp;                            boolean b;
+&nbsp;                            if (thisRaw &amp;&amp; intface.isParameterizedOrGenericType()) {
+&nbsp;                                b = this.isAssignableFrom(intface.getRawType(), allowMissing);
+&nbsp;                            } else {
+&nbsp;                                b = this.isAssignableFrom(intface, allowMissing);
+&nbsp;                            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                            if (b) {</b>
+<b class="nc">&nbsp;                                return true;</b>
+&nbsp;                            }
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                        ResolvedType superclass = other.getSuperclass();</b>
+&nbsp;                        if (superclass != null) {
+&nbsp;                            boolean b;
+<b class="nc">&nbsp;                            if (thisRaw &amp;&amp; superclass.isParameterizedOrGenericType()) {</b>
+<b class="nc">&nbsp;                                b = this.isAssignableFrom(superclass.getRawType(), allowMissing);</b>
+&nbsp;                            } else {
+&nbsp;                                b = this.isAssignableFrom(superclass, allowMissing);
+<b class="nc">&nbsp;                            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                            if (b) {
+&nbsp;                                return true;
+<b class="nc">&nbsp;                            }</b>
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                        return false;
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public ISourceContext getSourceContext() {</b>
+<b class="nc">&nbsp;        return this.getDelegate().getSourceContext();</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public ISourceLocation getSourceLocation() {
+<b class="nc">&nbsp;        ISourceContext isc = this.getDelegate().getSourceContext();</b>
+&nbsp;        return isc.makeSourceLocation(new Position(this.startPos, this.endPos));
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public boolean isExposedToWeaver() {</b>
+<b class="nc">&nbsp;        return this.getDelegate() == null || this.delegate.isExposedToWeaver();</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public WeaverStateInfo getWeaverState() {
+<b class="nc">&nbsp;        return this.getDelegate().getWeaverState();</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public ResolvedMember[] getDeclaredFields() {
+&nbsp;        if (this.parameterizedFields != null) {
+&nbsp;            return this.parameterizedFields;
+<b class="nc">&nbsp;        } else if (!this.isParameterizedType() &amp;&amp; !this.isRawType()) {</b>
+<b class="nc">&nbsp;            return this.getDelegate().getDeclaredFields();</b>
+&nbsp;        } else {
+&nbsp;            ResolvedMember[] delegateFields = this.getDelegate().getDeclaredFields();
+<b class="nc">&nbsp;            this.parameterizedFields = new ResolvedMember[delegateFields.length];</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; delegateFields.length; ++i) {</b>
+<b class="nc">&nbsp;                this.parameterizedFields[i] = delegateFields[i].parameterizedWith(this.getTypesForMemberParameterization(), this, this.isParameterizedType());</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            return this.parameterizedFields;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public ResolvedType[] getDeclaredInterfaces() {
+&nbsp;        ResolvedType[] interfaces = (ResolvedType[])this.parameterizedInterfaces.get();
+&nbsp;        if (interfaces != null) {
+&nbsp;            return interfaces;
+&nbsp;        } else {
+<b class="nc">&nbsp;            ResolvedType[] delegateInterfaces = this.getDelegate().getDeclaredInterfaces();</b>
+<b class="nc">&nbsp;            if (this.isRawType()) {</b>
+<b class="nc">&nbsp;                if (this.newInterfaces != null) {</b>
+<b class="nc">&nbsp;                    throw new IllegalStateException(&quot;The raw type should never be accumulating new interfaces, they should be on the generic type.  Type is &quot; + this.getName());</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                ResolvedType[] newInterfacesFromGenericType = this.genericType.newInterfaces;</b>
+<b class="nc">&nbsp;                if (newInterfacesFromGenericType != null) {</b>
+<b class="nc">&nbsp;                    ResolvedType[] extraInterfaces = new ResolvedType[delegateInterfaces.length + newInterfacesFromGenericType.length];</b>
+&nbsp;                    System.arraycopy(delegateInterfaces, 0, extraInterfaces, 0, delegateInterfaces.length);
+<b class="nc">&nbsp;                    System.arraycopy(newInterfacesFromGenericType, 0, extraInterfaces, delegateInterfaces.length, newInterfacesFromGenericType.length);</b>
+<b class="nc">&nbsp;                    delegateInterfaces = extraInterfaces;</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            } else if (this.newInterfaces != null) {</b>
+<b class="nc">&nbsp;                ResolvedType[] extraInterfaces = new ResolvedType[delegateInterfaces.length + this.newInterfaces.length];</b>
+<b class="nc">&nbsp;                System.arraycopy(delegateInterfaces, 0, extraInterfaces, 0, delegateInterfaces.length);</b>
+&nbsp;                System.arraycopy(this.newInterfaces, 0, extraInterfaces, delegateInterfaces.length, this.newInterfaces.length);
+<b class="nc">&nbsp;                delegateInterfaces = extraInterfaces;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            if (this.isParameterizedType()) {
+<b class="nc">&nbsp;                interfaces = new ResolvedType[delegateInterfaces.length];</b>
+&nbsp;
+&nbsp;                for(int i = 0; i &lt; delegateInterfaces.length; ++i) {
+&nbsp;                    if (delegateInterfaces[i].isParameterizedType()) {
+&nbsp;                        interfaces[i] = delegateInterfaces[i].parameterize(this.getMemberParameterizationMap()).resolve(this.world);
+&nbsp;                    } else {
+<b class="nc">&nbsp;                        interfaces[i] = delegateInterfaces[i];</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                this.parameterizedInterfaces = new WeakReference(interfaces);</b>
+<b class="nc">&nbsp;                return interfaces;</b>
+<b class="nc">&nbsp;            } else if (this.isRawType()) {</b>
+<b class="nc">&nbsp;                UnresolvedType[] paramTypes = this.getTypesForMemberParameterization();</b>
+&nbsp;                interfaces = new ResolvedType[delegateInterfaces.length];
+&nbsp;                int i = 0;
+&nbsp;
+<b class="nc">&nbsp;                for(int max = interfaces.length; i &lt; max; ++i) {</b>
+<b class="nc">&nbsp;                    interfaces[i] = delegateInterfaces[i];</b>
+<b class="nc">&nbsp;                    if (interfaces[i].isGenericType()) {</b>
+&nbsp;                        interfaces[i] = interfaces[i].getRawType().resolve(this.getWorld());
+&nbsp;                    } else if (interfaces[i].isParameterizedType()) {
+&nbsp;                        UnresolvedType[] toUseForParameterization = this.determineThoseTypesToUse(interfaces[i], paramTypes);
+&nbsp;                        interfaces[i] = interfaces[i].parameterizedWith(toUseForParameterization);
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                this.parameterizedInterfaces = new WeakReference(interfaces);
+&nbsp;                return interfaces;
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                if (this.getDelegate().isCacheable()) {</b>
+<b class="nc">&nbsp;                    this.parameterizedInterfaces = new WeakReference(delegateInterfaces);</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                return delegateInterfaces;
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private UnresolvedType[] determineThoseTypesToUse(ResolvedType parameterizedInterface, UnresolvedType[] paramTypes) {</b>
+<b class="nc">&nbsp;        UnresolvedType[] tParms = parameterizedInterface.getTypeParameters();</b>
+&nbsp;        UnresolvedType[] retVal = new UnresolvedType[tParms.length];
+&nbsp;
+&nbsp;        for(int i = 0; i &lt; tParms.length; ++i) {
+&nbsp;            UnresolvedType tParm = tParms[i];
+&nbsp;            if (tParm.isTypeVariableReference()) {
+<b class="nc">&nbsp;                TypeVariableReference tvrt = (TypeVariableReference)tParm;</b>
+<b class="nc">&nbsp;                TypeVariable tv = tvrt.getTypeVariable();</b>
+<b class="nc">&nbsp;                int rank = this.getRank(tv.getName());</b>
+<b class="nc">&nbsp;                if (rank != -1) {</b>
+&nbsp;                    retVal[i] = paramTypes[rank];
+&nbsp;                } else {
+<b class="nc">&nbsp;                    retVal[i] = tParms[i];</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                retVal[i] = tParms[i];</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return retVal;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private int getRank(String tvname) {
+&nbsp;        TypeVariable[] thisTypesTVars = this.getGenericType().getTypeVariables();
+&nbsp;
+&nbsp;        for(int i = 0; i &lt; thisTypesTVars.length; ++i) {
+<b class="nc">&nbsp;            TypeVariable tv = thisTypesTVars[i];</b>
+<b class="nc">&nbsp;            if (tv.getName().equals(tvname)) {</b>
+&nbsp;                return i;
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return -1;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public ResolvedMember[] getDeclaredMethods() {</b>
+<b class="nc">&nbsp;        if (this.parameterizedMethods != null) {</b>
+&nbsp;            return this.parameterizedMethods;
+<b class="nc">&nbsp;        } else if (!this.isParameterizedType() &amp;&amp; !this.isRawType()) {</b>
+<b class="nc">&nbsp;            return this.getDelegate().getDeclaredMethods();</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            ResolvedMember[] delegateMethods = this.getDelegate().getDeclaredMethods();</b>
+&nbsp;            UnresolvedType[] parameters = this.getTypesForMemberParameterization();
+<b class="nc">&nbsp;            this.parameterizedMethods = new ResolvedMember[delegateMethods.length];</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            for(int i = 0; i &lt; delegateMethods.length; ++i) {
+&nbsp;                this.parameterizedMethods[i] = delegateMethods[i].parameterizedWith(parameters, this, this.isParameterizedType());
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            return this.parameterizedMethods;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public ResolvedMember[] getDeclaredPointcuts() {</b>
+&nbsp;        if (this.parameterizedPointcuts != null) {
+<b class="nc">&nbsp;            return this.parameterizedPointcuts;</b>
+<b class="nc">&nbsp;        } else if (!this.isParameterizedType()) {</b>
+&nbsp;            return this.getDelegate().getDeclaredPointcuts();
+&nbsp;        } else {
+<b class="nc">&nbsp;            ResolvedMember[] delegatePointcuts = this.getDelegate().getDeclaredPointcuts();</b>
+&nbsp;            this.parameterizedPointcuts = new ResolvedMember[delegatePointcuts.length];
+&nbsp;
+&nbsp;            for(int i = 0; i &lt; delegatePointcuts.length; ++i) {
+&nbsp;                this.parameterizedPointcuts[i] = delegatePointcuts[i].parameterizedWith(this.getTypesForMemberParameterization(), this, this.isParameterizedType());
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            return this.parameterizedPointcuts;
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private UnresolvedType[] getTypesForMemberParameterization() {</b>
+&nbsp;        UnresolvedType[] parameters = null;
+&nbsp;        if (this.isParameterizedType()) {
+&nbsp;            parameters = this.getTypeParameters();
+&nbsp;        } else if (this.isRawType()) {
+<b class="pc">&nbsp;            TypeVariable[] tvs = this.getGenericType().getTypeVariables();</b>
+&nbsp;            parameters = new UnresolvedType[tvs.length];
+&nbsp;
+&nbsp;            for(int i = 0; i &lt; tvs.length; ++i) {
+&nbsp;                parameters[i] = tvs[i].getFirstBound();
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        return parameters;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public TypeVariable[] getTypeVariables() {</b>
+&nbsp;        if (this.typeVariables == null) {
+<b class="nc">&nbsp;            this.typeVariables = this.getDelegate().getTypeVariables();</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            for(TypeVariable typeVariable : this.typeVariables) {</b>
+<b class="nc">&nbsp;                typeVariable.resolve(this.world);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return this.typeVariables;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public PerClause getPerClause() {</b>
+&nbsp;        PerClause pclause = this.getDelegate().getPerClause();
+&nbsp;        if (pclause != null &amp;&amp; this.isParameterizedType()) {
+&nbsp;            Map&lt;String, UnresolvedType&gt; parameterizationMap = this.getAjMemberParameterizationMap();
+&nbsp;            pclause = (PerClause)pclause.parameterizeWith(parameterizationMap, this.world);
+&nbsp;        }
+&nbsp;
+&nbsp;        return pclause;
+&nbsp;    }
+&nbsp;
+&nbsp;    public Collection&lt;Declare&gt; getDeclares() {
+<b class="nc">&nbsp;        if (this.parameterizedDeclares != null) {</b>
+<b class="nc">&nbsp;            return this.parameterizedDeclares;</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            Collection&lt;Declare&gt; declares = null;
+<b class="nc">&nbsp;            if (this.ajMembersNeedParameterization()) {</b>
+<b class="nc">&nbsp;                Collection&lt;Declare&gt; genericDeclares = this.getDelegate().getDeclares();</b>
+<b class="nc">&nbsp;                this.parameterizedDeclares = new ArrayList();</b>
+<b class="nc">&nbsp;                Map&lt;String, UnresolvedType&gt; parameterizationMap = this.getAjMemberParameterizationMap();</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                for(Declare declareStatement : genericDeclares) {
+<b class="nc">&nbsp;                    this.parameterizedDeclares.add(declareStatement.parameterizeWith(parameterizationMap, this.world));</b>
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                declares = this.parameterizedDeclares;</b>
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                declares = this.getDelegate().getDeclares();
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            for(Declare d : declares) {</b>
+&nbsp;                d.setDeclaringType(this);
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            return declares;
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public Collection&lt;ConcreteTypeMunger&gt; getTypeMungers() {
+<b class="nc">&nbsp;        return this.getDelegate().getTypeMungers();</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public Collection&lt;ResolvedMember&gt; getPrivilegedAccesses() {
+&nbsp;        return this.getDelegate().getPrivilegedAccesses();
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public int getModifiers() {</b>
+&nbsp;        return this.getDelegate().getModifiers();
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public ResolvedType getSuperclass() {</b>
+&nbsp;        ResolvedType ret = null;
+&nbsp;        if (this.newSuperclass != null) {
+&nbsp;            if (this.isParameterizedType() &amp;&amp; this.newSuperclass.isParameterizedType()) {
+&nbsp;                return this.newSuperclass.parameterize(this.getMemberParameterizationMap()).resolve(this.getWorld());
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                if (this.getDelegate().isCacheable()) {</b>
+<b class="nc">&nbsp;                    this.superclassReference = new WeakReference(ret);</b>
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+&nbsp;                return this.newSuperclass;
+&nbsp;            }
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            try {
+<b class="nc">&nbsp;                this.world.setTypeVariableLookupScope(this);</b>
+<b class="nc">&nbsp;                ret = this.getDelegate().getSuperclass();</b>
+<b class="nc">&nbsp;            } finally {</b>
+<b class="nc">&nbsp;                this.world.setTypeVariableLookupScope((TypeVariableDeclaringElement)null);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            if (this.isParameterizedType() &amp;&amp; ret.isParameterizedType()) {</b>
+&nbsp;                ret = ret.parameterize(this.getMemberParameterizationMap()).resolve(this.getWorld());
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            if (this.getDelegate().isCacheable()) {</b>
+<b class="nc">&nbsp;                this.superclassReference = new WeakReference(ret);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            return ret;</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public ReferenceTypeDelegate getDelegate() {
+&nbsp;        return this.delegate;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public void setDelegate(ReferenceTypeDelegate delegate) {</b>
+&nbsp;        if (this.delegate != null &amp;&amp; this.delegate.copySourceContext() &amp;&amp; this.delegate.getSourceContext() != SourceContextImpl.UNKNOWN_SOURCE_CONTEXT) {
+<b class="nc">&nbsp;            ((AbstractReferenceTypeDelegate)delegate).setSourceContext(this.delegate.getSourceContext());</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        this.delegate = delegate;
+<b class="nc">&nbsp;        synchronized(this.derivativeTypes) {</b>
+&nbsp;            List&lt;WeakReference&lt;ReferenceType&gt;&gt; forRemoval = new ArrayList();
+&nbsp;
+&nbsp;            for(WeakReference&lt;ReferenceType&gt; derivativeRef : this.derivativeTypes) {
+&nbsp;                ReferenceType derivative = (ReferenceType)derivativeRef.get();
+&nbsp;                if (derivative != null) {
+&nbsp;                    derivative.setDelegate(delegate);
+&nbsp;                } else {
+&nbsp;                    forRemoval.add(derivativeRef);
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            this.derivativeTypes.removeAll(forRemoval);
+&nbsp;        }
+&nbsp;
+&nbsp;        if (this.isRawType() &amp;&amp; this.getGenericType() != null) {
+&nbsp;            ReferenceType genType = this.getGenericType();
+<b class="nc">&nbsp;            if (genType.getDelegate() != delegate) {</b>
+<b class="nc">&nbsp;                genType.setDelegate(delegate);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        this.clearParameterizationCaches();
+&nbsp;        this.ensureConsistent();
+&nbsp;    }
+&nbsp;
+&nbsp;    private void clearParameterizationCaches() {
+&nbsp;        this.parameterizedFields = null;
+<b class="nc">&nbsp;        this.parameterizedInterfaces.clear();</b>
+<b class="nc">&nbsp;        this.parameterizedMethods = null;</b>
+<b class="nc">&nbsp;        this.parameterizedPointcuts = null;</b>
+<b class="nc">&nbsp;        this.superclassReference = new WeakReference((Object)null);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public int getEndPos() {
+&nbsp;        return this.endPos;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public int getStartPos() {
+<b class="nc">&nbsp;        return this.startPos;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void setEndPos(int endPos) {</b>
+&nbsp;        this.endPos = endPos;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void setStartPos(int startPos) {</b>
+&nbsp;        this.startPos = startPos;
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean doesNotExposeShadowMungers() {
+&nbsp;        return this.getDelegate().doesNotExposeShadowMungers();
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getDeclaredGenericSignature() {
+<b class="nc">&nbsp;        return this.getDelegate().getDeclaredGenericSignature();</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void setGenericType(ReferenceType rt) {</b>
+<b class="nc">&nbsp;        this.genericType = rt;</b>
+&nbsp;        if (this.typeKind == TypeKind.SIMPLE) {
+&nbsp;            this.typeKind = TypeKind.RAW;
+<b class="nc">&nbsp;            this.signatureErasure = this.signature;</b>
+&nbsp;            if (this.newInterfaces != null) {
+&nbsp;                throw new IllegalStateException(&quot;Simple type promoted to raw, but simple type had new interfaces/superclass.  Type is &quot; + this.getName());
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if (this.typeKind == TypeKind.RAW) {</b>
+&nbsp;            this.genericType.addDependentType(this);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if (this.isRawType()) {</b>
+<b class="nc">&nbsp;            this.genericType.rawType = this;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if (this.isRawType() &amp;&amp; rt.isRawType()) {</b>
+<b class="nc">&nbsp;            (new RuntimeException(&quot;PR341926 diagnostics: Incorrect setup for a generic type, raw type should not point to raw: &quot; + this.getName())).printStackTrace();</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void demoteToSimpleType() {
+&nbsp;        this.genericType = null;
+&nbsp;        this.typeKind = TypeKind.SIMPLE;
+&nbsp;        this.signatureErasure = null;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public ReferenceType getGenericType() {</b>
+&nbsp;        return this.isGenericType() ? this : this.genericType;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private static String makeParameterizedSignature(ResolvedType aGenericType, ResolvedType[] someParameters) {</b>
+<b class="nc">&nbsp;        String rawSignature = aGenericType.getErasureSignature();</b>
+<b class="nc">&nbsp;        StringBuilder ret = new StringBuilder();</b>
+<b class="nc">&nbsp;        ret.append(&quot;P&quot;);</b>
+<b class="nc">&nbsp;        ret.append(rawSignature.substring(1, rawSignature.length() - 1));</b>
+<b class="nc">&nbsp;        ret.append(&quot;&lt;&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;        for(ResolvedType someParameter : someParameters) {</b>
+&nbsp;            ret.append(someParameter.getSignature());
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        ret.append(&quot;&gt;;&quot;);
+&nbsp;        return ret.toString();
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private static String makeDeclaredSignature(ResolvedType aGenericType, UnresolvedType[] someParameters) {</b>
+<b class="nc">&nbsp;        StringBuilder ret = new StringBuilder();</b>
+<b class="nc">&nbsp;        String rawSig = aGenericType.getErasureSignature();</b>
+&nbsp;        ret.append(rawSig.substring(0, rawSig.length() - 1));
+<b class="nc">&nbsp;        ret.append(&quot;&lt;&quot;);</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        for(UnresolvedType someParameter : someParameters) {</b>
+<b class="nc">&nbsp;            if (someParameter instanceof ReferenceType) {</b>
+&nbsp;                ret.append(((ReferenceType)someParameter).getSignatureForAttribute());
+&nbsp;            } else {
+<b class="nc">&nbsp;                if (!(someParameter instanceof ResolvedType.Primitive)) {</b>
+&nbsp;                    throw new IllegalStateException(&quot;DebugFor325731: expected a ReferenceType or Primitive but was &quot; + someParameter + &quot; of type &quot; + someParameter.getClass().getName());
+&nbsp;                }
+&nbsp;
+&nbsp;                ret.append(((ResolvedType.Primitive)someParameter).getSignatureForAttribute());
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        ret.append(&quot;&gt;;&quot;);</b>
+&nbsp;        return ret.toString();
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void ensureConsistent() {
+&nbsp;        this.annotations = null;
+&nbsp;        this.annotationTypes = null;
+&nbsp;        this.newSuperclass = null;
+<b class="nc">&nbsp;        this.bits = 0;</b>
+<b class="nc">&nbsp;        this.newInterfaces = null;</b>
+&nbsp;        this.typeVariables = null;
+<b class="nc">&nbsp;        this.parameterizedInterfaces.clear();</b>
+<b class="nc">&nbsp;        this.superclassReference = new WeakReference((Object)null);</b>
+&nbsp;        if (this.getDelegate() != null) {
+&nbsp;            this.delegate.ensureConsistent();
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        if (this.isParameterizedOrRawType()) {
+&nbsp;            ReferenceType genericType = this.getGenericType();
+&nbsp;            if (genericType != null) {
+<b class="nc">&nbsp;                genericType.ensureConsistent();</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void addParent(ResolvedType newParent) {</b>
+<b class="nc">&nbsp;        if (this.isRawType()) {</b>
+<b class="nc">&nbsp;            throw new IllegalStateException(&quot;The raw type should never be accumulating new interfaces, they should be on the generic type.  Type is &quot; + this.getName());</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            if (newParent.isClass()) {
+&nbsp;                this.newSuperclass = newParent;
+<b class="nc">&nbsp;                this.superclassReference = new WeakReference((Object)null);</b>
+&nbsp;            } else {
+<b class="nc">&nbsp;                if (this.newInterfaces == null) {</b>
+&nbsp;                    this.newInterfaces = new ResolvedType[1];
+<b class="nc">&nbsp;                    this.newInterfaces[0] = newParent;</b>
+<b class="nc">&nbsp;                } else {</b>
+&nbsp;                    ResolvedType[] existing = this.getDelegate().getDeclaredInterfaces();
+<b class="nc">&nbsp;                    if (existing != null) {</b>
+&nbsp;                        for(ResolvedType resolvedType : existing) {
+&nbsp;                            if (resolvedType.equals(newParent)) {
+&nbsp;                                return;
+&nbsp;                            }
+<b class="nc">&nbsp;                        }</b>
+&nbsp;                    }
+&nbsp;
+&nbsp;                    ResolvedType[] newNewInterfaces = new ResolvedType[this.newInterfaces.length + 1];
+&nbsp;                    System.arraycopy(this.newInterfaces, 0, newNewInterfaces, 1, this.newInterfaces.length);
+<b class="nc">&nbsp;                    newNewInterfaces[0] = newParent;</b>
+&nbsp;                    this.newInterfaces = newNewInterfaces;
+&nbsp;                }
+&nbsp;
+&nbsp;                if (this.isGenericType()) {
+<b class="nc">&nbsp;                    synchronized(this.derivativeTypes) {</b>
+&nbsp;                        for(WeakReference&lt;ReferenceType&gt; derivativeTypeRef : this.derivativeTypes) {
+&nbsp;                            ReferenceType derivativeType = (ReferenceType)derivativeTypeRef.get();
+<b class="fc">&nbsp;                            if (derivativeType != null) {</b>
+&nbsp;                                derivativeType.parameterizedInterfaces.clear();
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;                    }
+<b class="fc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                this.parameterizedInterfaces.clear();
+&nbsp;            }
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private boolean equal(UnresolvedType[] typeParameters, ResolvedType[] resolvedParameters) {</b>
+&nbsp;        if (typeParameters.length != resolvedParameters.length) {
+<b class="nc">&nbsp;            return false;</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            int len = typeParameters.length;
+<b class="nc">&nbsp;</b>
+&nbsp;            for(int p = 0; p &lt; len; ++p) {
+&nbsp;                if (!typeParameters[p].equals(resolvedParameters[p])) {
+<b class="fc">&nbsp;                    return false;</b>
+<b class="fc">&nbsp;                }</b>
+&nbsp;            }
+<b class="fc">&nbsp;</b>
+&nbsp;            return true;
+<b class="pc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public ReferenceType findDerivativeType(ResolvedType[] typeParameters) {
+<b class="pc">&nbsp;        synchronized(this.derivativeTypes) {</b>
+<b class="fc">&nbsp;            List&lt;WeakReference&lt;ReferenceType&gt;&gt; forRemoval = new ArrayList();</b>
+&nbsp;
+<b class="fc">&nbsp;            for(WeakReference&lt;ReferenceType&gt; derivativeTypeRef : this.derivativeTypes) {</b>
+&nbsp;                ReferenceType derivativeType = (ReferenceType)derivativeTypeRef.get();
+&nbsp;                if (derivativeType == null) {
+&nbsp;                    forRemoval.add(derivativeTypeRef);
+<b class="fc">&nbsp;                } else if (!derivativeType.isRawType() &amp;&amp; this.equal(derivativeType.typeParameters, typeParameters)) {</b>
+&nbsp;                    return derivativeType;
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            this.derivativeTypes.removeAll(forRemoval);
+<b class="pc">&nbsp;            return null;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public boolean hasNewInterfaces() {</b>
+&nbsp;        return this.newInterfaces != null;
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

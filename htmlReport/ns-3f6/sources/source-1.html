@@ -1,0 +1,239 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ContentNegotiationManager</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.web.accept</a>
+</div>
+
+<h1>Coverage Summary for Class: ContentNegotiationManager (org.springframework.web.accept)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ContentNegotiationManager</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/34)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/40)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.web.accept;
+&nbsp;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Arrays;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.LinkedHashSet;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.function.Function;
+&nbsp;import org.springframework.http.MediaType;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.CollectionUtils;
+&nbsp;import org.springframework.web.HttpMediaTypeNotAcceptableException;
+&nbsp;import org.springframework.web.context.request.NativeWebRequest;
+&nbsp;
+&nbsp;public class ContentNegotiationManager implements ContentNegotiationStrategy, MediaTypeFileExtensionResolver {
+&nbsp;    private final List&lt;ContentNegotiationStrategy&gt; strategies;
+&nbsp;    private final Set&lt;MediaTypeFileExtensionResolver&gt; resolvers;
+&nbsp;
+&nbsp;    public ContentNegotiationManager(ContentNegotiationStrategy... strategies) {
+&nbsp;        this((Collection)Arrays.asList(strategies));
+&nbsp;    }
+&nbsp;
+&nbsp;    public ContentNegotiationManager(Collection&lt;ContentNegotiationStrategy&gt; strategies) {
+&nbsp;        this.strategies = new ArrayList();
+&nbsp;        this.resolvers = new LinkedHashSet();
+&nbsp;        Assert.notEmpty(strategies, &quot;At least one ContentNegotiationStrategy is expected&quot;);
+&nbsp;        this.strategies.addAll(strategies);
+&nbsp;
+&nbsp;        for(ContentNegotiationStrategy strategy : this.strategies) {
+&nbsp;            if (strategy instanceof MediaTypeFileExtensionResolver mediaTypeFileExtensionResolver) {
+&nbsp;                this.resolvers.add(mediaTypeFileExtensionResolver);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public ContentNegotiationManager() {
+&nbsp;        this(new HeaderContentNegotiationStrategy());
+&nbsp;    }
+&nbsp;
+&nbsp;    public List&lt;ContentNegotiationStrategy&gt; getStrategies() {
+<b class="nc">&nbsp;        return this.strategies;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    @Nullable
+&nbsp;    public &lt;T extends ContentNegotiationStrategy&gt; T getStrategy(Class&lt;T&gt; strategyType) {
+&nbsp;        for(ContentNegotiationStrategy strategy : this.getStrategies()) {
+&nbsp;            if (strategyType.isInstance(strategy)) {
+&nbsp;                return (T)strategy;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return null;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void addFileExtensionResolvers(MediaTypeFileExtensionResolver... resolvers) {
+&nbsp;        Collections.addAll(this.resolvers, resolvers);
+&nbsp;    }
+&nbsp;
+&nbsp;    public List&lt;MediaType&gt; resolveMediaTypes(NativeWebRequest request) throws HttpMediaTypeNotAcceptableException {
+&nbsp;        for(ContentNegotiationStrategy strategy : this.strategies) {
+&nbsp;            List&lt;MediaType&gt; mediaTypes = strategy.resolveMediaTypes(request);
+<b class="nc">&nbsp;            if (!mediaTypes.equals(MEDIA_TYPE_ALL_LIST)) {</b>
+<b class="nc">&nbsp;                return mediaTypes;</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return MEDIA_TYPE_ALL_LIST;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public List&lt;String&gt; resolveFileExtensions(MediaType mediaType) {
+&nbsp;        return this.doResolveExtensions((resolver) -&gt; resolver.resolveFileExtensions(mediaType));
+&nbsp;    }
+&nbsp;
+&nbsp;    public List&lt;String&gt; getAllFileExtensions() {
+&nbsp;        return this.doResolveExtensions(MediaTypeFileExtensionResolver::getAllFileExtensions);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private List&lt;String&gt; doResolveExtensions(Function&lt;MediaTypeFileExtensionResolver, List&lt;String&gt;&gt; extractor) {
+&nbsp;        List&lt;String&gt; result = null;
+&nbsp;
+&nbsp;        for(MediaTypeFileExtensionResolver resolver : this.resolvers) {
+&nbsp;            List&lt;String&gt; extensions = (List)extractor.apply(resolver);
+&nbsp;            if (!CollectionUtils.isEmpty(extensions)) {
+&nbsp;                result = (List&lt;String&gt;)(result != null ? result : new ArrayList(4));
+<b class="nc">&nbsp;</b>
+&nbsp;                for(String extension : extensions) {
+&nbsp;                    if (!result.contains(extension)) {
+&nbsp;                        result.add(extension);
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return result != null ? result : Collections.emptyList();
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public Map&lt;String, MediaType&gt; getMediaTypeMappings() {</b>
+<b class="nc">&nbsp;        Map&lt;String, MediaType&gt; result = null;</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        for(MediaTypeFileExtensionResolver resolver : this.resolvers) {
+&nbsp;            if (resolver instanceof MappingMediaTypeFileExtensionResolver mappingResolver) {
+<b class="nc">&nbsp;                Map&lt;String, MediaType&gt; map = mappingResolver.getMediaTypes();</b>
+&nbsp;                if (!CollectionUtils.isEmpty(map)) {
+&nbsp;                    result = (Map&lt;String, MediaType&gt;)(result != null ? result : new HashMap(4));
+&nbsp;                    result.putAll(map);
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return result != null ? result : Collections.emptyMap();
+<b class="nc">&nbsp;    }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
+</div>
+</body>
+</html>

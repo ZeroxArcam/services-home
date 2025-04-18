@@ -1,0 +1,220 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > DdlTransactionIsolatorNonJtaImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.resource.transaction.backend.jdbc.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: DdlTransactionIsolatorNonJtaImpl (org.hibernate.resource.transaction.backend.jdbc.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DdlTransactionIsolatorNonJtaImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    80%
+  </span>
+  <span class="absValue">
+    (4/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    10%
+  </span>
+  <span class="absValue">
+    (2/20)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    18.2%
+  </span>
+  <span class="absValue">
+    (6/33)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.resource.transaction.backend.jdbc.internal;
+&nbsp;
+&nbsp;import java.sql.Connection;
+&nbsp;import java.sql.SQLException;
+&nbsp;import org.hibernate.internal.log.ConnectionAccessLogger;
+&nbsp;import org.hibernate.internal.util.ExceptionHelper;
+&nbsp;import org.hibernate.resource.transaction.spi.DdlTransactionIsolator;
+&nbsp;import org.hibernate.tool.schema.internal.exec.JdbcContext;
+&nbsp;
+&nbsp;public class DdlTransactionIsolatorNonJtaImpl implements DdlTransactionIsolator {
+&nbsp;    private final JdbcContext jdbcContext;
+&nbsp;    private Connection jdbcConnection;
+&nbsp;    private boolean unsetAutoCommit;
+&nbsp;
+&nbsp;    public DdlTransactionIsolatorNonJtaImpl(JdbcContext jdbcContext) {
+&nbsp;        this.jdbcContext = jdbcContext;
+&nbsp;    }
+&nbsp;
+&nbsp;    public JdbcContext getJdbcContext() {
+&nbsp;        return this.jdbcContext;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public Connection getIsolatedConnection() {</b>
+<b class="fc">&nbsp;        return this.getIsolatedConnection(true);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Connection getIsolatedConnection(boolean autocommit) {
+&nbsp;        if (this.jdbcConnection == null) {
+<b class="nc">&nbsp;            try {</b>
+&nbsp;                this.jdbcConnection = this.jdbcContext.getJdbcConnectionAccess().obtainConnection();
+&nbsp;
+&nbsp;                try {
+&nbsp;                    if (this.jdbcConnection.getAutoCommit() != autocommit) {
+<b class="fc">&nbsp;                        try {</b>
+&nbsp;                            if (autocommit) {
+&nbsp;                                ConnectionAccessLogger.INSTANCE.informConnectionLocalTransactionForNonJtaDdl(this.jdbcContext.getJdbcConnectionAccess());
+&nbsp;                                this.jdbcConnection.commit();
+&nbsp;                            }
+<b class="pc">&nbsp;</b>
+&nbsp;                            this.jdbcConnection.setAutoCommit(autocommit);
+<b class="fc">&nbsp;                            this.unsetAutoCommit = true;</b>
+&nbsp;                        } catch (SQLException e) {
+&nbsp;                            throw this.jdbcContext.getSqlExceptionHelper().convert(e, &quot;Unable to set JDBC Connection auto-commit mode in preparation for DDL execution&quot;);
+<b class="nc">&nbsp;                        }</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                } catch (SQLException e) {</b>
+<b class="nc">&nbsp;                    throw this.jdbcContext.getSqlExceptionHelper().convert(e, &quot;Unable to check JDBC Connection auto-commit in preparation for DDL execution&quot;);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            } catch (SQLException e) {
+<b class="nc">&nbsp;                throw this.jdbcContext.getSqlExceptionHelper().convert(e, &quot;Unable to open JDBC Connection for DDL execution&quot;);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return this.jdbcConnection;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void release() {
+&nbsp;        if (this.jdbcConnection != null) {
+&nbsp;            Throwable originalException = null;
+&nbsp;
+&nbsp;            try {
+<b class="nc">&nbsp;                if (this.unsetAutoCommit) {</b>
+&nbsp;                    try {
+&nbsp;                        this.jdbcConnection.setAutoCommit(!this.jdbcConnection.getAutoCommit());
+&nbsp;                    } catch (SQLException e) {
+&nbsp;                        originalException = this.jdbcContext.getSqlExceptionHelper().convert(e, &quot;Unable to unset auto-commit mode for JDBC Connection used for DDL execution&quot;);
+&nbsp;                    } catch (Throwable t1) {
+&nbsp;                        originalException = t1;
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;            } finally {
+&nbsp;                Object suppressed = null;
+&nbsp;
+&nbsp;                try {
+&nbsp;                    this.jdbcContext.getJdbcConnectionAccess().releaseConnection(this.jdbcConnection);
+<b class="nc">&nbsp;                } catch (SQLException e) {</b>
+&nbsp;                    suppressed = this.jdbcContext.getSqlExceptionHelper().convert(e, &quot;Unable to release JDBC Connection used for DDL execution&quot;);
+&nbsp;                } catch (Throwable t2) {
+&nbsp;                    suppressed = t2;
+&nbsp;                }
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;                this.jdbcConnection = null;</b>
+&nbsp;                if (suppressed != null) {
+<b class="nc">&nbsp;                    if (originalException == null) {</b>
+&nbsp;                        originalException = (Throwable)suppressed;
+<b class="nc">&nbsp;                    } else {</b>
+&nbsp;                        originalException.addSuppressed((Throwable)suppressed);
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;            }
+&nbsp;
+&nbsp;            if (originalException != null) {
+<b class="nc">&nbsp;                ExceptionHelper.doThrow(originalException);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

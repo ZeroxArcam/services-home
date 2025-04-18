@@ -1,0 +1,645 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > CollectionType</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.type</a>
+</div>
+
+<h1>Coverage Summary for Class: CollectionType (org.hibernate.type)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">CollectionType</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/54)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/148)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/251)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.type;
+&nbsp;
+&nbsp;import java.io.Serializable;
+&nbsp;import java.sql.PreparedStatement;
+&nbsp;import java.sql.SQLException;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.Comparator;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.Iterator;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.SortedMap;
+&nbsp;import java.util.TreeMap;
+&nbsp;import org.checkerframework.checker.nullness.qual.Nullable;
+&nbsp;import org.hibernate.Hibernate;
+&nbsp;import org.hibernate.HibernateException;
+&nbsp;import org.hibernate.Incubating;
+&nbsp;import org.hibernate.Internal;
+&nbsp;import org.hibernate.MappingException;
+&nbsp;import org.hibernate.bytecode.enhance.spi.LazyPropertyInitializer;
+&nbsp;import org.hibernate.collection.spi.AbstractPersistentCollection;
+&nbsp;import org.hibernate.collection.spi.PersistentArrayHolder;
+&nbsp;import org.hibernate.collection.spi.PersistentCollection;
+&nbsp;import org.hibernate.engine.spi.CollectionEntry;
+&nbsp;import org.hibernate.engine.spi.CollectionKey;
+&nbsp;import org.hibernate.engine.spi.EntityEntry;
+&nbsp;import org.hibernate.engine.spi.Mapping;
+&nbsp;import org.hibernate.engine.spi.PersistenceContext;
+&nbsp;import org.hibernate.engine.spi.SessionFactoryImplementor;
+&nbsp;import org.hibernate.engine.spi.SharedSessionContractImplementor;
+&nbsp;import org.hibernate.internal.CoreMessageLogger;
+&nbsp;import org.hibernate.internal.util.MarkerObject;
+&nbsp;import org.hibernate.internal.util.collections.ArrayHelper;
+&nbsp;import org.hibernate.internal.util.collections.CollectionHelper;
+&nbsp;import org.hibernate.metamodel.CollectionClassification;
+&nbsp;import org.hibernate.persister.collection.CollectionPersister;
+&nbsp;import org.hibernate.persister.collection.QueryableCollection;
+&nbsp;import org.hibernate.persister.entity.EntityPersister;
+&nbsp;import org.hibernate.persister.entity.Joinable;
+&nbsp;import org.hibernate.pretty.MessageHelper;
+&nbsp;import org.hibernate.proxy.HibernateProxy;
+&nbsp;import org.hibernate.proxy.LazyInitializer;
+&nbsp;import org.hibernate.sql.results.graph.collection.LoadingCollectionEntry;
+&nbsp;import org.jboss.logging.Logger;
+&nbsp;
+&nbsp;public abstract class CollectionType extends AbstractType implements AssociationType {
+&nbsp;    private static final CoreMessageLogger LOG = (CoreMessageLogger)Logger.getMessageLogger(CoreMessageLogger.class, CollectionType.class.getName());
+&nbsp;    @Internal
+&nbsp;    public static final Object UNFETCHED_COLLECTION = new MarkerObject(&quot;UNFETCHED COLLECTION&quot;);
+&nbsp;    private final String role;
+&nbsp;    private final String foreignKeyPropertyName;
+&nbsp;    private volatile CollectionPersister persister;
+&nbsp;
+&nbsp;    public CollectionType(String role, String foreignKeyPropertyName) {
+&nbsp;        this.role = role;
+&nbsp;        this.foreignKeyPropertyName = foreignKeyPropertyName;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public abstract CollectionClassification getCollectionClassification();
+&nbsp;
+<b class="nc">&nbsp;    public String getRole() {</b>
+&nbsp;        return this.role;
+&nbsp;    }
+&nbsp;
+&nbsp;    public Object indexOf(Object collection, Object element) {
+&nbsp;        throw new UnsupportedOperationException(&quot;generic collections don&#39;t have indexes&quot;);
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean contains(Object collection, Object childObject, SharedSessionContractImplementor session) {
+<b class="nc">&nbsp;        Iterator&lt;?&gt; elems = this.getElementsIterator(collection);</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        while(elems.hasNext()) {</b>
+&nbsp;            Object element = elems.next();
+&nbsp;            LazyInitializer li = HibernateProxy.extractLazyInitializer(element);
+&nbsp;            if (li != null &amp;&amp; !li.isUninitialized()) {
+&nbsp;                element = li.getImplementation();
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            if (element == childObject) {
+&nbsp;                return true;
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return false;
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isCollectionType() {
+<b class="nc">&nbsp;        return true;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public final boolean isEqual(Object x, Object y) {
+<b class="nc">&nbsp;        return x == y || x instanceof PersistentCollection &amp;&amp; this.isEqual((PersistentCollection)x, y) || y instanceof PersistentCollection &amp;&amp; this.isEqual((PersistentCollection)y, x);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private boolean isEqual(PersistentCollection&lt;?&gt; x, Object y) {</b>
+&nbsp;        return x.wasInitialized() &amp;&amp; (x.isWrapper(y) || x.isDirectlyProvidedCollection(y));
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public int compare(Object x, Object y) {</b>
+&nbsp;        return 0;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public int compare(Object x, Object y, SessionFactoryImplementor sessionFactory) {
+&nbsp;        return this.compare(x, y);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public int getHashCode(Object x) {</b>
+&nbsp;        throw new UnsupportedOperationException(&quot;cannot doAfterTransactionCompletion lookups on collections&quot;);
+&nbsp;    }
+&nbsp;
+&nbsp;    public abstract PersistentCollection&lt;?&gt; instantiate(SharedSessionContractImplementor var1, CollectionPersister var2, Object var3);
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public final void nullSafeSet(PreparedStatement st, Object value, int index, boolean[] settable, SharedSessionContractImplementor session) throws HibernateException, SQLException {</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void nullSafeSet(PreparedStatement st, Object value, int index, SharedSessionContractImplementor session) throws HibernateException, SQLException {
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public int[] getSqlTypeCodes(Mapping session) throws MappingException {</b>
+&nbsp;        return ArrayHelper.EMPTY_INT_ARRAY;
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getColumnSpan(Mapping session) throws MappingException {
+<b class="nc">&nbsp;        return 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String toLoggableString(Object value, SessionFactoryImplementor factory) {
+&nbsp;        if (value == null) {
+<b class="nc">&nbsp;            return &quot;null&quot;;</b>
+&nbsp;        } else {
+&nbsp;            if (!this.getReturnedClass().isInstance(value) &amp;&amp; !(value instanceof PersistentCollection)) {
+&nbsp;                CollectionPersister persister = this.getPersister(factory);
+&nbsp;                Type keyType = persister.getKeyType();
+<b class="nc">&nbsp;                if (keyType.getReturnedClass().isInstance(value)) {</b>
+&nbsp;                    String var6 = this.getRole();
+&nbsp;                    return var6 + &quot;#&quot; + keyType.toLoggableString(value, factory);
+&nbsp;                }
+&nbsp;
+&nbsp;                Type identifierType = persister.getIdentifierType();
+&nbsp;                if (identifierType != null &amp;&amp; identifierType.getReturnedClass().isInstance(value)) {
+&nbsp;                    String var10000 = this.getRole();
+&nbsp;                    return var10000 + &quot;#&quot; + identifierType.toLoggableString(value, factory);
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            return this.renderLoggableString(value, factory);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected String renderLoggableString(Object value, SessionFactoryImplementor factory) {
+&nbsp;        if (!Hibernate.isInitialized(value)) {
+<b class="nc">&nbsp;            return &quot;&lt;uninitialized&gt;&quot;;</b>
+&nbsp;        } else {
+&nbsp;            List&lt;String&gt; list = new ArrayList();
+&nbsp;            Type elemType = this.getElementType(factory);
+&nbsp;            Iterator&lt;?&gt; itr = this.getElementsIterator(value);
+<b class="nc">&nbsp;</b>
+&nbsp;            while(itr.hasNext()) {
+&nbsp;                Object element = itr.next();
+&nbsp;                String string = element != LazyPropertyInitializer.UNFETCHED_PROPERTY &amp;&amp; Hibernate.isInitialized(element) ? elemType.toLoggableString(element, factory) : &quot;&lt;uninitialized&gt;&quot;;
+<b class="nc">&nbsp;                list.add(string);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            return list.toString();
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public Object deepCopy(Object value, SessionFactoryImplementor factory) {
+&nbsp;        return value;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public String getName() {</b>
+&nbsp;        String var10000 = this.getReturnedClassName();
+&nbsp;        return var10000 + &quot;(&quot; + this.getRole() + &quot;)&quot;;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    /** @deprecated */</b>
+<b class="nc">&nbsp;    @Deprecated</b>
+<b class="nc">&nbsp;    public Iterator&lt;?&gt; getElementsIterator(Object collection, SharedSessionContractImplementor session) {</b>
+<b class="nc">&nbsp;        return this.getElementsIterator(collection);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Iterator&lt;?&gt; getElementsIterator(Object collection) {
+<b class="nc">&nbsp;        return ((Collection)collection).iterator();</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public boolean isMutable() {</b>
+&nbsp;        return false;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    @Internal</b>
+&nbsp;    @Incubating
+&nbsp;    public boolean isInverse(SessionFactoryImplementor factory) {
+&nbsp;        return this.getPersister(factory).isInverse();
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public Serializable disassemble(Object value, SharedSessionContractImplementor session, Object owner) throws HibernateException {
+&nbsp;        Object key = this.getKeyOfOwner(owner, session);
+<b class="nc">&nbsp;        return key == null ? null : this.getPersister(session).getKeyType().disassemble(key, session, owner);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public Serializable disassemble(Object value, SessionFactoryImplementor sessionFactory) throws HibernateException {</b>
+<b class="nc">&nbsp;        throw new UnsupportedOperationException(&quot;CollectionType not supported as part of cache key!&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public Object assemble(Serializable cached, SharedSessionContractImplementor session, Object owner) throws HibernateException {</b>
+<b class="nc">&nbsp;        if (cached == null) {</b>
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            Object key = this.getPersister(session).getKeyType().assemble(cached, session, owner);</b>
+&nbsp;            return this.resolveKey(key, session, owner);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private CollectionPersister getPersister(SharedSessionContractImplementor session) {</b>
+&nbsp;        CollectionPersister p = this.persister;
+&nbsp;        return p != null ? p : this.getPersister(session.getFactory());
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private CollectionPersister getPersister(SessionFactoryImplementor factory) {</b>
+&nbsp;        CollectionPersister p = this.persister;
+&nbsp;        if (p != null) {
+&nbsp;            return p;
+&nbsp;        } else {
+&nbsp;            synchronized(this) {
+&nbsp;                p = this.persister;
+&nbsp;                if (p != null) {
+&nbsp;                    return p;
+&nbsp;                } else {
+&nbsp;                    p = factory.getRuntimeMetamodels().getMappingMetamodel().getCollectionDescriptor(this.role);
+&nbsp;                    this.persister = p;
+&nbsp;                    return p;
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isDirty(Object old, Object current, SharedSessionContractImplementor session) throws HibernateException {
+&nbsp;        return super.isDirty(old, current, session);
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isDirty(Object old, Object current, boolean[] checkable, SharedSessionContractImplementor session) throws HibernateException {
+&nbsp;        return this.isDirty(old, current, session);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public abstract PersistentCollection&lt;?&gt; wrap(SharedSessionContractImplementor var1, Object var2);
+&nbsp;
+&nbsp;    public boolean isAssociationType() {
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public ForeignKeyDirection getForeignKeyDirection() {
+&nbsp;        return ForeignKeyDirection.TO_PARENT;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public @Nullable Object getKeyOfOwner(Object owner, SharedSessionContractImplementor session) {
+&nbsp;        EntityEntry entityEntry = session.getPersistenceContextInternal().getEntry(owner);
+&nbsp;        if (entityEntry == null) {
+&nbsp;            return null;
+&nbsp;        } else if (this.foreignKeyPropertyName == null) {
+&nbsp;            return entityEntry.getId();
+&nbsp;        } else {
+&nbsp;            Object loadedValue = entityEntry.getLoadedValue(this.foreignKeyPropertyName);
+&nbsp;            return loadedValue == null ? entityEntry.getPersister().getPropertyValue(owner, this.foreignKeyPropertyName) : loadedValue;
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public Object getIdOfOwnerOrNull(Object key, SharedSessionContractImplementor session) {</b>
+<b class="nc">&nbsp;        if (this.foreignKeyPropertyName == null) {</b>
+<b class="nc">&nbsp;            return key;</b>
+&nbsp;        } else {
+&nbsp;            CollectionPersister persister = this.getPersister(session);
+&nbsp;            EntityPersister ownerPersister = persister.getOwnerEntityPersister();
+&nbsp;            Class&lt;?&gt; keyClass = this.keyClass(session);
+<b class="nc">&nbsp;            return ownerPersister.getMappedClass().isAssignableFrom(keyClass) &amp;&amp; keyClass.isInstance(key) ? ownerPersister.getIdentifier(key, session) : null;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private Class&lt;?&gt; keyClass(SharedSessionContractImplementor session) {
+&nbsp;        return this.getPersister(session).getKeyType().getReturnedClass();
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private Object resolveKey(Object key, SharedSessionContractImplementor session, Object owner) {</b>
+<b class="nc">&nbsp;        return key == null ? null : this.getCollection(key, session, owner, (Boolean)null);</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public boolean isArrayType() {</b>
+<b class="nc">&nbsp;        return false;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public boolean useLHSPrimaryKey() {</b>
+&nbsp;        return this.foreignKeyPropertyName == null;
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getRHSUniqueKeyPropertyName() {
+&nbsp;        return null;
+&nbsp;    }
+&nbsp;
+&nbsp;    public Joinable getAssociatedJoinable(SessionFactoryImplementor factory) throws MappingException {
+&nbsp;        return (Joinable)factory.getRuntimeMetamodels().getMappingMetamodel().getCollectionDescriptor(this.role);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public boolean isModified(Object old, Object current, boolean[] checkable, SharedSessionContractImplementor session) {</b>
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getAssociatedEntityName(SessionFactoryImplementor factory) throws MappingException {
+<b class="nc">&nbsp;        try {</b>
+<b class="nc">&nbsp;            QueryableCollection collectionPersister = (QueryableCollection)factory.getRuntimeMetamodels().getMappingMetamodel().getCollectionDescriptor(this.role);</b>
+<b class="nc">&nbsp;            if (!(collectionPersister.getElementType() instanceof EntityType)) {</b>
+&nbsp;                throw new MappingException(&quot;collection was not an association: &quot; + collectionPersister.getRole());
+&nbsp;            } else {
+<b class="nc">&nbsp;                return collectionPersister.getElementPersister().getEntityName();</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        } catch (ClassCastException var3) {</b>
+<b class="nc">&nbsp;            throw new MappingException(&quot;collection role is not queryable &quot; + this.role);</b>
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public Object replaceElements(Object original, Object target, Object owner, Map&lt;Object, Object&gt; copyCache, SharedSessionContractImplementor session) {</b>
+<b class="nc">&nbsp;        Collection result = (Collection)target;</b>
+&nbsp;        result.clear();
+<b class="nc">&nbsp;        Type elemType = this.getElementType(session.getFactory());</b>
+&nbsp;
+&nbsp;        for(Object o : (Collection)original) {
+&nbsp;            result.add(elemType.replace(o, (Object)null, session, owner, copyCache));
+&nbsp;        }
+&nbsp;
+&nbsp;        if (original instanceof PersistentCollection &amp;&amp; result instanceof PersistentCollection) {
+&nbsp;            PersistentCollection&lt;?&gt; originalPersistentCollection = (PersistentCollection)original;
+&nbsp;            PersistentCollection&lt;?&gt; resultPersistentCollection = (PersistentCollection)result;
+&nbsp;            this.preserveSnapshot(originalPersistentCollection, resultPersistentCollection, elemType, owner, copyCache, session);
+<b class="nc">&nbsp;            if (!originalPersistentCollection.isDirty()) {</b>
+&nbsp;                resultPersistentCollection.clearDirty();
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return result;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private void preserveSnapshot(PersistentCollection&lt;?&gt; original, PersistentCollection&lt;?&gt; result, Type elemType, Object owner, Map&lt;Object, Object&gt; copyCache, SharedSessionContractImplementor session) {</b>
+&nbsp;        Serializable originalSnapshot = original.getStoredSnapshot();
+&nbsp;        Serializable resultSnapshot = result.getStoredSnapshot();
+&nbsp;        Serializable targetSnapshot;
+&nbsp;        if (originalSnapshot instanceof List) {
+&nbsp;            ArrayList&lt;Object&gt; targetList = new ArrayList(((List)originalSnapshot).size());
+&nbsp;            targetSnapshot = targetList;
+&nbsp;
+&nbsp;            for(Object obj : (List)originalSnapshot) {
+&nbsp;                targetList.add(elemType.replace(obj, (Object)null, session, owner, copyCache));
+&nbsp;            }
+&nbsp;        } else if (originalSnapshot instanceof Map) {
+&nbsp;            Map&lt;Object, Object&gt; targetMap;
+&nbsp;            if (originalSnapshot instanceof SortedMap) {
+&nbsp;                Comparator&lt;Object&gt; comparator = ((SortedMap)originalSnapshot).comparator();
+&nbsp;                targetMap = new TreeMap(comparator);
+&nbsp;            } else {
+&nbsp;                targetMap = new HashMap(CollectionHelper.determineProperSizing(((Map)originalSnapshot).size()), 0.75F);
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            targetSnapshot = (Serializable)targetMap;
+&nbsp;
+&nbsp;            for(Map.Entry&lt;?, ?&gt; entry : ((Map)originalSnapshot).entrySet()) {
+&nbsp;                Object key = entry.getKey();
+<b class="nc">&nbsp;                Object value = entry.getValue();</b>
+&nbsp;                Object resultSnapshotValue = resultSnapshot == null ? null : ((Map)resultSnapshot).get(key);
+&nbsp;                Object newValue = elemType.replace(value, resultSnapshotValue, session, owner, copyCache);
+&nbsp;                if (key == value) {
+&nbsp;                    targetMap.put(newValue, newValue);
+&nbsp;                } else {
+&nbsp;                    targetMap.put(key, newValue);
+&nbsp;                }
+&nbsp;            }
+&nbsp;        } else if (originalSnapshot instanceof Object[]) {
+&nbsp;            Object[] arr = (Object[])originalSnapshot;
+&nbsp;
+<b class="nc">&nbsp;            for(int i = 0; i &lt; arr.length; ++i) {</b>
+<b class="nc">&nbsp;                arr[i] = elemType.replace(arr[i], (Object)null, session, owner, copyCache);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            targetSnapshot = originalSnapshot;</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            targetSnapshot = resultSnapshot;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        CollectionEntry ce = session.getPersistenceContextInternal().getCollectionEntry(result);
+<b class="nc">&nbsp;        if (ce != null) {</b>
+<b class="nc">&nbsp;            ce.resetStoredSnapshot(result, targetSnapshot);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Object instantiateResult(Object original) {
+&nbsp;        return this.instantiate(-1);
+&nbsp;    }
+&nbsp;
+&nbsp;    public abstract Object instantiate(int var1);
+&nbsp;
+&nbsp;    public Object replace(Object original, Object target, SharedSessionContractImplementor session, Object owner, Map&lt;Object, Object&gt; copyCache) throws HibernateException {
+&nbsp;        if (original == null) {
+&nbsp;            if (target == null) {
+&nbsp;                return null;
+&nbsp;            } else if (target instanceof Collection) {
+<b class="nc">&nbsp;                ((Collection)target).clear();</b>
+<b class="nc">&nbsp;                return target;</b>
+&nbsp;            } else if (target instanceof Map) {
+&nbsp;                ((Map)target).clear();
+<b class="nc">&nbsp;                return target;</b>
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                PersistenceContext persistenceContext = session.getPersistenceContext();
+<b class="nc">&nbsp;                PersistentCollection&lt;?&gt; collectionHolder = persistenceContext.getCollectionHolder(target);</b>
+<b class="nc">&nbsp;                if (collectionHolder != null &amp;&amp; collectionHolder instanceof PersistentArrayHolder) {</b>
+<b class="nc">&nbsp;                    PersistentArrayHolder&lt;?&gt; persistentArrayHolder = (PersistentArrayHolder)collectionHolder;</b>
+&nbsp;                    persistenceContext.removeCollectionHolder(target);
+<b class="nc">&nbsp;                    persistentArrayHolder.beginRead();</b>
+&nbsp;                    persistentArrayHolder.injectLoadedState(persistenceContext.getCollectionEntry(collectionHolder).getLoadedPersister().getAttributeMapping(), (List)null);
+&nbsp;                    persistentArrayHolder.endRead();
+&nbsp;                    persistentArrayHolder.dirty();
+<b class="nc">&nbsp;                    persistenceContext.addCollectionHolder(collectionHolder);</b>
+&nbsp;                    return persistentArrayHolder.getArray();
+&nbsp;                } else {
+&nbsp;                    return null;
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;        } else if (!Hibernate.isInitialized(original)) {</b>
+&nbsp;            if (((PersistentCollection)original).hasQueuedOperations()) {
+&nbsp;                if (original == target) {
+&nbsp;                    AbstractPersistentCollection&lt;?&gt; pc = (AbstractPersistentCollection)original;
+&nbsp;                    pc.replaceQueuedOperationValues(this.getPersister(session), copyCache);
+&nbsp;                } else {
+<b class="nc">&nbsp;                    LOG.ignoreQueuedOperationsOnMerge(MessageHelper.collectionInfoString(this.getRole(), ((PersistentCollection)original).getKey()));</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            return target;
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            Object result = target != null &amp;&amp; target != original &amp;&amp; target != LazyPropertyInitializer.UNFETCHED_PROPERTY &amp;&amp; (!(target instanceof PersistentCollection) || !((PersistentCollection)target).isWrapper(original)) ? target : this.instantiateResult(original);
+&nbsp;            result = this.replaceElements(original, result, owner, copyCache, session);
+&nbsp;            if (original == target) {
+&nbsp;                boolean wasClean = target instanceof PersistentCollection &amp;&amp; !((PersistentCollection)target).isDirty();
+<b class="nc">&nbsp;                this.replaceElements(result, target, owner, copyCache, session);</b>
+&nbsp;                if (wasClean) {
+&nbsp;                    ((PersistentCollection)target).clearDirty();
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                result = target;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            return result;
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public final Type getElementType(SessionFactoryImplementor factory) throws MappingException {
+&nbsp;        return factory.getMappingMetamodel().getCollectionDescriptor(this.role).getElementType();
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public String toString() {</b>
+&nbsp;        String var10000 = this.getClass().getName();
+&nbsp;        return var10000 + &quot;(&quot; + this.getRole() + &quot;)&quot;;
+&nbsp;    }
+&nbsp;
+&nbsp;    public Object getCollection(Object key, SharedSessionContractImplementor session, Object owner, Boolean overridingEager) {
+&nbsp;        CollectionPersister persister = this.getPersister(session);
+&nbsp;        PersistenceContext persistenceContext = session.getPersistenceContextInternal();
+<b class="nc">&nbsp;        CollectionKey collectionKey = new CollectionKey(persister, key);</b>
+&nbsp;        PersistentCollection&lt;?&gt; collection = null;
+<b class="nc">&nbsp;        LoadingCollectionEntry loadingCollectionEntry = persistenceContext.getLoadContexts().findLoadingCollectionEntry(collectionKey);</b>
+<b class="nc">&nbsp;        if (loadingCollectionEntry != null) {</b>
+&nbsp;            collection = loadingCollectionEntry.getCollectionInstance();
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        if (collection == null) {
+&nbsp;            collection = persistenceContext.useUnownedCollection(collectionKey);
+<b class="nc">&nbsp;            if (collection == null) {</b>
+&nbsp;                collection = persistenceContext.getCollection(collectionKey);
+&nbsp;                if (collection == null) {
+&nbsp;                    collection = this.instantiate(session, persister, key);
+<b class="nc">&nbsp;                    collection.setOwner(owner);</b>
+&nbsp;                    persistenceContext.addUninitializedCollection(persister, collection, key);
+&nbsp;                    boolean eager = overridingEager != null ? overridingEager : !persister.isLazy();
+&nbsp;                    if (this.initializeImmediately()) {
+&nbsp;                        session.initializeCollection(collection, false);
+&nbsp;                    } else if (eager) {
+&nbsp;                        persistenceContext.addNonLazyCollection(collection);
+&nbsp;                    }
+&nbsp;
+&nbsp;                    if (this.hasHolder()) {
+&nbsp;                        persistenceContext.addCollectionHolder(collection);
+&nbsp;                    }
+&nbsp;
+&nbsp;                    if (LOG.isTraceEnabled()) {
+&nbsp;                        LOG.tracef(&quot;Created collection wrapper: %s&quot;, MessageHelper.collectionInfoString(persister, collection, key, session));
+&nbsp;                    }
+&nbsp;
+&nbsp;                    return collection.getValue();
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        collection.setOwner(owner);</b>
+&nbsp;        return collection.getValue();
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public boolean hasHolder() {</b>
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected boolean initializeImmediately() {
+&nbsp;        return false;
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getLHSPropertyName() {
+&nbsp;        return this.foreignKeyPropertyName;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public boolean isAlwaysDirtyChecked() {</b>
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public boolean[] toColumnNullness(Object value, Mapping mapping) {
+<b class="nc">&nbsp;        return ArrayHelper.EMPTY_BOOLEAN_ARRAY;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
+</div>
+</body>
+</html>

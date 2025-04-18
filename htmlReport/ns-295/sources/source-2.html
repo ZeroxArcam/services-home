@@ -1,0 +1,189 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > AspectJPrecedenceComparator</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.aop.aspectj.autoproxy</a>
+</div>
+
+<h1>Coverage Summary for Class: AspectJPrecedenceComparator (org.springframework.aop.aspectj.autoproxy)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AspectJPrecedenceComparator</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    12.5%
+  </span>
+  <span class="absValue">
+    (1/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/26)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    6.2%
+  </span>
+  <span class="absValue">
+    (2/32)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.aop.aspectj.autoproxy;
+&nbsp;
+&nbsp;import java.util.Comparator;
+&nbsp;import org.springframework.aop.Advisor;
+&nbsp;import org.springframework.aop.aspectj.AspectJAopUtils;
+&nbsp;import org.springframework.aop.aspectj.AspectJPrecedenceInformation;
+&nbsp;import org.springframework.core.annotation.AnnotationAwareOrderComparator;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;
+&nbsp;class AspectJPrecedenceComparator implements Comparator&lt;Advisor&gt; {
+&nbsp;    private static final int HIGHER_PRECEDENCE = -1;
+&nbsp;    private static final int SAME_PRECEDENCE = 0;
+&nbsp;    private static final int LOWER_PRECEDENCE = 1;
+&nbsp;    private final Comparator&lt;? super Advisor&gt; advisorComparator;
+&nbsp;
+&nbsp;    public AspectJPrecedenceComparator() {
+&nbsp;        this.advisorComparator = AnnotationAwareOrderComparator.INSTANCE;
+&nbsp;    }
+&nbsp;
+&nbsp;    public AspectJPrecedenceComparator(Comparator&lt;? super Advisor&gt; advisorComparator) {
+&nbsp;        Assert.notNull(advisorComparator, &quot;Advisor comparator must not be null&quot;);
+&nbsp;        this.advisorComparator = advisorComparator;
+&nbsp;    }
+&nbsp;
+&nbsp;    public int compare(Advisor o1, Advisor o2) {
+&nbsp;        int advisorPrecedence = this.advisorComparator.compare(o1, o2);
+&nbsp;        if (advisorPrecedence == 0 &amp;&amp; this.declaredInSameAspect(o1, o2)) {
+&nbsp;            advisorPrecedence = this.comparePrecedenceWithinAspect(o1, o2);
+&nbsp;        }
+&nbsp;
+&nbsp;        return advisorPrecedence;
+&nbsp;    }
+&nbsp;
+&nbsp;    private int comparePrecedenceWithinAspect(Advisor advisor1, Advisor advisor2) {
+&nbsp;        boolean oneOrOtherIsAfterAdvice = AspectJAopUtils.isAfterAdvice(advisor1) || AspectJAopUtils.isAfterAdvice(advisor2);
+&nbsp;        int adviceDeclarationOrderDelta = this.getAspectDeclarationOrder(advisor1) - this.getAspectDeclarationOrder(advisor2);
+&nbsp;        if (oneOrOtherIsAfterAdvice) {
+&nbsp;            if (adviceDeclarationOrderDelta &lt; 0) {
+&nbsp;                return 1;
+&nbsp;            } else {
+&nbsp;                return adviceDeclarationOrderDelta == 0 ? 0 : -1;
+&nbsp;            }
+&nbsp;        } else if (adviceDeclarationOrderDelta &lt; 0) {
+&nbsp;            return -1;
+&nbsp;        } else {
+&nbsp;            return adviceDeclarationOrderDelta == 0 ? 0 : 1;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean declaredInSameAspect(Advisor advisor1, Advisor advisor2) {
+&nbsp;        return this.hasAspectName(advisor1) &amp;&amp; this.hasAspectName(advisor2) &amp;&amp; this.getAspectName(advisor1).equals(this.getAspectName(advisor2));
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean hasAspectName(Advisor advisor) {
+&nbsp;        return advisor instanceof AspectJPrecedenceInformation || advisor.getAdvice() instanceof AspectJPrecedenceInformation;
+&nbsp;    }
+&nbsp;
+&nbsp;    private String getAspectName(Advisor advisor) {
+&nbsp;        AspectJPrecedenceInformation precedenceInfo = AspectJAopUtils.getAspectJPrecedenceInformationFor(advisor);
+&nbsp;        Assert.state(precedenceInfo != null, () -&gt; &quot;Unresolvable AspectJPrecedenceInformation for &quot; + String.valueOf(advisor));
+<b class="fc">&nbsp;        return precedenceInfo.getAspectName();</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private int getAspectDeclarationOrder(Advisor advisor) {
+&nbsp;        AspectJPrecedenceInformation precedenceInfo = AspectJAopUtils.getAspectJPrecedenceInformationFor(advisor);
+&nbsp;        return precedenceInfo != null ? precedenceInfo.getDeclarationOrder() : 0;
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 21:00</div>
+</div>
+</body>
+</html>

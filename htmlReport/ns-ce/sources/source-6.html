@@ -1,0 +1,587 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > PointcutParser</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.aspectj.weaver.tools</a>
+</div>
+
+<h1>Coverage Summary for Class: PointcutParser (org.aspectj.weaver.tools)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PointcutParser</td>
+<td class="coverageStat">
+  <span class="percent">
+    44.4%
+  </span>
+  <span class="absValue">
+    (12/27)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    19.2%
+  </span>
+  <span class="absValue">
+    (23/120)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    27.1%
+  </span>
+  <span class="absValue">
+    (52/192)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">PointcutParser$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    20%
+  </span>
+  <span class="absValue">
+    (1/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    20%
+  </span>
+  <span class="absValue">
+    (1/5)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    40.6%
+  </span>
+  <span class="absValue">
+    (13/32)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    19.2%
+  </span>
+  <span class="absValue">
+    (23/120)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    26.9%
+  </span>
+  <span class="absValue">
+    (53/197)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.aspectj.weaver.tools;
+&nbsp;
+&nbsp;import java.io.File;
+&nbsp;import java.io.IOException;
+&nbsp;import java.io.InputStream;
+&nbsp;import java.net.URL;
+&nbsp;import java.util.HashSet;
+&nbsp;import java.util.Properties;
+&nbsp;import java.util.Set;
+&nbsp;import org.aspectj.bridge.IMessageHandler;
+&nbsp;import org.aspectj.bridge.ISourceLocation;
+&nbsp;import org.aspectj.bridge.SourceLocation;
+&nbsp;import org.aspectj.weaver.BindingScope;
+&nbsp;import org.aspectj.weaver.IHasPosition;
+&nbsp;import org.aspectj.weaver.ISourceContext;
+&nbsp;import org.aspectj.weaver.IntMap;
+&nbsp;import org.aspectj.weaver.ResolvedType;
+&nbsp;import org.aspectj.weaver.Shadow;
+&nbsp;import org.aspectj.weaver.UnresolvedType;
+&nbsp;import org.aspectj.weaver.WeakClassLoaderReference;
+&nbsp;import org.aspectj.weaver.World;
+&nbsp;import org.aspectj.weaver.internal.tools.PointcutExpressionImpl;
+&nbsp;import org.aspectj.weaver.internal.tools.TypePatternMatcherImpl;
+&nbsp;import org.aspectj.weaver.patterns.AndPointcut;
+&nbsp;import org.aspectj.weaver.patterns.CflowPointcut;
+&nbsp;import org.aspectj.weaver.patterns.FormalBinding;
+&nbsp;import org.aspectj.weaver.patterns.IScope;
+&nbsp;import org.aspectj.weaver.patterns.KindedPointcut;
+&nbsp;import org.aspectj.weaver.patterns.NotPointcut;
+&nbsp;import org.aspectj.weaver.patterns.OrPointcut;
+&nbsp;import org.aspectj.weaver.patterns.ParserException;
+&nbsp;import org.aspectj.weaver.patterns.PatternParser;
+&nbsp;import org.aspectj.weaver.patterns.Pointcut;
+&nbsp;import org.aspectj.weaver.patterns.SimpleScope;
+&nbsp;import org.aspectj.weaver.patterns.ThisOrTargetAnnotationPointcut;
+&nbsp;import org.aspectj.weaver.patterns.ThisOrTargetPointcut;
+&nbsp;import org.aspectj.weaver.patterns.TypePattern;
+&nbsp;import org.aspectj.weaver.reflect.PointcutParameterImpl;
+&nbsp;import org.aspectj.weaver.reflect.ReflectionWorld;
+&nbsp;
+&nbsp;public class PointcutParser {
+&nbsp;    private ReflectionWorld world;
+&nbsp;    private WeakClassLoaderReference classLoaderReference;
+&nbsp;    private final Set&lt;PointcutPrimitive&gt; supportedPrimitives;
+&nbsp;    private final Set&lt;PointcutDesignatorHandler&gt; pointcutDesignators = new HashSet();
+&nbsp;
+&nbsp;    public static Set&lt;PointcutPrimitive&gt; getAllSupportedPointcutPrimitives() {
+&nbsp;        Set&lt;PointcutPrimitive&gt; primitives = new HashSet();
+&nbsp;        primitives.add(PointcutPrimitive.ADVICE_EXECUTION);
+&nbsp;        primitives.add(PointcutPrimitive.ARGS);
+&nbsp;        primitives.add(PointcutPrimitive.CALL);
+&nbsp;        primitives.add(PointcutPrimitive.EXECUTION);
+&nbsp;        primitives.add(PointcutPrimitive.GET);
+&nbsp;        primitives.add(PointcutPrimitive.HANDLER);
+&nbsp;        primitives.add(PointcutPrimitive.INITIALIZATION);
+&nbsp;        primitives.add(PointcutPrimitive.PRE_INITIALIZATION);
+&nbsp;        primitives.add(PointcutPrimitive.SET);
+<b class="fc">&nbsp;        primitives.add(PointcutPrimitive.STATIC_INITIALIZATION);</b>
+&nbsp;        primitives.add(PointcutPrimitive.TARGET);
+&nbsp;        primitives.add(PointcutPrimitive.THIS);
+&nbsp;        primitives.add(PointcutPrimitive.WITHIN);
+&nbsp;        primitives.add(PointcutPrimitive.WITHIN_CODE);
+&nbsp;        primitives.add(PointcutPrimitive.AT_ANNOTATION);
+&nbsp;        primitives.add(PointcutPrimitive.AT_THIS);
+<b class="nc">&nbsp;        primitives.add(PointcutPrimitive.AT_TARGET);</b>
+<b class="nc">&nbsp;        primitives.add(PointcutPrimitive.AT_ARGS);</b>
+<b class="nc">&nbsp;        primitives.add(PointcutPrimitive.AT_WITHIN);</b>
+<b class="nc">&nbsp;        primitives.add(PointcutPrimitive.AT_WITHINCODE);</b>
+<b class="nc">&nbsp;        primitives.add(PointcutPrimitive.REFERENCE);</b>
+<b class="nc">&nbsp;        return primitives;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public static PointcutParser getPointcutParserSupportingAllPrimitivesAndUsingContextClassloaderForResolution() {</b>
+<b class="nc">&nbsp;        PointcutParser p = new PointcutParser();</b>
+<b class="nc">&nbsp;        p.setClassLoader(Thread.currentThread().getContextClassLoader());</b>
+<b class="nc">&nbsp;        return p;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public static PointcutParser getPointcutParserSupportingSpecifiedPrimitivesAndUsingContextClassloaderForResolution(Set&lt;PointcutPrimitive&gt; supportedPointcutKinds) {</b>
+<b class="nc">&nbsp;        PointcutParser p = new PointcutParser(supportedPointcutKinds);</b>
+<b class="nc">&nbsp;        p.setClassLoader(Thread.currentThread().getContextClassLoader());</b>
+<b class="nc">&nbsp;        return p;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public static PointcutParser getPointcutParserSupportingAllPrimitivesAndUsingSpecifiedClassloaderForResolution(ClassLoader classLoader) {</b>
+<b class="nc">&nbsp;        PointcutParser p = new PointcutParser();</b>
+&nbsp;        p.setClassLoader(classLoader);
+<b class="nc">&nbsp;        return p;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static PointcutParser getPointcutParserSupportingSpecifiedPrimitivesAndUsingSpecifiedClassLoaderForResolution(Set&lt;PointcutPrimitive&gt; supportedPointcutKinds, ClassLoader classLoader) {
+&nbsp;        PointcutParser p = new PointcutParser(supportedPointcutKinds);
+&nbsp;        p.setClassLoader(classLoader);
+&nbsp;        return p;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected PointcutParser() {
+&nbsp;        this.supportedPrimitives = getAllSupportedPointcutPrimitives();
+&nbsp;        this.setClassLoader(PointcutParser.class.getClassLoader());
+&nbsp;    }
+&nbsp;
+&nbsp;    private PointcutParser(Set&lt;PointcutPrimitive&gt; supportedPointcutKinds) {
+<b class="nc">&nbsp;        this.supportedPrimitives = supportedPointcutKinds;</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        for(PointcutPrimitive pointcutPrimitive : supportedPointcutKinds) {</b>
+&nbsp;            if (pointcutPrimitive == PointcutPrimitive.IF || pointcutPrimitive == PointcutPrimitive.CFLOW || pointcutPrimitive == PointcutPrimitive.CFLOW_BELOW) {
+&nbsp;                throw new UnsupportedOperationException(&quot;Cannot handle if, cflow, and cflowbelow primitives&quot;);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        this.setClassLoader(PointcutParser.class.getClassLoader());
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void setWorld(ReflectionWorld aWorld) {
+&nbsp;        this.world = aWorld;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void setClassLoader(ClassLoader aLoader) {
+&nbsp;        this.classLoaderReference = new WeakClassLoaderReference(aLoader);
+&nbsp;        this.world = ReflectionWorld.getReflectionWorldFor(this.classLoaderReference);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void setClassLoader(ClassLoader aLoader, boolean shareWorlds) {
+&nbsp;        this.classLoaderReference = new WeakClassLoaderReference(aLoader);
+<b class="nc">&nbsp;        if (shareWorlds) {</b>
+<b class="nc">&nbsp;            this.world = ReflectionWorld.getReflectionWorldFor(this.classLoaderReference);</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            this.world = new ReflectionWorld(this.classLoaderReference);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setLintProperties(String resourcePath) throws IOException {
+&nbsp;        URL url = this.classLoaderReference.getClassLoader().getResource(resourcePath);
+&nbsp;        InputStream is = url.openStream();
+&nbsp;        Properties p = new Properties();
+&nbsp;        p.load(is);
+&nbsp;        this.setLintProperties(p);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setLintProperties(Properties properties) {
+&nbsp;        this.getWorld().getLint().setFromProperties(properties);
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void registerPointcutDesignatorHandler(PointcutDesignatorHandler designatorHandler) {</b>
+&nbsp;        this.pointcutDesignators.add(designatorHandler);
+&nbsp;        if (this.world != null) {
+&nbsp;            this.world.registerPointcutHandler(designatorHandler);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public PointcutParameter createPointcutParameter(String name, Class&lt;?&gt; type) {
+&nbsp;        return new PointcutParameterImpl(name, type);
+&nbsp;    }
+&nbsp;
+&nbsp;    public PointcutExpression parsePointcutExpression(String expression) throws UnsupportedPointcutPrimitiveException, IllegalArgumentException {
+&nbsp;        return this.parsePointcutExpression(expression, (Class)null, new PointcutParameter[0]);
+&nbsp;    }
+&nbsp;
+&nbsp;    public PointcutExpression parsePointcutExpression(String expression, Class&lt;?&gt; inScope, PointcutParameter[] formalParameters) throws UnsupportedPointcutPrimitiveException, IllegalArgumentException {
+&nbsp;        PointcutExpressionImpl pcExpr = null;
+&nbsp;
+&nbsp;        try {
+<b class="fc">&nbsp;            Pointcut pc = this.resolvePointcutExpression(expression, inScope, formalParameters);</b>
+<b class="fc">&nbsp;            pc = this.concretizePointcutExpression(pc, inScope, formalParameters);</b>
+<b class="fc">&nbsp;            this.validateAgainstSupportedPrimitives(pc, expression);</b>
+&nbsp;            pcExpr = new PointcutExpressionImpl(pc, expression, formalParameters, this.getWorld());
+&nbsp;            return pcExpr;
+&nbsp;        } catch (ParserException pEx) {
+&nbsp;            throw new IllegalArgumentException(this.buildUserMessageFromParserException(expression, pEx));
+&nbsp;        } catch (ReflectionWorld.ReflectionWorldException rwEx) {
+&nbsp;            throw new IllegalArgumentException(rwEx.getMessage());
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Pointcut resolvePointcutExpression(String expression, Class&lt;?&gt; inScope, PointcutParameter[] formalParameters) {
+<b class="nc">&nbsp;        try {</b>
+<b class="nc">&nbsp;            PatternParser parser = new PatternParser(expression);</b>
+<b class="nc">&nbsp;            parser.setPointcutDesignatorHandlers(this.pointcutDesignators, this.world);</b>
+&nbsp;            Pointcut pc = parser.parsePointcut();
+&nbsp;            this.validateAgainstSupportedPrimitives(pc, expression);
+&nbsp;            IScope resolutionScope = this.buildResolutionScope(inScope == null ? Object.class : inScope, formalParameters);
+&nbsp;            pc = pc.resolve(resolutionScope);
+&nbsp;            return pc;
+&nbsp;        } catch (ParserException pEx) {
+&nbsp;            throw new IllegalArgumentException(this.buildUserMessageFromParserException(expression, pEx));
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Pointcut concretizePointcutExpression(Pointcut pc, Class&lt;?&gt; inScope, PointcutParameter[] formalParameters) {
+&nbsp;        ResolvedType declaringTypeForResolution = null;
+&nbsp;        if (inScope != null) {
+&nbsp;            declaringTypeForResolution = this.getWorld().resolve(inScope.getName());
+<b class="fc">&nbsp;        } else {</b>
+<b class="fc">&nbsp;            declaringTypeForResolution = ResolvedType.OBJECT.resolve(this.getWorld());</b>
+<b class="fc">&nbsp;        }</b>
+<b class="pc">&nbsp;</b>
+&nbsp;        IntMap arity = new IntMap(formalParameters.length);
+<b class="nc">&nbsp;</b>
+&nbsp;        for(int i = 0; i &lt; formalParameters.length; ++i) {
+&nbsp;            arity.put(i, i);
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return pc.concretize(declaringTypeForResolution, declaringTypeForResolution, arity);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public TypePatternMatcher parseTypePattern(String typePattern) throws IllegalArgumentException {
+&nbsp;        try {
+&nbsp;            TypePattern tp = (new PatternParser(typePattern)).parseTypePattern();
+&nbsp;            tp.resolve(this.world);
+&nbsp;            return new TypePatternMatcherImpl(tp, this.world);
+&nbsp;        } catch (ParserException pEx) {
+&nbsp;            throw new IllegalArgumentException(this.buildUserMessageFromParserException(typePattern, pEx));
+&nbsp;        } catch (ReflectionWorld.ReflectionWorldException rwEx) {
+<b class="fc">&nbsp;            throw new IllegalArgumentException(rwEx.getMessage());</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private World getWorld() {
+&nbsp;        return this.world;
+&nbsp;    }
+&nbsp;
+&nbsp;    Set&lt;PointcutPrimitive&gt; getSupportedPrimitives() {
+&nbsp;        return this.supportedPrimitives;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    IMessageHandler setCustomMessageHandler(IMessageHandler aHandler) {</b>
+<b class="nc">&nbsp;        IMessageHandler current = this.getWorld().getMessageHandler();</b>
+&nbsp;        this.getWorld().setMessageHandler(aHandler);
+<b class="nc">&nbsp;        return current;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private IScope buildResolutionScope(Class&lt;?&gt; inScope, PointcutParameter[] formalParameters) {
+&nbsp;        if (formalParameters == null) {
+&nbsp;            formalParameters = new PointcutParameter[0];
+&nbsp;        }
+&nbsp;
+&nbsp;        FormalBinding[] formalBindings = new FormalBinding[formalParameters.length];
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; formalBindings.length; ++i) {</b>
+<b class="nc">&nbsp;            formalBindings[i] = new FormalBinding(this.toUnresolvedType(formalParameters[i].getType()), formalParameters[i].getName(), i);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if (inScope == null) {</b>
+&nbsp;            return new SimpleScope(this.getWorld(), formalBindings);
+&nbsp;        } else {
+&nbsp;            ResolvedType inType = this.getWorld().resolve(inScope.getName());
+&nbsp;            ISourceContext sourceContext = new ISourceContext() {
+&nbsp;                public ISourceLocation makeSourceLocation(IHasPosition position) {
+&nbsp;                    return new SourceLocation(new File(&quot;&quot;), 0);
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                public ISourceLocation makeSourceLocation(int line, int offset) {</b>
+&nbsp;                    return new SourceLocation(new File(&quot;&quot;), line);
+&nbsp;                }
+&nbsp;
+&nbsp;                public int getOffset() {
+&nbsp;                    return 0;
+&nbsp;                }
+&nbsp;
+&nbsp;                public void tidy() {
+&nbsp;                }
+<b class="fc">&nbsp;            };</b>
+<b class="pc">&nbsp;            return new BindingScope(inType, sourceContext, formalBindings);</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private UnresolvedType toUnresolvedType(Class&lt;?&gt; clazz) {
+&nbsp;        return clazz.isArray() ? UnresolvedType.forSignature(clazz.getName().replace(&#39;.&#39;, &#39;/&#39;)) : UnresolvedType.forName(clazz.getName());
+&nbsp;    }
+&nbsp;
+&nbsp;    private void validateAgainstSupportedPrimitives(Pointcut pc, String expression) {
+&nbsp;        switch (pc.getPointcutKind()) {
+&nbsp;            case 1:
+&nbsp;                this.validateKindedPointcut((KindedPointcut)pc, expression);
+&nbsp;                break;
+<b class="nc">&nbsp;            case 2:</b>
+&nbsp;                if (!this.supportedPrimitives.contains(PointcutPrimitive.WITHIN)) {
+&nbsp;                    throw new UnsupportedPointcutPrimitiveException(expression, PointcutPrimitive.WITHIN);
+&nbsp;                }
+&nbsp;                break;
+&nbsp;            case 3:
+&nbsp;                boolean isThis = ((ThisOrTargetPointcut)pc).isThis();
+&nbsp;                if (isThis &amp;&amp; !this.supportedPrimitives.contains(PointcutPrimitive.THIS)) {
+&nbsp;                    throw new UnsupportedPointcutPrimitiveException(expression, PointcutPrimitive.THIS);
+&nbsp;                }
+&nbsp;
+&nbsp;                if (!this.supportedPrimitives.contains(PointcutPrimitive.TARGET)) {
+&nbsp;                    throw new UnsupportedPointcutPrimitiveException(expression, PointcutPrimitive.TARGET);
+<b class="nc">&nbsp;                }</b>
+&nbsp;                break;
+&nbsp;            case 4:
+&nbsp;                if (!this.supportedPrimitives.contains(PointcutPrimitive.ARGS)) {
+&nbsp;                    throw new UnsupportedPointcutPrimitiveException(expression, PointcutPrimitive.ARGS);
+&nbsp;                }
+&nbsp;                break;
+&nbsp;            case 5:
+&nbsp;                this.validateAgainstSupportedPrimitives(((AndPointcut)pc).getLeft(), expression);
+&nbsp;                this.validateAgainstSupportedPrimitives(((AndPointcut)pc).getRight(), expression);
+&nbsp;                break;
+&nbsp;            case 6:
+&nbsp;                this.validateAgainstSupportedPrimitives(((OrPointcut)pc).getLeft(), expression);
+&nbsp;                this.validateAgainstSupportedPrimitives(((OrPointcut)pc).getRight(), expression);
+<b class="fc">&nbsp;                break;</b>
+&nbsp;            case 7:
+<b class="fc">&nbsp;                this.validateAgainstSupportedPrimitives(((NotPointcut)pc).getNegatedPointcut(), expression);</b>
+<b class="fc">&nbsp;                break;</b>
+<b class="fc">&nbsp;            case 8:</b>
+<b class="fc">&nbsp;                if (!this.supportedPrimitives.contains(PointcutPrimitive.REFERENCE)) {</b>
+&nbsp;                    throw new UnsupportedPointcutPrimitiveException(expression, PointcutPrimitive.REFERENCE);
+<b class="nc">&nbsp;                }</b>
+&nbsp;                break;
+<b class="nc">&nbsp;            case 9:</b>
+&nbsp;            case 14:
+<b class="fc">&nbsp;            case 15:</b>
+&nbsp;                throw new UnsupportedPointcutPrimitiveException(expression, PointcutPrimitive.IF);
+&nbsp;            case 10:
+&nbsp;                CflowPointcut cfp = (CflowPointcut)pc;
+&nbsp;                if (cfp.isCflowBelow()) {
+<b class="fc">&nbsp;                    throw new UnsupportedPointcutPrimitiveException(expression, PointcutPrimitive.CFLOW_BELOW);</b>
+<b class="fc">&nbsp;                }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;                throw new UnsupportedPointcutPrimitiveException(expression, PointcutPrimitive.CFLOW);</b>
+<b class="pc">&nbsp;            case 11:</b>
+<b class="fc">&nbsp;            case 20:</b>
+<b class="fc">&nbsp;            default:</b>
+&nbsp;                throw new IllegalArgumentException(&quot;Unknown pointcut kind: &quot; + pc.getPointcutKind());
+<b class="nc">&nbsp;            case 12:</b>
+&nbsp;                if (!this.supportedPrimitives.contains(PointcutPrimitive.WITHIN_CODE)) {
+&nbsp;                    throw new UnsupportedPointcutPrimitiveException(expression, PointcutPrimitive.WITHIN_CODE);
+&nbsp;                }
+&nbsp;                break;
+<b class="fc">&nbsp;            case 13:</b>
+<b class="pc">&nbsp;                if (!this.supportedPrimitives.contains(PointcutPrimitive.HANDLER)) {</b>
+<b class="fc">&nbsp;                    throw new UnsupportedPointcutPrimitiveException(expression, PointcutPrimitive.HANDLER);</b>
+&nbsp;                }
+<b class="nc">&nbsp;                break;</b>
+&nbsp;            case 16:
+<b class="fc">&nbsp;                if (!this.supportedPrimitives.contains(PointcutPrimitive.AT_ANNOTATION)) {</b>
+<b class="pc">&nbsp;                    throw new UnsupportedPointcutPrimitiveException(expression, PointcutPrimitive.AT_ANNOTATION);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;                break;
+<b class="fc">&nbsp;            case 17:</b>
+&nbsp;                if (!this.supportedPrimitives.contains(PointcutPrimitive.AT_WITHIN)) {
+&nbsp;                    throw new UnsupportedPointcutPrimitiveException(expression, PointcutPrimitive.AT_WITHIN);
+&nbsp;                }
+&nbsp;                break;
+&nbsp;            case 18:
+&nbsp;                if (!this.supportedPrimitives.contains(PointcutPrimitive.AT_WITHINCODE)) {
+&nbsp;                    throw new UnsupportedPointcutPrimitiveException(expression, PointcutPrimitive.AT_WITHINCODE);
+&nbsp;                }
+&nbsp;                break;
+&nbsp;            case 19:
+&nbsp;                boolean isThis = ((ThisOrTargetAnnotationPointcut)pc).isThis();
+<b class="nc">&nbsp;                if (isThis &amp;&amp; !this.supportedPrimitives.contains(PointcutPrimitive.AT_THIS)) {</b>
+<b class="nc">&nbsp;                    throw new UnsupportedPointcutPrimitiveException(expression, PointcutPrimitive.AT_THIS);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="nc">&nbsp;                if (!this.supportedPrimitives.contains(PointcutPrimitive.AT_TARGET)) {</b>
+&nbsp;                    throw new UnsupportedPointcutPrimitiveException(expression, PointcutPrimitive.AT_TARGET);
+<b class="nc">&nbsp;                }</b>
+&nbsp;                break;
+&nbsp;            case 21:
+&nbsp;                if (!this.supportedPrimitives.contains(PointcutPrimitive.AT_ARGS)) {
+&nbsp;                    throw new UnsupportedPointcutPrimitiveException(expression, PointcutPrimitive.AT_ARGS);
+<b class="fc">&nbsp;                }</b>
+&nbsp;            case 22:
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private void validateKindedPointcut(KindedPointcut pc, String expression) {
+&nbsp;        Shadow.Kind kind = pc.getKind();
+&nbsp;        if (kind != Shadow.MethodCall &amp;&amp; kind != Shadow.ConstructorCall) {
+&nbsp;            if (kind != Shadow.MethodExecution &amp;&amp; kind != Shadow.ConstructorExecution) {
+<b class="nc">&nbsp;                if (kind == Shadow.AdviceExecution) {</b>
+<b class="nc">&nbsp;                    if (!this.supportedPrimitives.contains(PointcutPrimitive.ADVICE_EXECUTION)) {</b>
+<b class="nc">&nbsp;                        throw new UnsupportedPointcutPrimitiveException(expression, PointcutPrimitive.ADVICE_EXECUTION);</b>
+&nbsp;                    }
+&nbsp;                } else if (kind == Shadow.FieldGet) {
+&nbsp;                    if (!this.supportedPrimitives.contains(PointcutPrimitive.GET)) {
+<b class="pc">&nbsp;                        throw new UnsupportedPointcutPrimitiveException(expression, PointcutPrimitive.GET);</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                } else if (kind == Shadow.FieldSet) {
+<b class="fc">&nbsp;                    if (!this.supportedPrimitives.contains(PointcutPrimitive.SET)) {</b>
+<b class="pc">&nbsp;                        throw new UnsupportedPointcutPrimitiveException(expression, PointcutPrimitive.SET);</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                } else if (kind == Shadow.Initialization) {
+<b class="pc">&nbsp;                    if (!this.supportedPrimitives.contains(PointcutPrimitive.INITIALIZATION)) {</b>
+<b class="nc">&nbsp;                        throw new UnsupportedPointcutPrimitiveException(expression, PointcutPrimitive.INITIALIZATION);</b>
+&nbsp;                    }
+<b class="fc">&nbsp;                } else if (kind == Shadow.PreInitialization) {</b>
+<b class="fc">&nbsp;                    if (!this.supportedPrimitives.contains(PointcutPrimitive.PRE_INITIALIZATION)) {</b>
+&nbsp;                        throw new UnsupportedPointcutPrimitiveException(expression, PointcutPrimitive.PRE_INITIALIZATION);
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                } else if (kind == Shadow.StaticInitialization &amp;&amp; !this.supportedPrimitives.contains(PointcutPrimitive.STATIC_INITIALIZATION)) {
+&nbsp;                    throw new UnsupportedPointcutPrimitiveException(expression, PointcutPrimitive.STATIC_INITIALIZATION);
+&nbsp;                }
+<b class="nc">&nbsp;            } else if (!this.supportedPrimitives.contains(PointcutPrimitive.EXECUTION)) {</b>
+&nbsp;                throw new UnsupportedPointcutPrimitiveException(expression, PointcutPrimitive.EXECUTION);
+&nbsp;            }
+&nbsp;        } else if (!this.supportedPrimitives.contains(PointcutPrimitive.CALL)) {
+<b class="nc">&nbsp;            throw new UnsupportedPointcutPrimitiveException(expression, PointcutPrimitive.CALL);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private String buildUserMessageFromParserException(String pc, ParserException ex) {
+<b class="fc">&nbsp;        StringBuilder msg = new StringBuilder();</b>
+&nbsp;        msg.append(&quot;Pointcut is not well-formed: expecting &#39;&quot;);
+&nbsp;        msg.append(ex.getMessage());
+&nbsp;        msg.append(&quot;&#39;&quot;);
+&nbsp;        IHasPosition location = ex.getLocation();
+<b class="nc">&nbsp;        msg.append(&quot; at character position &quot;);</b>
+<b class="nc">&nbsp;        msg.append(location.getStart());</b>
+&nbsp;        msg.append(&quot;\n&quot;);
+<b class="nc">&nbsp;        msg.append(pc);</b>
+&nbsp;        msg.append(&quot;\n&quot;);
+&nbsp;
+&nbsp;        for(int i = 0; i &lt; location.getStart(); ++i) {
+&nbsp;            msg.append(&quot; &quot;);
+<b class="pc">&nbsp;        }</b>
+&nbsp;
+<b class="fc">&nbsp;        for(int j = location.getStart(); j &lt;= location.getEnd(); ++j) {</b>
+<b class="fc">&nbsp;            msg.append(&quot;^&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        msg.append(&quot;\n&quot;);</b>
+<b class="nc">&nbsp;        return msg.toString();</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
+</div>
+</body>
+</html>

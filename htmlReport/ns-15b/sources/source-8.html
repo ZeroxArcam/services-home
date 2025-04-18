@@ -1,0 +1,219 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > DefaultEvictEventListener</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.event.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: DefaultEvictEventListener (org.hibernate.event.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DefaultEvictEventListener</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    40%
+  </span>
+  <span class="absValue">
+    (2/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/24)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    4.7%
+  </span>
+  <span class="absValue">
+    (2/43)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.event.internal;
+&nbsp;
+&nbsp;import org.hibernate.HibernateException;
+&nbsp;import org.hibernate.engine.internal.Cascade;
+&nbsp;import org.hibernate.engine.internal.CascadePoint;
+&nbsp;import org.hibernate.engine.spi.CascadingActions;
+&nbsp;import org.hibernate.engine.spi.EntityEntry;
+&nbsp;import org.hibernate.engine.spi.EntityHolder;
+&nbsp;import org.hibernate.engine.spi.EntityKey;
+&nbsp;import org.hibernate.engine.spi.PersistenceContext;
+&nbsp;import org.hibernate.event.spi.EventSource;
+&nbsp;import org.hibernate.event.spi.EvictEvent;
+&nbsp;import org.hibernate.event.spi.EvictEventListener;
+&nbsp;import org.hibernate.internal.CoreLogging;
+&nbsp;import org.hibernate.internal.CoreMessageLogger;
+&nbsp;import org.hibernate.persister.entity.EntityPersister;
+&nbsp;import org.hibernate.pretty.MessageHelper;
+&nbsp;import org.hibernate.proxy.HibernateProxy;
+&nbsp;import org.hibernate.proxy.LazyInitializer;
+&nbsp;
+&nbsp;public class DefaultEvictEventListener implements EvictEventListener {
+&nbsp;    private static final CoreMessageLogger LOG = CoreLogging.messageLogger(DefaultEvictEventListener.class);
+&nbsp;
+&nbsp;    public DefaultEvictEventListener() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public void onEvict(EvictEvent event) throws HibernateException {
+&nbsp;        EventSource source = event.getSession();
+&nbsp;        PersistenceContext persistenceContext = source.getPersistenceContextInternal();
+<b class="fc">&nbsp;        Object object = event.getObject();</b>
+<b class="fc">&nbsp;        if (object == null) {</b>
+&nbsp;            throw new NullPointerException(&quot;null passed to Session.evict()&quot;);
+&nbsp;        } else {
+&nbsp;            LazyInitializer lazyInitializer = HibernateProxy.extractLazyInitializer(object);
+&nbsp;            if (lazyInitializer != null) {
+&nbsp;                Object id = lazyInitializer.getInternalIdentifier();
+&nbsp;                if (id == null) {
+&nbsp;                    throw new IllegalArgumentException(&quot;Could not determine identifier of proxy passed to evict()&quot;);
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                EntityPersister persister = source.getFactory().getMappingMetamodel().getEntityDescriptor(lazyInitializer.getEntityName());</b>
+<b class="nc">&nbsp;                EntityKey key = source.generateEntityKey(id, persister);</b>
+<b class="nc">&nbsp;                EntityHolder holder = persistenceContext.detachEntity(key);</b>
+<b class="nc">&nbsp;                if (holder != null &amp;&amp; !lazyInitializer.isUninitialized()) {</b>
+<b class="nc">&nbsp;                    Object entity = holder.getEntity();</b>
+&nbsp;                    if (entity != null) {
+<b class="nc">&nbsp;                        EntityEntry entry = persistenceContext.removeEntry(entity);</b>
+<b class="nc">&nbsp;                        this.doEvict(entity, key, entry.getPersister(), event.getSession());</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                lazyInitializer.unsetSession();
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                EntityEntry entry = persistenceContext.getEntry(object);</b>
+<b class="nc">&nbsp;                if (entry != null) {</b>
+<b class="nc">&nbsp;                    this.doEvict(object, entry.getEntityKey(), entry.getPersister(), source);</b>
+<b class="nc">&nbsp;                } else {</b>
+&nbsp;                    checkEntity(object, source);
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private static void checkEntity(Object object, EventSource source) {
+<b class="nc">&nbsp;        String entityName = source.getSession().guessEntityName(object);</b>
+&nbsp;        if (entityName != null) {
+&nbsp;            try {
+<b class="nc">&nbsp;                EntityPersister persister = source.getFactory().getMappingMetamodel().getEntityDescriptor(entityName);</b>
+<b class="nc">&nbsp;                if (persister != null) {</b>
+<b class="nc">&nbsp;                    return;</b>
+&nbsp;                }
+&nbsp;            } catch (Exception var4) {
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        throw new IllegalArgumentException(&quot;Non-entity object instance passed to evict: &quot; + object);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void doEvict(Object object, EntityKey key, EntityPersister persister, EventSource session) throws HibernateException {
+&nbsp;        if (LOG.isTraceEnabled()) {
+&nbsp;            LOG.tracev(&quot;Evicting {0}&quot;, MessageHelper.infoString(persister));
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        PersistenceContext persistenceContext = session.getPersistenceContextInternal();</b>
+<b class="nc">&nbsp;        if (persister.hasNaturalIdentifier()) {</b>
+&nbsp;            persistenceContext.getNaturalIdResolutions().handleEviction(key.getIdentifier(), object, persister);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if (persister.hasCollections()) {</b>
+&nbsp;            (new EvictVisitor(session, object)).process(object, persister);
+&nbsp;        }
+&nbsp;
+&nbsp;        persistenceContext.removeEntityHolder(key);
+&nbsp;        persistenceContext.removeEntry(object);
+&nbsp;        Cascade.cascade(CascadingActions.EVICT, CascadePoint.AFTER_EVICT, session, persister, object);
+<b class="nc">&nbsp;    }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:57</div>
+</div>
+</body>
+</html>

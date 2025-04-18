@@ -1,0 +1,383 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > MultiIdEntityLoaderStandard</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.loader.ast.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: MultiIdEntityLoaderStandard (org.hibernate.loader.ast.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MultiIdEntityLoaderStandard</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (2/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    1%
+  </span>
+  <span class="absValue">
+    (1/100)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    3.2%
+  </span>
+  <span class="absValue">
+    (5/157)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.loader.ast.internal;
+&nbsp;
+&nbsp;import java.lang.reflect.Array;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Arrays;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Objects;
+&nbsp;import org.hibernate.LockMode;
+&nbsp;import org.hibernate.LockOptions;
+&nbsp;import org.hibernate.dialect.Dialect;
+&nbsp;import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
+&nbsp;import org.hibernate.engine.spi.EntityEntry;
+&nbsp;import org.hibernate.engine.spi.EntityKey;
+&nbsp;import org.hibernate.engine.spi.LoadQueryInfluencers;
+&nbsp;import org.hibernate.engine.spi.PersistenceContext;
+&nbsp;import org.hibernate.engine.spi.SessionFactoryImplementor;
+&nbsp;import org.hibernate.engine.spi.SharedSessionContractImplementor;
+&nbsp;import org.hibernate.engine.spi.SubselectFetch;
+&nbsp;import org.hibernate.event.spi.EventSource;
+&nbsp;import org.hibernate.event.spi.LoadEvent;
+&nbsp;import org.hibernate.event.spi.LoadEventListener;
+&nbsp;import org.hibernate.internal.util.collections.CollectionHelper;
+&nbsp;import org.hibernate.loader.ast.spi.MultiIdLoadOptions;
+&nbsp;import org.hibernate.metamodel.mapping.EntityIdentifierMapping;
+&nbsp;import org.hibernate.metamodel.mapping.EntityMappingType;
+&nbsp;import org.hibernate.persister.entity.EntityPersister;
+&nbsp;import org.hibernate.query.spi.QueryOptions;
+&nbsp;import org.hibernate.sql.ast.SqlAstTranslatorFactory;
+&nbsp;import org.hibernate.sql.ast.tree.select.SelectStatement;
+&nbsp;import org.hibernate.sql.exec.internal.JdbcParameterBindingsImpl;
+&nbsp;import org.hibernate.sql.exec.spi.JdbcOperationQuerySelect;
+&nbsp;import org.hibernate.sql.exec.spi.JdbcParameterBindings;
+&nbsp;import org.hibernate.sql.exec.spi.JdbcParametersList;
+&nbsp;import org.hibernate.sql.results.graph.DomainResult;
+&nbsp;import org.hibernate.sql.results.internal.RowTransformerStandardImpl;
+&nbsp;import org.hibernate.sql.results.spi.ListResultsConsumer.UniqueSemantic;
+&nbsp;import org.jboss.logging.Logger;
+&nbsp;
+&nbsp;public class MultiIdEntityLoaderStandard&lt;T&gt; extends AbstractMultiIdEntityLoader&lt;T&gt; {
+&nbsp;    private static final Logger log = Logger.getLogger(MultiIdEntityLoaderStandard.class);
+&nbsp;    private final int idJdbcTypeCount;
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public MultiIdEntityLoaderStandard(EntityPersister entityDescriptor, int idColumnSpan, SessionFactoryImplementor sessionFactory) {</b>
+&nbsp;        super(entityDescriptor, sessionFactory);
+&nbsp;        this.idJdbcTypeCount = idColumnSpan;
+&nbsp;
+&nbsp;        assert this.idJdbcTypeCount &gt; 0;
+&nbsp;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    protected List&lt;T&gt; performOrderedMultiLoad(Object[] ids, MultiIdLoadOptions loadOptions, EventSource session) {</b>
+<b class="fc">&nbsp;        if (log.isTraceEnabled()) {</b>
+&nbsp;            log.tracef(&quot;#performOrderedMultiLoad(`%s`, ..)&quot;, this.getLoadable().getEntityName());
+<b class="pc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        assert loadOptions.isOrderReturnEnabled();
+&nbsp;
+&nbsp;        JdbcEnvironment jdbcEnvironment = this.getSessionFactory().getJdbcServices().getJdbcEnvironment();
+&nbsp;        Dialect dialect = jdbcEnvironment.getDialect();
+&nbsp;        List&lt;Object&gt; result = CollectionHelper.arrayList(ids.length);
+&nbsp;        LockOptions lockOptions = loadOptions.getLockOptions() == null ? new LockOptions(LockMode.NONE) : loadOptions.getLockOptions();
+<b class="nc">&nbsp;        int maxBatchSize;</b>
+<b class="nc">&nbsp;        if (loadOptions.getBatchSize() != null &amp;&amp; loadOptions.getBatchSize() &gt; 0) {</b>
+&nbsp;            maxBatchSize = loadOptions.getBatchSize();
+&nbsp;        } else {
+<b class="nc">&nbsp;            maxBatchSize = dialect.getBatchLoadSizingStrategy().determineOptimalBatchLoadSize(this.idJdbcTypeCount, ids.length, this.getSessionFactory().getSessionFactoryOptions().inClauseParameterPaddingEnabled());</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        List&lt;Object&gt; idsInBatch = new ArrayList();</b>
+&nbsp;        List&lt;Integer&gt; elementPositionsLoadedByBatch = new ArrayList();
+<b class="nc">&nbsp;        boolean coerce = !this.getSessionFactory().getJpaMetamodel().getJpaCompliance().isLoadByIdComplianceEnabled();</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; ids.length; ++i) {</b>
+<b class="nc">&nbsp;            Object id;</b>
+<b class="nc">&nbsp;            if (coerce) {</b>
+&nbsp;                id = this.getLoadable().getIdentifierMapping().getJavaType().coerce(ids[i], session);
+&nbsp;            } else {
+<b class="nc">&nbsp;                id = ids[i];</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            EntityKey entityKey = new EntityKey(id, this.getLoadable().getEntityPersister());
+<b class="nc">&nbsp;            if (loadOptions.isSessionCheckingEnabled() || loadOptions.isSecondLevelCacheCheckingEnabled()) {</b>
+&nbsp;                LoadEvent loadEvent = new LoadEvent(id, this.getLoadable().getJavaType().getJavaTypeClass().getName(), lockOptions, session, LoaderHelper.getReadOnlyFromLoadQueryInfluencers(session));
+&nbsp;                Object managedEntity = null;
+<b class="nc">&nbsp;                if (loadOptions.isSessionCheckingEnabled()) {</b>
+&nbsp;                    CacheEntityLoaderHelper.PersistenceContextEntry persistenceContextEntry = CacheEntityLoaderHelper.INSTANCE.loadFromSessionCache(loadEvent, entityKey, LoadEventListener.GET);
+&nbsp;                    managedEntity = persistenceContextEntry.getEntity();
+&nbsp;                    if (managedEntity != null &amp;&amp; !loadOptions.isReturnOfDeletedEntitiesEnabled() &amp;&amp; !persistenceContextEntry.isManaged()) {
+<b class="nc">&nbsp;                        result.add(i, (Object)null);</b>
+<b class="nc">&nbsp;                        continue;</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                if (managedEntity == null &amp;&amp; loadOptions.isSecondLevelCacheCheckingEnabled()) {
+<b class="nc">&nbsp;                    managedEntity = CacheEntityLoaderHelper.INSTANCE.loadFromSecondLevelCache(loadEvent, this.getLoadable().getEntityPersister(), entityKey);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                if (managedEntity != null) {
+<b class="nc">&nbsp;                    result.add(i, managedEntity);</b>
+&nbsp;                    continue;
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            idsInBatch.add(id);</b>
+&nbsp;            if (idsInBatch.size() &gt;= maxBatchSize) {
+<b class="nc">&nbsp;                this.loadEntitiesById(idsInBatch, lockOptions, session);</b>
+&nbsp;                idsInBatch.clear();
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            result.add(i, entityKey);
+&nbsp;            elementPositionsLoadedByBatch.add(i);
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        if (!idsInBatch.isEmpty()) {</b>
+&nbsp;            this.loadEntitiesById(idsInBatch, lockOptions, session);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        PersistenceContext persistenceContext = session.getPersistenceContextInternal();
+&nbsp;
+&nbsp;        for(Integer position : elementPositionsLoadedByBatch) {
+&nbsp;            EntityKey entityKey = (EntityKey)result.get(position);
+<b class="nc">&nbsp;            Object entity = persistenceContext.getEntity(entityKey);</b>
+&nbsp;            if (entity != null &amp;&amp; !loadOptions.isReturnOfDeletedEntitiesEnabled()) {
+<b class="nc">&nbsp;                EntityEntry entry = persistenceContext.getEntry(entity);</b>
+<b class="nc">&nbsp;                if (entry.getStatus().isDeletedOrGone()) {</b>
+<b class="nc">&nbsp;                    entity = null;</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            result.set(position, entity);
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return result;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private List&lt;T&gt; loadEntitiesById(List&lt;Object&gt; idsInBatch, LockOptions lockOptions, SharedSessionContractImplementor session) {
+<b class="nc">&nbsp;        assert idsInBatch != null;</b>
+&nbsp;
+&nbsp;        assert !idsInBatch.isEmpty();
+&nbsp;
+&nbsp;        int numberOfIdsInBatch = idsInBatch.size();
+<b class="nc">&nbsp;        if (numberOfIdsInBatch == 1) {</b>
+<b class="nc">&nbsp;            return this.performSingleMultiLoad(idsInBatch.get(0), lockOptions, session);</b>
+&nbsp;        } else {
+&nbsp;            if (log.isTraceEnabled()) {
+&nbsp;                log.tracef(&quot;#loadEntitiesById(`%s`, `%s`, ..)&quot;, this.getLoadable().getEntityName(), numberOfIdsInBatch);
+&nbsp;            }
+&nbsp;
+&nbsp;            JdbcParametersList.Builder jdbcParametersBuilder = JdbcParametersList.newBuilder(numberOfIdsInBatch * this.idJdbcTypeCount);
+<b class="nc">&nbsp;            EntityMappingType var10000 = this.getLoadable();</b>
+&nbsp;            EntityIdentifierMapping var10002 = this.getLoadable().getIdentifierMapping();
+<b class="nc">&nbsp;            LoadQueryInfluencers var10005 = session.getLoadQueryInfluencers();</b>
+&nbsp;            Objects.requireNonNull(jdbcParametersBuilder);
+<b class="nc">&nbsp;            SelectStatement sqlAst = LoaderSelectBuilder.createSelect(var10000, (List)null, var10002, (DomainResult)null, numberOfIdsInBatch, var10005, lockOptions, jdbcParametersBuilder::add, this.getSessionFactory());</b>
+<b class="nc">&nbsp;            JdbcParametersList jdbcParameters = jdbcParametersBuilder.build();</b>
+&nbsp;            SqlAstTranslatorFactory sqlAstTranslatorFactory = this.getSessionFactory().getJdbcServices().getJdbcEnvironment().getSqlAstTranslatorFactory();
+&nbsp;            JdbcParameterBindings jdbcParameterBindings = new JdbcParameterBindingsImpl(jdbcParameters.size());
+&nbsp;            int offset = 0;
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; numberOfIdsInBatch; ++i) {</b>
+&nbsp;                Object id = idsInBatch.get(i);
+&nbsp;                offset += jdbcParameterBindings.registerParametersForEachJdbcValue(id, offset, this.getLoadable().getIdentifierMapping(), jdbcParameters, session);
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            assert offset == jdbcParameters.size();
+<b class="nc">&nbsp;</b>
+&nbsp;            JdbcOperationQuerySelect jdbcSelect = (JdbcOperationQuerySelect)sqlAstTranslatorFactory.buildSelectTranslator(this.getSessionFactory(), sqlAst).translate(jdbcParameterBindings, QueryOptions.NONE);
+&nbsp;            SubselectFetch.RegistrationHandler subSelectFetchableKeysHandler;
+&nbsp;            if (session.getLoadQueryInfluencers().hasSubselectLoadableCollections(this.getLoadable().getEntityPersister())) {
+<b class="nc">&nbsp;                subSelectFetchableKeysHandler = SubselectFetch.createRegistrationHandler(session.getPersistenceContext().getBatchFetchQueue(), sqlAst, jdbcParameters, jdbcParameterBindings);</b>
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                subSelectFetchableKeysHandler = null;
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            return session.getJdbcServices().getJdbcSelectExecutor().list(jdbcSelect, jdbcParameterBindings, new ExecutionContextWithSubselectFetchHandler(session, subSelectFetchableKeysHandler), RowTransformerStandardImpl.instance(), (Class)null, UniqueSemantic.FILTER, idsInBatch.size());</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private List&lt;T&gt; performSingleMultiLoad(Object id, LockOptions lockOptions, SharedSessionContractImplementor session) {</b>
+&nbsp;        T loaded = (T)this.getLoadable().getEntityPersister().load(id, (Object)null, lockOptions, session);
+<b class="nc">&nbsp;        return Collections.singletonList(loaded);</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected List&lt;T&gt; performUnorderedMultiLoad(Object[] ids, MultiIdLoadOptions loadOptions, EventSource session) {</b>
+&nbsp;        assert !loadOptions.isOrderReturnEnabled();
+&nbsp;
+&nbsp;        assert ids != null;
+<b class="nc">&nbsp;</b>
+&nbsp;        if (log.isTraceEnabled()) {
+&nbsp;            log.tracef(&quot;#performUnorderedMultiLoad(`%s`, ..)&quot;, this.getLoadable().getEntityName());
+&nbsp;        }
+&nbsp;
+&nbsp;        List&lt;T&gt; result = CollectionHelper.arrayList(ids.length);
+&nbsp;        LockOptions lockOptions = loadOptions.getLockOptions() == null ? new LockOptions(LockMode.NONE) : loadOptions.getLockOptions();
+<b class="nc">&nbsp;        if (loadOptions.isSessionCheckingEnabled() || loadOptions.isSecondLevelCacheCheckingEnabled()) {</b>
+<b class="nc">&nbsp;            boolean foundAnyManagedEntities = false;</b>
+&nbsp;            List&lt;Object&gt; nonManagedIds = new ArrayList();
+<b class="nc">&nbsp;            boolean coerce = !this.getSessionFactory().getJpaMetamodel().getJpaCompliance().isLoadByIdComplianceEnabled();</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; ids.length; ++i) {</b>
+&nbsp;                Object id;
+&nbsp;                if (coerce) {
+<b class="nc">&nbsp;                    id = this.getLoadable().getIdentifierMapping().getJavaType().coerce(ids[i], session);</b>
+<b class="nc">&nbsp;                } else {</b>
+&nbsp;                    id = ids[i];
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+&nbsp;                EntityKey entityKey = new EntityKey(id, this.getLoadable().getEntityPersister());
+<b class="nc">&nbsp;                LoadEvent loadEvent = new LoadEvent(id, this.getLoadable().getJavaType().getJavaTypeClass().getName(), lockOptions, session, LoaderHelper.getReadOnlyFromLoadQueryInfluencers(session));</b>
+<b class="nc">&nbsp;                Object managedEntity = null;</b>
+&nbsp;                CacheEntityLoaderHelper.PersistenceContextEntry persistenceContextEntry = CacheEntityLoaderHelper.INSTANCE.loadFromSessionCache(loadEvent, entityKey, LoadEventListener.GET);
+&nbsp;                if (loadOptions.isSessionCheckingEnabled()) {
+<b class="nc">&nbsp;                    managedEntity = persistenceContextEntry.getEntity();</b>
+&nbsp;                    if (managedEntity != null &amp;&amp; !loadOptions.isReturnOfDeletedEntitiesEnabled() &amp;&amp; !persistenceContextEntry.isManaged()) {
+&nbsp;                        foundAnyManagedEntities = true;
+<b class="nc">&nbsp;                        result.add((Object)null);</b>
+&nbsp;                        continue;
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="nc">&nbsp;                if (managedEntity == null &amp;&amp; loadOptions.isSecondLevelCacheCheckingEnabled()) {</b>
+&nbsp;                    managedEntity = CacheEntityLoaderHelper.INSTANCE.loadFromSecondLevelCache(loadEvent, this.getLoadable().getEntityPersister(), entityKey);
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                if (managedEntity != null) {
+<b class="nc">&nbsp;                    foundAnyManagedEntities = true;</b>
+<b class="nc">&nbsp;                    result.add(managedEntity);</b>
+&nbsp;                } else {
+<b class="nc">&nbsp;                    nonManagedIds.add(id);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            if (foundAnyManagedEntities) {
+&nbsp;                if (nonManagedIds.isEmpty()) {
+<b class="nc">&nbsp;                    return result;</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                ids = nonManagedIds.toArray(Array.newInstance(ids.getClass().getComponentType(), nonManagedIds.size()));
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        int numberOfIdsLeft = ids.length;</b>
+<b class="nc">&nbsp;        int maxBatchSize;</b>
+<b class="nc">&nbsp;        if (loadOptions.getBatchSize() != null &amp;&amp; loadOptions.getBatchSize() &gt; 0) {</b>
+&nbsp;            maxBatchSize = loadOptions.getBatchSize();
+&nbsp;        } else {
+<b class="nc">&nbsp;            maxBatchSize = session.getJdbcServices().getJdbcEnvironment().getDialect().getBatchLoadSizingStrategy().determineOptimalBatchLoadSize(this.getIdentifierMapping().getJdbcTypeCount(), numberOfIdsLeft, this.getSessionFactory().getSessionFactoryOptions().inClauseParameterPaddingEnabled());</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        int batchSize;
+&nbsp;        for(int idPosition = 0; numberOfIdsLeft &gt; 0; idPosition += batchSize) {
+&nbsp;            batchSize = Math.min(numberOfIdsLeft, maxBatchSize);
+&nbsp;            Object[] idsInBatch = new Object[batchSize];
+&nbsp;            System.arraycopy(ids, idPosition, idsInBatch, 0, batchSize);
+&nbsp;            result.addAll(this.loadEntitiesById(Arrays.asList(idsInBatch), lockOptions, session));
+<b class="nc">&nbsp;            numberOfIdsLeft -= batchSize;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
+</div>
+</body>
+</html>

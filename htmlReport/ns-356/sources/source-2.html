@@ -1,0 +1,232 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > DefinitionsParser</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.boot.test.mock.mockito</a>
+</div>
+
+<h1>Coverage Summary for Class: DefinitionsParser (org.springframework.boot.test.mock.mockito)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DefinitionsParser</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (5/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    4.2%
+  </span>
+  <span class="absValue">
+    (1/24)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    35.6%
+  </span>
+  <span class="absValue">
+    (16/45)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.boot.test.mock.mockito;
+&nbsp;
+&nbsp;import java.lang.reflect.AnnotatedElement;
+&nbsp;import java.lang.reflect.Field;
+&nbsp;import java.lang.reflect.TypeVariable;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.LinkedHashMap;
+&nbsp;import java.util.LinkedHashSet;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Set;
+&nbsp;import org.springframework.core.ResolvableType;
+&nbsp;import org.springframework.core.annotation.MergedAnnotation;
+&nbsp;import org.springframework.core.annotation.MergedAnnotations;
+&nbsp;import org.springframework.core.annotation.MergedAnnotations.SearchStrategy;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.ReflectionUtils;
+&nbsp;import org.springframework.util.StringUtils;
+&nbsp;
+&nbsp;/** @deprecated */
+&nbsp;@Deprecated(
+&nbsp;    since = &quot;3.4.0&quot;,
+&nbsp;    forRemoval = true
+&nbsp;)
+&nbsp;class DefinitionsParser {
+&nbsp;    private final Set&lt;Definition&gt; definitions;
+&nbsp;    private final Map&lt;Definition, Field&gt; definitionFields;
+&nbsp;
+&nbsp;    DefinitionsParser() {
+&nbsp;        this(Collections.emptySet());
+&nbsp;    }
+&nbsp;
+&nbsp;    DefinitionsParser(Collection&lt;? extends Definition&gt; existing) {
+&nbsp;        this.definitions = new LinkedHashSet();
+&nbsp;        this.definitionFields = new LinkedHashMap();
+&nbsp;        if (existing != null) {
+&nbsp;            this.definitions.addAll(existing);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    void parse(Class&lt;?&gt; source) {
+&nbsp;        this.parseElement(source, (Class)null);
+&nbsp;        ReflectionUtils.doWithFields(source, (element) -&gt; this.parseElement(element, source));
+&nbsp;    }
+&nbsp;
+&nbsp;    private void parseElement(AnnotatedElement element, Class&lt;?&gt; source) {
+&nbsp;        MergedAnnotations annotations = MergedAnnotations.from(element, SearchStrategy.SUPERCLASS);
+&nbsp;        annotations.stream(MockBean.class).map(MergedAnnotation::synthesize).forEach((annotation) -&gt; this.parseMockBeanAnnotation(annotation, element, source));
+<b class="fc">&nbsp;        annotations.stream(SpyBean.class).map(MergedAnnotation::synthesize).forEach((annotation) -&gt; this.parseSpyBeanAnnotation(annotation, element, source));</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    private void parseMockBeanAnnotation(MockBean annotation, AnnotatedElement element, Class&lt;?&gt; source) {</b>
+<b class="fc">&nbsp;        Set&lt;ResolvableType&gt; typesToMock = this.getOrDeduceTypes(element, annotation.value(), source);</b>
+<b class="fc">&nbsp;        Assert.state(!typesToMock.isEmpty(), () -&gt; &quot;Unable to deduce type to mock from &quot; + String.valueOf(element));</b>
+<b class="pc">&nbsp;        if (StringUtils.hasLength(annotation.name())) {</b>
+<b class="fc">&nbsp;            Assert.state(typesToMock.size() == 1, &quot;The name attribute can only be used when mocking a single class&quot;);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        for(ResolvableType typeToMock : typesToMock) {
+&nbsp;            MockDefinition definition = new MockDefinition(annotation.name(), typeToMock, annotation.extraInterfaces(), annotation.answer(), annotation.serializable(), annotation.reset(), QualifierDefinition.forElement(element));
+<b class="fc">&nbsp;            this.addDefinition(element, definition, &quot;mock&quot;);</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    private void parseSpyBeanAnnotation(SpyBean annotation, AnnotatedElement element, Class&lt;?&gt; source) {</b>
+<b class="fc">&nbsp;        Set&lt;ResolvableType&gt; typesToSpy = this.getOrDeduceTypes(element, annotation.value(), source);</b>
+<b class="fc">&nbsp;        Assert.state(!typesToSpy.isEmpty(), () -&gt; &quot;Unable to deduce type to spy from &quot; + String.valueOf(element));</b>
+<b class="fc">&nbsp;        if (StringUtils.hasLength(annotation.name())) {</b>
+<b class="fc">&nbsp;            Assert.state(typesToSpy.size() == 1, &quot;The name attribute can only be used when spying a single class&quot;);</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;        for(ResolvableType typeToSpy : typesToSpy) {
+&nbsp;            SpyDefinition definition = new SpyDefinition(annotation.name(), typeToSpy, annotation.reset(), annotation.proxyTargetAware(), QualifierDefinition.forElement(element));
+&nbsp;            this.addDefinition(element, definition, &quot;spy&quot;);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private void addDefinition(AnnotatedElement element, Definition definition, String type) {
+<b class="nc">&nbsp;        boolean isNewDefinition = this.definitions.add(definition);</b>
+<b class="nc">&nbsp;        Assert.state(isNewDefinition, () -&gt; &quot;Duplicate &quot; + type + &quot; definition &quot; + String.valueOf(definition));</b>
+<b class="nc">&nbsp;        if (element instanceof Field field) {</b>
+<b class="nc">&nbsp;            this.definitionFields.put(definition, field);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private Set&lt;ResolvableType&gt; getOrDeduceTypes(AnnotatedElement element, Class&lt;?&gt;[] value, Class&lt;?&gt; source) {
+<b class="nc">&nbsp;        Set&lt;ResolvableType&gt; types = new LinkedHashSet();</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        for(Class&lt;?&gt; type : value) {</b>
+<b class="nc">&nbsp;            types.add(ResolvableType.forClass(type));</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if (types.isEmpty() &amp;&amp; element instanceof Field field) {</b>
+<b class="nc">&nbsp;            types.add(field.getGenericType() instanceof TypeVariable ? ResolvableType.forField(field, source) : ResolvableType.forField(field));</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return types;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    Set&lt;Definition&gt; getDefinitions() {</b>
+<b class="nc">&nbsp;        return Collections.unmodifiableSet(this.definitions);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    Field getField(Definition definition) {
+&nbsp;        return (Field)this.definitionFields.get(definition);
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 21:00</div>
+</div>
+</body>
+</html>

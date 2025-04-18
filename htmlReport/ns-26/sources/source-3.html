@@ -1,0 +1,691 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > JsonStringEncoder</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.fasterxml.jackson.core.io</a>
+</div>
+
+<h1>Coverage Summary for Class: JsonStringEncoder (com.fasterxml.jackson.core.io)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">JsonStringEncoder</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    17.6%
+  </span>
+  <span class="absValue">
+    (3/17)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/182)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    1.5%
+  </span>
+  <span class="absValue">
+    (5/326)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package com.fasterxml.jackson.core.io;
+&nbsp;
+&nbsp;import com.fasterxml.jackson.core.util.ByteArrayBuilder;
+&nbsp;import com.fasterxml.jackson.core.util.TextBuffer;
+&nbsp;import java.io.IOException;
+&nbsp;import java.util.Arrays;
+&nbsp;
+&nbsp;public final class JsonStringEncoder {
+&nbsp;    private static final char[] HC = CharTypes.copyHexChars(true);
+&nbsp;    private static final byte[] HB = CharTypes.copyHexBytes(true);
+&nbsp;    private static final int SURR1_FIRST = 55296;
+&nbsp;    private static final int SURR1_LAST = 56319;
+&nbsp;    private static final int SURR2_FIRST = 56320;
+&nbsp;    private static final int SURR2_LAST = 57343;
+&nbsp;    static final int MIN_CHAR_BUFFER_SIZE = 16;
+&nbsp;    static final int MAX_CHAR_BUFFER_SIZE = 32000;
+&nbsp;    static final int MIN_BYTE_BUFFER_SIZE = 24;
+&nbsp;    static final int MAX_BYTE_BUFFER_SIZE = 32000;
+&nbsp;    private static final JsonStringEncoder instance = new JsonStringEncoder();
+<b class="fc">&nbsp;</b>
+&nbsp;    public JsonStringEncoder() {
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public static JsonStringEncoder getInstance() {
+&nbsp;        return instance;
+&nbsp;    }
+&nbsp;
+&nbsp;    public char[] quoteAsString(String input) {
+&nbsp;        int inputLen = input.length();
+&nbsp;        char[] outputBuffer = new char[_initialCharBufSize(inputLen)];
+&nbsp;        int[] escCodes = CharTypes.get7BitOutputEscapes();
+&nbsp;        int escCodeCount = escCodes.length;
+&nbsp;        int inPtr = 0;
+&nbsp;        TextBuffer textBuffer = null;
+&nbsp;        int outPtr = 0;
+&nbsp;        char[] qbuf = null;
+&nbsp;
+&nbsp;        label76:
+&nbsp;        while(inPtr &lt; inputLen) {
+&nbsp;            while(true) {
+&nbsp;                char c = input.charAt(inPtr);
+&nbsp;                if (c &lt; escCodeCount &amp;&amp; escCodes[c] != 0) {
+&nbsp;                    if (qbuf == null) {
+&nbsp;                        qbuf = this._qbuf();
+<b class="fc">&nbsp;                    }</b>
+&nbsp;
+<b class="fc">&nbsp;                    c = input.charAt(inPtr++);</b>
+&nbsp;                    int escCode = escCodes[c];
+&nbsp;                    int length = escCode &lt; 0 ? this._appendNumeric(c, qbuf) : this._appendNamed(escCode, qbuf);
+&nbsp;                    if (outPtr + length &gt; outputBuffer.length) {
+&nbsp;                        int first = outputBuffer.length - outPtr;
+&nbsp;                        if (first &gt; 0) {
+&nbsp;                            System.arraycopy(qbuf, 0, outputBuffer, outPtr, first);
+&nbsp;                        }
+&nbsp;
+<b class="fc">&nbsp;                        if (textBuffer == null) {</b>
+&nbsp;                            textBuffer = TextBuffer.fromInitial(outputBuffer);
+&nbsp;                        }
+&nbsp;
+&nbsp;                        try {
+&nbsp;                            outputBuffer = textBuffer.finishCurrentSegment();
+&nbsp;                        } catch (IOException e) {
+&nbsp;                            throw new IllegalStateException(e);
+&nbsp;                        }
+&nbsp;
+&nbsp;                        int second = length - first;
+&nbsp;                        System.arraycopy(qbuf, first, outputBuffer, 0, second);
+&nbsp;                        outPtr = second;
+&nbsp;                    } else {
+&nbsp;                        System.arraycopy(qbuf, 0, outputBuffer, outPtr, length);
+&nbsp;                        outPtr += length;
+&nbsp;                    }
+&nbsp;                    break;
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                if (outPtr &gt;= outputBuffer.length) {</b>
+<b class="nc">&nbsp;                    if (textBuffer == null) {</b>
+<b class="nc">&nbsp;                        textBuffer = TextBuffer.fromInitial(outputBuffer);</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                    try {</b>
+<b class="nc">&nbsp;                        outputBuffer = textBuffer.finishCurrentSegment();</b>
+&nbsp;                    } catch (IOException e) {
+&nbsp;                        throw new IllegalStateException(e);
+<b class="nc">&nbsp;                    }</b>
+&nbsp;
+&nbsp;                    outPtr = 0;
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                outputBuffer[outPtr++] = c;
+&nbsp;                ++inPtr;
+<b class="nc">&nbsp;                if (inPtr &gt;= inputLen) {</b>
+<b class="nc">&nbsp;                    break label76;</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        if (textBuffer == null) {
+&nbsp;            return Arrays.copyOfRange(outputBuffer, 0, outPtr);
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            textBuffer.setCurrentLength(outPtr);
+<b class="nc">&nbsp;</b>
+&nbsp;            try {
+<b class="nc">&nbsp;                return textBuffer.contentsAsArray();</b>
+<b class="nc">&nbsp;            } catch (IOException e) {</b>
+&nbsp;                throw new IllegalStateException(e);
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public char[] quoteAsString(CharSequence input) {</b>
+&nbsp;        if (input instanceof String) {
+<b class="nc">&nbsp;            return this.quoteAsString((String)input);</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            TextBuffer textBuffer = null;</b>
+<b class="nc">&nbsp;            int inputLen = input.length();</b>
+<b class="nc">&nbsp;            char[] outputBuffer = new char[_initialCharBufSize(inputLen)];</b>
+&nbsp;            int[] escCodes = CharTypes.get7BitOutputEscapes();
+<b class="nc">&nbsp;            int escCodeCount = escCodes.length;</b>
+<b class="nc">&nbsp;            int inPtr = 0;</b>
+<b class="nc">&nbsp;            int outPtr = 0;</b>
+<b class="nc">&nbsp;            char[] qbuf = null;</b>
+&nbsp;
+<b class="nc">&nbsp;            label80:</b>
+<b class="nc">&nbsp;            while(inPtr &lt; inputLen) {</b>
+&nbsp;                while(true) {
+&nbsp;                    char c = input.charAt(inPtr);
+<b class="nc">&nbsp;                    if (c &lt; escCodeCount &amp;&amp; escCodes[c] != 0) {</b>
+&nbsp;                        if (qbuf == null) {
+&nbsp;                            qbuf = this._qbuf();
+<b class="nc">&nbsp;                        }</b>
+&nbsp;
+<b class="nc">&nbsp;                        c = input.charAt(inPtr++);</b>
+<b class="nc">&nbsp;                        int escCode = escCodes[c];</b>
+<b class="nc">&nbsp;                        int length = escCode &lt; 0 ? this._appendNumeric(c, qbuf) : this._appendNamed(escCode, qbuf);</b>
+&nbsp;                        if (outPtr + length &gt; outputBuffer.length) {
+<b class="nc">&nbsp;                            int first = outputBuffer.length - outPtr;</b>
+<b class="nc">&nbsp;                            if (first &gt; 0) {</b>
+&nbsp;                                System.arraycopy(qbuf, 0, outputBuffer, outPtr, first);
+&nbsp;                            }
+&nbsp;
+<b class="nc">&nbsp;                            if (textBuffer == null) {</b>
+<b class="nc">&nbsp;                                textBuffer = TextBuffer.fromInitial(outputBuffer);</b>
+&nbsp;                            }
+<b class="nc">&nbsp;</b>
+&nbsp;                            try {
+<b class="nc">&nbsp;                                outputBuffer = textBuffer.finishCurrentSegment();</b>
+&nbsp;                            } catch (IOException e) {
+&nbsp;                                throw new IllegalStateException(e);
+<b class="nc">&nbsp;                            }</b>
+&nbsp;
+&nbsp;                            int second = length - first;
+&nbsp;                            System.arraycopy(qbuf, first, outputBuffer, 0, second);
+&nbsp;                            outPtr = second;
+&nbsp;                        } else {
+&nbsp;                            System.arraycopy(qbuf, 0, outputBuffer, outPtr, length);
+&nbsp;                            outPtr += length;
+&nbsp;                        }
+&nbsp;                        break;
+&nbsp;                    }
+&nbsp;
+&nbsp;                    if (outPtr &gt;= outputBuffer.length) {
+&nbsp;                        if (textBuffer == null) {
+&nbsp;                            textBuffer = TextBuffer.fromInitial(outputBuffer);
+&nbsp;                        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                        try {</b>
+&nbsp;                            outputBuffer = textBuffer.finishCurrentSegment();
+&nbsp;                        } catch (IOException e) {
+<b class="nc">&nbsp;                            throw new IllegalStateException(e);</b>
+&nbsp;                        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                        outPtr = 0;</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                    outputBuffer[outPtr++] = c;</b>
+<b class="nc">&nbsp;                    ++inPtr;</b>
+<b class="nc">&nbsp;                    if (inPtr &gt;= inputLen) {</b>
+&nbsp;                        break label80;
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if (textBuffer == null) {</b>
+<b class="nc">&nbsp;                return Arrays.copyOfRange(outputBuffer, 0, outPtr);</b>
+&nbsp;            } else {
+&nbsp;                textBuffer.setCurrentLength(outPtr);
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                try {</b>
+<b class="nc">&nbsp;                    return textBuffer.contentsAsArray();</b>
+&nbsp;                } catch (IOException e) {
+&nbsp;                    throw new IllegalStateException(e);
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public void quoteAsString(CharSequence input, StringBuilder output) {</b>
+&nbsp;        int[] escCodes = CharTypes.get7BitOutputEscapes();
+<b class="nc">&nbsp;        int escCodeCount = escCodes.length;</b>
+<b class="nc">&nbsp;        int inPtr = 0;</b>
+&nbsp;        int inputLen = input.length();
+&nbsp;        char[] qbuf = null;
+&nbsp;
+&nbsp;        while(inPtr &lt; inputLen) {
+<b class="nc">&nbsp;            char c = input.charAt(inPtr);</b>
+<b class="nc">&nbsp;            if (c &lt; escCodeCount &amp;&amp; escCodes[c] != 0) {</b>
+&nbsp;                if (qbuf == null) {
+<b class="nc">&nbsp;                    qbuf = this._qbuf();</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                c = input.charAt(inPtr++);</b>
+<b class="nc">&nbsp;                int escCode = escCodes[c];</b>
+&nbsp;                int length = escCode &lt; 0 ? this._appendNumeric(c, qbuf) : this._appendNamed(escCode, qbuf);
+<b class="nc">&nbsp;                output.append(qbuf, 0, length);</b>
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                output.append(c);</b>
+<b class="nc">&nbsp;                ++inPtr;</b>
+&nbsp;                if (inPtr &gt;= inputLen) {
+<b class="nc">&nbsp;                    return;</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public byte[] quoteAsUTF8(String text) {</b>
+&nbsp;        int inputPtr = 0;
+<b class="nc">&nbsp;        int inputEnd = text.length();</b>
+<b class="nc">&nbsp;        int outputPtr = 0;</b>
+<b class="nc">&nbsp;        byte[] outputBuffer = new byte[_initialByteBufSize(inputEnd)];</b>
+&nbsp;        ByteArrayBuilder bb = null;
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        label91:</b>
+&nbsp;        while(inputPtr &lt; inputEnd) {
+&nbsp;            int[] escCodes = CharTypes.get7BitOutputEscapes();
+&nbsp;
+<b class="nc">&nbsp;            do {</b>
+<b class="nc">&nbsp;                int ch = text.charAt(inputPtr);</b>
+&nbsp;                if (ch &gt; 127 || escCodes[ch] != 0) {
+<b class="nc">&nbsp;                    if (bb == null) {</b>
+&nbsp;                        bb = ByteArrayBuilder.fromInitial(outputBuffer, outputPtr);
+<b class="nc">&nbsp;                    }</b>
+&nbsp;
+&nbsp;                    if (outputPtr &gt;= outputBuffer.length) {
+<b class="nc">&nbsp;                        outputBuffer = bb.finishCurrentSegment();</b>
+&nbsp;                        outputPtr = 0;
+&nbsp;                    }
+&nbsp;
+&nbsp;                    ch = text.charAt(inputPtr++);
+&nbsp;                    if (ch &lt;= 127) {
+&nbsp;                        int escape = escCodes[ch];
+&nbsp;                        outputPtr = this._appendByte(ch, escape, bb, outputPtr);
+&nbsp;                        outputBuffer = bb.getCurrentSegment();
+&nbsp;                    } else {
+&nbsp;                        if (ch &lt;= 2047) {
+&nbsp;                            outputBuffer[outputPtr++] = (byte)(192 | ch &gt;&gt; 6);
+&nbsp;                            ch = 128 | ch &amp; 63;
+&nbsp;                        } else if (ch &gt;= 55296 &amp;&amp; ch &lt;= 57343) {
+&nbsp;                            if (ch &gt; 56319) {
+&nbsp;                                _illegal(ch);
+<b class="nc">&nbsp;                            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                            if (inputPtr &gt;= inputEnd) {</b>
+<b class="nc">&nbsp;                                _illegal(ch);</b>
+<b class="nc">&nbsp;                            }</b>
+&nbsp;
+&nbsp;                            ch = _convert(ch, text.charAt(inputPtr++));
+<b class="nc">&nbsp;                            if (ch &gt; 1114111) {</b>
+&nbsp;                                _illegal(ch);
+&nbsp;                            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                            outputBuffer[outputPtr++] = (byte)(240 | ch &gt;&gt; 18);</b>
+&nbsp;                            if (outputPtr &gt;= outputBuffer.length) {
+&nbsp;                                outputBuffer = bb.finishCurrentSegment();
+<b class="nc">&nbsp;                                outputPtr = 0;</b>
+<b class="nc">&nbsp;                            }</b>
+&nbsp;
+&nbsp;                            outputBuffer[outputPtr++] = (byte)(128 | ch &gt;&gt; 12 &amp; 63);
+&nbsp;                            if (outputPtr &gt;= outputBuffer.length) {
+&nbsp;                                outputBuffer = bb.finishCurrentSegment();
+<b class="nc">&nbsp;                                outputPtr = 0;</b>
+<b class="nc">&nbsp;                            }</b>
+&nbsp;
+<b class="nc">&nbsp;                            outputBuffer[outputPtr++] = (byte)(128 | ch &gt;&gt; 6 &amp; 63);</b>
+<b class="nc">&nbsp;                            ch = 128 | ch &amp; 63;</b>
+<b class="nc">&nbsp;                        } else {</b>
+<b class="nc">&nbsp;                            outputBuffer[outputPtr++] = (byte)(224 | ch &gt;&gt; 12);</b>
+<b class="nc">&nbsp;                            if (outputPtr &gt;= outputBuffer.length) {</b>
+<b class="nc">&nbsp;                                outputBuffer = bb.finishCurrentSegment();</b>
+&nbsp;                                outputPtr = 0;
+&nbsp;                            }
+&nbsp;
+&nbsp;                            outputBuffer[outputPtr++] = (byte)(128 | ch &gt;&gt; 6 &amp; 63);
+&nbsp;                            ch = 128 | ch &amp; 63;
+&nbsp;                        }
+&nbsp;
+&nbsp;                        if (outputPtr &gt;= outputBuffer.length) {
+&nbsp;                            outputBuffer = bb.finishCurrentSegment();
+&nbsp;                            outputPtr = 0;
+&nbsp;                        }
+&nbsp;
+&nbsp;                        outputBuffer[outputPtr++] = (byte)ch;
+&nbsp;                    }
+&nbsp;                    continue label91;
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                if (outputPtr &gt;= outputBuffer.length) {</b>
+<b class="nc">&nbsp;                    if (bb == null) {</b>
+<b class="nc">&nbsp;                        bb = ByteArrayBuilder.fromInitial(outputBuffer, outputPtr);</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    outputBuffer = bb.finishCurrentSegment();</b>
+<b class="nc">&nbsp;                    outputPtr = 0;</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                outputBuffer[outputPtr++] = (byte)ch;
+<b class="nc">&nbsp;                ++inputPtr;</b>
+<b class="nc">&nbsp;            } while(inputPtr &lt; inputEnd);</b>
+&nbsp;
+&nbsp;            return bb == null ? Arrays.copyOfRange(outputBuffer, 0, outputPtr) : bb.completeAndCoalesce(outputPtr);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return bb == null ? Arrays.copyOfRange(outputBuffer, 0, outputPtr) : bb.completeAndCoalesce(outputPtr);</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public byte[] encodeAsUTF8(String text) {</b>
+&nbsp;        int inputPtr = 0;
+<b class="nc">&nbsp;        int inputEnd = text.length();</b>
+<b class="nc">&nbsp;        int outputPtr = 0;</b>
+&nbsp;        byte[] outputBuffer = new byte[_initialByteBufSize(inputEnd)];
+&nbsp;        int outputEnd = outputBuffer.length;
+&nbsp;
+<b class="nc">&nbsp;        ByteArrayBuilder bb;</b>
+<b class="nc">&nbsp;        int c;</b>
+&nbsp;        for(bb = null; inputPtr &lt; inputEnd; outputBuffer[outputPtr++] = (byte)(128 | c &amp; 63)) {
+<b class="nc">&nbsp;            for(c = text.charAt(inputPtr++); c &lt;= 127; c = text.charAt(inputPtr++)) {</b>
+<b class="nc">&nbsp;                if (outputPtr &gt;= outputEnd) {</b>
+<b class="nc">&nbsp;                    if (bb == null) {</b>
+&nbsp;                        bb = ByteArrayBuilder.fromInitial(outputBuffer, outputPtr);
+&nbsp;                    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                    outputBuffer = bb.finishCurrentSegment();</b>
+<b class="nc">&nbsp;                    outputEnd = outputBuffer.length;</b>
+&nbsp;                    outputPtr = 0;
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                outputBuffer[outputPtr++] = (byte)c;
+&nbsp;                if (inputPtr &gt;= inputEnd) {
+<b class="nc">&nbsp;                    return bb == null ? Arrays.copyOfRange(outputBuffer, 0, outputPtr) : bb.completeAndCoalesce(outputPtr);</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            if (bb == null) {
+<b class="nc">&nbsp;                bb = ByteArrayBuilder.fromInitial(outputBuffer, outputPtr);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            if (outputPtr &gt;= outputEnd) {</b>
+<b class="nc">&nbsp;                outputBuffer = bb.finishCurrentSegment();</b>
+&nbsp;                outputEnd = outputBuffer.length;
+<b class="nc">&nbsp;                outputPtr = 0;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            if (c &lt; 2048) {</b>
+<b class="nc">&nbsp;                outputBuffer[outputPtr++] = (byte)(192 | c &gt;&gt; 6);</b>
+&nbsp;            } else if (c &gt;= 55296 &amp;&amp; c &lt;= 57343) {
+&nbsp;                if (c &gt; 56319) {
+<b class="nc">&nbsp;                    _illegal(c);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="nc">&nbsp;                if (inputPtr &gt;= inputEnd) {</b>
+<b class="nc">&nbsp;                    _illegal(c);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="nc">&nbsp;                c = _convert(c, text.charAt(inputPtr++));</b>
+<b class="nc">&nbsp;                if (c &gt; 1114111) {</b>
+<b class="nc">&nbsp;                    _illegal(c);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="nc">&nbsp;                outputBuffer[outputPtr++] = (byte)(240 | c &gt;&gt; 18);</b>
+<b class="nc">&nbsp;                if (outputPtr &gt;= outputEnd) {</b>
+<b class="nc">&nbsp;                    outputBuffer = bb.finishCurrentSegment();</b>
+<b class="nc">&nbsp;                    outputEnd = outputBuffer.length;</b>
+&nbsp;                    outputPtr = 0;
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                outputBuffer[outputPtr++] = (byte)(128 | c &gt;&gt; 12 &amp; 63);
+&nbsp;                if (outputPtr &gt;= outputEnd) {
+<b class="nc">&nbsp;                    outputBuffer = bb.finishCurrentSegment();</b>
+<b class="nc">&nbsp;                    outputEnd = outputBuffer.length;</b>
+<b class="nc">&nbsp;                    outputPtr = 0;</b>
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+&nbsp;                outputBuffer[outputPtr++] = (byte)(128 | c &gt;&gt; 6 &amp; 63);
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                outputBuffer[outputPtr++] = (byte)(224 | c &gt;&gt; 12);</b>
+&nbsp;                if (outputPtr &gt;= outputEnd) {
+<b class="nc">&nbsp;                    outputBuffer = bb.finishCurrentSegment();</b>
+&nbsp;                    outputEnd = outputBuffer.length;
+&nbsp;                    outputPtr = 0;
+&nbsp;                }
+&nbsp;
+&nbsp;                outputBuffer[outputPtr++] = (byte)(128 | c &gt;&gt; 6 &amp; 63);
+&nbsp;            }
+&nbsp;
+&nbsp;            if (outputPtr &gt;= outputEnd) {
+&nbsp;                outputBuffer = bb.finishCurrentSegment();
+&nbsp;                outputEnd = outputBuffer.length;
+&nbsp;                outputPtr = 0;
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return bb == null ? Arrays.copyOfRange(outputBuffer, 0, outputPtr) : bb.completeAndCoalesce(outputPtr);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public byte[] encodeAsUTF8(CharSequence text) {</b>
+<b class="nc">&nbsp;        int inputPtr = 0;</b>
+&nbsp;        int inputEnd = text.length();
+&nbsp;        int outputPtr = 0;
+<b class="nc">&nbsp;        byte[] outputBuffer = new byte[_initialByteBufSize(inputEnd)];</b>
+<b class="nc">&nbsp;        int outputEnd = outputBuffer.length;</b>
+&nbsp;
+&nbsp;        ByteArrayBuilder bb;
+<b class="nc">&nbsp;        int c;</b>
+<b class="nc">&nbsp;        for(bb = null; inputPtr &lt; inputEnd; outputBuffer[outputPtr++] = (byte)(128 | c &amp; 63)) {</b>
+<b class="nc">&nbsp;            for(c = text.charAt(inputPtr++); c &lt;= 127; c = text.charAt(inputPtr++)) {</b>
+<b class="nc">&nbsp;                if (outputPtr &gt;= outputEnd) {</b>
+&nbsp;                    if (bb == null) {
+<b class="nc">&nbsp;                        bb = ByteArrayBuilder.fromInitial(outputBuffer, outputPtr);</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                    outputBuffer = bb.finishCurrentSegment();
+<b class="nc">&nbsp;                    outputEnd = outputBuffer.length;</b>
+<b class="nc">&nbsp;                    outputPtr = 0;</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                outputBuffer[outputPtr++] = (byte)c;</b>
+&nbsp;                if (inputPtr &gt;= inputEnd) {
+&nbsp;                    return bb == null ? Arrays.copyOfRange(outputBuffer, 0, outputPtr) : bb.completeAndCoalesce(outputPtr);
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            if (bb == null) {
+<b class="nc">&nbsp;                bb = ByteArrayBuilder.fromInitial(outputBuffer, outputPtr);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            if (outputPtr &gt;= outputEnd) {</b>
+&nbsp;                outputBuffer = bb.finishCurrentSegment();
+<b class="nc">&nbsp;                outputEnd = outputBuffer.length;</b>
+<b class="nc">&nbsp;                outputPtr = 0;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if (c &lt; 2048) {</b>
+<b class="nc">&nbsp;                outputBuffer[outputPtr++] = (byte)(192 | c &gt;&gt; 6);</b>
+<b class="nc">&nbsp;            } else if (c &gt;= 55296 &amp;&amp; c &lt;= 57343) {</b>
+<b class="nc">&nbsp;                if (c &gt; 56319) {</b>
+<b class="nc">&nbsp;                    _illegal(c);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="nc">&nbsp;                if (inputPtr &gt;= inputEnd) {</b>
+&nbsp;                    _illegal(c);
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                c = _convert(c, text.charAt(inputPtr++));
+&nbsp;                if (c &gt; 1114111) {
+<b class="nc">&nbsp;                    _illegal(c);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="nc">&nbsp;                outputBuffer[outputPtr++] = (byte)(240 | c &gt;&gt; 18);</b>
+<b class="nc">&nbsp;                if (outputPtr &gt;= outputEnd) {</b>
+<b class="nc">&nbsp;                    outputBuffer = bb.finishCurrentSegment();</b>
+&nbsp;                    outputEnd = outputBuffer.length;
+<b class="nc">&nbsp;                    outputPtr = 0;</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                outputBuffer[outputPtr++] = (byte)(128 | c &gt;&gt; 12 &amp; 63);</b>
+<b class="nc">&nbsp;                if (outputPtr &gt;= outputEnd) {</b>
+&nbsp;                    outputBuffer = bb.finishCurrentSegment();
+<b class="nc">&nbsp;                    outputEnd = outputBuffer.length;</b>
+<b class="nc">&nbsp;                    outputPtr = 0;</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                outputBuffer[outputPtr++] = (byte)(128 | c &gt;&gt; 6 &amp; 63);</b>
+&nbsp;            } else {
+<b class="nc">&nbsp;                outputBuffer[outputPtr++] = (byte)(224 | c &gt;&gt; 12);</b>
+&nbsp;                if (outputPtr &gt;= outputEnd) {
+&nbsp;                    outputBuffer = bb.finishCurrentSegment();
+<b class="nc">&nbsp;                    outputEnd = outputBuffer.length;</b>
+<b class="nc">&nbsp;                    outputPtr = 0;</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                outputBuffer[outputPtr++] = (byte)(128 | c &gt;&gt; 6 &amp; 63);
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            if (outputPtr &gt;= outputEnd) {</b>
+<b class="nc">&nbsp;                outputBuffer = bb.finishCurrentSegment();</b>
+&nbsp;                outputEnd = outputBuffer.length;
+<b class="nc">&nbsp;                outputPtr = 0;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return bb == null ? Arrays.copyOfRange(outputBuffer, 0, outputPtr) : bb.completeAndCoalesce(outputPtr);
+&nbsp;    }
+&nbsp;
+&nbsp;    private char[] _qbuf() {
+&nbsp;        char[] qbuf = new char[6];
+&nbsp;        qbuf[0] = &#39;\\&#39;;
+&nbsp;        qbuf[2] = &#39;0&#39;;
+&nbsp;        qbuf[3] = &#39;0&#39;;
+&nbsp;        return qbuf;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private int _appendNumeric(int value, char[] qbuf) {</b>
+<b class="nc">&nbsp;        qbuf[1] = &#39;u&#39;;</b>
+<b class="nc">&nbsp;        qbuf[4] = HC[value &gt;&gt; 4];</b>
+<b class="nc">&nbsp;        qbuf[5] = HC[value &amp; 15];</b>
+<b class="nc">&nbsp;        return 6;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private int _appendNamed(int esc, char[] qbuf) {
+<b class="nc">&nbsp;        qbuf[1] = (char)esc;</b>
+<b class="nc">&nbsp;        return 2;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private int _appendByte(int ch, int esc, ByteArrayBuilder bb, int ptr) {</b>
+<b class="nc">&nbsp;        bb.setCurrentSegmentLength(ptr);</b>
+<b class="nc">&nbsp;        bb.append(92);</b>
+<b class="nc">&nbsp;        if (esc &lt; 0) {</b>
+&nbsp;            bb.append(117);
+<b class="nc">&nbsp;            if (ch &gt; 255) {</b>
+<b class="nc">&nbsp;                int hi = ch &gt;&gt; 8;</b>
+<b class="nc">&nbsp;                bb.append(HB[hi &gt;&gt; 4]);</b>
+&nbsp;                bb.append(HB[hi &amp; 15]);
+<b class="nc">&nbsp;                ch &amp;= 255;</b>
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                bb.append(48);
+&nbsp;                bb.append(48);
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            bb.append(HB[ch &gt;&gt; 4]);
+&nbsp;            bb.append(HB[ch &amp; 15]);
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            bb.append((byte)esc);</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return bb.getCurrentSegmentLength();</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private static int _convert(int p1, int p2) {
+<b class="nc">&nbsp;        if (p2 &gt;= 56320 &amp;&amp; p2 &lt;= 57343) {</b>
+<b class="nc">&nbsp;            return (p1 &lt;&lt; 10) + p2 + -56613888;</b>
+&nbsp;        } else {
+&nbsp;            throw new IllegalArgumentException(&quot;Broken surrogate pair: first char 0x&quot; + Integer.toHexString(p1) + &quot;, second 0x&quot; + Integer.toHexString(p2) + &quot;; illegal combination&quot;);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private static void _illegal(int c) {</b>
+<b class="nc">&nbsp;        throw new IllegalArgumentException(UTF8Writer.illegalSurrogateDesc(c));</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    static int _initialCharBufSize(int strLen) {</b>
+&nbsp;        int estimated = Math.max(16, strLen + Math.min(6 + (strLen &gt;&gt; 3), 1000));
+<b class="nc">&nbsp;        return Math.min(estimated, 32000);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    static int _initialByteBufSize(int strLen) {
+<b class="nc">&nbsp;        int doubled = Math.max(24, strLen + 6 + (strLen &gt;&gt; 1));</b>
+<b class="nc">&nbsp;        return Math.min(doubled, 32000);</b>
+&nbsp;    }
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
+</div>
+</body>
+</html>

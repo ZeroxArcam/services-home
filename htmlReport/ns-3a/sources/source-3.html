@@ -1,0 +1,773 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > BeanSerializerBase</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.fasterxml.jackson.databind.ser.std</a>
+</div>
+
+<h1>Coverage Summary for Class: BeanSerializerBase (com.fasterxml.jackson.databind.ser.std)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">BeanSerializerBase</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/28)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/223)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/325)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package com.fasterxml.jackson.databind.ser.std;
+&nbsp;
+&nbsp;import com.fasterxml.jackson.annotation.JsonFormat;
+&nbsp;import com.fasterxml.jackson.annotation.ObjectIdGenerator;
+&nbsp;import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+&nbsp;import com.fasterxml.jackson.annotation.JsonFormat.Shape;
+&nbsp;import com.fasterxml.jackson.core.JsonGenerator;
+&nbsp;import com.fasterxml.jackson.core.JsonToken;
+&nbsp;import com.fasterxml.jackson.core.type.WritableTypeId;
+&nbsp;import com.fasterxml.jackson.databind.AnnotationIntrospector;
+&nbsp;import com.fasterxml.jackson.databind.BeanDescription;
+&nbsp;import com.fasterxml.jackson.databind.BeanProperty;
+&nbsp;import com.fasterxml.jackson.databind.DatabindException;
+&nbsp;import com.fasterxml.jackson.databind.JavaType;
+&nbsp;import com.fasterxml.jackson.databind.JsonMappingException;
+&nbsp;import com.fasterxml.jackson.databind.JsonNode;
+&nbsp;import com.fasterxml.jackson.databind.JsonSerializer;
+&nbsp;import com.fasterxml.jackson.databind.PropertyName;
+&nbsp;import com.fasterxml.jackson.databind.SerializationConfig;
+&nbsp;import com.fasterxml.jackson.databind.SerializerProvider;
+&nbsp;import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
+&nbsp;import com.fasterxml.jackson.databind.introspect.ObjectIdInfo;
+&nbsp;import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitable;
+&nbsp;import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrapper;
+&nbsp;import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor;
+&nbsp;import com.fasterxml.jackson.databind.jsonschema.JsonSerializableSchema;
+&nbsp;import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
+&nbsp;import com.fasterxml.jackson.databind.node.ObjectNode;
+&nbsp;import com.fasterxml.jackson.databind.ser.AnyGetterWriter;
+&nbsp;import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
+&nbsp;import com.fasterxml.jackson.databind.ser.BeanSerializerBuilder;
+&nbsp;import com.fasterxml.jackson.databind.ser.ContainerSerializer;
+&nbsp;import com.fasterxml.jackson.databind.ser.ContextualSerializer;
+&nbsp;import com.fasterxml.jackson.databind.ser.PropertyFilter;
+&nbsp;import com.fasterxml.jackson.databind.ser.PropertyWriter;
+&nbsp;import com.fasterxml.jackson.databind.ser.ResolvableSerializer;
+&nbsp;import com.fasterxml.jackson.databind.ser.impl.MapEntrySerializer;
+<b class="nc">&nbsp;import com.fasterxml.jackson.databind.ser.impl.ObjectIdWriter;</b>
+&nbsp;import com.fasterxml.jackson.databind.ser.impl.PropertyBasedObjectIdGenerator;
+<b class="nc">&nbsp;import com.fasterxml.jackson.databind.ser.impl.WritableObjectId;</b>
+&nbsp;import com.fasterxml.jackson.databind.util.ArrayBuilders;
+&nbsp;import com.fasterxml.jackson.databind.util.ClassUtil;
+&nbsp;import com.fasterxml.jackson.databind.util.Converter;
+&nbsp;import com.fasterxml.jackson.databind.util.IgnorePropertiesUtil;
+&nbsp;import com.fasterxml.jackson.databind.util.NameTransformer;
+&nbsp;import java.io.IOException;
+&nbsp;import java.lang.reflect.Type;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Arrays;
+&nbsp;import java.util.Iterator;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Set;
+&nbsp;
+&nbsp;public abstract class BeanSerializerBase extends StdSerializer&lt;Object&gt; implements ContextualSerializer, ResolvableSerializer, JsonFormatVisitable {
+&nbsp;    protected static final PropertyName NAME_FOR_OBJECT_REF = new PropertyName(&quot;#object-ref&quot;);
+&nbsp;    protected static final BeanPropertyWriter[] NO_PROPS = new BeanPropertyWriter[0];
+&nbsp;    protected final JavaType _beanType;
+&nbsp;    protected final BeanPropertyWriter[] _props;
+&nbsp;    protected final BeanPropertyWriter[] _filteredProps;
+&nbsp;    protected final AnyGetterWriter _anyGetterWriter;
+&nbsp;    protected final Object _propertyFilterId;
+&nbsp;    protected final AnnotatedMember _typeId;
+&nbsp;    protected final ObjectIdWriter _objectIdWriter;
+&nbsp;    protected final JsonFormat.Shape _serializationShape;
+&nbsp;
+&nbsp;    protected BeanSerializerBase(JavaType type, BeanSerializerBuilder builder, BeanPropertyWriter[] properties, BeanPropertyWriter[] filteredProperties) {
+&nbsp;        super(type);
+&nbsp;        this._beanType = type;
+&nbsp;        this._props = properties;
+&nbsp;        this._filteredProps = filteredProperties;
+&nbsp;        if (builder == null) {
+&nbsp;            this._typeId = null;
+&nbsp;            this._anyGetterWriter = null;
+&nbsp;            this._propertyFilterId = null;
+&nbsp;            this._objectIdWriter = null;
+&nbsp;            this._serializationShape = null;
+&nbsp;        } else {
+&nbsp;            this._typeId = builder.getTypeId();
+&nbsp;            this._anyGetterWriter = builder.getAnyGetter();
+&nbsp;            this._propertyFilterId = builder.getFilterId();
+&nbsp;            this._objectIdWriter = builder.getObjectIdWriter();
+&nbsp;            JsonFormat.Value format = builder.getBeanDescription().findExpectedFormat();
+&nbsp;            this._serializationShape = format.getShape();
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected BeanSerializerBase(BeanSerializerBase src, BeanPropertyWriter[] properties, BeanPropertyWriter[] filteredProperties) {
+&nbsp;        super(src._handledType);
+&nbsp;        this._beanType = src._beanType;
+&nbsp;        this._props = properties;
+&nbsp;        this._filteredProps = filteredProperties;
+&nbsp;        this._typeId = src._typeId;
+&nbsp;        this._anyGetterWriter = src._anyGetterWriter;
+&nbsp;        this._objectIdWriter = src._objectIdWriter;
+&nbsp;        this._propertyFilterId = src._propertyFilterId;
+&nbsp;        this._serializationShape = src._serializationShape;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected BeanSerializerBase(BeanSerializerBase src, ObjectIdWriter objectIdWriter) {
+&nbsp;        this(src, objectIdWriter, src._propertyFilterId);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected BeanSerializerBase(BeanSerializerBase src, ObjectIdWriter objectIdWriter, Object filterId) {
+&nbsp;        super(src._handledType);
+&nbsp;        this._beanType = src._beanType;
+&nbsp;        this._props = src._props;
+&nbsp;        this._filteredProps = src._filteredProps;
+<b class="nc">&nbsp;        this._typeId = src._typeId;</b>
+<b class="nc">&nbsp;        this._anyGetterWriter = src._anyGetterWriter;</b>
+<b class="nc">&nbsp;        this._objectIdWriter = objectIdWriter;</b>
+<b class="nc">&nbsp;        this._propertyFilterId = filterId;</b>
+<b class="nc">&nbsp;        this._serializationShape = src._serializationShape;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    /** @deprecated */</b>
+<b class="nc">&nbsp;    @Deprecated</b>
+<b class="nc">&nbsp;    protected BeanSerializerBase(BeanSerializerBase src, String[] toIgnore) {</b>
+<b class="nc">&nbsp;        this(src, (Set)ArrayBuilders.arrayToSet(toIgnore), (Set)null);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    /** @deprecated */</b>
+<b class="nc">&nbsp;    @Deprecated</b>
+<b class="nc">&nbsp;    protected BeanSerializerBase(BeanSerializerBase src, Set&lt;String&gt; toIgnore) {</b>
+<b class="nc">&nbsp;        this(src, (Set)toIgnore, (Set)null);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    protected BeanSerializerBase(BeanSerializerBase src, Set&lt;String&gt; toIgnore, Set&lt;String&gt; toInclude) {
+&nbsp;        super(src._handledType);
+&nbsp;        this._beanType = src._beanType;
+&nbsp;        BeanPropertyWriter[] propsIn = src._props;
+&nbsp;        BeanPropertyWriter[] fpropsIn = src._filteredProps;
+&nbsp;        int len = propsIn.length;
+<b class="nc">&nbsp;        ArrayList&lt;BeanPropertyWriter&gt; propsOut = new ArrayList(len);</b>
+<b class="nc">&nbsp;        ArrayList&lt;BeanPropertyWriter&gt; fpropsOut = fpropsIn == null ? null : new ArrayList(len);</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; len; ++i) {</b>
+&nbsp;            BeanPropertyWriter bpw = propsIn[i];
+<b class="nc">&nbsp;            if (!IgnorePropertiesUtil.shouldIgnore(bpw.getName(), toIgnore, toInclude)) {</b>
+<b class="nc">&nbsp;                propsOut.add(bpw);</b>
+<b class="nc">&nbsp;                if (fpropsIn != null) {</b>
+<b class="nc">&nbsp;                    fpropsOut.add(fpropsIn[i]);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        this._props = (BeanPropertyWriter[])propsOut.toArray(new BeanPropertyWriter[propsOut.size()]);
+&nbsp;        this._filteredProps = fpropsOut == null ? null : (BeanPropertyWriter[])fpropsOut.toArray(new BeanPropertyWriter[fpropsOut.size()]);
+<b class="nc">&nbsp;        this._typeId = src._typeId;</b>
+&nbsp;        this._anyGetterWriter = src._anyGetterWriter;
+&nbsp;        this._objectIdWriter = src._objectIdWriter;
+&nbsp;        this._propertyFilterId = src._propertyFilterId;
+&nbsp;        this._serializationShape = src._serializationShape;
+&nbsp;    }
+&nbsp;
+&nbsp;    public abstract BeanSerializerBase withObjectIdWriter(ObjectIdWriter var1);
+&nbsp;
+<b class="nc">&nbsp;    /** @deprecated */</b>
+<b class="nc">&nbsp;    @Deprecated</b>
+<b class="nc">&nbsp;    protected BeanSerializerBase withIgnorals(Set&lt;String&gt; toIgnore) {</b>
+<b class="nc">&nbsp;        return this.withByNameInclusion(toIgnore, (Set)null);</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected abstract BeanSerializerBase withByNameInclusion(Set&lt;String&gt; var1, Set&lt;String&gt; var2);</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    /** @deprecated */</b>
+<b class="nc">&nbsp;    @Deprecated</b>
+&nbsp;    protected BeanSerializerBase withIgnorals(String[] toIgnore) {
+&nbsp;        return this.withIgnorals(ArrayBuilders.arrayToSet(toIgnore));
+&nbsp;    }
+&nbsp;
+&nbsp;    protected abstract BeanSerializerBase asArraySerializer();
+<b class="nc">&nbsp;</b>
+&nbsp;    public abstract BeanSerializerBase withFilterId(Object var1);
+&nbsp;
+&nbsp;    protected abstract BeanSerializerBase withProperties(BeanPropertyWriter[] var1, BeanPropertyWriter[] var2);
+&nbsp;
+<b class="nc">&nbsp;    protected BeanSerializerBase(BeanSerializerBase src) {</b>
+&nbsp;        this(src, src._props, src._filteredProps);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected BeanSerializerBase(BeanSerializerBase src, NameTransformer unwrapper) {
+<b class="nc">&nbsp;        this(src, rename(src._props, unwrapper), rename(src._filteredProps, unwrapper));</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private static final BeanPropertyWriter[] rename(BeanPropertyWriter[] props, NameTransformer transformer) {</b>
+<b class="nc">&nbsp;        if (props != null &amp;&amp; props.length != 0 &amp;&amp; transformer != null &amp;&amp; transformer != NameTransformer.NOP) {</b>
+<b class="nc">&nbsp;            int len = props.length;</b>
+&nbsp;            BeanPropertyWriter[] result = new BeanPropertyWriter[len];
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; len; ++i) {</b>
+&nbsp;                BeanPropertyWriter bpw = props[i];
+<b class="nc">&nbsp;                if (bpw != null) {</b>
+<b class="nc">&nbsp;                    result[i] = bpw.rename(transformer);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            return result;
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            return props;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void resolve(SerializerProvider provider) throws JsonMappingException {</b>
+<b class="nc">&nbsp;        int filteredCount = this._filteredProps == null ? 0 : this._filteredProps.length;</b>
+&nbsp;        int i = 0;
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        for(int len = this._props.length; i &lt; len; ++i) {</b>
+<b class="nc">&nbsp;            BeanPropertyWriter prop = this._props[i];</b>
+<b class="nc">&nbsp;            if (!prop.willSuppressNulls() &amp;&amp; !prop.hasNullSerializer()) {</b>
+<b class="nc">&nbsp;                JsonSerializer&lt;Object&gt; nullSer = provider.findNullValueSerializer(prop);</b>
+&nbsp;                if (nullSer != null) {
+&nbsp;                    prop.assignNullSerializer(nullSer);
+&nbsp;                    if (i &lt; filteredCount) {
+&nbsp;                        BeanPropertyWriter w2 = this._filteredProps[i];
+&nbsp;                        if (w2 != null) {
+&nbsp;                            w2.assignNullSerializer(nullSer);
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            if (!prop.hasSerializer()) {
+&nbsp;                JsonSerializer&lt;Object&gt; ser = this.findConvertingSerializer(provider, prop);
+&nbsp;                if (ser == null) {
+&nbsp;                    JavaType type = prop.getSerializationType();
+&nbsp;                    if (type == null) {
+&nbsp;                        type = prop.getType();
+&nbsp;                        if (!type.isFinal()) {
+&nbsp;                            if (type.isContainerType() || type.containedTypeCount() &gt; 0) {
+<b class="nc">&nbsp;                                prop.setNonTrivialBaseType(type);</b>
+&nbsp;                            }
+&nbsp;                            continue;
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+&nbsp;                    ser = provider.findValueSerializer(type, prop);
+&nbsp;                    if (type.isContainerType()) {
+&nbsp;                        TypeSerializer typeSer = (TypeSerializer)type.getContentType().getTypeHandler();
+&nbsp;                        if (typeSer != null &amp;&amp; ser instanceof ContainerSerializer) {
+&nbsp;                            JsonSerializer&lt;Object&gt; ser2 = ((ContainerSerializer)ser).withValueTypeSerializer(typeSer);
+&nbsp;                            ser = ser2;
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                if (i &lt; filteredCount) {
+&nbsp;                    BeanPropertyWriter w2 = this._filteredProps[i];
+&nbsp;                    if (w2 != null) {
+&nbsp;                        w2.assignSerializer(ser);
+<b class="nc">&nbsp;                        continue;</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                prop.assignSerializer(ser);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        if (this._anyGetterWriter != null) {
+&nbsp;            this._anyGetterWriter.resolve(provider);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected JsonSerializer&lt;Object&gt; findConvertingSerializer(SerializerProvider provider, BeanPropertyWriter prop) throws JsonMappingException {
+&nbsp;        AnnotationIntrospector intr = provider.getAnnotationIntrospector();
+&nbsp;        if (intr != null) {
+&nbsp;            AnnotatedMember m = prop.getMember();
+&nbsp;            if (m != null) {
+&nbsp;                Object convDef = intr.findSerializationConverter(m);
+&nbsp;                if (convDef != null) {
+&nbsp;                    Converter&lt;Object, Object&gt; conv = provider.converterInstance(prop.getMember(), convDef);
+&nbsp;                    JavaType delegateType = conv.getOutputType(provider.getTypeFactory());
+&nbsp;                    JsonSerializer&lt;?&gt; ser = delegateType.isJavaLangObject() ? null : provider.findValueSerializer(delegateType, prop);
+&nbsp;                    return new StdDelegatingSerializer(conv, delegateType, ser);
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return null;
+&nbsp;    }
+&nbsp;
+&nbsp;    public JsonSerializer&lt;?&gt; createContextual(SerializerProvider provider, BeanProperty property) throws JsonMappingException {
+&nbsp;        AnnotationIntrospector intr = provider.getAnnotationIntrospector();
+&nbsp;        AnnotatedMember accessor = property != null &amp;&amp; intr != null ? property.getMember() : null;
+&nbsp;        SerializationConfig config = provider.getConfig();
+&nbsp;        JsonFormat.Value format = this.findFormatOverrides(provider, property, this._handledType);
+&nbsp;        JsonFormat.Shape shape = null;
+<b class="nc">&nbsp;        if (format != null &amp;&amp; format.hasShape()) {</b>
+&nbsp;            shape = format.getShape();
+&nbsp;            if (shape != Shape.ANY &amp;&amp; shape != this._serializationShape) {
+&nbsp;                if (this._beanType.isEnumType()) {
+&nbsp;                    switch (shape) {
+&nbsp;                        case STRING:
+&nbsp;                        case NUMBER:
+&nbsp;                        case NUMBER_INT:
+<b class="nc">&nbsp;                            BeanDescription desc = config.introspectClassAnnotations(this._beanType);</b>
+&nbsp;                            JsonSerializer&lt;?&gt; ser = EnumSerializer.construct(this._beanType.getRawClass(), provider.getConfig(), desc, format);
+&nbsp;                            return provider.handlePrimaryContextualization(ser, property);
+&nbsp;                    }
+&nbsp;                } else if (shape == Shape.NATURAL &amp;&amp; (!this._beanType.isMapLikeType() || !Map.class.isAssignableFrom(this._handledType)) &amp;&amp; Map.Entry.class.isAssignableFrom(this._handledType)) {
+&nbsp;                    JavaType mapEntryType = this._beanType.findSuperType(Map.Entry.class);
+<b class="nc">&nbsp;                    JavaType kt = mapEntryType.containedTypeOrUnknown(0);</b>
+<b class="nc">&nbsp;                    JavaType vt = mapEntryType.containedTypeOrUnknown(1);</b>
+&nbsp;                    JsonSerializer&lt;?&gt; ser = new MapEntrySerializer(this._beanType, kt, vt, false, (TypeSerializer)null, property);
+<b class="nc">&nbsp;                    return provider.handlePrimaryContextualization(ser, property);</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        ObjectIdWriter oiw = this._objectIdWriter;</b>
+&nbsp;        int idPropOrigIndex = 0;
+&nbsp;        Set&lt;String&gt; ignoredProps = null;
+<b class="nc">&nbsp;        Set&lt;String&gt; includedProps = null;</b>
+&nbsp;        Object newFilterId = null;
+&nbsp;        if (accessor != null) {
+&nbsp;            ignoredProps = intr.findPropertyIgnoralByName(config, accessor).findIgnoredForSerialization();
+&nbsp;            includedProps = intr.findPropertyInclusionByName(config, accessor).getIncluded();
+&nbsp;            ObjectIdInfo objectIdInfo = intr.findObjectIdInfo(accessor);
+&nbsp;            if (objectIdInfo == null) {
+&nbsp;                if (oiw != null) {
+&nbsp;                    objectIdInfo = intr.findObjectReferenceInfo(accessor, (ObjectIdInfo)null);
+&nbsp;                    if (objectIdInfo != null) {
+&nbsp;                        oiw = this._objectIdWriter.withAlwaysAsId(objectIdInfo.getAlwaysAsId());
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            } else {
+&nbsp;                objectIdInfo = intr.findObjectReferenceInfo(accessor, objectIdInfo);
+&nbsp;                Class&lt;?&gt; implClass = objectIdInfo.getGeneratorType();
+&nbsp;                JavaType type = provider.constructType(implClass);
+<b class="nc">&nbsp;                JavaType idType = provider.getTypeFactory().findTypeParameters(type, ObjectIdGenerator.class)[0];</b>
+<b class="nc">&nbsp;                if (implClass == ObjectIdGenerators.PropertyGenerator.class) {</b>
+<b class="nc">&nbsp;                    String propName = objectIdInfo.getPropertyName().getSimpleName();</b>
+&nbsp;                    BeanPropertyWriter idProp = null;
+<b class="nc">&nbsp;                    int i = 0;</b>
+<b class="nc">&nbsp;                    int len = this._props.length;</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                    while(true) {</b>
+&nbsp;                        if (i == len) {
+<b class="nc">&nbsp;                            provider.reportBadDefinition(this._beanType, String.format(&quot;Invalid Object Id definition for %s: cannot find property with name %s&quot;, ClassUtil.nameOf(this.handledType()), ClassUtil.name(propName)));</b>
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                        BeanPropertyWriter prop = this._props[i];</b>
+&nbsp;                        if (propName.equals(prop.getName())) {
+&nbsp;                            idPropOrigIndex = i;
+&nbsp;                            idType = prop.getType();
+&nbsp;                            PropertyBasedObjectIdGenerator var40 = new PropertyBasedObjectIdGenerator(objectIdInfo, prop);
+&nbsp;                            oiw = ObjectIdWriter.construct(idType, (PropertyName)null, var40, objectIdInfo.getAlwaysAsId());
+<b class="nc">&nbsp;                            break;</b>
+&nbsp;                        }
+&nbsp;
+&nbsp;                        ++i;
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                } else {</b>
+&nbsp;                    ObjectIdGenerator&lt;?&gt; gen = provider.objectIdGeneratorInstance(accessor, objectIdInfo);
+<b class="nc">&nbsp;                    oiw = ObjectIdWriter.construct(idType, objectIdInfo.getPropertyName(), gen, objectIdInfo.getAlwaysAsId());</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Object filterId = intr.findFilterId(accessor);</b>
+<b class="nc">&nbsp;            if (filterId != null &amp;&amp; !filterId.equals(this._propertyFilterId)) {</b>
+<b class="nc">&nbsp;                newFilterId = filterId;</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        BeanSerializerBase contextual = this;
+&nbsp;        if (idPropOrigIndex &gt; 0) {
+&nbsp;            BeanPropertyWriter[] newProps = (BeanPropertyWriter[])Arrays.copyOf(this._props, this._props.length);
+<b class="nc">&nbsp;            BeanPropertyWriter bpw = newProps[idPropOrigIndex];</b>
+&nbsp;            System.arraycopy(newProps, 0, newProps, 1, idPropOrigIndex);
+&nbsp;            newProps[0] = bpw;
+<b class="nc">&nbsp;            BeanPropertyWriter[] newFiltered;</b>
+<b class="nc">&nbsp;            if (this._filteredProps == null) {</b>
+<b class="nc">&nbsp;                newFiltered = null;</b>
+&nbsp;            } else {
+<b class="nc">&nbsp;                newFiltered = (BeanPropertyWriter[])Arrays.copyOf(this._filteredProps, this._filteredProps.length);</b>
+&nbsp;                bpw = newFiltered[idPropOrigIndex];
+&nbsp;                System.arraycopy(newFiltered, 0, newFiltered, 1, idPropOrigIndex);
+<b class="nc">&nbsp;                newFiltered[0] = bpw;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            contextual = this.withProperties(newProps, newFiltered);
+&nbsp;        }
+&nbsp;
+&nbsp;        if (oiw != null) {
+<b class="nc">&nbsp;            JsonSerializer&lt;?&gt; ser = provider.findValueSerializer(oiw.idType, property);</b>
+<b class="nc">&nbsp;            oiw = oiw.withSerializer(ser);</b>
+<b class="nc">&nbsp;            if (oiw != this._objectIdWriter) {</b>
+<b class="nc">&nbsp;                contextual = contextual.withObjectIdWriter(oiw);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        if (ignoredProps != null &amp;&amp; !ignoredProps.isEmpty() || includedProps != null) {
+&nbsp;            contextual = contextual.withByNameInclusion(ignoredProps, includedProps);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        if (newFilterId != null) {
+&nbsp;            contextual = contextual.withFilterId(newFilterId);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        if (shape == null) {
+<b class="nc">&nbsp;            shape = this._serializationShape;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        return shape == Shape.ARRAY ? contextual.asArraySerializer() : contextual;
+&nbsp;    }
+&nbsp;
+&nbsp;    public Iterator&lt;PropertyWriter&gt; properties() {
+&nbsp;        return Arrays.asList(this._props).iterator();
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean usesObjectId() {
+&nbsp;        return this._objectIdWriter != null;
+&nbsp;    }
+&nbsp;
+&nbsp;    public abstract void serialize(Object var1, JsonGenerator var2, SerializerProvider var3) throws IOException;
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void serializeWithType(Object bean, JsonGenerator gen, SerializerProvider provider, TypeSerializer typeSer) throws IOException {</b>
+<b class="nc">&nbsp;        if (this._objectIdWriter != null) {</b>
+<b class="nc">&nbsp;            this._serializeWithObjectId(bean, gen, provider, typeSer);</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            WritableTypeId typeIdDef = this._typeIdDef(typeSer, bean, JsonToken.START_OBJECT);</b>
+<b class="nc">&nbsp;            typeSer.writeTypePrefix(gen, typeIdDef);</b>
+<b class="nc">&nbsp;            gen.assignCurrentValue(bean);</b>
+&nbsp;            if (this._propertyFilterId != null) {
+<b class="nc">&nbsp;                this.serializeFieldsFiltered(bean, gen, provider);</b>
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                this.serializeFields(bean, gen, provider);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            typeSer.writeTypeSuffix(gen, typeIdDef);
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected final void _serializeWithObjectId(Object bean, JsonGenerator gen, SerializerProvider provider, boolean startEndObject) throws IOException {
+&nbsp;        ObjectIdWriter w = this._objectIdWriter;
+&nbsp;        WritableObjectId objectId = provider.findObjectId(bean, w.generator);
+&nbsp;        if (!objectId.writeAsId(gen, provider, w)) {
+&nbsp;            Object id = objectId.generateId(bean);
+&nbsp;            if (w.alwaysAsId) {
+<b class="nc">&nbsp;                w.serializer.serialize(id, gen, provider);</b>
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                if (startEndObject) {</b>
+<b class="nc">&nbsp;                    gen.writeStartObject(bean);</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                objectId.writeAsField(gen, provider, w);
+<b class="nc">&nbsp;                if (this._propertyFilterId != null) {</b>
+<b class="nc">&nbsp;                    this.serializeFieldsFiltered(bean, gen, provider);</b>
+<b class="nc">&nbsp;                } else {</b>
+<b class="nc">&nbsp;                    this.serializeFields(bean, gen, provider);</b>
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                if (startEndObject) {</b>
+<b class="nc">&nbsp;                    gen.writeEndObject();</b>
+&nbsp;                }
+&nbsp;
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected final void _serializeWithObjectId(Object bean, JsonGenerator gen, SerializerProvider provider, TypeSerializer typeSer) throws IOException {</b>
+<b class="nc">&nbsp;        ObjectIdWriter w = this._objectIdWriter;</b>
+<b class="nc">&nbsp;        WritableObjectId objectId = provider.findObjectId(bean, w.generator);</b>
+&nbsp;        if (!objectId.writeAsId(gen, provider, w)) {
+&nbsp;            Object id = objectId.generateId(bean);
+<b class="nc">&nbsp;            if (w.alwaysAsId) {</b>
+<b class="nc">&nbsp;                w.serializer.serialize(id, gen, provider);</b>
+&nbsp;            } else {
+<b class="nc">&nbsp;                this._serializeObjectId(bean, gen, provider, typeSer, objectId);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    protected void _serializeObjectId(Object bean, JsonGenerator g, SerializerProvider provider, TypeSerializer typeSer, WritableObjectId objectId) throws IOException {
+&nbsp;        ObjectIdWriter w = this._objectIdWriter;
+&nbsp;        WritableTypeId typeIdDef = this._typeIdDef(typeSer, bean, JsonToken.START_OBJECT);
+<b class="nc">&nbsp;        typeSer.writeTypePrefix(g, typeIdDef);</b>
+&nbsp;        g.assignCurrentValue(bean);
+<b class="nc">&nbsp;        objectId.writeAsField(g, provider, w);</b>
+&nbsp;        if (this._propertyFilterId != null) {
+&nbsp;            this.serializeFieldsFiltered(bean, g, provider);
+&nbsp;        } else {
+&nbsp;            this.serializeFields(bean, g, provider);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        typeSer.writeTypeSuffix(g, typeIdDef);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected final WritableTypeId _typeIdDef(TypeSerializer typeSer, Object bean, JsonToken valueShape) {</b>
+<b class="nc">&nbsp;        if (this._typeId == null) {</b>
+<b class="nc">&nbsp;            return typeSer.typeId(bean, valueShape);</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            Object typeId = this._typeId.getValue(bean);
+&nbsp;            if (typeId == null) {
+<b class="nc">&nbsp;                typeId = &quot;&quot;;</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            return typeSer.typeId(bean, valueShape, typeId);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    /** @deprecated */</b>
+<b class="nc">&nbsp;    @Deprecated</b>
+<b class="nc">&nbsp;    protected final String _customTypeId(Object bean) {</b>
+&nbsp;        Object typeId = this._typeId.getValue(bean);
+&nbsp;        if (typeId == null) {
+&nbsp;            return &quot;&quot;;
+&nbsp;        } else {
+&nbsp;            return typeId instanceof String ? (String)typeId : typeId.toString();
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected void serializeFields(Object bean, JsonGenerator gen, SerializerProvider provider) throws IOException {</b>
+<b class="nc">&nbsp;        BeanPropertyWriter[] props;</b>
+<b class="nc">&nbsp;        if (this._filteredProps != null &amp;&amp; provider.getActiveView() != null) {</b>
+&nbsp;            props = this._filteredProps;
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            props = this._props;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        int i = 0;</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            for(int len = props.length; i &lt; len; ++i) {
+<b class="nc">&nbsp;                BeanPropertyWriter prop = props[i];</b>
+&nbsp;                if (prop != null) {
+<b class="nc">&nbsp;                    prop.serializeAsField(bean, gen, provider);</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            if (this._anyGetterWriter != null) {
+<b class="nc">&nbsp;                this._anyGetterWriter.getAndSerialize(bean, gen, provider);</b>
+&nbsp;            }
+&nbsp;        } catch (Exception e) {
+&nbsp;            String name = i == props.length ? &quot;[anySetter]&quot; : props[i].getName();
+<b class="nc">&nbsp;            this.wrapAndThrow(provider, e, bean, name);</b>
+<b class="nc">&nbsp;        } catch (StackOverflowError e) {</b>
+<b class="nc">&nbsp;            DatabindException mapE = new JsonMappingException(gen, &quot;Infinite recursion (StackOverflowError)&quot;, e);</b>
+&nbsp;            String name = i == props.length ? &quot;[anySetter]&quot; : props[i].getName();
+<b class="nc">&nbsp;            mapE.prependPath(bean, name);</b>
+<b class="nc">&nbsp;            throw mapE;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected void serializeFieldsFiltered(Object bean, JsonGenerator gen, SerializerProvider provider) throws IOException {</b>
+&nbsp;        BeanPropertyWriter[] props;
+<b class="nc">&nbsp;        if (this._filteredProps != null &amp;&amp; provider.getActiveView() != null) {</b>
+<b class="nc">&nbsp;            props = this._filteredProps;</b>
+&nbsp;        } else {
+&nbsp;            props = this._props;
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        PropertyFilter filter = this.findPropertyFilter(provider, this._propertyFilterId, bean);
+&nbsp;        if (filter == null) {
+<b class="nc">&nbsp;            this.serializeFields(bean, gen, provider);</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            int i = 0;</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            try {</b>
+&nbsp;                for(int len = props.length; i &lt; len; ++i) {
+<b class="nc">&nbsp;                    BeanPropertyWriter prop = props[i];</b>
+<b class="nc">&nbsp;                    if (prop != null) {</b>
+&nbsp;                        filter.serializeAsField(bean, gen, provider, prop);
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                if (this._anyGetterWriter != null) {</b>
+&nbsp;                    this._anyGetterWriter.getAndFilter(bean, gen, provider, filter);
+<b class="nc">&nbsp;                }</b>
+&nbsp;            } catch (Exception e) {
+&nbsp;                String name = i == props.length ? &quot;[anySetter]&quot; : props[i].getName();
+<b class="nc">&nbsp;                this.wrapAndThrow(provider, e, bean, name);</b>
+<b class="nc">&nbsp;            } catch (StackOverflowError e) {</b>
+<b class="nc">&nbsp;                DatabindException mapE = new JsonMappingException(gen, &quot;Infinite recursion (StackOverflowError)&quot;, e);</b>
+<b class="nc">&nbsp;                String name = i == props.length ? &quot;[anySetter]&quot; : props[i].getName();</b>
+<b class="nc">&nbsp;                mapE.prependPath(bean, name);</b>
+&nbsp;                throw mapE;
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    /** @deprecated */</b>
+&nbsp;    @Deprecated
+<b class="nc">&nbsp;    public JsonNode getSchema(SerializerProvider provider, Type typeHint) throws JsonMappingException {</b>
+<b class="nc">&nbsp;        ObjectNode o = this.createSchemaNode(&quot;object&quot;, true);</b>
+&nbsp;        JsonSerializableSchema ann = (JsonSerializableSchema)this._handledType.getAnnotation(JsonSerializableSchema.class);
+&nbsp;        if (ann != null) {
+<b class="nc">&nbsp;            String id = ann.id();</b>
+<b class="nc">&nbsp;            if (id != null &amp;&amp; !id.isEmpty()) {</b>
+&nbsp;                o.put(&quot;id&quot;, id);
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        ObjectNode propertiesNode = o.objectNode();
+<b class="nc">&nbsp;        PropertyFilter filter;</b>
+&nbsp;        if (this._propertyFilterId != null) {
+&nbsp;            filter = this.findPropertyFilter(provider, this._propertyFilterId, (Object)null);
+&nbsp;        } else {
+&nbsp;            filter = null;
+&nbsp;        }
+&nbsp;
+&nbsp;        for(int i = 0; i &lt; this._props.length; ++i) {
+&nbsp;            BeanPropertyWriter prop = this._props[i];
+&nbsp;            if (filter == null) {
+&nbsp;                prop.depositSchemaProperty(propertiesNode, provider);
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                filter.depositSchemaProperty(prop, propertiesNode, provider);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        o.set(&quot;properties&quot;, propertiesNode);
+&nbsp;        return o;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void acceptJsonFormatVisitor(JsonFormatVisitorWrapper visitor, JavaType typeHint) throws JsonMappingException {
+&nbsp;        if (visitor != null) {
+<b class="nc">&nbsp;            JsonObjectFormatVisitor objectVisitor = visitor.expectObjectFormat(typeHint);</b>
+&nbsp;            if (objectVisitor != null) {
+&nbsp;                SerializerProvider provider = visitor.getProvider();
+&nbsp;                if (this._propertyFilterId != null) {
+&nbsp;                    PropertyFilter filter = this.findPropertyFilter(visitor.getProvider(), this._propertyFilterId, (Object)null);
+&nbsp;                    int i = 0;
+&nbsp;
+&nbsp;                    for(int end = this._props.length; i &lt; end; ++i) {
+&nbsp;                        filter.depositSchemaProperty(this._props[i], objectVisitor, provider);
+&nbsp;                    }
+&nbsp;                } else {
+&nbsp;                    Class&lt;?&gt; view = this._filteredProps != null &amp;&amp; provider != null ? provider.getActiveView() : null;
+&nbsp;                    BeanPropertyWriter[] props;
+&nbsp;                    if (view != null) {
+<b class="nc">&nbsp;                        props = this._filteredProps;</b>
+&nbsp;                    } else {
+&nbsp;                        props = this._props;
+&nbsp;                    }
+<b class="nc">&nbsp;</b>
+&nbsp;                    int i = 0;
+&nbsp;
+&nbsp;                    for(int end = props.length; i &lt; end; ++i) {
+<b class="nc">&nbsp;                        BeanPropertyWriter prop = props[i];</b>
+<b class="nc">&nbsp;                        if (prop != null) {</b>
+<b class="nc">&nbsp;                            prop.depositSchemaProperty(objectVisitor, provider);</b>
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 21:00</div>
+</div>
+</body>
+</html>

@@ -1,7 +1,9 @@
 package com.pragma.hogar360.serviceshome.domain.exceptions;
 
-public class CategoryAlreadyExistsException extends RuntimeException {
+import org.aspectj.bridge.IMessage;
+
+public class CategoryAlreadyExistsException extends BusinessException {
     public CategoryAlreadyExistsException() {
-        super();
+        super("Message");
     }
 }

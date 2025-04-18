@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HomePersistenceAdapter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Tests in 'services-home.test' Coverage Results</a> &gt; <a href="index.source.html" class="el_package">com.pragma.hogar360.serviceshome.infrastructure.adapters.persistence</a> &gt; <span class="el_source">HomePersistenceAdapter.java</span></div><h1>HomePersistenceAdapter.java</h1><pre class="source lang-java linenums">package com.pragma.hogar360.serviceshome.infrastructure.adapters.persistence;
+import com.pragma.hogar360.serviceshome.commons.configurations.utils.Auxiliary;
+import com.pragma.hogar360.serviceshome.domain.model.HomeModel;
+import com.pragma.hogar360.serviceshome.domain.model.HomePublicationInfoModel;
+import com.pragma.hogar360.serviceshome.domain.model.HomeQueryModel;
+import com.pragma.hogar360.serviceshome.domain.ports.out.HomePersistencePort;
+import com.pragma.hogar360.serviceshome.domain.utils.constants.Pagination;
+import com.pragma.hogar360.serviceshome.infrastructure.entities.HomeEntity;
+import com.pragma.hogar360.serviceshome.infrastructure.mappers.HomeEntityMapper;
+import com.pragma.hogar360.serviceshome.infrastructure.repositories.mysql.HomeRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.util.List;
+
+@Service
+@Transactional
+@RequiredArgsConstructor
+<span class="fc" id="L26">@Slf4j</span>
+public class HomePersistenceAdapter implements HomePersistencePort {
+
+    private final HomeRepository homeRepository;
+    private final HomeEntityMapper homeEntityMapper;
+
+    @Override
+    public void save(HomeModel homeModel){
+<span class="nc" id="L34">        homeRepository.save(homeEntityMapper.toEntity(homeModel));</span>
+<span class="nc" id="L35">    }</span>
+    @Override
+    public boolean existsAddress(String address) {
+<span class="nc" id="L38">        return homeRepository.existsByAddress(address);</span>
+    }
+
+    @Override
+    public List&lt;HomeModel&gt; findHomesToActivate(LocalDate date, HomePublicationInfoModel.PublicationStatus domainStatus) {
+<span class="nc" id="L43">        HomeEntity.PublicationStatus entityStatus = homeEntityMapper.mapPublicationStatus(domainStatus);</span>
+<span class="nc" id="L44">        return homeRepository.findByActivePublicationDateAndPublicationStatus(date, entityStatus)</span>
+<span class="nc" id="L45">                .stream()</span>
+<span class="nc" id="L46">                .map(homeEntityMapper::toModel)</span>
+<span class="nc" id="L47">                .toList();</span>
+    }
+
+    @Override
+    public void saveAll(List&lt;HomeModel&gt; homes) {
+<span class="nc" id="L52">        List&lt;HomeEntity&gt; entities = homes.stream()</span>
+<span class="nc" id="L53">                .map(homeEntityMapper::toEntity)</span>
+<span class="nc" id="L54">                .toList();</span>
+
+<span class="nc" id="L56">        homeRepository.saveAll(entities);</span>
+<span class="nc" id="L57">    }</span>
+
+    @Override
+    public Pagination&lt;HomeModel&gt; findHomesByFilters(
+            HomeQueryModel queryModel,
+            Integer page,
+            Integer size,
+            String sortBy,
+            String sortDirection
+    ) {
+<span class="nc" id="L67">        Sort sort = Auxiliary.createHomeSort(sortBy, sortDirection);</span>
+<span class="nc" id="L68">        Pageable pageable = PageRequest.of(page, size, sort);</span>
+
+<span class="nc" id="L70">        log.info(&quot;Fetching homes from DB - Page: {}, Size: {}, SortBy: {}, SortDirection: {}, Query: {}&quot;,</span>
+                page, size, sortBy, sortDirection, queryModel);
+
+<span class="nc" id="L73">        Page&lt;HomeEntity&gt; homePages = homeRepository.findFilteredHomes(</span>
+<span class="nc" id="L74">                queryModel.getCurrentDate(),</span>
+<span class="nc" id="L75">                queryModel.getLocationId(),</span>
+<span class="nc" id="L76">                queryModel.getCategoryId(),</span>
+<span class="nc" id="L77">                queryModel.getMinRooms(),</span>
+<span class="nc" id="L78">                queryModel.getMaxRooms(),</span>
+<span class="nc" id="L79">                queryModel.getMinBathrooms(),</span>
+<span class="nc" id="L80">                queryModel.getMaxBathrooms(),</span>
+<span class="nc" id="L81">                queryModel.getMinPrice(),</span>
+<span class="nc" id="L82">                queryModel.getMaxPrice(),</span>
+                pageable
+        );
+
+<span class="nc" id="L86">        log.info(&quot;Homes fetched. Total Elements: {}, Total Pages: {}&quot;,</span>
+<span class="nc" id="L87">                homePages.getTotalElements(), homePages.getTotalPages());</span>
+
+<span class="nc" id="L89">        Pagination&lt;HomeModel&gt; result = homeEntityMapper.homeEntityPageToHomeModelPagination(homePages);</span>
+
+<span class="nc" id="L91">        log.info(&quot;Mapped Homes: {}&quot;, result.getItems());</span>
+<span class="nc" id="L92">        log.info(&quot;Pagination mapped successfully. Returning response...&quot;);</span>
+
+<span class="nc" id="L94">        return result;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

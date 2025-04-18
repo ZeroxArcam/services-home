@@ -1,0 +1,355 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > Rfc6265CookieProcessor</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.apache.tomcat.util.http</a>
+</div>
+
+<h1>Coverage Summary for Class: Rfc6265CookieProcessor (org.apache.tomcat.util.http)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Rfc6265CookieProcessor</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    22.2%
+  </span>
+  <span class="absValue">
+    (2/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    5.1%
+  </span>
+  <span class="absValue">
+    (6/118)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    10.9%
+  </span>
+  <span class="absValue">
+    (13/119)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.apache.tomcat.util.http;
+&nbsp;
+&nbsp;import jakarta.servlet.http.HttpServletRequest;
+&nbsp;import java.nio.charset.Charset;
+&nbsp;import java.nio.charset.StandardCharsets;
+&nbsp;import java.text.DateFormat;
+&nbsp;import java.text.FieldPosition;
+&nbsp;import java.util.BitSet;
+&nbsp;import java.util.Date;
+&nbsp;import java.util.Map;
+&nbsp;import org.apache.juli.logging.Log;
+&nbsp;import org.apache.juli.logging.LogFactory;
+&nbsp;import org.apache.tomcat.util.buf.ByteChunk;
+&nbsp;import org.apache.tomcat.util.buf.MessageBytes;
+&nbsp;import org.apache.tomcat.util.http.parser.Cookie;
+&nbsp;import org.apache.tomcat.util.http.parser.HttpParser;
+&nbsp;import org.apache.tomcat.util.res.StringManager;
+&nbsp;
+&nbsp;public class Rfc6265CookieProcessor extends CookieProcessorBase {
+&nbsp;    private static final Log log = LogFactory.getLog(Rfc6265CookieProcessor.class);
+&nbsp;    private static final StringManager sm = StringManager.getManager(Rfc6265CookieProcessor.class.getPackage().getName());
+&nbsp;    private static final BitSet domainValid = new BitSet(128);
+&nbsp;
+&nbsp;    public Rfc6265CookieProcessor() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public Charset getCharset() {
+&nbsp;        return StandardCharsets.UTF_8;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void parseCookieHeader(MimeHeaders headers, ServerCookies serverCookies) {
+<b class="fc">&nbsp;        if (headers != null) {</b>
+&nbsp;            for(int pos = headers.findHeader(&quot;Cookie&quot;, 0); pos &gt;= 0; pos = headers.findHeader(&quot;Cookie&quot;, pos)) {
+<b class="fc">&nbsp;                MessageBytes cookieValue = headers.getValue(pos);</b>
+&nbsp;                if (cookieValue != null &amp;&amp; !cookieValue.isNull()) {
+<b class="fc">&nbsp;                    if (cookieValue.getType() != 2) {</b>
+<b class="fc">&nbsp;                        if (log.isDebugEnabled()) {</b>
+&nbsp;                            Exception e = new Exception();
+<b class="fc">&nbsp;                            log.debug(sm.getString(&quot;rfc6265CookieProcessor.expectedBytes&quot;), e);</b>
+&nbsp;                        }
+&nbsp;
+<b class="fc">&nbsp;                        cookieValue.toBytes();</b>
+<b class="fc">&nbsp;                    }</b>
+&nbsp;
+<b class="fc">&nbsp;                    if (log.isTraceEnabled()) {</b>
+<b class="fc">&nbsp;                        log.trace(&quot;Cookies: Parsing b[]: &quot; + cookieValue.toString());</b>
+&nbsp;                    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;                    ByteChunk bc = cookieValue.getByteChunk();</b>
+&nbsp;                    Cookie.parseCookie(bc.getBytes(), bc.getStart(), bc.getLength(), serverCookies, this.getCookiesWithoutEqualsInternal());
+<b class="fc">&nbsp;                }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;                ++pos;
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public String generateHeader(jakarta.servlet.http.Cookie cookie, HttpServletRequest request) {
+&nbsp;        StringBuffer header = new StringBuffer();
+&nbsp;        header.append(cookie.getName());
+&nbsp;        header.append(&#39;=&#39;);
+&nbsp;        String value = cookie.getValue();
+&nbsp;        if (value != null &amp;&amp; value.length() &gt; 0) {
+<b class="nc">&nbsp;            this.validateCookieValue(value);</b>
+&nbsp;            header.append(value);
+&nbsp;        }
+&nbsp;
+&nbsp;        int maxAge = cookie.getMaxAge();
+&nbsp;        if (maxAge &gt; -1) {
+<b class="nc">&nbsp;            header.append(&quot;; Max-Age=&quot;);</b>
+<b class="nc">&nbsp;            header.append(maxAge);</b>
+<b class="nc">&nbsp;            header.append(&quot;; Expires=&quot;);</b>
+&nbsp;            if (maxAge == 0) {
+<b class="nc">&nbsp;                header.append(ANCIENT_DATE);</b>
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                ((DateFormat)COOKIE_DATE_FORMAT.get()).format(new Date(System.currentTimeMillis() + (long)maxAge * 1000L), header, new FieldPosition(0));</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        String domain = cookie.getDomain();
+<b class="nc">&nbsp;        if (domain != null &amp;&amp; domain.length() &gt; 0) {</b>
+&nbsp;            this.validateDomain(domain);
+<b class="nc">&nbsp;            header.append(&quot;; Domain=&quot;);</b>
+<b class="nc">&nbsp;            header.append(domain);</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        String path = cookie.getPath();
+<b class="nc">&nbsp;        if (path != null &amp;&amp; path.length() &gt; 0) {</b>
+<b class="nc">&nbsp;            this.validatePath(path);</b>
+&nbsp;            header.append(&quot;; Path=&quot;);
+&nbsp;            header.append(path);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        if (cookie.getSecure()) {
+&nbsp;            header.append(&quot;; Secure&quot;);
+&nbsp;        }
+&nbsp;
+&nbsp;        if (cookie.isHttpOnly()) {
+&nbsp;            header.append(&quot;; HttpOnly&quot;);
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        String cookieSameSite = cookie.getAttribute(&quot;SameSite&quot;);</b>
+&nbsp;        if (cookieSameSite == null) {
+&nbsp;            SameSiteCookies sameSiteCookiesValue = this.getSameSiteCookies();
+&nbsp;            if (!sameSiteCookiesValue.equals(SameSiteCookies.UNSET)) {
+&nbsp;                header.append(&quot;; SameSite=&quot;);
+&nbsp;                header.append(sameSiteCookiesValue.getValue());
+&nbsp;            }
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            header.append(&quot;; SameSite=&quot;);</b>
+<b class="nc">&nbsp;            header.append(cookieSameSite);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        String cookiePartitioned = cookie.getAttribute(&quot;Partitioned&quot;);</b>
+&nbsp;        if (cookiePartitioned == null) {
+&nbsp;            if (this.getPartitioned()) {
+&nbsp;                header.append(&quot;; Partitioned&quot;);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        } else if (Boolean.parseBoolean(cookiePartitioned)) {</b>
+&nbsp;            header.append(&quot;; Partitioned&quot;);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        for(Map.Entry&lt;String, String&gt; entry : cookie.getAttributes().entrySet()) {
+&nbsp;            switch ((String)entry.getKey()) {
+&nbsp;                case &quot;Comment&quot;:
+&nbsp;                case &quot;Domain&quot;:
+&nbsp;                case &quot;Max-Age&quot;:
+&nbsp;                case &quot;Path&quot;:
+<b class="nc">&nbsp;                case &quot;Secure&quot;:</b>
+&nbsp;                case &quot;HttpOnly&quot;:
+<b class="nc">&nbsp;                case &quot;SameSite&quot;:</b>
+<b class="nc">&nbsp;                case &quot;Partitioned&quot;:</b>
+&nbsp;                    break;
+<b class="nc">&nbsp;                default:</b>
+&nbsp;                    this.validateAttribute((String)entry.getKey(), (String)entry.getValue());
+&nbsp;                    header.append(&quot;; &quot;);
+&nbsp;                    header.append((String)entry.getKey());
+&nbsp;                    header.append(&#39;=&#39;);
+<b class="nc">&nbsp;                    header.append((String)entry.getValue());</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return header.toString();</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private void validateCookieValue(String value) {</b>
+<b class="nc">&nbsp;        int start = 0;</b>
+<b class="nc">&nbsp;        int end = value.length();</b>
+<b class="nc">&nbsp;        if (end &gt; 1 &amp;&amp; value.charAt(0) == &#39;&quot;&#39; &amp;&amp; value.charAt(end - 1) == &#39;&quot;&#39;) {</b>
+<b class="nc">&nbsp;            start = 1;</b>
+&nbsp;            --end;
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        char[] chars = value.toCharArray();</b>
+&nbsp;
+&nbsp;        for(int i = start; i &lt; end; ++i) {
+<b class="nc">&nbsp;            char c = chars[i];</b>
+<b class="nc">&nbsp;            if (c &lt; &#39;!&#39; || c == &#39;&quot;&#39; || c == &#39;,&#39; || c == &#39;;&#39; || c == &#39;\\&#39; || c == 127) {</b>
+&nbsp;                throw new IllegalArgumentException(sm.getString(&quot;rfc6265CookieProcessor.invalidCharInValue&quot;, new Object[]{Integer.toString(c)}));
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private void validateDomain(String domain) {</b>
+<b class="nc">&nbsp;        int i = 0;</b>
+<b class="nc">&nbsp;        int prev = -1;</b>
+&nbsp;        int cur = -1;
+&nbsp;
+&nbsp;        for(char[] chars = domain.toCharArray(); i &lt; chars.length; ++i) {
+<b class="nc">&nbsp;            prev = cur;</b>
+<b class="nc">&nbsp;            cur = chars[i];</b>
+&nbsp;            if (!domainValid.get(cur)) {
+&nbsp;                throw new IllegalArgumentException(sm.getString(&quot;rfc6265CookieProcessor.invalidDomain&quot;, new Object[]{domain}));
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            if ((prev == 46 || prev == -1) &amp;&amp; (cur == 46 || cur == 45)) {</b>
+<b class="nc">&nbsp;                throw new IllegalArgumentException(sm.getString(&quot;rfc6265CookieProcessor.invalidDomain&quot;, new Object[]{domain}));</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if (prev == 45 &amp;&amp; cur == 46) {</b>
+<b class="nc">&nbsp;                throw new IllegalArgumentException(sm.getString(&quot;rfc6265CookieProcessor.invalidDomain&quot;, new Object[]{domain}));</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        if (cur == 46 || cur == 45) {
+&nbsp;            throw new IllegalArgumentException(sm.getString(&quot;rfc6265CookieProcessor.invalidDomain&quot;, new Object[]{domain}));
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private void validatePath(String path) {
+&nbsp;        char[] chars = path.toCharArray();
+&nbsp;
+&nbsp;        for(char ch : chars) {
+&nbsp;            if (ch &lt; &#39; &#39; || ch &gt; &#39;~&#39; || ch == &#39;;&#39;) {
+&nbsp;                throw new IllegalArgumentException(sm.getString(&quot;rfc6265CookieProcessor.invalidPath&quot;, new Object[]{path}));
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private void validateAttribute(String name, String value) {</b>
+<b class="nc">&nbsp;        if (!HttpParser.isToken(name)) {</b>
+<b class="nc">&nbsp;            throw new IllegalArgumentException(sm.getString(&quot;rfc6265CookieProcessor.invalidAttributeName&quot;, new Object[]{name}));</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            char[] chars = value.toCharArray();
+&nbsp;
+&nbsp;            for(char ch : chars) {
+&nbsp;                if (ch &lt; &#39; &#39; || ch &gt; &#39;~&#39; || ch == &#39;;&#39;) {
+<b class="nc">&nbsp;                    throw new IllegalArgumentException(sm.getString(&quot;rfc6265CookieProcessor.invalidAttributeValue&quot;, new Object[]{name, value}));</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    static {
+<b class="nc">&nbsp;        for(char c = &#39;0&#39;; c &lt;= &#39;9&#39;; ++c) {</b>
+<b class="nc">&nbsp;            domainValid.set(c);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        for(char c = &#39;a&#39;; c &lt;= &#39;z&#39;; ++c) {
+<b class="nc">&nbsp;            domainValid.set(c);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        for(char c = &#39;A&#39;; c &lt;= &#39;Z&#39;; ++c) {</b>
+<b class="nc">&nbsp;            domainValid.set(c);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        domainValid.set(46);
+&nbsp;        domainValid.set(45);
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 21:00</div>
+</div>
+</body>
+</html>

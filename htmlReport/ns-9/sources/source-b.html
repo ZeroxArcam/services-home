@@ -1,0 +1,262 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ThrowableProxy</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">ch.qos.logback.classic.spi</a>
+</div>
+
+<h1>Coverage Summary for Class: ThrowableProxy (ch.qos.logback.classic.spi)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ThrowableProxy</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    86.7%
+  </span>
+  <span class="absValue">
+    (13/15)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    40%
+  </span>
+  <span class="absValue">
+    (8/20)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    58.6%
+  </span>
+  <span class="absValue">
+    (34/58)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package ch.qos.logback.classic.spi;
+&nbsp;
+&nbsp;import ch.qos.logback.core.CoreConstants;
+&nbsp;import ch.qos.logback.core.util.OptionHelper;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.IdentityHashMap;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Set;
+&nbsp;
+&nbsp;public class ThrowableProxy implements IThrowableProxy {
+&nbsp;    static final StackTraceElementProxy[] EMPTY_STEP = new StackTraceElementProxy[0];
+&nbsp;    private Throwable throwable;
+&nbsp;    private String className;
+&nbsp;    private String message;
+&nbsp;    StackTraceElementProxy[] stackTraceElementProxyArray;
+&nbsp;    int commonFrames;
+&nbsp;    private ThrowableProxy cause;
+&nbsp;    private ThrowableProxy[] suppressed;
+&nbsp;    private transient PackagingDataCalculator packagingDataCalculator;
+&nbsp;    private boolean calculatedPackageData;
+<b class="fc">&nbsp;    private boolean cyclic;</b>
+&nbsp;    private static final ThrowableProxy[] NO_SUPPRESSED = new ThrowableProxy[0];
+&nbsp;
+&nbsp;    public ThrowableProxy(Throwable throwable) {
+&nbsp;        this(throwable, Collections.newSetFromMap(new IdentityHashMap()));
+&nbsp;    }
+&nbsp;
+&nbsp;    private ThrowableProxy(Throwable circular, boolean isCyclic) {
+&nbsp;        this.suppressed = NO_SUPPRESSED;
+&nbsp;        this.calculatedPackageData = false;
+<b class="fc">&nbsp;        this.throwable = circular;</b>
+&nbsp;        this.className = circular.getClass().getName();
+&nbsp;        this.message = circular.getMessage();
+&nbsp;        this.stackTraceElementProxyArray = EMPTY_STEP;
+&nbsp;        this.cyclic = true;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public ThrowableProxy(Throwable throwable, Set&lt;Throwable&gt; alreadyProcessedSet) {
+&nbsp;        this.suppressed = NO_SUPPRESSED;
+&nbsp;        this.calculatedPackageData = false;
+<b class="fc">&nbsp;        this.throwable = throwable;</b>
+&nbsp;        this.className = throwable.getClass().getName();
+&nbsp;        this.message = throwable.getMessage();
+&nbsp;        this.stackTraceElementProxyArray = ThrowableProxyUtil.steArrayToStepArray(throwable.getStackTrace());
+<b class="fc">&nbsp;        this.cyclic = false;</b>
+&nbsp;        alreadyProcessedSet.add(throwable);
+&nbsp;        Throwable nested = throwable.getCause();
+&nbsp;        if (nested != null) {
+<b class="nc">&nbsp;            if (alreadyProcessedSet.contains(nested)) {</b>
+<b class="nc">&nbsp;                this.cause = new ThrowableProxy(nested, true);</b>
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                this.cause = new ThrowableProxy(nested, alreadyProcessedSet);</b>
+<b class="nc">&nbsp;                this.cause.commonFrames = ThrowableProxyUtil.findNumberOfCommonFrames(nested.getStackTrace(), this.stackTraceElementProxyArray);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        Throwable[] throwableSuppressed = throwable.getSuppressed();</b>
+&nbsp;        if (OptionHelper.isNotEmtpy(throwableSuppressed)) {
+<b class="fc">&nbsp;            List&lt;ThrowableProxy&gt; suppressedList = new ArrayList(throwableSuppressed.length);</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;            for(Throwable sup : throwableSuppressed) {</b>
+<b class="fc">&nbsp;                if (alreadyProcessedSet.contains(sup)) {</b>
+<b class="fc">&nbsp;                    ThrowableProxy throwableProxy = new ThrowableProxy(sup, true);</b>
+&nbsp;                    suppressedList.add(throwableProxy);
+<b class="fc">&nbsp;                } else {</b>
+&nbsp;                    ThrowableProxy throwableProxy = new ThrowableProxy(sup, alreadyProcessedSet);
+<b class="fc">&nbsp;                    throwableProxy.commonFrames = ThrowableProxyUtil.findNumberOfCommonFrames(sup.getStackTrace(), this.stackTraceElementProxyArray);</b>
+<b class="fc">&nbsp;                    suppressedList.add(throwableProxy);</b>
+<b class="pc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="fc">&nbsp;            this.suppressed = (ThrowableProxy[])suppressedList.toArray(new ThrowableProxy[suppressedList.size()]);</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public Throwable getThrowable() {
+<b class="fc">&nbsp;        return this.throwable;</b>
+&nbsp;    }
+&nbsp;
+<b class="pc">&nbsp;    public String getMessage() {</b>
+<b class="nc">&nbsp;        return this.message;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public String getClassName() {</b>
+<b class="nc">&nbsp;        return this.className;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public StackTraceElementProxy[] getStackTraceElementProxyArray() {</b>
+&nbsp;        return this.stackTraceElementProxyArray;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public boolean isCyclic() {
+<b class="nc">&nbsp;        return this.cyclic;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getCommonFrames() {
+&nbsp;        return this.commonFrames;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public IThrowableProxy getCause() {
+&nbsp;        return this.cause;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public IThrowableProxy[] getSuppressed() {
+&nbsp;        return this.suppressed;
+&nbsp;    }
+&nbsp;
+&nbsp;    public PackagingDataCalculator getPackagingDataCalculator() {
+&nbsp;        if (this.throwable != null &amp;&amp; this.packagingDataCalculator == null) {
+&nbsp;            this.packagingDataCalculator = new PackagingDataCalculator();
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return this.packagingDataCalculator;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public void calculatePackagingData() {
+&nbsp;        if (!this.calculatedPackageData) {
+&nbsp;            PackagingDataCalculator pdc = this.getPackagingDataCalculator();
+&nbsp;            if (pdc != null) {
+<b class="fc">&nbsp;                this.calculatedPackageData = true;</b>
+&nbsp;                pdc.calculate(this);
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void fullDump() {
+&nbsp;        StringBuilder builder = new StringBuilder();
+&nbsp;
+&nbsp;        for(StackTraceElementProxy step : this.stackTraceElementProxyArray) {
+&nbsp;            String string = step.toString();
+&nbsp;            builder.append(&#39;\t&#39;).append(string);
+<b class="fc">&nbsp;            ThrowableProxyUtil.subjoinPackagingData(builder, step);</b>
+&nbsp;            builder.append(CoreConstants.LINE_SEPARATOR);
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        System.out.println(builder.toString());</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:54</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,1067 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > CacheAspectSupport</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.cache.interceptor</a>
+</div>
+
+<h1>Coverage Summary for Class: CacheAspectSupport (org.springframework.cache.interceptor)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">CacheAspectSupport</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/41)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/144)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/212)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.cache.interceptor;
+&nbsp;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;import java.lang.reflect.Proxy;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Objects;
+&nbsp;import java.util.Optional;
+&nbsp;import java.util.concurrent.CompletableFuture;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import java.util.function.Supplier;
+&nbsp;import org.apache.commons.logging.Log;
+&nbsp;import org.apache.commons.logging.LogFactory;
+&nbsp;import org.reactivestreams.Subscriber;
+&nbsp;import org.reactivestreams.Subscription;
+&nbsp;import org.springframework.aop.framework.AopProxyUtils;
+&nbsp;import org.springframework.aop.support.AopUtils;
+&nbsp;import org.springframework.beans.factory.BeanFactory;
+&nbsp;import org.springframework.beans.factory.BeanFactoryAware;
+&nbsp;import org.springframework.beans.factory.InitializingBean;
+&nbsp;import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+&nbsp;import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
+&nbsp;import org.springframework.beans.factory.SmartInitializingSingleton;
+&nbsp;import org.springframework.beans.factory.annotation.BeanFactoryAnnotationUtils;
+&nbsp;import org.springframework.cache.Cache;
+&nbsp;import org.springframework.cache.CacheManager;
+&nbsp;import org.springframework.context.expression.AnnotatedElementKey;
+&nbsp;import org.springframework.context.expression.BeanFactoryResolver;
+&nbsp;import org.springframework.core.BridgeMethodResolver;
+&nbsp;import org.springframework.core.KotlinDetector;
+&nbsp;import org.springframework.core.ReactiveAdapter;
+&nbsp;import org.springframework.core.ReactiveAdapterRegistry;
+&nbsp;import org.springframework.core.SpringProperties;
+&nbsp;import org.springframework.expression.EvaluationContext;
+&nbsp;import org.springframework.expression.spel.support.StandardEvaluationContext;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.ClassUtils;
+&nbsp;import org.springframework.util.CollectionUtils;
+&nbsp;import org.springframework.util.LinkedMultiValueMap;
+&nbsp;import org.springframework.util.MultiValueMap;
+&nbsp;import org.springframework.util.ObjectUtils;
+&nbsp;import org.springframework.util.ReflectionUtils;
+&nbsp;import org.springframework.util.StringUtils;
+&nbsp;import org.springframework.util.function.SingletonSupplier;
+&nbsp;import org.springframework.util.function.SupplierUtils;
+&nbsp;import reactor.core.publisher.Flux;
+&nbsp;import reactor.core.publisher.Mono;
+&nbsp;
+&nbsp;public abstract class CacheAspectSupport extends AbstractCacheInvoker implements BeanFactoryAware, InitializingBean, SmartInitializingSingleton {
+&nbsp;    public static final String IGNORE_REACTIVESTREAMS_PROPERTY_NAME = &quot;spring.cache.reactivestreams.ignore&quot;;
+&nbsp;    private static final boolean shouldIgnoreReactiveStreams = SpringProperties.getFlag(&quot;spring.cache.reactivestreams.ignore&quot;);
+&nbsp;    private static final boolean reactiveStreamsPresent = ClassUtils.isPresent(&quot;org.reactivestreams.Publisher&quot;, CacheAspectSupport.class.getClassLoader());
+&nbsp;    protected final Log logger = LogFactory.getLog(this.getClass());
+&nbsp;    private final Map&lt;CacheOperationCacheKey, CacheOperationMetadata&gt; metadataCache = new ConcurrentHashMap(1024);
+&nbsp;    private final StandardEvaluationContext originalEvaluationContext = new StandardEvaluationContext();
+&nbsp;    private final CacheOperationExpressionEvaluator evaluator;
+&nbsp;    @Nullable
+&nbsp;    private final ReactiveCachingHandler reactiveCachingHandler;
+&nbsp;    @Nullable
+&nbsp;    private CacheOperationSource cacheOperationSource;
+&nbsp;    private SingletonSupplier&lt;KeyGenerator&gt; keyGenerator;
+&nbsp;    @Nullable
+&nbsp;    private SingletonSupplier&lt;CacheResolver&gt; cacheResolver;
+&nbsp;    @Nullable
+&nbsp;    private BeanFactory beanFactory;
+&nbsp;    private boolean initialized;
+&nbsp;
+&nbsp;    protected CacheAspectSupport() {
+&nbsp;        this.evaluator = new CacheOperationExpressionEvaluator(new CacheEvaluationContextFactory(this.originalEvaluationContext));
+&nbsp;        this.keyGenerator = SingletonSupplier.of(SimpleKeyGenerator::new);
+&nbsp;        this.initialized = false;
+&nbsp;        this.reactiveCachingHandler = reactiveStreamsPresent &amp;&amp; !shouldIgnoreReactiveStreams ? new ReactiveCachingHandler() : null;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void configure(@Nullable Supplier&lt;CacheErrorHandler&gt; errorHandler, @Nullable Supplier&lt;KeyGenerator&gt; keyGenerator, @Nullable Supplier&lt;CacheResolver&gt; cacheResolver, @Nullable Supplier&lt;CacheManager&gt; cacheManager) {
+&nbsp;        this.errorHandler = new SingletonSupplier(errorHandler, SimpleCacheErrorHandler::new);
+&nbsp;        this.keyGenerator = new SingletonSupplier(keyGenerator, SimpleKeyGenerator::new);
+&nbsp;        this.cacheResolver = new SingletonSupplier(cacheResolver, () -&gt; SimpleCacheResolver.of((CacheManager)SupplierUtils.resolve(cacheManager)));
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setCacheOperationSources(CacheOperationSource... cacheOperationSources) {
+&nbsp;        Assert.notEmpty(cacheOperationSources, &quot;At least 1 CacheOperationSource needs to be specified&quot;);
+&nbsp;        this.cacheOperationSource = (CacheOperationSource)(cacheOperationSources.length &gt; 1 ? new CompositeCacheOperationSource(cacheOperationSources) : cacheOperationSources[0]);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setCacheOperationSource(@Nullable CacheOperationSource cacheOperationSource) {
+&nbsp;        this.cacheOperationSource = cacheOperationSource;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public CacheOperationSource getCacheOperationSource() {
+&nbsp;        return this.cacheOperationSource;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setKeyGenerator(KeyGenerator keyGenerator) {
+&nbsp;        this.keyGenerator = SingletonSupplier.of(keyGenerator);
+&nbsp;    }
+&nbsp;
+&nbsp;    public KeyGenerator getKeyGenerator() {
+&nbsp;        return (KeyGenerator)this.keyGenerator.obtain();
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setCacheResolver(@Nullable CacheResolver cacheResolver) {
+&nbsp;        this.cacheResolver = SingletonSupplier.ofNullable(cacheResolver);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    @Nullable</b>
+<b class="nc">&nbsp;    public CacheResolver getCacheResolver() {</b>
+&nbsp;        return (CacheResolver)SupplierUtils.resolve(this.cacheResolver);
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public void setCacheManager(CacheManager cacheManager) {
+&nbsp;        this.cacheResolver = SingletonSupplier.of(new SimpleCacheResolver(cacheManager));
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public void setBeanFactory(BeanFactory beanFactory) {</b>
+&nbsp;        this.beanFactory = beanFactory;
+<b class="nc">&nbsp;        this.originalEvaluationContext.setBeanResolver(new BeanFactoryResolver(beanFactory));</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void afterPropertiesSet() {
+&nbsp;        Assert.state(this.getCacheOperationSource() != null, &quot;The &#39;cacheOperationSources&#39; property is required: If there are no cacheable methods, then don&#39;t use a cache aspect.&quot;);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void afterSingletonsInstantiated() {
+&nbsp;        if (this.getCacheResolver() == null) {
+&nbsp;            Assert.state(this.beanFactory != null, &quot;CacheResolver or BeanFactory must be set on cache aspect&quot;);
+&nbsp;
+<b class="nc">&nbsp;            try {</b>
+&nbsp;                this.setCacheManager((CacheManager)this.beanFactory.getBean(CacheManager.class));
+&nbsp;            } catch (NoUniqueBeanDefinitionException ex) {
+&nbsp;                int numberOfBeansFound = ex.getNumberOfBeansFound();
+&nbsp;                Collection&lt;String&gt; beanNamesFound = ex.getBeanNamesFound();
+&nbsp;                StringBuilder message = new StringBuilder(&quot;no CacheResolver specified and expected single matching CacheManager but found &quot;);
+&nbsp;                message.append(numberOfBeansFound);
+&nbsp;                if (beanNamesFound != null) {
+<b class="nc">&nbsp;                    message.append(&quot;: &quot;).append(StringUtils.collectionToCommaDelimitedString(beanNamesFound));</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                String exceptionMessage = message.toString();</b>
+<b class="nc">&nbsp;                if (beanNamesFound != null) {</b>
+<b class="nc">&nbsp;                    throw new NoUniqueBeanDefinitionException(CacheManager.class, beanNamesFound, exceptionMessage);</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                throw new NoUniqueBeanDefinitionException(CacheManager.class, numberOfBeansFound, exceptionMessage);
+&nbsp;            } catch (NoSuchBeanDefinitionException var7) {
+&nbsp;                throw new NoSuchBeanDefinitionException(CacheManager.class, &quot;no CacheResolver specified - register a CacheManager bean or remove the @EnableCaching annotation from your configuration.&quot;);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        this.initialized = true;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected String methodIdentification(Method method, Class&lt;?&gt; targetClass) {
+<b class="nc">&nbsp;        Method specificMethod = ClassUtils.getMostSpecificMethod(method, targetClass);</b>
+<b class="nc">&nbsp;        return ClassUtils.getQualifiedMethodName(specificMethod);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    protected Collection&lt;? extends Cache&gt; getCaches(CacheOperationInvocationContext&lt;CacheOperation&gt; context, CacheResolver cacheResolver) {
+&nbsp;        Collection&lt;? extends Cache&gt; caches = cacheResolver.resolveCaches(context);
+&nbsp;        if (caches.isEmpty()) {
+&nbsp;            String var10002 = String.valueOf(context.getOperation());
+&nbsp;            throw new IllegalStateException(&quot;No cache could be resolved for &#39;&quot; + var10002 + &quot;&#39; using resolver &#39;&quot; + String.valueOf(cacheResolver) + &quot;&#39;. At least one cache should be provided per cache operation.&quot;);
+&nbsp;        } else {
+&nbsp;            return caches;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected CacheOperationContext getOperationContext(CacheOperation operation, Method method, Object[] args, Object target, Class&lt;?&gt; targetClass) {</b>
+<b class="nc">&nbsp;        CacheOperationMetadata metadata = this.getCacheOperationMetadata(operation, method, targetClass);</b>
+<b class="nc">&nbsp;        return new CacheOperationContext(metadata, args, target);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected CacheOperationMetadata getCacheOperationMetadata(CacheOperation operation, Method method, Class&lt;?&gt; targetClass) {
+&nbsp;        CacheOperationCacheKey cacheKey = new CacheOperationCacheKey(operation, method, targetClass);
+&nbsp;        CacheOperationMetadata metadata = (CacheOperationMetadata)this.metadataCache.get(cacheKey);
+&nbsp;        if (metadata == null) {
+&nbsp;            KeyGenerator operationKeyGenerator;
+&nbsp;            if (StringUtils.hasText(operation.getKeyGenerator())) {
+<b class="nc">&nbsp;                operationKeyGenerator = (KeyGenerator)this.getBean(operation.getKeyGenerator(), KeyGenerator.class);</b>
+&nbsp;            } else {
+&nbsp;                operationKeyGenerator = this.getKeyGenerator();
+&nbsp;            }
+&nbsp;
+&nbsp;            CacheResolver operationCacheResolver;
+&nbsp;            if (StringUtils.hasText(operation.getCacheResolver())) {
+&nbsp;                operationCacheResolver = (CacheResolver)this.getBean(operation.getCacheResolver(), CacheResolver.class);
+<b class="nc">&nbsp;            } else if (StringUtils.hasText(operation.getCacheManager())) {</b>
+&nbsp;                CacheManager cacheManager = (CacheManager)this.getBean(operation.getCacheManager(), CacheManager.class);
+&nbsp;                operationCacheResolver = new SimpleCacheResolver(cacheManager);
+&nbsp;            } else {
+&nbsp;                operationCacheResolver = this.getCacheResolver();
+&nbsp;                Assert.state(operationCacheResolver != null, &quot;No CacheResolver/CacheManager set&quot;);
+&nbsp;            }
+&nbsp;
+&nbsp;            metadata = new CacheOperationMetadata(operation, method, targetClass, operationKeyGenerator, operationCacheResolver);
+<b class="nc">&nbsp;            this.metadataCache.put(cacheKey, metadata);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        return metadata;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected &lt;T&gt; T getBean(String name, Class&lt;T&gt; serviceType) {
+<b class="nc">&nbsp;        if (this.beanFactory == null) {</b>
+&nbsp;            throw new IllegalStateException(&quot;BeanFactory must be set on cache aspect for &quot; + serviceType.getSimpleName() + &quot; retrieval&quot;);
+&nbsp;        } else {
+&nbsp;            return (T)BeanFactoryAnnotationUtils.qualifiedBeanOfType(this.beanFactory, serviceType, name);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void clearMetadataCache() {
+&nbsp;        this.metadataCache.clear();
+&nbsp;        this.evaluator.clear();
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    @Nullable</b>
+&nbsp;    protected Object execute(CacheOperationInvoker invoker, Object target, Method method, Object[] args) {
+&nbsp;        if (this.initialized) {
+&nbsp;            Class&lt;?&gt; targetClass = AopProxyUtils.ultimateTargetClass(target);
+&nbsp;            CacheOperationSource cacheOperationSource = this.getCacheOperationSource();
+&nbsp;            if (cacheOperationSource != null) {
+&nbsp;                Collection&lt;CacheOperation&gt; operations = cacheOperationSource.getCacheOperations(method, targetClass);
+&nbsp;                if (!CollectionUtils.isEmpty(operations)) {
+<b class="nc">&nbsp;                    return this.execute(invoker, method, new CacheOperationContexts(operations, method, args, target, targetClass));</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return this.invokeOperation(invoker);
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    protected Object invokeOperation(CacheOperationInvoker invoker) {
+<b class="nc">&nbsp;        return invoker.invoke();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    private Object execute(CacheOperationInvoker invoker, Method method, CacheOperationContexts contexts) {
+&nbsp;        if (contexts.isSynchronized()) {
+&nbsp;            return this.executeSynchronized(invoker, method, contexts);
+&nbsp;        } else {
+&nbsp;            this.processCacheEvicts(contexts.get(CacheEvictOperation.class), true, CacheOperationExpressionEvaluator.NO_RESULT);
+&nbsp;            Object cacheHit = this.findCachedValue(invoker, method, contexts);
+<b class="nc">&nbsp;            return cacheHit != null &amp;&amp; !(cacheHit instanceof Cache.ValueWrapper) ? cacheHit : this.evaluate(cacheHit, invoker, method, contexts);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    private Object executeSynchronized(CacheOperationInvoker invoker, Method method, CacheOperationContexts contexts) {
+&nbsp;        CacheOperationContext context = (CacheOperationContext)contexts.get(CacheableOperation.class).iterator().next();
+<b class="nc">&nbsp;        if (this.isConditionPassing(context, CacheOperationExpressionEvaluator.NO_RESULT)) {</b>
+&nbsp;            Object key = this.generateKey(context, CacheOperationExpressionEvaluator.NO_RESULT);
+&nbsp;            Cache cache = (Cache)context.getCaches().iterator().next();
+&nbsp;            if (CompletableFuture.class.isAssignableFrom(method.getReturnType())) {
+&nbsp;                return this.doRetrieve(cache, key, () -&gt; (CompletableFuture)this.invokeOperation(invoker));
+&nbsp;            } else {
+<b class="nc">&nbsp;                if (this.reactiveCachingHandler != null) {</b>
+&nbsp;                    Object returnValue = this.reactiveCachingHandler.executeSynchronized(invoker, method, cache, key);
+<b class="nc">&nbsp;                    if (returnValue != CacheAspectSupport.ReactiveCachingHandler.NOT_HANDLED) {</b>
+&nbsp;                        return returnValue;
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                try {</b>
+<b class="nc">&nbsp;                    return this.wrapCacheValue(method, this.doGet(cache, key, () -&gt; this.unwrapReturnValue(this.invokeOperation(invoker))));</b>
+&nbsp;                } catch (Cache.ValueRetrievalException ex) {
+<b class="nc">&nbsp;                    ReflectionUtils.rethrowRuntimeException(ex.getCause());</b>
+<b class="nc">&nbsp;                    return null;</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            return this.invokeOperation(invoker);</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    @Nullable
+&nbsp;    private Object findCachedValue(CacheOperationInvoker invoker, Method method, CacheOperationContexts contexts) {
+<b class="nc">&nbsp;        for(CacheOperationContext context : contexts.get(CacheableOperation.class)) {</b>
+&nbsp;            if (this.isConditionPassing(context, CacheOperationExpressionEvaluator.NO_RESULT)) {
+&nbsp;                Object key = this.generateKey(context, CacheOperationExpressionEvaluator.NO_RESULT);
+&nbsp;                Object cached = this.findInCaches(context, key, invoker, method, contexts);
+<b class="nc">&nbsp;                if (cached != null) {</b>
+&nbsp;                    if (this.logger.isTraceEnabled()) {
+&nbsp;                        Log var8 = this.logger;
+&nbsp;                        String var9 = String.valueOf(key);
+<b class="nc">&nbsp;                        var8.trace(&quot;Cache entry for key &#39;&quot; + var9 + &quot;&#39; found in cache(s) &quot; + String.valueOf(context.getCacheNames()));</b>
+&nbsp;                    }
+&nbsp;
+&nbsp;                    return cached;
+&nbsp;                }
+&nbsp;
+&nbsp;                if (this.logger.isTraceEnabled()) {
+&nbsp;                    Log var10000 = this.logger;
+&nbsp;                    String var10001 = String.valueOf(key);
+&nbsp;                    var10000.trace(&quot;No cache entry for key &#39;&quot; + var10001 + &quot;&#39; in cache(s) &quot; + String.valueOf(context.getCacheNames()));
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return null;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    private Object findInCaches(CacheOperationContext context, Object key, CacheOperationInvoker invoker, Method method, CacheOperationContexts contexts) {
+&nbsp;        for(Cache cache : context.getCaches()) {
+&nbsp;            if (CompletableFuture.class.isAssignableFrom(context.getMethod().getReturnType())) {
+<b class="nc">&nbsp;                CompletableFuture&lt;?&gt; result = this.doRetrieve(cache, key);</b>
+<b class="nc">&nbsp;                if (result != null) {</b>
+<b class="nc">&nbsp;                    return result.exceptionally((ex) -&gt; {</b>
+<b class="nc">&nbsp;                        this.getErrorHandler().handleCacheGetError((RuntimeException)ex, cache, key);</b>
+&nbsp;                        return null;
+&nbsp;                    }).thenCompose((value) -&gt; (CompletableFuture)this.evaluate(value != null ? CompletableFuture.completedFuture(this.unwrapCacheValue(value)) : null, invoker, method, contexts));
+<b class="nc">&nbsp;                }</b>
+&nbsp;            } else {
+&nbsp;                if (this.reactiveCachingHandler != null) {
+&nbsp;                    Object returnValue = this.reactiveCachingHandler.findInCaches(context, cache, key, invoker, method, contexts);
+&nbsp;                    if (returnValue != CacheAspectSupport.ReactiveCachingHandler.NOT_HANDLED) {
+&nbsp;                        return returnValue;
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                Cache.ValueWrapper result = this.doGet(cache, key);
+&nbsp;                if (result != null) {
+&nbsp;                    return result;
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return null;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    private Object evaluate(@Nullable Object cacheHit, CacheOperationInvoker invoker, Method method, CacheOperationContexts contexts) {
+&nbsp;        if (contexts.processed) {
+<b class="nc">&nbsp;            return cacheHit;</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            Object cacheValue;</b>
+&nbsp;            Object returnValue;
+<b class="nc">&nbsp;            if (cacheHit != null &amp;&amp; !this.hasCachePut(contexts)) {</b>
+<b class="nc">&nbsp;                cacheValue = this.unwrapCacheValue(cacheHit);</b>
+&nbsp;                returnValue = this.wrapCacheValue(method, cacheValue);
+&nbsp;            } else {
+<b class="nc">&nbsp;                returnValue = this.invokeOperation(invoker);</b>
+&nbsp;                cacheValue = this.unwrapReturnValue(returnValue);
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            List&lt;CachePutRequest&gt; cachePutRequests = new ArrayList(1);</b>
+&nbsp;            if (cacheHit == null) {
+<b class="nc">&nbsp;                this.collectPutRequests(contexts.get(CacheableOperation.class), cacheValue, cachePutRequests);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            this.collectPutRequests(contexts.get(CachePutOperation.class), cacheValue, cachePutRequests);
+&nbsp;
+<b class="nc">&nbsp;            for(CachePutRequest cachePutRequest : cachePutRequests) {</b>
+<b class="nc">&nbsp;                Object returnOverride = cachePutRequest.apply(cacheValue);</b>
+&nbsp;                if (returnOverride != null) {
+<b class="nc">&nbsp;                    returnValue = returnOverride;</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            Object returnOverride = this.processCacheEvicts(contexts.get(CacheEvictOperation.class), false, returnValue);</b>
+&nbsp;            if (returnOverride != null) {
+&nbsp;                returnValue = returnOverride;
+&nbsp;            }
+&nbsp;
+&nbsp;            contexts.processed = true;
+&nbsp;            return returnValue;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    private Object unwrapCacheValue(@Nullable Object cacheValue) {
+&nbsp;        Object var10000;
+&nbsp;        if (cacheValue instanceof Cache.ValueWrapper wrapper) {
+&nbsp;            var10000 = wrapper.get();
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            var10000 = cacheValue;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        return var10000;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    private Object wrapCacheValue(Method method, @Nullable Object cacheValue) {
+&nbsp;        return method.getReturnType() != Optional.class || cacheValue != null &amp;&amp; cacheValue.getClass() == Optional.class ? cacheValue : Optional.ofNullable(cacheValue);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    @Nullable</b>
+&nbsp;    private Object unwrapReturnValue(@Nullable Object returnValue) {
+&nbsp;        return ObjectUtils.unwrapOptional(returnValue);
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean hasCachePut(CacheOperationContexts contexts) {
+<b class="nc">&nbsp;        Collection&lt;CacheOperationContext&gt; cachePutContexts = contexts.get(CachePutOperation.class);</b>
+<b class="nc">&nbsp;        Collection&lt;CacheOperationContext&gt; excluded = new ArrayList(1);</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        for(CacheOperationContext context : cachePutContexts) {</b>
+<b class="nc">&nbsp;            try {</b>
+<b class="nc">&nbsp;                if (!context.isConditionPassing(CacheOperationExpressionEvaluator.RESULT_UNAVAILABLE)) {</b>
+<b class="nc">&nbsp;                    excluded.add(context);</b>
+&nbsp;                }
+&nbsp;            } catch (VariableNotAvailableException var7) {
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return cachePutContexts.size() != excluded.size();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    private Object processCacheEvicts(Collection&lt;CacheOperationContext&gt; contexts, boolean beforeInvocation, @Nullable Object result) {
+&nbsp;        if (contexts.isEmpty()) {
+&nbsp;            return null;
+&nbsp;        } else {
+&nbsp;            List&lt;CacheOperationContext&gt; applicable = contexts.stream().filter((context) -&gt; {
+&nbsp;                CacheOperation patt24890$temp = context.metadata.operation;
+&nbsp;                boolean var10000;
+&nbsp;                if (patt24890$temp instanceof CacheEvictOperation evict) {
+&nbsp;                    if (beforeInvocation == evict.isBeforeInvocation()) {
+&nbsp;                        var10000 = true;
+&nbsp;                        return var10000;
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                var10000 = false;
+&nbsp;                return var10000;
+<b class="nc">&nbsp;            }).toList();</b>
+&nbsp;            if (applicable.isEmpty()) {
+<b class="nc">&nbsp;                return null;</b>
+&nbsp;            } else if (result instanceof CompletableFuture) {
+&nbsp;                CompletableFuture&lt;?&gt; future = (CompletableFuture)result;
+&nbsp;                return future.whenComplete((value, ex) -&gt; {
+<b class="nc">&nbsp;                    if (ex == null) {</b>
+&nbsp;                        this.performCacheEvicts(applicable, value);
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                });</b>
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                if (this.reactiveCachingHandler != null) {</b>
+&nbsp;                    Object returnValue = this.reactiveCachingHandler.processCacheEvicts(applicable, result);
+<b class="nc">&nbsp;                    if (returnValue != CacheAspectSupport.ReactiveCachingHandler.NOT_HANDLED) {</b>
+&nbsp;                        return returnValue;
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                this.performCacheEvicts(applicable, result);</b>
+<b class="nc">&nbsp;                return null;</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private void performCacheEvicts(List&lt;CacheOperationContext&gt; contexts, @Nullable Object result) {
+<b class="nc">&nbsp;        for(CacheOperationContext context : contexts) {</b>
+<b class="nc">&nbsp;            CacheEvictOperation operation = (CacheEvictOperation)context.metadata.operation;</b>
+<b class="nc">&nbsp;            if (this.isConditionPassing(context, result)) {</b>
+<b class="nc">&nbsp;                Object key = context.getGeneratedKey();</b>
+&nbsp;
+&nbsp;                for(Cache cache : context.getCaches()) {
+&nbsp;                    if (operation.isCacheWide()) {
+<b class="nc">&nbsp;                        this.logInvalidating(context, operation, (Object)null);</b>
+&nbsp;                        this.doClear(cache, operation.isBeforeInvocation());
+&nbsp;                    } else {
+&nbsp;                        if (key == null) {
+&nbsp;                            key = this.generateKey(context, result);
+<b class="nc">&nbsp;                        }</b>
+&nbsp;
+<b class="nc">&nbsp;                        this.logInvalidating(context, operation, key);</b>
+&nbsp;                        this.doEvict(cache, key, operation.isBeforeInvocation());
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private void logInvalidating(CacheOperationContext context, CacheEvictOperation operation, @Nullable Object key) {
+&nbsp;        if (this.logger.isTraceEnabled()) {
+&nbsp;            String var10001 = key != null ? &quot;cache key [&quot; + String.valueOf(key) + &quot;]&quot; : &quot;entire cache&quot;;
+&nbsp;            this.logger.trace(&quot;Invalidating &quot; + var10001 + &quot; for operation &quot; + String.valueOf(operation) + &quot; on method &quot; + String.valueOf(context.metadata.method));
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private void collectPutRequests(Collection&lt;CacheOperationContext&gt; contexts, @Nullable Object result, Collection&lt;CachePutRequest&gt; putRequests) {</b>
+<b class="nc">&nbsp;        for(CacheOperationContext context : contexts) {</b>
+<b class="nc">&nbsp;            if (this.isConditionPassing(context, result)) {</b>
+<b class="nc">&nbsp;                putRequests.add(new CachePutRequest(context));</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private boolean isConditionPassing(CacheOperationContext context, @Nullable Object result) {
+&nbsp;        boolean passing = context.isConditionPassing(result);
+<b class="nc">&nbsp;        if (!passing &amp;&amp; this.logger.isTraceEnabled()) {</b>
+<b class="nc">&nbsp;            Log var10000 = this.logger;</b>
+&nbsp;            String var10001 = String.valueOf(context.metadata.method);
+&nbsp;            var10000.trace(&quot;Cache condition failed on method &quot; + var10001 + &quot; for operation &quot; + String.valueOf(context.metadata.operation));
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return passing;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private Object generateKey(CacheOperationContext context, @Nullable Object result) {
+&nbsp;        Object key = context.generateKey(result);
+&nbsp;        if (key == null) {
+&nbsp;            throw new IllegalArgumentException(&quot;Null key returned for cache operation [%s]. If you are using named parameters, ensure that the compiler uses the &#39;-parameters&#39; flag.&quot;.formatted(context.metadata.operation));
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            if (this.logger.isTraceEnabled()) {</b>
+<b class="nc">&nbsp;                Log var10000 = this.logger;</b>
+<b class="nc">&nbsp;                String var10001 = String.valueOf(key);</b>
+<b class="nc">&nbsp;                var10000.trace(&quot;Computed cache key &#39;&quot; + var10001 + &quot;&#39; for operation &quot; + String.valueOf(context.metadata.operation));</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            return key;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private class CacheOperationContexts {
+&nbsp;        private final MultiValueMap&lt;Class&lt;? extends CacheOperation&gt;, CacheOperationContext&gt; contexts;
+&nbsp;        private final boolean sync;
+&nbsp;        boolean processed;
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        public CacheOperationContexts(Collection&lt;? extends CacheOperation&gt; operations, Method method, Object[] args, Object target, Class&lt;?&gt; targetClass) {</b>
+&nbsp;            this.contexts = new LinkedMultiValueMap(operations.size());
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            for(CacheOperation op : operations) {</b>
+&nbsp;                this.contexts.add(op.getClass(), CacheAspectSupport.this.getOperationContext(op, method, args, target, targetClass));
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            this.sync = this.determineSyncFlag(method);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        public Collection&lt;CacheOperationContext&gt; get(Class&lt;? extends CacheOperation&gt; operationClass) {
+<b class="nc">&nbsp;            Collection&lt;CacheOperationContext&gt; result = (Collection)this.contexts.get(operationClass);</b>
+&nbsp;            return (Collection&lt;CacheOperationContext&gt;)(result != null ? result : Collections.emptyList());
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean isSynchronized() {
+&nbsp;            return this.sync;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        private boolean determineSyncFlag(Method method) {</b>
+<b class="nc">&nbsp;            List&lt;CacheOperationContext&gt; cacheableContexts = (List)this.contexts.get(CacheableOperation.class);</b>
+&nbsp;            if (cacheableContexts == null) {
+&nbsp;                return false;
+&nbsp;            } else {
+&nbsp;                boolean syncEnabled = false;
+&nbsp;
+<b class="nc">&nbsp;                for(CacheOperationContext context : cacheableContexts) {</b>
+&nbsp;                    CacheOperation var7 = context.getOperation();
+<b class="nc">&nbsp;                    if (var7 instanceof CacheableOperation) {</b>
+<b class="nc">&nbsp;                        CacheableOperation cacheable = (CacheableOperation)var7;</b>
+&nbsp;                        if (cacheable.isSync()) {
+&nbsp;                            syncEnabled = true;
+&nbsp;                            break;
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                if (syncEnabled) {
+<b class="nc">&nbsp;                    if (this.contexts.size() &gt; 1) {</b>
+<b class="nc">&nbsp;                        throw new IllegalStateException(&quot;A sync=true operation cannot be combined with other cache operations on &#39;&quot; + String.valueOf(method) + &quot;&#39;&quot;);</b>
+<b class="nc">&nbsp;                    } else if (cacheableContexts.size() &gt; 1) {</b>
+&nbsp;                        throw new IllegalStateException(&quot;Only one sync=true operation is allowed on &#39;&quot; + String.valueOf(method) + &quot;&#39;&quot;);
+&nbsp;                    } else {
+&nbsp;                        CacheOperationContext cacheableContext = (CacheOperationContext)cacheableContexts.iterator().next();
+<b class="nc">&nbsp;                        CacheOperation operation = cacheableContext.getOperation();</b>
+&nbsp;                        if (cacheableContext.getCaches().size() &gt; 1) {
+&nbsp;                            throw new IllegalStateException(&quot;A sync=true operation is restricted to a single cache on &#39;&quot; + String.valueOf(operation) + &quot;&#39;&quot;);
+<b class="nc">&nbsp;                        } else {</b>
+<b class="nc">&nbsp;                            if (operation instanceof CacheableOperation) {</b>
+<b class="nc">&nbsp;                                CacheableOperation cacheable = (CacheableOperation)operation;</b>
+<b class="nc">&nbsp;                                if (StringUtils.hasText(cacheable.getUnless())) {</b>
+&nbsp;                                    throw new IllegalStateException(&quot;A sync=true operation does not support the unless attribute on &#39;&quot; + String.valueOf(operation) + &quot;&#39;&quot;);
+&nbsp;                                }
+&nbsp;                            }
+&nbsp;
+<b class="nc">&nbsp;                            return true;</b>
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                } else {</b>
+&nbsp;                    return false;
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected static class CacheOperationMetadata {
+&nbsp;        private final CacheOperation operation;
+&nbsp;        private final Method method;
+&nbsp;        private final Class&lt;?&gt; targetClass;
+<b class="nc">&nbsp;        private final Method targetMethod;</b>
+&nbsp;        private final AnnotatedElementKey methodKey;
+&nbsp;        private final KeyGenerator keyGenerator;
+&nbsp;        private final CacheResolver cacheResolver;
+&nbsp;
+<b class="nc">&nbsp;        public CacheOperationMetadata(CacheOperation operation, Method method, Class&lt;?&gt; targetClass, KeyGenerator keyGenerator, CacheResolver cacheResolver) {</b>
+<b class="nc">&nbsp;            this.operation = operation;</b>
+<b class="nc">&nbsp;            this.method = BridgeMethodResolver.findBridgedMethod(method);</b>
+&nbsp;            this.targetClass = targetClass;
+<b class="nc">&nbsp;            this.targetMethod = !Proxy.isProxyClass(targetClass) ? AopUtils.getMostSpecificMethod(method, targetClass) : this.method;</b>
+&nbsp;            this.methodKey = new AnnotatedElementKey(this.targetMethod, targetClass);
+&nbsp;            this.keyGenerator = keyGenerator;
+&nbsp;            this.cacheResolver = cacheResolver;
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected class CacheOperationContext implements CacheOperationInvocationContext&lt;CacheOperation&gt; {
+&nbsp;        private final CacheOperationMetadata metadata;
+&nbsp;        private final Object[] args;
+<b class="nc">&nbsp;        private final Object target;</b>
+<b class="nc">&nbsp;        private final Collection&lt;? extends Cache&gt; caches;</b>
+<b class="nc">&nbsp;        private final Collection&lt;String&gt; cacheNames;</b>
+&nbsp;        @Nullable
+<b class="nc">&nbsp;        private Boolean conditionPassing;</b>
+<b class="nc">&nbsp;        @Nullable</b>
+&nbsp;        private Object key;
+&nbsp;
+&nbsp;        public CacheOperationContext(CacheOperationMetadata metadata, Object[] args, Object target) {
+&nbsp;            this.metadata = metadata;
+&nbsp;            this.args = this.extractArgs(metadata.method, args);
+&nbsp;            this.target = target;
+&nbsp;            this.caches = CacheAspectSupport.this.getCaches(this, metadata.cacheResolver);
+<b class="nc">&nbsp;            this.cacheNames = this.prepareCacheNames(this.caches);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public CacheOperation getOperation() {
+&nbsp;            return this.metadata.operation;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        public Object getTarget() {</b>
+<b class="nc">&nbsp;            return this.target;</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        public Method getMethod() {</b>
+<b class="nc">&nbsp;            return this.metadata.method;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        public Object[] getArgs() {
+&nbsp;            return this.args;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        private Object[] extractArgs(Method method, Object[] args) {</b>
+<b class="nc">&nbsp;            if (!method.isVarArgs()) {</b>
+&nbsp;                return args;
+&nbsp;            } else {
+&nbsp;                Object[] varArgs = ObjectUtils.toObjectArray(args[args.length - 1]);
+<b class="nc">&nbsp;                Object[] combinedArgs = new Object[args.length - 1 + varArgs.length];</b>
+<b class="nc">&nbsp;                System.arraycopy(args, 0, combinedArgs, 0, args.length - 1);</b>
+<b class="nc">&nbsp;                System.arraycopy(varArgs, 0, combinedArgs, args.length - 1, varArgs.length);</b>
+<b class="nc">&nbsp;                return combinedArgs;</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        protected boolean isConditionPassing(@Nullable Object result) {</b>
+&nbsp;            if (this.conditionPassing == null) {
+&nbsp;                if (StringUtils.hasText(this.metadata.operation.getCondition())) {
+&nbsp;                    EvaluationContext evaluationContext = this.createEvaluationContext(result);
+<b class="nc">&nbsp;                    this.conditionPassing = CacheAspectSupport.this.evaluator.condition(this.metadata.operation.getCondition(), this.metadata.methodKey, evaluationContext);</b>
+<b class="nc">&nbsp;                } else {</b>
+<b class="nc">&nbsp;                    this.conditionPassing = true;</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            return this.conditionPassing;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        protected boolean canPutToCache(@Nullable Object value) {
+<b class="nc">&nbsp;            String unless = &quot;&quot;;</b>
+<b class="nc">&nbsp;            CacheOperation var5 = this.metadata.operation;</b>
+&nbsp;            if (var5 instanceof CacheableOperation cacheableOperation) {
+<b class="nc">&nbsp;                unless = cacheableOperation.getUnless();</b>
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                var5 = this.metadata.operation;
+&nbsp;                if (var5 instanceof CachePutOperation cachePutOperation) {
+&nbsp;                    unless = cachePutOperation.getUnless();
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            if (StringUtils.hasText(unless)) {
+<b class="nc">&nbsp;                EvaluationContext evaluationContext = this.createEvaluationContext(value);</b>
+<b class="nc">&nbsp;                return !CacheAspectSupport.this.evaluator.unless(unless, this.metadata.methodKey, evaluationContext);</b>
+&nbsp;            } else {
+&nbsp;                return true;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Nullable
+&nbsp;        protected Object generateKey(@Nullable Object result) {
+&nbsp;            if (StringUtils.hasText(this.metadata.operation.getKey())) {
+&nbsp;                EvaluationContext evaluationContext = this.createEvaluationContext(result);
+&nbsp;                this.key = CacheAspectSupport.this.evaluator.key(this.metadata.operation.getKey(), this.metadata.methodKey, evaluationContext);
+&nbsp;            } else {
+&nbsp;                this.key = this.metadata.keyGenerator.generate(this.target, this.metadata.method, this.args);
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            return this.key;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        @Nullable
+&nbsp;        protected Object getGeneratedKey() {
+&nbsp;            return this.key;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        private EvaluationContext createEvaluationContext(@Nullable Object result) {</b>
+<b class="nc">&nbsp;            return CacheAspectSupport.this.evaluator.createEvaluationContext(this.caches, this.metadata.method, this.args, this.target, this.metadata.targetClass, this.metadata.targetMethod, result);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        protected Collection&lt;? extends Cache&gt; getCaches() {
+<b class="nc">&nbsp;            return this.caches;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        protected Collection&lt;String&gt; getCacheNames() {
+<b class="nc">&nbsp;            return this.cacheNames;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        private Collection&lt;String&gt; prepareCacheNames(Collection&lt;? extends Cache&gt; caches) {
+&nbsp;            Collection&lt;String&gt; names = new ArrayList(caches.size());
+<b class="nc">&nbsp;</b>
+&nbsp;            for(Cache cache : caches) {
+<b class="nc">&nbsp;                names.add(cache.getName());</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            return names;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static final class CacheOperationCacheKey implements Comparable&lt;CacheOperationCacheKey&gt; {
+&nbsp;        private final CacheOperation cacheOperation;
+&nbsp;        private final AnnotatedElementKey methodCacheKey;
+&nbsp;
+&nbsp;        private CacheOperationCacheKey(CacheOperation cacheOperation, Method method, Class&lt;?&gt; targetClass) {
+&nbsp;            this.cacheOperation = cacheOperation;
+&nbsp;            this.methodCacheKey = new AnnotatedElementKey(method, targetClass);
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean equals(@Nullable Object other) {
+&nbsp;            boolean var10000;
+&nbsp;            if (this != other) {
+&nbsp;                label28: {
+&nbsp;                    if (other instanceof CacheOperationCacheKey) {
+&nbsp;                        CacheOperationCacheKey that = (CacheOperationCacheKey)other;
+&nbsp;                        if (this.cacheOperation.equals(that.cacheOperation) &amp;&amp; this.methodCacheKey.equals(that.methodCacheKey)) {
+&nbsp;                            break label28;
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+&nbsp;                    var10000 = false;
+&nbsp;                    return var10000;
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            var10000 = true;
+&nbsp;            return var10000;
+&nbsp;        }
+&nbsp;
+&nbsp;        public int hashCode() {
+&nbsp;            return this.cacheOperation.hashCode() * 31 + this.methodCacheKey.hashCode();
+&nbsp;        }
+&nbsp;
+&nbsp;        public String toString() {
+&nbsp;            String var10000 = String.valueOf(this.cacheOperation);
+&nbsp;            return var10000 + &quot; on &quot; + String.valueOf(this.methodCacheKey);
+&nbsp;        }
+&nbsp;
+&nbsp;        public int compareTo(CacheOperationCacheKey other) {
+&nbsp;            int result = this.cacheOperation.getName().compareTo(other.cacheOperation.getName());
+&nbsp;            if (result == 0) {
+&nbsp;                result = this.methodCacheKey.compareTo(other.methodCacheKey);
+&nbsp;            }
+&nbsp;
+&nbsp;            return result;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private class CachePutRequest {
+&nbsp;        private final CacheOperationContext context;
+&nbsp;
+&nbsp;        public CachePutRequest(CacheOperationContext context) {
+&nbsp;            this.context = context;
+&nbsp;        }
+&nbsp;
+&nbsp;        @Nullable
+&nbsp;        public Object apply(@Nullable Object result) {
+&nbsp;            if (result instanceof CompletableFuture&lt;?&gt; future) {
+&nbsp;                return future.whenComplete((value, ex) -&gt; {
+&nbsp;                    if (ex == null) {
+&nbsp;                        this.performCachePut(value);
+&nbsp;                    }
+&nbsp;
+&nbsp;                });
+&nbsp;            } else {
+&nbsp;                if (CacheAspectSupport.this.reactiveCachingHandler != null) {
+&nbsp;                    Object returnValue = CacheAspectSupport.this.reactiveCachingHandler.processPutRequest(this, result);
+&nbsp;                    if (returnValue != CacheAspectSupport.ReactiveCachingHandler.NOT_HANDLED) {
+&nbsp;                        return returnValue;
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                this.performCachePut(result);
+&nbsp;                return null;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        public void performCachePut(@Nullable Object value) {
+&nbsp;            if (this.context.canPutToCache(value)) {
+&nbsp;                Object key = this.context.getGeneratedKey();
+&nbsp;                if (key == null) {
+&nbsp;                    key = CacheAspectSupport.this.generateKey(this.context, value);
+&nbsp;                }
+&nbsp;
+&nbsp;                if (CacheAspectSupport.this.logger.isTraceEnabled()) {
+&nbsp;                    Log var10000 = CacheAspectSupport.this.logger;
+&nbsp;                    String var10001 = String.valueOf(key);
+&nbsp;                    var10000.trace(&quot;Creating cache entry for key &#39;&quot; + var10001 + &quot;&#39; in cache(s) &quot; + String.valueOf(this.context.getCacheNames()));
+&nbsp;                }
+&nbsp;
+&nbsp;                for(Cache cache : this.context.getCaches()) {
+&nbsp;                    CacheAspectSupport.this.doPut(cache, key, value);
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private final class CachePutListSubscriber implements Subscriber&lt;Object&gt; {
+&nbsp;        private final CachePutRequest request;
+&nbsp;        private final List&lt;Object&gt; cacheValue = new ArrayList();
+&nbsp;
+&nbsp;        public CachePutListSubscriber(CachePutRequest request) {
+&nbsp;            this.request = request;
+&nbsp;        }
+&nbsp;
+&nbsp;        public void onSubscribe(Subscription s) {
+&nbsp;            s.request(2147483647L);
+&nbsp;        }
+&nbsp;
+&nbsp;        public void onNext(Object o) {
+&nbsp;            this.cacheValue.add(o);
+&nbsp;        }
+&nbsp;
+&nbsp;        public void onError(Throwable t) {
+&nbsp;            this.cacheValue.clear();
+&nbsp;        }
+&nbsp;
+&nbsp;        public void onComplete() {
+&nbsp;            this.request.performCachePut(this.cacheValue);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private class ReactiveCachingHandler {
+&nbsp;        public static final Object NOT_HANDLED = new Object();
+&nbsp;        private final ReactiveAdapterRegistry registry = ReactiveAdapterRegistry.getSharedInstance();
+&nbsp;
+&nbsp;        private ReactiveCachingHandler() {
+&nbsp;        }
+&nbsp;
+&nbsp;        @Nullable
+&nbsp;        public Object executeSynchronized(CacheOperationInvoker invoker, Method method, Cache cache, Object key) {
+&nbsp;            ReactiveAdapter adapter = this.registry.getAdapter(method.getReturnType());
+&nbsp;            if (adapter != null) {
+&nbsp;                return adapter.isMultiValue() ? adapter.fromPublisher(Flux.from(Mono.fromFuture(cache.retrieve(key, () -&gt; Flux.from(adapter.toPublisher(CacheAspectSupport.this.invokeOperation(invoker))).collectList().toFuture()))).flatMap(Flux::fromIterable)) : adapter.fromPublisher(Mono.fromFuture(cache.retrieve(key, () -&gt; Mono.from(adapter.toPublisher(CacheAspectSupport.this.invokeOperation(invoker))).toFuture())));
+&nbsp;            } else {
+&nbsp;                return KotlinDetector.isKotlinReflectPresent() &amp;&amp; KotlinDetector.isSuspendingFunction(method) ? Mono.fromFuture(cache.retrieve(key, () -&gt; {
+&nbsp;                    Mono&lt;?&gt; mono = (Mono)CacheAspectSupport.this.invokeOperation(invoker);
+&nbsp;                    if (mono == null) {
+&nbsp;                        mono = Mono.empty();
+&nbsp;                    }
+&nbsp;
+&nbsp;                    return mono.toFuture();
+&nbsp;                })) : NOT_HANDLED;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Nullable
+&nbsp;        public Object processCacheEvicts(List&lt;CacheOperationContext&gt; contexts, @Nullable Object result) {
+&nbsp;            ReactiveAdapter adapter = result != null ? this.registry.getAdapter(result.getClass()) : null;
+&nbsp;            return adapter != null ? adapter.fromPublisher(Mono.from(adapter.toPublisher(result)).doOnSuccess((value) -&gt; CacheAspectSupport.this.performCacheEvicts(contexts, value))) : NOT_HANDLED;
+&nbsp;        }
+&nbsp;
+&nbsp;        @Nullable
+&nbsp;        public Object findInCaches(CacheOperationContext context, Cache cache, Object key, CacheOperationInvoker invoker, Method method, CacheOperationContexts contexts) {
+&nbsp;            ReactiveAdapter adapter = this.registry.getAdapter(context.getMethod().getReturnType());
+&nbsp;            if (adapter != null) {
+&nbsp;                CompletableFuture&lt;?&gt; cachedFuture = CacheAspectSupport.this.doRetrieve(cache, key);
+&nbsp;                if (cachedFuture == null) {
+&nbsp;                    return null;
+&nbsp;                } else {
+&nbsp;                    return adapter.isMultiValue() ? adapter.fromPublisher(Flux.from(Mono.fromFuture(cachedFuture)).switchIfEmpty(Flux.defer(() -&gt; (Flux)CacheAspectSupport.this.evaluate((Object)null, invoker, method, contexts))).flatMap((v) -&gt; CacheAspectSupport.this.evaluate(this.valueToFlux(v, contexts), invoker, method, contexts)).onErrorResume(RuntimeException.class, (ex) -&gt; {
+&nbsp;                        try {
+&nbsp;                            CacheAspectSupport.this.getErrorHandler().handleCacheGetError((RuntimeException)ex, cache, key);
+&nbsp;                            Object e = CacheAspectSupport.this.evaluate((Object)null, invoker, method, contexts);
+&nbsp;                            return e != null ? e : Flux.error((RuntimeException)ex);
+&nbsp;                        } catch (RuntimeException exception) {
+&nbsp;                            return Flux.error(exception);
+&nbsp;                        }
+&nbsp;                    })) : adapter.fromPublisher(Mono.fromFuture(cachedFuture).switchIfEmpty(Mono.defer(() -&gt; (Mono)CacheAspectSupport.this.evaluate((Object)null, invoker, method, contexts))).flatMap((v) -&gt; CacheAspectSupport.this.evaluate(Mono.justOrEmpty(CacheAspectSupport.this.unwrapCacheValue(v)), invoker, method, contexts)).onErrorResume(RuntimeException.class, (ex) -&gt; {
+&nbsp;                        try {
+&nbsp;                            CacheAspectSupport.this.getErrorHandler().handleCacheGetError((RuntimeException)ex, cache, key);
+&nbsp;                            Object e = CacheAspectSupport.this.evaluate((Object)null, invoker, method, contexts);
+&nbsp;                            return e != null ? e : Mono.error((RuntimeException)ex);
+&nbsp;                        } catch (RuntimeException exception) {
+&nbsp;                            return Mono.error(exception);
+&nbsp;                        }
+&nbsp;                    }));
+&nbsp;                }
+&nbsp;            } else {
+&nbsp;                return NOT_HANDLED;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        private Flux&lt;?&gt; valueToFlux(Object value, CacheOperationContexts contexts) {
+&nbsp;            Object data = CacheAspectSupport.this.unwrapCacheValue(value);
+&nbsp;            Flux var10000;
+&nbsp;            if (!contexts.processed &amp;&amp; data instanceof Iterable&lt;?&gt; iterable) {
+&nbsp;                var10000 = Flux.fromIterable(iterable);
+&nbsp;            } else {
+&nbsp;                var10000 = data != null ? Flux.just(data) : Flux.empty();
+&nbsp;            }
+&nbsp;
+&nbsp;            return var10000;
+&nbsp;        }
+&nbsp;
+&nbsp;        @Nullable
+&nbsp;        public Object processPutRequest(CachePutRequest request, @Nullable Object result) {
+&nbsp;            ReactiveAdapter adapter = result != null ? this.registry.getAdapter(result.getClass()) : null;
+&nbsp;            if (adapter != null) {
+&nbsp;                if (adapter.isMultiValue()) {
+&nbsp;                    Flux&lt;?&gt; source = Flux.from(adapter.toPublisher(result)).publish().refCount(2);
+&nbsp;                    source.subscribe(CacheAspectSupport.this.new CachePutListSubscriber(request));
+&nbsp;                    return adapter.fromPublisher(source);
+&nbsp;                } else {
+&nbsp;                    Mono var10001 = Mono.from(adapter.toPublisher(result));
+&nbsp;                    Objects.requireNonNull(request);
+&nbsp;                    return adapter.fromPublisher(var10001.doOnSuccess(request::performCachePut));
+&nbsp;                }
+&nbsp;            } else {
+&nbsp;                return NOT_HANDLED;
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:58</div>
+</div>
+</body>
+</html>

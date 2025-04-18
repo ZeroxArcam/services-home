@@ -1,0 +1,333 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > AutowireUtils</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.beans.factory.support</a>
+</div>
+
+<h1>Coverage Summary for Class: AutowireUtils (org.springframework.beans.factory.support)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AutowireUtils</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    40%
+  </span>
+  <span class="absValue">
+    (4/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    3.2%
+  </span>
+  <span class="absValue">
+    (2/62)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    8.5%
+  </span>
+  <span class="absValue">
+    (6/71)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.beans.factory.support;
+&nbsp;
+&nbsp;import java.beans.PropertyDescriptor;
+&nbsp;import java.io.Serializable;
+&nbsp;import java.lang.reflect.Constructor;
+&nbsp;import java.lang.reflect.Executable;
+&nbsp;import java.lang.reflect.InvocationHandler;
+&nbsp;import java.lang.reflect.InvocationTargetException;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;import java.lang.reflect.Modifier;
+&nbsp;import java.lang.reflect.ParameterizedType;
+&nbsp;import java.lang.reflect.Proxy;
+&nbsp;import java.lang.reflect.Type;
+&nbsp;import java.lang.reflect.TypeVariable;
+&nbsp;import java.util.Arrays;
+&nbsp;import java.util.Comparator;
+&nbsp;import java.util.Set;
+&nbsp;import org.springframework.beans.BeanMetadataElement;
+&nbsp;import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+&nbsp;import org.springframework.beans.factory.ObjectFactory;
+&nbsp;import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+&nbsp;import org.springframework.beans.factory.config.TypedStringValue;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.ClassUtils;
+&nbsp;
+&nbsp;abstract class AutowireUtils {
+&nbsp;    public static final Comparator&lt;Executable&gt; EXECUTABLE_COMPARATOR = (e1, e2) -&gt; {
+&nbsp;        int result = Boolean.compare(Modifier.isPublic(e2.getModifiers()), Modifier.isPublic(e1.getModifiers()));
+&nbsp;        return result != 0 ? result : Integer.compare(e2.getParameterCount(), e1.getParameterCount());
+&nbsp;    };
+&nbsp;
+&nbsp;    AutowireUtils() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void sortConstructors(Constructor&lt;?&gt;[] constructors) {
+&nbsp;        Arrays.sort(constructors, EXECUTABLE_COMPARATOR);
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void sortFactoryMethods(Method[] factoryMethods) {
+&nbsp;        Arrays.sort(factoryMethods, EXECUTABLE_COMPARATOR);
+&nbsp;    }
+&nbsp;
+&nbsp;    public static boolean isExcludedFromDependencyCheck(PropertyDescriptor pd) {
+&nbsp;        Method wm = pd.getWriteMethod();
+&nbsp;        if (wm == null) {
+&nbsp;            return false;
+&nbsp;        } else if (!wm.getDeclaringClass().getName().contains(&quot;$$&quot;)) {
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        } else {
+<b class="fc">&nbsp;            Class&lt;?&gt; superclass = wm.getDeclaringClass().getSuperclass();</b>
+<b class="fc">&nbsp;            return !ClassUtils.hasMethod(superclass, wm);</b>
+<b class="pc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static boolean isSetterDefinedInInterface(PropertyDescriptor pd, Set&lt;Class&lt;?&gt;&gt; interfaces) {
+&nbsp;        Method setter = pd.getWriteMethod();
+&nbsp;        if (setter != null) {
+&nbsp;            Class&lt;?&gt; targetClass = setter.getDeclaringClass();
+&nbsp;
+&nbsp;            for(Class&lt;?&gt; ifc : interfaces) {
+&nbsp;                if (ifc.isAssignableFrom(targetClass) &amp;&amp; ClassUtils.hasMethod(ifc, setter)) {
+&nbsp;                    return true;
+&nbsp;                }
+<b class="fc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        return false;
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Object resolveAutowiringValue(Object autowiringValue, Class&lt;?&gt; requiredType) {
+&nbsp;        if (autowiringValue instanceof ObjectFactory&lt;?&gt; factory) {
+&nbsp;            if (!requiredType.isInstance(autowiringValue)) {
+&nbsp;                if (!(autowiringValue instanceof Serializable) || !requiredType.isInterface()) {
+&nbsp;                    return factory.getObject();
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                autowiringValue = Proxy.newProxyInstance(requiredType.getClassLoader(), new Class[]{requiredType}, new ObjectFactoryDelegatingInvocationHandler(factory));
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return autowiringValue;
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Class&lt;?&gt; resolveReturnTypeForFactoryMethod(Method method, Object[] args, @Nullable ClassLoader classLoader) {
+<b class="nc">&nbsp;        Assert.notNull(method, &quot;Method must not be null&quot;);</b>
+<b class="nc">&nbsp;        Assert.notNull(args, &quot;Argument array must not be null&quot;);</b>
+<b class="nc">&nbsp;        TypeVariable&lt;Method&gt;[] declaredTypeVariables = method.getTypeParameters();</b>
+&nbsp;        Type genericReturnType = method.getGenericReturnType();
+<b class="nc">&nbsp;        Type[] methodParameterTypes = method.getGenericParameterTypes();</b>
+&nbsp;        Assert.isTrue(args.length == methodParameterTypes.length, &quot;Argument array does not match parameter count&quot;);
+<b class="nc">&nbsp;        boolean locallyDeclaredTypeVariableMatchesReturnType = false;</b>
+&nbsp;
+&nbsp;        for(TypeVariable&lt;Method&gt; currentTypeVariable : declaredTypeVariables) {
+&nbsp;            if (currentTypeVariable.equals(genericReturnType)) {
+<b class="nc">&nbsp;                locallyDeclaredTypeVariableMatchesReturnType = true;</b>
+<b class="nc">&nbsp;                break;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        if (locallyDeclaredTypeVariableMatchesReturnType) {
+&nbsp;            for(int i = 0; i &lt; methodParameterTypes.length; ++i) {
+&nbsp;                Type methodParameterType = methodParameterTypes[i];
+&nbsp;                Object arg = args[i];
+&nbsp;                if (methodParameterType.equals(genericReturnType)) {
+&nbsp;                    if (arg instanceof TypedStringValue) {
+&nbsp;                        TypedStringValue typedValue = (TypedStringValue)arg;
+<b class="nc">&nbsp;                        if (typedValue.hasTargetType()) {</b>
+<b class="nc">&nbsp;                            return typedValue.getTargetType();</b>
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                        try {</b>
+<b class="nc">&nbsp;                            Class&lt;?&gt; resolvedType = typedValue.resolveTargetType(classLoader);</b>
+&nbsp;                            if (resolvedType != null) {
+&nbsp;                                return resolvedType;
+&nbsp;                            }
+<b class="nc">&nbsp;                        } catch (ClassNotFoundException ex) {</b>
+&nbsp;                            throw new IllegalStateException(&quot;Failed to resolve value type [&quot; + typedValue.getTargetTypeName() + &quot;] for factory method argument&quot;, ex);
+&nbsp;                        }
+&nbsp;                    } else if (arg != null &amp;&amp; !(arg instanceof BeanMetadataElement)) {
+&nbsp;                        return arg.getClass();
+&nbsp;                    }
+&nbsp;
+&nbsp;                    return method.getReturnType();
+&nbsp;                }
+&nbsp;
+&nbsp;                if (methodParameterType instanceof ParameterizedType) {
+<b class="pc">&nbsp;                    ParameterizedType parameterizedType = (ParameterizedType)methodParameterType;</b>
+<b class="nc">&nbsp;                    Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                    for(Type typeArg : actualTypeArguments) {
+&nbsp;                        if (typeArg.equals(genericReturnType)) {
+&nbsp;                            if (arg instanceof Class) {
+<b class="nc">&nbsp;                                Class&lt;?&gt; clazz = (Class)arg;</b>
+&nbsp;                                return clazz;
+&nbsp;                            }
+<b class="fc">&nbsp;</b>
+&nbsp;                            String className = null;
+&nbsp;                            if (arg instanceof String) {
+&nbsp;                                String name = (String)arg;
+&nbsp;                                className = name;
+&nbsp;                            } else if (arg instanceof TypedStringValue) {
+&nbsp;                                TypedStringValue typedValue = (TypedStringValue)arg;
+&nbsp;                                String targetTypeName = typedValue.getTargetTypeName();
+&nbsp;                                if (targetTypeName == null || Class.class.getName().equals(targetTypeName)) {
+&nbsp;                                    className = typedValue.getValue();
+&nbsp;                                }
+&nbsp;                            }
+&nbsp;
+&nbsp;                            if (className != null) {
+&nbsp;                                try {
+&nbsp;                                    return ClassUtils.forName(className, classLoader);
+&nbsp;                                } catch (ClassNotFoundException ex) {
+&nbsp;                                    throw new IllegalStateException(&quot;Could not resolve class name [&quot; + String.valueOf(arg) + &quot;] for factory method argument&quot;, ex);
+&nbsp;                                }
+&nbsp;                            }
+&nbsp;
+&nbsp;                            return method.getReturnType();
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return method.getReturnType();
+&nbsp;    }
+&nbsp;
+&nbsp;    public static boolean isAutowireCandidate(ConfigurableBeanFactory beanFactory, String beanName) {
+&nbsp;        try {
+&nbsp;            return beanFactory.getMergedBeanDefinition(beanName).isAutowireCandidate();
+&nbsp;        } catch (NoSuchBeanDefinitionException var3) {
+&nbsp;            return true;
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private static class ObjectFactoryDelegatingInvocationHandler implements InvocationHandler, Serializable {
+<b class="nc">&nbsp;        private final ObjectFactory&lt;?&gt; objectFactory;</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        ObjectFactoryDelegatingInvocationHandler(ObjectFactory&lt;?&gt; objectFactory) {</b>
+<b class="nc">&nbsp;            this.objectFactory = objectFactory;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+<b class="nc">&nbsp;            Object var10000;</b>
+<b class="nc">&nbsp;            switch (method.getName()) {</b>
+<b class="nc">&nbsp;                case &quot;equals&quot;:</b>
+<b class="nc">&nbsp;                    Boolean var10 = proxy == args[0];</b>
+&nbsp;                    var10000 = var10;
+&nbsp;                    break;
+&nbsp;                case &quot;hashCode&quot;:
+&nbsp;                    Integer var9 = System.identityHashCode(proxy);
+<b class="nc">&nbsp;                    var10000 = var9;</b>
+<b class="nc">&nbsp;                    break;</b>
+<b class="nc">&nbsp;                case &quot;toString&quot;:</b>
+<b class="nc">&nbsp;                    String var6 = this.objectFactory.toString();</b>
+<b class="nc">&nbsp;                    var10000 = var6;</b>
+<b class="nc">&nbsp;                    break;</b>
+<b class="nc">&nbsp;                default:</b>
+<b class="nc">&nbsp;                    Object var11;</b>
+&nbsp;                    try {
+&nbsp;                        var11 = method.invoke(this.objectFactory.getObject(), args);
+<b class="nc">&nbsp;                    } catch (InvocationTargetException ex) {</b>
+<b class="nc">&nbsp;                        throw ex.getTargetException();</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;
+&nbsp;                    var10000 = var11;
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            return var10000;</b>
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:58</div>
+</div>
+</body>
+</html>

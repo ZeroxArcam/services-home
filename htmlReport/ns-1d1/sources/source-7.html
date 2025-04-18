@@ -1,0 +1,214 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > MutationGroupBuilder</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.sql.model.ast.builder</a>
+</div>
+
+<h1>Coverage Summary for Class: MutationGroupBuilder (org.hibernate.sql.model.ast.builder)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MutationGroupBuilder</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    54.5%
+  </span>
+  <span class="absValue">
+    (6/11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    21.4%
+  </span>
+  <span class="absValue">
+    (3/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    43.9%
+  </span>
+  <span class="absValue">
+    (18/41)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.sql.model.ast.builder;
+&nbsp;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.LinkedHashMap;
+&nbsp;import java.util.Locale;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.function.Consumer;
+&nbsp;import org.hibernate.metamodel.mapping.SelectableConsumer;
+&nbsp;import org.hibernate.metamodel.mapping.SelectableMapping;
+&nbsp;import org.hibernate.persister.entity.AbstractEntityPersister;
+&nbsp;import org.hibernate.persister.entity.mutation.EntityMutationTarget;
+&nbsp;import org.hibernate.sql.model.MutationType;
+&nbsp;import org.hibernate.sql.model.ast.MutationGroup;
+&nbsp;import org.hibernate.sql.model.ast.TableMutation;
+&nbsp;import org.hibernate.sql.model.internal.MutationGroupNone;
+&nbsp;import org.hibernate.sql.model.internal.MutationGroupSingle;
+&nbsp;import org.hibernate.sql.model.internal.MutationGroupStandard;
+&nbsp;
+&nbsp;public class MutationGroupBuilder implements SelectableConsumer {
+&nbsp;    private final MutationType mutationType;
+&nbsp;    private final EntityMutationTarget mutationTarget;
+&nbsp;    private final Map&lt;String, TableMutationBuilder&lt;?&gt;&gt; tableMutationBuilderMap;
+&nbsp;
+&nbsp;    public MutationGroupBuilder(MutationType mutationType, EntityMutationTarget mutationTarget) {
+&nbsp;        this.mutationType = mutationType;
+&nbsp;        this.mutationTarget = mutationTarget;
+&nbsp;        this.tableMutationBuilderMap = new LinkedHashMap();
+&nbsp;    }
+&nbsp;
+&nbsp;    public MutationType getMutationType() {
+&nbsp;        return this.mutationType;
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public EntityMutationTarget getMutationTarget() {</b>
+<b class="fc">&nbsp;        return this.mutationTarget;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;B extends TableMutationBuilder&lt;?&gt;&gt; B findTableDetailsBuilder(String name) {
+<b class="nc">&nbsp;        return (B)(this.tableMutationBuilderMap.get(name));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;B extends TableMutationBuilder&lt;?&gt;&gt; B getTableDetailsBuilder(String name) {
+<b class="nc">&nbsp;        B builder = this.findTableDetailsBuilder(name);</b>
+&nbsp;        if (builder == null) {
+&nbsp;            throw new RuntimeException(&quot;Expecting already existing TableMutationBuilder : &quot; + name);
+&nbsp;        } else {
+&nbsp;            return builder;
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void addTableDetailsBuilder(TableMutationBuilder&lt;?&gt; builder) {
+<b class="nc">&nbsp;        this.tableMutationBuilderMap.put(builder.getMutatingTable().getTableName(), builder);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public void forEachTableMutationBuilder(Consumer&lt;TableMutationBuilder&lt;?&gt;&gt; consumer) {
+&nbsp;        this.tableMutationBuilderMap.forEach((name, mutationBuilder) -&gt; consumer.accept(mutationBuilder));
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void accept(int selectionIndex, SelectableMapping selectableMapping) {
+&nbsp;        AbstractEntityPersister entityPersister = (AbstractEntityPersister)this.mutationTarget.getTargetPart().getEntityPersister();
+&nbsp;        String tableNameForMutation = entityPersister.physicalTableNameForMutation(selectableMapping);
+<b class="fc">&nbsp;        ColumnValuesTableMutationBuilder mutationBuilder = (ColumnValuesTableMutationBuilder)this.findTableDetailsBuilder(tableNameForMutation);</b>
+&nbsp;        mutationBuilder.addValueColumn(selectableMapping);
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public MutationGroup buildMutationGroup() {</b>
+&nbsp;        if (this.tableMutationBuilderMap.isEmpty()) {
+&nbsp;            throw new IllegalStateException(String.format(Locale.ROOT, &quot;Mutation group contained no table mutations - %s : `%s`&quot;, this.mutationType, this.mutationTarget.getNavigableRole().getFullPath()));
+&nbsp;        } else if (this.tableMutationBuilderMap.size() == 1) {
+&nbsp;            TableMutationBuilder&lt;?&gt; tableMutationBuilder = (TableMutationBuilder)((Map.Entry)this.tableMutationBuilderMap.entrySet().iterator().next()).getValue();
+<b class="fc">&nbsp;            TableMutation&lt;?&gt; mutation = tableMutationBuilder.buildMutation();</b>
+<b class="fc">&nbsp;            return (MutationGroup)(mutation == null ? new MutationGroupNone(this.mutationType, this.mutationTarget) : new MutationGroupSingle(this.mutationType, this.mutationTarget, mutation));</b>
+<b class="fc">&nbsp;        } else {</b>
+<b class="fc">&nbsp;            ArrayList&lt;TableMutation&lt;?&gt;&gt; tableMutations = new ArrayList(this.tableMutationBuilderMap.size());</b>
+<b class="fc">&nbsp;            this.tableMutationBuilderMap.forEach((name, tableDetailsBuilder) -&gt; {</b>
+&nbsp;                TableMutation&lt;?&gt; tableMutation = tableDetailsBuilder.buildMutation();
+&nbsp;                if (tableMutation != null) {
+&nbsp;                    tableMutations.add(tableMutation);
+<b class="pc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            });</b>
+&nbsp;            if (tableMutations.isEmpty()) {
+&nbsp;                return new MutationGroupNone(this.mutationType, this.mutationTarget);
+&nbsp;            } else {
+<b class="nc">&nbsp;                return (MutationGroup)(tableMutations.size() == 1 ? new MutationGroupSingle(this.mutationType, this.mutationTarget, (TableMutation)tableMutations.get(0)) : new MutationGroupStandard(this.mutationType, this.mutationTarget, tableMutations));</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="pc">&nbsp;    public String toString() {</b>
+<b class="fc">&nbsp;        return String.format(Locale.ROOT, &quot;MutationGroupBuilder( %s:`%s` )&quot;, this.mutationType.name(), this.mutationTarget.getNavigableRole().getFullPath());</b>
+<b class="fc">&nbsp;    }</b>
+<b class="pc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
+</div>
+</body>
+</html>

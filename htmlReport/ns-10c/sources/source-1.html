@@ -1,0 +1,263 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ApproximatingTypeEnvironment</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.annotations.common.reflection.java.generics</a>
+</div>
+
+<h1>Coverage Summary for Class: ApproximatingTypeEnvironment (org.hibernate.annotations.common.reflection.java.generics)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ApproximatingTypeEnvironment</td>
+<td class="coverageStat">
+  <span class="percent">
+    60%
+  </span>
+  <span class="absValue">
+    (3/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    25%
+  </span>
+  <span class="absValue">
+    (1/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    54.5%
+  </span>
+  <span class="absValue">
+    (6/11)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ApproximatingTypeEnvironment$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (2/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    9.1%
+  </span>
+  <span class="absValue">
+    (2/22)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    45.5%
+  </span>
+  <span class="absValue">
+    (5/11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    7.1%
+  </span>
+  <span class="absValue">
+    (1/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    24.2%
+  </span>
+  <span class="absValue">
+    (8/33)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.annotations.common.reflection.java.generics;
+&nbsp;
+&nbsp;import java.lang.reflect.Array;
+&nbsp;import java.lang.reflect.GenericArrayType;
+&nbsp;import java.lang.reflect.ParameterizedType;
+&nbsp;import java.lang.reflect.Type;
+&nbsp;import java.lang.reflect.TypeVariable;
+&nbsp;import java.lang.reflect.WildcardType;
+&nbsp;
+&nbsp;final class ApproximatingTypeEnvironment implements TypeEnvironment {
+&nbsp;    ApproximatingTypeEnvironment() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public Type bind(Type type) {
+&nbsp;        Type result = this.fineApproximation(type);
+&nbsp;
+&nbsp;        assert TypeUtils.isResolved(result);
+&nbsp;
+&nbsp;        return result;
+&nbsp;    }
+&nbsp;
+&nbsp;    private Type fineApproximation(Type type) {
+&nbsp;        return (Type)(new TypeSwitch&lt;Type&gt;() {
+&nbsp;            public Type caseWildcardType(WildcardType wildcardType) {
+&nbsp;                return wildcardType;
+&nbsp;            }
+&nbsp;
+&nbsp;            public Type caseClass(Class classType) {
+&nbsp;                return classType;
+&nbsp;            }
+&nbsp;
+&nbsp;            public Type caseGenericArrayType(GenericArrayType genericArrayType) {
+&nbsp;                if (TypeUtils.isResolved(genericArrayType)) {
+&nbsp;                    return genericArrayType;
+&nbsp;                } else {
+&nbsp;                    Type componentType = genericArrayType.getGenericComponentType();
+&nbsp;                    Type boundComponentType = ApproximatingTypeEnvironment.this.bind(componentType);
+&nbsp;                    return boundComponentType instanceof Class ? Array.newInstance((Class)boundComponentType, 0).getClass() : Object[].class;
+<b class="fc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            public Type caseParameterizedType(ParameterizedType parameterizedType) {</b>
+<b class="pc">&nbsp;                if (TypeUtils.isResolved(parameterizedType)) {</b>
+<b class="fc">&nbsp;                    return parameterizedType;</b>
+&nbsp;                } else if (!TypeUtils.isCollection(parameterizedType)) {
+&nbsp;                    return Object.class;
+&nbsp;                } else {
+<b class="fc">&nbsp;                    Type[] typeArguments = parameterizedType.getActualTypeArguments();</b>
+&nbsp;                    Type[] approximatedTypeArguments = new Type[typeArguments.length];
+<b class="nc">&nbsp;</b>
+&nbsp;                    for(int i = 0; i &lt; typeArguments.length; ++i) {
+&nbsp;                        approximatedTypeArguments[i] = ApproximatingTypeEnvironment.this.coarseApproximation(typeArguments[i]);
+&nbsp;                    }
+&nbsp;
+<b class="fc">&nbsp;                    return new ParameterizedTypeImpl(ApproximatingTypeEnvironment.this.bind(parameterizedType.getRawType()), approximatedTypeArguments, parameterizedType.getOwnerType());</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            public Type defaultCase(Type t) {
+<b class="nc">&nbsp;                return ApproximatingTypeEnvironment.this.coarseApproximation(t);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }).doSwitch(type);
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private Type coarseApproximation(Type type) {</b>
+<b class="nc">&nbsp;        Type result = (Type)(new TypeSwitch&lt;Type&gt;() {</b>
+&nbsp;            public Type caseWildcardType(WildcardType wildcardType) {
+&nbsp;                return this.approximateTo(wildcardType.getUpperBounds());
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            public Type caseGenericArrayType(GenericArrayType genericArrayType) {
+&nbsp;                return (Type)(TypeUtils.isResolved(genericArrayType) ? genericArrayType : Object[].class);
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            public Type caseParameterizedType(ParameterizedType parameterizedType) {</b>
+<b class="nc">&nbsp;                return (Type)(TypeUtils.isResolved(parameterizedType) ? parameterizedType : parameterizedType.getRawType());</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            public Type caseTypeVariable(TypeVariable typeVariable) {</b>
+<b class="nc">&nbsp;                return this.approximateTo(typeVariable.getBounds());</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            private Type approximateTo(Type[] bounds) {</b>
+<b class="nc">&nbsp;                return ApproximatingTypeEnvironment.this.coarseApproximation(bounds[0]);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            public Type defaultCase(Type t) {
+&nbsp;                return t;
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }).doSwitch(type);</b>
+&nbsp;
+<b class="nc">&nbsp;        assert TypeUtils.isResolved(result);</b>
+&nbsp;
+&nbsp;        return result;
+&nbsp;    }
+&nbsp;
+&nbsp;    public String toString() {
+<b class="nc">&nbsp;        return &quot;approximated_types&quot;;</b>
+&nbsp;    }
+<b class="fc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:58</div>
+</div>
+</body>
+</html>

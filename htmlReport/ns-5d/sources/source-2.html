@@ -1,0 +1,349 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > HikariDataSource</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.zaxxer.hikari</a>
+</div>
+
+<h1>Coverage Summary for Class: HikariDataSource (com.zaxxer.hikari)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">HikariDataSource</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    27.3%
+  </span>
+  <span class="absValue">
+    (6/22)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    9.4%
+  </span>
+  <span class="absValue">
+    (6/64)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    19.6%
+  </span>
+  <span class="absValue">
+    (19/97)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package com.zaxxer.hikari;
+&nbsp;
+&nbsp;import com.zaxxer.hikari.metrics.MetricsTrackerFactory;
+&nbsp;import com.zaxxer.hikari.pool.HikariPool;
+&nbsp;import java.io.Closeable;
+&nbsp;import java.io.PrintWriter;
+&nbsp;import java.sql.Connection;
+&nbsp;import java.sql.SQLException;
+&nbsp;import java.sql.SQLFeatureNotSupportedException;
+&nbsp;import java.util.concurrent.atomic.AtomicBoolean;
+&nbsp;import javax.sql.DataSource;
+&nbsp;import org.slf4j.Logger;
+&nbsp;import org.slf4j.LoggerFactory;
+&nbsp;
+&nbsp;public class HikariDataSource extends HikariConfig implements DataSource, Closeable {
+&nbsp;    private static final Logger LOGGER = LoggerFactory.getLogger(HikariDataSource.class);
+&nbsp;    private final AtomicBoolean isShutdown = new AtomicBoolean();
+&nbsp;    private final HikariPool fastPathPool;
+&nbsp;    private volatile HikariPool pool;
+&nbsp;
+&nbsp;    public HikariDataSource() {
+&nbsp;        this.fastPathPool = null;
+&nbsp;    }
+&nbsp;
+&nbsp;    public HikariDataSource(HikariConfig configuration) {
+&nbsp;        configuration.validate();
+&nbsp;        configuration.copyStateTo(this);
+&nbsp;        LOGGER.info(&quot;{} - Starting...&quot;, configuration.getPoolName());
+&nbsp;        this.pool = this.fastPathPool = new HikariPool(this);
+&nbsp;        LOGGER.info(&quot;{} - Start completed.&quot;, configuration.getPoolName());
+&nbsp;        this.seal();
+&nbsp;    }
+&nbsp;
+&nbsp;    public Connection getConnection() throws SQLException {
+&nbsp;        if (this.isClosed()) {
+&nbsp;            throw new SQLException(&quot;HikariDataSource &quot; + this + &quot; has been closed.&quot;);
+<b class="fc">&nbsp;        } else if (this.fastPathPool != null) {</b>
+&nbsp;            return this.fastPathPool.getConnection();
+<b class="fc">&nbsp;        } else {</b>
+&nbsp;            HikariPool result = this.pool;
+&nbsp;            if (result == null) {
+&nbsp;                synchronized(this) {
+&nbsp;                    result = this.pool;
+&nbsp;                    if (result == null) {
+&nbsp;                        this.validate();
+&nbsp;                        LOGGER.info(&quot;{} - Starting...&quot;, this.getPoolName());
+&nbsp;
+&nbsp;                        try {
+&nbsp;                            this.pool = result = new HikariPool(this);
+&nbsp;                            this.seal();
+&nbsp;                        } catch (HikariPool.PoolInitializationException pie) {
+&nbsp;                            if (pie.getCause() instanceof SQLException) {
+&nbsp;                                throw (SQLException)pie.getCause();
+&nbsp;                            }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;                            throw pie;</b>
+&nbsp;                        }
+&nbsp;
+&nbsp;                        LOGGER.info(&quot;{} - Start completed.&quot;, this.getPoolName());
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            return result.getConnection();
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public Connection getConnection(String username, String password) throws SQLException {
+&nbsp;        throw new SQLFeatureNotSupportedException();
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public PrintWriter getLogWriter() throws SQLException {</b>
+&nbsp;        HikariPool p = this.pool;
+<b class="nc">&nbsp;        return p != null ? p.getUnwrappedDataSource().getLogWriter() : null;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public void setLogWriter(PrintWriter out) throws SQLException {
+<b class="nc">&nbsp;        HikariPool p = this.pool;</b>
+&nbsp;        if (p != null) {
+&nbsp;            p.getUnwrappedDataSource().setLogWriter(out);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setLoginTimeout(int seconds) throws SQLException {
+&nbsp;        HikariPool p = this.pool;
+&nbsp;        if (p != null) {
+&nbsp;            p.getUnwrappedDataSource().setLoginTimeout(seconds);
+<b class="pc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+&nbsp;
+<b class="pc">&nbsp;    public int getLoginTimeout() throws SQLException {</b>
+<b class="nc">&nbsp;        HikariPool p = this.pool;</b>
+&nbsp;        return p != null ? p.getUnwrappedDataSource().getLoginTimeout() : 0;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public java.util.logging.Logger getParentLogger() throws SQLFeatureNotSupportedException {</b>
+<b class="pc">&nbsp;        throw new SQLFeatureNotSupportedException();</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="pc">&nbsp;    public &lt;T&gt; T unwrap(Class&lt;T&gt; iface) throws SQLException {</b>
+<b class="fc">&nbsp;        if (iface.isInstance(this)) {</b>
+<b class="fc">&nbsp;            return (T)this;</b>
+&nbsp;        } else {
+<b class="fc">&nbsp;            HikariPool p = this.pool;</b>
+<b class="nc">&nbsp;            if (p != null) {</b>
+&nbsp;                DataSource unwrappedDataSource = p.getUnwrappedDataSource();
+&nbsp;                if (iface.isInstance(unwrappedDataSource)) {
+<b class="nc">&nbsp;                    return (T)unwrappedDataSource;</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                if (unwrappedDataSource != null) {
+&nbsp;                    return (T)unwrappedDataSource.unwrap(iface);
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            throw new SQLException(&quot;Wrapped DataSource is not an instance of &quot; + iface);
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public boolean isWrapperFor(Class&lt;?&gt; iface) throws SQLException {</b>
+&nbsp;        if (iface.isInstance(this)) {
+&nbsp;            return true;
+&nbsp;        } else {
+&nbsp;            HikariPool p = this.pool;
+&nbsp;            if (p != null) {
+&nbsp;                DataSource unwrappedDataSource = p.getUnwrappedDataSource();
+<b class="nc">&nbsp;                if (iface.isInstance(unwrappedDataSource)) {</b>
+&nbsp;                    return true;
+&nbsp;                }
+&nbsp;
+&nbsp;                if (unwrappedDataSource != null) {
+&nbsp;                    return unwrappedDataSource.isWrapperFor(iface);
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            return false;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setMetricRegistry(Object metricRegistry) {
+&nbsp;        boolean isAlreadySet = this.getMetricRegistry() != null;
+<b class="nc">&nbsp;        super.setMetricRegistry(metricRegistry);</b>
+<b class="nc">&nbsp;        HikariPool p = this.pool;</b>
+<b class="nc">&nbsp;        if (p != null) {</b>
+&nbsp;            if (isAlreadySet) {
+&nbsp;                throw new IllegalStateException(&quot;MetricRegistry can only be set one time&quot;);
+&nbsp;            }
+&nbsp;
+&nbsp;            p.setMetricRegistry(super.getMetricRegistry());
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void setMetricsTrackerFactory(MetricsTrackerFactory metricsTrackerFactory) {</b>
+&nbsp;        boolean isAlreadySet = this.getMetricsTrackerFactory() != null;
+&nbsp;        super.setMetricsTrackerFactory(metricsTrackerFactory);
+&nbsp;        HikariPool p = this.pool;
+&nbsp;        if (p != null) {
+&nbsp;            if (isAlreadySet) {
+&nbsp;                throw new IllegalStateException(&quot;MetricsTrackerFactory can only be set one time&quot;);
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            p.setMetricsTrackerFactory(super.getMetricsTrackerFactory());</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setHealthCheckRegistry(Object healthCheckRegistry) {
+&nbsp;        boolean isAlreadySet = this.getHealthCheckRegistry() != null;
+<b class="nc">&nbsp;        super.setHealthCheckRegistry(healthCheckRegistry);</b>
+&nbsp;        HikariPool p = this.pool;
+&nbsp;        if (p != null) {
+&nbsp;            if (isAlreadySet) {
+&nbsp;                throw new IllegalStateException(&quot;HealthCheckRegistry can only be set one time&quot;);
+&nbsp;            }
+&nbsp;
+&nbsp;            p.setHealthCheckRegistry(super.getHealthCheckRegistry());
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public boolean isRunning() {</b>
+<b class="nc">&nbsp;        return this.pool != null &amp;&amp; this.pool.poolState == 0;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public HikariPoolMXBean getHikariPoolMXBean() {</b>
+&nbsp;        return this.pool;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public HikariConfigMXBean getHikariConfigMXBean() {</b>
+&nbsp;        return this;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void evictConnection(Connection connection) {</b>
+&nbsp;        HikariPool p;
+&nbsp;        if (!this.isClosed() &amp;&amp; (p = this.pool) != null &amp;&amp; connection.getClass().getName().startsWith(&quot;com.zaxxer.hikari&quot;)) {
+&nbsp;            p.evictConnection(connection);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void close() {</b>
+&nbsp;        if (!this.isShutdown.getAndSet(true)) {
+&nbsp;            HikariPool p = this.pool;
+<b class="nc">&nbsp;            if (p != null) {</b>
+<b class="nc">&nbsp;                try {</b>
+<b class="nc">&nbsp;                    LOGGER.info(&quot;{} - Shutdown initiated...&quot;, this.getPoolName());</b>
+<b class="nc">&nbsp;                    p.shutdown();</b>
+<b class="nc">&nbsp;                    LOGGER.info(&quot;{} - Shutdown completed.&quot;, this.getPoolName());</b>
+&nbsp;                } catch (InterruptedException e) {
+&nbsp;                    LOGGER.warn(&quot;{} - Interrupted during closing&quot;, this.getPoolName(), e);
+<b class="nc">&nbsp;                    Thread.currentThread().interrupt();</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public boolean isClosed() {
+&nbsp;        return this.isShutdown.get();
+&nbsp;    }
+&nbsp;
+&nbsp;    public String toString() {
+&nbsp;        return &quot;HikariDataSource (&quot; + this.pool + &quot;)&quot;;
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:58</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,203 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > MockitoExtension</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.mockito.junit.jupiter</a>
+</div>
+
+<h1>Coverage Summary for Class: MockitoExtension (org.mockito.junit.jupiter)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MockitoExtension</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    75%
+  </span>
+  <span class="absValue">
+    (6/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (4/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    85.3%
+  </span>
+  <span class="absValue">
+    (29/34)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.mockito.junit.jupiter;
+&nbsp;
+&nbsp;import java.util.HashSet;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Optional;
+&nbsp;import java.util.Set;
+&nbsp;import org.junit.jupiter.api.extension.AfterEachCallback;
+&nbsp;import org.junit.jupiter.api.extension.BeforeEachCallback;
+&nbsp;import org.junit.jupiter.api.extension.ExtensionContext;
+&nbsp;import org.junit.jupiter.api.extension.ParameterContext;
+&nbsp;import org.junit.jupiter.api.extension.ParameterResolutionException;
+&nbsp;import org.junit.jupiter.api.extension.ParameterResolver;
+&nbsp;import org.junit.jupiter.api.extension.ExtensionContext.Namespace;
+&nbsp;import org.junit.platform.commons.support.AnnotationSupport;
+&nbsp;import org.mockito.Mockito;
+&nbsp;import org.mockito.MockitoSession;
+&nbsp;import org.mockito.ScopedMock;
+&nbsp;import org.mockito.internal.configuration.plugins.Plugins;
+&nbsp;import org.mockito.internal.session.MockitoSessionLoggerAdapter;
+&nbsp;import org.mockito.junit.jupiter.resolver.CaptorParameterResolver;
+&nbsp;import org.mockito.junit.jupiter.resolver.CompositeParameterResolver;
+&nbsp;import org.mockito.junit.jupiter.resolver.MockParameterResolver;
+&nbsp;import org.mockito.quality.Strictness;
+&nbsp;
+&nbsp;public class MockitoExtension implements BeforeEachCallback, AfterEachCallback, ParameterResolver {
+&nbsp;    private static final ExtensionContext.Namespace MOCKITO = Namespace.create(new Object[]{&quot;org.mockito&quot;});
+&nbsp;    private static final String SESSION = &quot;session&quot;;
+&nbsp;    private static final String MOCKS = &quot;mocks&quot;;
+&nbsp;    private final Strictness strictness;
+&nbsp;    private final ParameterResolver parameterResolver;
+&nbsp;
+&nbsp;    public MockitoExtension() {
+&nbsp;        this(Strictness.STRICT_STUBS);
+&nbsp;    }
+&nbsp;
+&nbsp;    private MockitoExtension(Strictness strictness) {
+&nbsp;        this.strictness = strictness;
+&nbsp;        this.parameterResolver = new CompositeParameterResolver(new ParameterResolver[]{new MockParameterResolver(), new CaptorParameterResolver()});
+&nbsp;    }
+&nbsp;
+&nbsp;    public void beforeEach(ExtensionContext context) {
+&nbsp;        List&lt;Object&gt; testInstances = context.getRequiredTestInstances().getAllInstances();
+&nbsp;        Strictness actualStrictness = (Strictness)this.retrieveAnnotationFromTestClasses(context).map(MockitoSettings::strictness).orElse(this.strictness);
+&nbsp;        MockitoSession session = Mockito.mockitoSession().initMocks(testInstances.toArray()).strictness(actualStrictness).logger(new MockitoSessionLoggerAdapter(Plugins.getMockitoLogger())).startMocking();
+&nbsp;        context.getStore(MOCKITO).put(&quot;mocks&quot;, new HashSet());
+&nbsp;        context.getStore(MOCKITO).put(&quot;session&quot;, session);
+&nbsp;    }
+&nbsp;
+&nbsp;    private Optional&lt;MockitoSettings&gt; retrieveAnnotationFromTestClasses(ExtensionContext context) {
+&nbsp;        ExtensionContext currentContext = context;
+&nbsp;
+&nbsp;        Optional&lt;MockitoSettings&gt; annotation;
+&nbsp;        do {
+&nbsp;            annotation = AnnotationSupport.findAnnotation(currentContext.getElement(), MockitoSettings.class);
+&nbsp;            if (currentContext.getParent().isEmpty()) {
+&nbsp;                break;
+&nbsp;            }
+&nbsp;
+&nbsp;            currentContext = (ExtensionContext)currentContext.getParent().get();
+&nbsp;        } while(annotation.isEmpty() &amp;&amp; currentContext != context.getRoot());
+&nbsp;
+&nbsp;        return annotation;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void afterEach(ExtensionContext context) {
+&nbsp;        ((Set)context.getStore(MOCKITO).remove(&quot;mocks&quot;, Set.class)).forEach((mock) -&gt; ((ScopedMock)mock).closeOnDemand());
+&nbsp;        ((MockitoSession)context.getStore(MOCKITO).remove(&quot;session&quot;, MockitoSession.class)).finishMocking((Throwable)context.getExecutionException().orElse((Object)null));
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext context) throws ParameterResolutionException {
+&nbsp;        return this.parameterResolver.supportsParameter(parameterContext, context);
+&nbsp;    }
+&nbsp;
+&nbsp;    public Object resolveParameter(ParameterContext parameterContext, ExtensionContext context) throws ParameterResolutionException {
+&nbsp;        Object resolvedParameter = this.parameterResolver.resolveParameter(parameterContext, context);
+&nbsp;        if (resolvedParameter instanceof ScopedMock) {
+&nbsp;            ((Set)context.getStore(MOCKITO).get(&quot;mocks&quot;, Set.class)).add(resolvedParameter);
+&nbsp;        }
+&nbsp;
+&nbsp;        return resolvedParameter;
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 21:00</div>
+</div>
+</body>
+</html>

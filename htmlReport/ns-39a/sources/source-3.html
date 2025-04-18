@@ -1,0 +1,198 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > CustomRepositoryImplementationDetector</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.data.repository.config</a>
+</div>
+
+<h1>Coverage Summary for Class: CustomRepositoryImplementationDetector (org.springframework.data.repository.config)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">CustomRepositoryImplementationDetector</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    71.4%
+  </span>
+  <span class="absValue">
+    (5/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (2/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    74.4%
+  </span>
+  <span class="absValue">
+    (29/39)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.data.repository.config;
+&nbsp;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.Objects;
+&nbsp;import java.util.Optional;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.stream.Collectors;
+&nbsp;import java.util.stream.Stream;
+&nbsp;import org.springframework.beans.factory.config.BeanDefinition;
+&nbsp;import org.springframework.beans.factory.support.AbstractBeanDefinition;
+&nbsp;import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+&nbsp;import org.springframework.core.env.Environment;
+&nbsp;import org.springframework.core.io.ResourceLoader;
+&nbsp;import org.springframework.data.util.Lazy;
+&nbsp;import org.springframework.data.util.StreamUtils;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;
+&nbsp;public class CustomRepositoryImplementationDetector {
+&nbsp;    private static final String CUSTOM_IMPLEMENTATION_RESOURCE_PATTERN = &quot;**/*%s.class&quot;;
+&nbsp;    private static final String AMBIGUOUS_CUSTOM_IMPLEMENTATIONS = &quot;Ambiguous custom implementations detected; Found %s but expected a single implementation&quot;;
+&nbsp;    private final Environment environment;
+&nbsp;    private final ResourceLoader resourceLoader;
+&nbsp;    private final Lazy&lt;Set&lt;BeanDefinition&gt;&gt; implementationCandidates;
+&nbsp;
+&nbsp;    public CustomRepositoryImplementationDetector(Environment environment, ResourceLoader resourceLoader, ImplementationDetectionConfiguration configuration) {
+&nbsp;        Assert.notNull(environment, &quot;Environment must not be null&quot;);
+&nbsp;        Assert.notNull(resourceLoader, &quot;ResourceLoader must not be null&quot;);
+&nbsp;        Assert.notNull(configuration, &quot;ImplementationDetectionConfiguration must not be null&quot;);
+&nbsp;        this.environment = environment;
+&nbsp;        this.resourceLoader = resourceLoader;
+&nbsp;        this.implementationCandidates = Lazy.of(() -&gt; this.findCandidateBeanDefinitions(configuration));
+&nbsp;    }
+&nbsp;
+&nbsp;    public CustomRepositoryImplementationDetector(Environment environment, ResourceLoader resourceLoader) {
+&nbsp;        Assert.notNull(environment, &quot;Environment must not be null&quot;);
+&nbsp;        Assert.notNull(resourceLoader, &quot;ResourceLoader must not be null&quot;);
+&nbsp;        this.environment = environment;
+&nbsp;        this.resourceLoader = resourceLoader;
+&nbsp;        this.implementationCandidates = Lazy.empty();
+&nbsp;    }
+&nbsp;
+&nbsp;    public Optional&lt;AbstractBeanDefinition&gt; detectCustomImplementation(ImplementationLookupConfiguration lookup) {
+&nbsp;        Assert.notNull(lookup, &quot;ImplementationLookupConfiguration must not be null&quot;);
+&nbsp;        Stream var10000 = ((Set)this.implementationCandidates.getOptional().orElseGet(() -&gt; this.findCandidateBeanDefinitions(lookup))).stream();
+&nbsp;        Objects.requireNonNull(lookup);
+&nbsp;        Set&lt;BeanDefinition&gt; definitions = (Set)var10000.filter(lookup::matches).collect(StreamUtils.toUnmodifiableSet());
+&nbsp;        return selectImplementationCandidate(lookup, definitions);
+&nbsp;    }
+&nbsp;
+&nbsp;    private static Optional&lt;AbstractBeanDefinition&gt; selectImplementationCandidate(ImplementationLookupConfiguration lookup, Set&lt;BeanDefinition&gt; definitions) {
+&nbsp;        SelectionSet var10000 = SelectionSet.of(definitions, (c) -&gt; c.isEmpty() ? firstOrEmptyBeanDefinition(definitions) : throwAmbiguousCustomImplementationException(c));
+&nbsp;        Objects.requireNonNull(lookup);
+&nbsp;        Optional var2 = var10000.filterIfNecessary(lookup::hasMatchingBeanName).uniqueResult();
+&nbsp;        Objects.requireNonNull(AbstractBeanDefinition.class);
+&nbsp;        return var2.map(AbstractBeanDefinition.class::cast);
+&nbsp;    }
+&nbsp;
+&nbsp;    static Optional&lt;BeanDefinition&gt; firstOrEmptyBeanDefinition(Set&lt;BeanDefinition&gt; definitions) {
+&nbsp;        return definitions.isEmpty() ? Optional.empty() : Optional.of((BeanDefinition)definitions.iterator().next());
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    private Set&lt;BeanDefinition&gt; findCandidateBeanDefinitions(ImplementationDetectionConfiguration config) {</b>
+&nbsp;        String postfix = config.getImplementationPostfix();
+<b class="fc">&nbsp;        ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false, this.environment);</b>
+<b class="fc">&nbsp;        provider.setResourceLoader(this.resourceLoader);</b>
+<b class="fc">&nbsp;        provider.setResourcePattern(String.format(&quot;**/*%s.class&quot;, postfix));</b>
+&nbsp;        provider.setMetadataReaderFactory(config.getMetadataReaderFactory());
+<b class="fc">&nbsp;        provider.addIncludeFilter((reader, factory) -&gt; true);</b>
+<b class="fc">&nbsp;        config.getExcludeFilters().forEach((it) -&gt; provider.addExcludeFilter(it));</b>
+<b class="fc">&nbsp;        return (Set)config.getBasePackages().stream().flatMap((it) -&gt; provider.findCandidateComponents(it).stream()).collect(Collectors.toSet());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static Optional&lt;BeanDefinition&gt; throwAmbiguousCustomImplementationException(Collection&lt;BeanDefinition&gt; definitions) {
+&nbsp;        String implementationNames = (String)definitions.stream().map(BeanDefinition::getBeanClassName).collect(Collectors.joining(&quot;, &quot;));
+&nbsp;        throw new IllegalStateException(String.format(&quot;Ambiguous custom implementations detected; Found %s but expected a single implementation&quot;, implementationNames));
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 21:00</div>
+</div>
+</body>
+</html>

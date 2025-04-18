@@ -1,0 +1,329 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > SessionFactoryRegistry</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: SessionFactoryRegistry (org.hibernate.internal)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SessionFactoryRegistry</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (3/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    3.8%
+  </span>
+  <span class="absValue">
+    (1/26)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    18.8%
+  </span>
+  <span class="absValue">
+    (9/48)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">SessionFactoryRegistry$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    20%
+  </span>
+  <span class="absValue">
+    (1/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    7.1%
+  </span>
+  <span class="absValue">
+    (1/14)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    28.6%
+  </span>
+  <span class="absValue">
+    (4/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    3.3%
+  </span>
+  <span class="absValue">
+    (1/30)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    16.1%
+  </span>
+  <span class="absValue">
+    (10/62)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.internal;
+&nbsp;
+&nbsp;import java.util.Hashtable;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import javax.naming.Context;
+&nbsp;import javax.naming.Name;
+&nbsp;import javax.naming.Reference;
+&nbsp;import javax.naming.event.NamespaceChangeListener;
+&nbsp;import javax.naming.event.NamingEvent;
+&nbsp;import javax.naming.event.NamingExceptionEvent;
+&nbsp;import javax.naming.spi.ObjectFactory;
+&nbsp;import org.hibernate.SessionFactory;
+&nbsp;import org.hibernate.engine.jndi.JndiException;
+&nbsp;import org.hibernate.engine.jndi.JndiNameException;
+&nbsp;import org.hibernate.engine.jndi.spi.JndiService;
+&nbsp;import org.hibernate.engine.spi.SessionFactoryImplementor;
+&nbsp;import org.hibernate.internal.util.StringHelper;
+&nbsp;
+&nbsp;public class SessionFactoryRegistry {
+&nbsp;    private static final CoreMessageLogger LOG = CoreLogging.messageLogger(SessionFactoryRegistry.class);
+&nbsp;    public static final SessionFactoryRegistry INSTANCE = new SessionFactoryRegistry();
+&nbsp;    private final ConcurrentHashMap&lt;String, SessionFactoryImplementor&gt; sessionFactoryMap = new ConcurrentHashMap();
+&nbsp;    private final ConcurrentHashMap&lt;String, String&gt; nameUuidXref = new ConcurrentHashMap();
+&nbsp;    private final NamespaceChangeListener listener = new NamespaceChangeListener() {
+&nbsp;        public void objectAdded(NamingEvent evt) {
+&nbsp;            if (SessionFactoryRegistry.LOG.isDebugEnabled()) {
+&nbsp;                SessionFactoryRegistry.LOG.debugf(&quot;A factory was successfully bound to name: %s&quot;, evt.getNewBinding().getName());
+&nbsp;            }
+<b class="fc">&nbsp;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void objectRemoved(NamingEvent evt) {
+&nbsp;            String jndiName = evt.getOldBinding().getName();
+<b class="fc">&nbsp;            SessionFactoryRegistry.LOG.factoryUnboundFromName(jndiName);</b>
+&nbsp;            String uuid = (String)SessionFactoryRegistry.this.nameUuidXref.remove(jndiName);
+&nbsp;            if (uuid != null) {
+&nbsp;                SessionFactoryRegistry.this.sessionFactoryMap.remove(uuid);
+&nbsp;            }
+<b class="fc">&nbsp;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void objectRenamed(NamingEvent evt) {
+&nbsp;            String oldJndiName = evt.getOldBinding().getName();
+<b class="fc">&nbsp;            String newJndiName = evt.getNewBinding().getName();</b>
+&nbsp;            SessionFactoryRegistry.LOG.factoryJndiRename(oldJndiName, newJndiName);
+<b class="fc">&nbsp;            String uuid = (String)SessionFactoryRegistry.this.nameUuidXref.remove(oldJndiName);</b>
+<b class="fc">&nbsp;            SessionFactoryRegistry.this.nameUuidXref.put(newJndiName, uuid);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void namingExceptionThrown(NamingExceptionEvent evt) {
+&nbsp;            SessionFactoryRegistry.LOG.namingExceptionAccessingFactory(evt.getException());
+&nbsp;        }
+&nbsp;    };
+&nbsp;
+&nbsp;    private SessionFactoryRegistry() {
+&nbsp;        LOG.debugf(&quot;Initializing SessionFactoryRegistry : %s&quot;, this);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void addSessionFactory(String uuid, String name, boolean isNameAlsoJndiName, SessionFactoryImplementor instance, JndiService jndiService) {
+&nbsp;        if (uuid == null) {
+&nbsp;            throw new IllegalArgumentException(&quot;SessionFactory UUID cannot be null&quot;);
+&nbsp;        } else {
+&nbsp;            LOG.debugf(&quot;Registering SessionFactory: %s (%s)&quot;, uuid, name == null ? &quot;&lt;unnamed&gt;&quot; : name);
+&nbsp;            this.sessionFactoryMap.put(uuid, instance);
+<b class="nc">&nbsp;            if (name != null) {</b>
+<b class="nc">&nbsp;                this.nameUuidXref.put(name, uuid);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if (name != null &amp;&amp; isNameAlsoJndiName) {</b>
+<b class="nc">&nbsp;                LOG.debugf(&quot;Attempting to bind SessionFactory [%s] to JNDI&quot;, name);</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                try {</b>
+&nbsp;                    jndiService.bind(name, instance);
+&nbsp;                    LOG.factoryBoundToJndiName(name);
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                    try {</b>
+&nbsp;                        jndiService.addListener(name, this.listener);
+&nbsp;                    } catch (Exception var7) {
+&nbsp;                        LOG.couldNotBindJndiListener();
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                } catch (JndiNameException e) {
+&nbsp;                    LOG.invalidJndiName(name, e);
+<b class="nc">&nbsp;                } catch (JndiException e) {</b>
+<b class="nc">&nbsp;                    LOG.unableToBindFactoryToJndi(e);</b>
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+&nbsp;            } else {
+&nbsp;                LOG.debug(&quot;Not binding SessionFactory to JNDI, no JNDI name configured&quot;);
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void removeSessionFactory(String uuid, String name, boolean isNameAlsoJndiName, JndiService jndiService) {</b>
+&nbsp;        if (name != null) {
+&nbsp;            this.nameUuidXref.remove(name);
+<b class="nc">&nbsp;            if (isNameAlsoJndiName) {</b>
+&nbsp;                try {
+&nbsp;                    LOG.tracef(&quot;Unbinding SessionFactory from JNDI : %s&quot;, name);
+&nbsp;                    jndiService.unbind(name);
+&nbsp;                    LOG.factoryUnboundFromJndiName(name);
+&nbsp;                } catch (JndiNameException e) {
+&nbsp;                    LOG.invalidJndiName(name, e);
+&nbsp;                } catch (JndiException e) {
+&nbsp;                    LOG.unableToUnbindFactoryFromJndi(e);
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        this.sessionFactoryMap.remove(uuid);
+&nbsp;    }
+&nbsp;
+&nbsp;    public SessionFactoryImplementor getNamedSessionFactory(String name) {
+<b class="pc">&nbsp;        LOG.debugf(&quot;Lookup: name=%s&quot;, name);</b>
+<b class="nc">&nbsp;        String uuid = (String)this.nameUuidXref.get(name);</b>
+&nbsp;        return uuid == null ? null : this.getSessionFactory(uuid);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public SessionFactoryImplementor getSessionFactory(String uuid) {</b>
+<b class="nc">&nbsp;        LOG.debugf(&quot;Lookup: uid=%s&quot;, uuid);</b>
+<b class="nc">&nbsp;        SessionFactoryImplementor sessionFactory = (SessionFactoryImplementor)this.sessionFactoryMap.get(uuid);</b>
+&nbsp;        if (sessionFactory == null &amp;&amp; LOG.isDebugEnabled()) {
+&nbsp;            LOG.debugf(&quot;Not found: %s&quot;, uuid);
+<b class="nc">&nbsp;            LOG.debug(this.sessionFactoryMap.toString());</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return sessionFactory;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public SessionFactoryImplementor findSessionFactory(String uuid, String name) {
+&nbsp;        SessionFactoryImplementor sessionFactory = this.getSessionFactory(uuid);
+<b class="fc">&nbsp;        if (sessionFactory == null &amp;&amp; StringHelper.isNotEmpty(name)) {</b>
+&nbsp;            sessionFactory = this.getNamedSessionFactory(name);
+&nbsp;        }
+&nbsp;
+&nbsp;        return sessionFactory;
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean hasRegistrations() {
+&nbsp;        return !this.sessionFactoryMap.isEmpty();
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void clearRegistrations() {</b>
+<b class="nc">&nbsp;        this.nameUuidXref.clear();</b>
+&nbsp;
+<b class="nc">&nbsp;        for(SessionFactory factory : this.sessionFactoryMap.values()) {</b>
+&nbsp;            try {
+&nbsp;                factory.close();
+&nbsp;            } catch (Exception var4) {
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        this.sessionFactoryMap.clear();</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public static class ObjectFactoryImpl implements ObjectFactory {</b>
+&nbsp;        public ObjectFactoryImpl() {
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        public Object getObjectInstance(Object reference, Name name, Context nameCtx, Hashtable&lt;?, ?&gt; environment) {</b>
+<b class="nc">&nbsp;            SessionFactoryRegistry.LOG.debugf(&quot;JNDI lookup: %s&quot;, name);</b>
+<b class="nc">&nbsp;            String uuid = (String)((Reference)reference).get(0).getContent();</b>
+&nbsp;            SessionFactoryRegistry.LOG.tracef(&quot;Resolved to UUID = %s&quot;, uuid);
+<b class="nc">&nbsp;            return SessionFactoryRegistry.INSTANCE.getSessionFactory(uuid);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:57</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,442 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > BasicTypeRegistry</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.type</a>
+</div>
+
+<h1>Coverage Summary for Class: BasicTypeRegistry (org.hibernate.type)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">BasicTypeRegistry</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    72.2%
+  </span>
+  <span class="absValue">
+    (26/36)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    51.1%
+  </span>
+  <span class="absValue">
+    (48/94)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    65.3%
+  </span>
+  <span class="absValue">
+    (98/150)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.type;
+&nbsp;
+&nbsp;import java.io.Serializable;
+&nbsp;import java.lang.reflect.Type;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import java.util.function.Supplier;
+&nbsp;import org.hibernate.HibernateException;
+&nbsp;import org.hibernate.Internal;
+&nbsp;import org.hibernate.MappingException;
+&nbsp;import org.hibernate.internal.CoreLogging;
+&nbsp;import org.hibernate.internal.CoreMessageLogger;
+&nbsp;import org.hibernate.internal.util.StringHelper;
+&nbsp;import org.hibernate.internal.util.collections.CollectionHelper;
+&nbsp;import org.hibernate.tool.schema.extract.spi.ColumnTypeInformation;
+&nbsp;import org.hibernate.type.descriptor.converter.spi.BasicValueConverter;
+&nbsp;import org.hibernate.type.descriptor.java.BasicPluralJavaType;
+&nbsp;import org.hibernate.type.descriptor.java.ImmutableMutabilityPlan;
+&nbsp;import org.hibernate.type.descriptor.java.JavaType;
+&nbsp;import org.hibernate.type.descriptor.jdbc.ArrayJdbcType;
+&nbsp;import org.hibernate.type.descriptor.jdbc.JdbcType;
+&nbsp;import org.hibernate.type.internal.BasicTypeImpl;
+&nbsp;import org.hibernate.type.internal.ConvertedBasicTypeImpl;
+&nbsp;import org.hibernate.type.internal.CustomMutabilityConvertedBasicTypeImpl;
+&nbsp;import org.hibernate.type.internal.ImmutableNamedBasicTypeImpl;
+&nbsp;import org.hibernate.type.internal.NamedBasicTypeImpl;
+&nbsp;import org.hibernate.type.spi.TypeConfiguration;
+&nbsp;import org.hibernate.usertype.UserType;
+&nbsp;
+&nbsp;public class BasicTypeRegistry implements Serializable {
+&nbsp;    private static final CoreMessageLogger LOG = CoreLogging.messageLogger(BasicTypeRegistry.class);
+&nbsp;    private final TypeConfiguration typeConfiguration;
+&nbsp;    private final Map&lt;JdbcType, Map&lt;JavaType&lt;?&gt;, BasicType&lt;?&gt;&gt;&gt; registryValues = new ConcurrentHashMap();
+&nbsp;    private boolean primed;
+<b class="fc">&nbsp;    private final Map&lt;String, BasicType&lt;?&gt;&gt; typesByName = new ConcurrentHashMap();</b>
+<b class="fc">&nbsp;    private final Map&lt;String, BasicTypeReference&lt;?&gt;&gt; typeReferencesByName = new ConcurrentHashMap();</b>
+&nbsp;
+&nbsp;    public BasicTypeRegistry(TypeConfiguration typeConfiguration) {
+&nbsp;        this.typeConfiguration = typeConfiguration;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public &lt;J&gt; BasicType&lt;J&gt; getRegisteredType(String key) {
+<b class="fc">&nbsp;        BasicType&lt;?&gt; basicType = (BasicType)this.typesByName.get(key);</b>
+<b class="fc">&nbsp;        if (basicType == null) {</b>
+&nbsp;            basicType = this.resolveTypeReference(key);
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;        return basicType;
+&nbsp;    }
+&nbsp;
+&nbsp;    private BasicType&lt;?&gt; resolveTypeReference(String name) {
+&nbsp;        BasicTypeReference&lt;?&gt; typeReference = (BasicTypeReference)this.typeReferencesByName.get(name);
+&nbsp;        if (typeReference == null) {
+<b class="fc">&nbsp;            return null;</b>
+<b class="fc">&nbsp;        } else {</b>
+<b class="fc">&nbsp;            if (!name.equals(typeReference.getName())) {</b>
+&nbsp;                BasicType&lt;?&gt; basicType = (BasicType)this.typesByName.get(typeReference.getName());
+&nbsp;                if (basicType != null) {
+<b class="fc">&nbsp;                    return basicType;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            return this.createBasicType(name, typeReference);</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+<b class="fc">&nbsp;    private BasicType&lt;?&gt; createBasicType(String name, BasicTypeReference&lt;?&gt; typeReference) {</b>
+<b class="fc">&nbsp;        JavaType&lt;Object&gt; javaType = this.typeConfiguration.getJavaTypeRegistry().getDescriptor(typeReference.getBindableJavaType());</b>
+<b class="fc">&nbsp;        JdbcType jdbcType = this.typeConfiguration.getJdbcTypeRegistry().getDescriptor(typeReference.getSqlTypeCode());</b>
+<b class="fc">&nbsp;        BasicType&lt;?&gt; createdType = createBasicType(typeReference, javaType, jdbcType);</b>
+&nbsp;        this.primeRegistryEntry(createdType);
+&nbsp;        this.typesByName.put(typeReference.getName(), createdType);
+&nbsp;        this.typesByName.put(name, createdType);
+<b class="fc">&nbsp;        return createdType;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static BasicType&lt;?&gt; createBasicType(BasicTypeReference&lt;?&gt; typeReference, JavaType&lt;Object&gt; javaType, JdbcType jdbcType) {
+<b class="fc">&nbsp;        String name = typeReference.getName();</b>
+<b class="fc">&nbsp;        if (typeReference.getConverter() == null) {</b>
+<b class="fc">&nbsp;            return (BasicType&lt;?&gt;)(typeReference.isForceImmutable() ? new ImmutableNamedBasicTypeImpl(javaType, jdbcType, name) : new NamedBasicTypeImpl(javaType, jdbcType, name));</b>
+<b class="fc">&nbsp;        } else {</b>
+<b class="fc">&nbsp;            BasicValueConverter&lt;?, ?&gt; converter = typeReference.getConverter();</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;            assert javaType == converter.getDomainJavaType();</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;            return (BasicType&lt;?&gt;)(typeReference.isForceImmutable() ? new CustomMutabilityConvertedBasicTypeImpl(name, jdbcType, converter, ImmutableMutabilityPlan.instance()) : new ConvertedBasicTypeImpl(name, jdbcType, converter));</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public &lt;J&gt; BasicType&lt;J&gt; getRegisteredType(Type javaType) {
+&nbsp;        return this.getRegisteredType(javaType.getTypeName());
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="pc">&nbsp;    public &lt;J&gt; BasicType&lt;J&gt; getRegisteredType(Class&lt;J&gt; javaType) {</b>
+<b class="pc">&nbsp;        return this.getRegisteredType(javaType.getTypeName());</b>
+<b class="nc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    public &lt;J&gt; BasicType&lt;J&gt; resolve(BasicTypeReference&lt;J&gt; basicTypeReference) {
+&nbsp;        return this.getRegisteredType(basicTypeReference.getName());
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public &lt;J&gt; BasicType&lt;J&gt; resolve(Class&lt;J&gt; javaType, int sqlTypeCode) {</b>
+<b class="nc">&nbsp;        return this.resolve(javaType, sqlTypeCode);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public &lt;J&gt; BasicType&lt;J&gt; resolve(Type javaType, int sqlTypeCode) {
+&nbsp;        return this.resolve(this.typeConfiguration.getJavaTypeRegistry().getDescriptor(javaType), sqlTypeCode);
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public &lt;J&gt; BasicType&lt;J&gt; resolve(JavaType&lt;J&gt; javaType, int sqlTypeCode) {</b>
+&nbsp;        return this.&lt;J&gt;resolve(javaType, this.typeConfiguration.getJdbcTypeRegistry().getDescriptor(sqlTypeCode));
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public &lt;J&gt; BasicType&lt;J&gt; resolve(JavaType&lt;J&gt; javaType, JdbcType jdbcType) {</b>
+&nbsp;        return this.resolve(javaType, jdbcType, (Supplier)(() -&gt; this.resolvedType(javaType, jdbcType)));
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    private &lt;J&gt; BasicType&lt;J&gt; resolvedType(JavaType&lt;J&gt; javaType, JdbcType jdbcType) {</b>
+&nbsp;        return (BasicType&lt;J&gt;)(javaType instanceof BasicPluralJavaType &amp;&amp; jdbcType instanceof ArrayJdbcType ? this.resolvedType((ArrayJdbcType)jdbcType, (BasicPluralJavaType)javaType) : new BasicTypeImpl(javaType, jdbcType));
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private &lt;E&gt; BasicType&lt;?&gt; resolvedType(ArrayJdbcType arrayType, BasicPluralJavaType&lt;E&gt; castPluralJavaType) {</b>
+&nbsp;        BasicType&lt;E&gt; elementType = this.&lt;E&gt;resolve(castPluralJavaType.getElementJavaType(), arrayType.getElementJdbcType());
+&nbsp;        BasicType&lt;?&gt; resolvedType = castPluralJavaType.resolveType(this.typeConfiguration, this.typeConfiguration.getCurrentBaseSqlTypeIndicators().getDialect(), elementType, (ColumnTypeInformation)null, this.typeConfiguration.getCurrentBaseSqlTypeIndicators());
+&nbsp;        if (resolvedType instanceof BasicPluralType) {
+<b class="nc">&nbsp;            this.register(resolvedType);</b>
+&nbsp;        } else if (resolvedType == null) {
+&nbsp;            Class&lt;?&gt; elementJavaTypeClass = elementType.getJavaTypeDescriptor().getJavaTypeClass();
+&nbsp;            if (elementJavaTypeClass != null &amp;&amp; elementJavaTypeClass.isArray() &amp;&amp; elementJavaTypeClass != byte[].class) {
+<b class="nc">&nbsp;                throw new MappingException(&quot;Nested arrays (with the exception of byte[][]) are not supported&quot;);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return resolvedType;
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;J&gt; BasicType&lt;J&gt; resolve(JavaType&lt;J&gt; javaType, JdbcType jdbcType, String baseTypeName) {
+<b class="fc">&nbsp;        return this.resolve(javaType, jdbcType, (Supplier)(() -&gt; new NamedBasicTypeImpl(javaType, jdbcType, baseTypeName)));</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public &lt;J&gt; BasicType&lt;J&gt; resolve(JavaType&lt;J&gt; javaType, JdbcType jdbcType, Supplier&lt;BasicType&lt;J&gt;&gt; creator) {</b>
+&nbsp;        BasicType&lt;?&gt; registeredBasicType = (BasicType)this.registryForJdbcType(jdbcType).get(javaType);
+&nbsp;        return registeredBasicType != null ? registeredBasicType : this.createIfUnregistered(javaType, jdbcType, creator);
+&nbsp;    }
+&nbsp;
+<b class="pc">&nbsp;    private &lt;J&gt; BasicType&lt;J&gt; createIfUnregistered(JavaType&lt;J&gt; javaType, JdbcType jdbcType, Supplier&lt;BasicType&lt;J&gt;&gt; creator) {</b>
+&nbsp;        BasicType&lt;J&gt; registeredType = this.getRegisteredType(javaType.getJavaType());
+<b class="nc">&nbsp;        if (registeredTypeMatches(javaType, jdbcType, registeredType)) {</b>
+&nbsp;            return registeredType;
+&nbsp;        } else {
+<b class="fc">&nbsp;            BasicType&lt;J&gt; createdType = (BasicType)creator.get();</b>
+&nbsp;            this.register(javaType, jdbcType, createdType);
+&nbsp;            return createdType;
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private static &lt;J&gt; boolean registeredTypeMatches(JavaType&lt;J&gt; javaType, JdbcType jdbcType, BasicType&lt;J&gt; registeredType) {</b>
+&nbsp;        return registeredType != null &amp;&amp; registeredType.getJdbcType() == jdbcType &amp;&amp; registeredType.getMappedJavaType() == javaType;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private &lt;J&gt; void register(JavaType&lt;J&gt; javaType, JdbcType jdbcType, BasicType&lt;J&gt; createdType) {
+<b class="nc">&nbsp;        if (createdType != null) {</b>
+&nbsp;            this.registryForJdbcType(jdbcType).put(javaType, createdType);
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            try {</b>
+&nbsp;                this.typeConfiguration.getMetadataBuildingContext().getBootstrapContext().registerAdHocBasicType(createdType);
+<b class="nc">&nbsp;            } catch (Exception var5) {</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void register(BasicType&lt;?&gt; type) {
+<b class="nc">&nbsp;        this.register(type, type.getRegistrationKeys());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void register(BasicType&lt;?&gt; type, String key) {
+<b class="nc">&nbsp;        this.register(type, key);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void register(BasicType&lt;?&gt; type, String... keys) {
+&nbsp;        if (!this.isPrimed()) {
+&nbsp;            throw new IllegalStateException(&quot;BasicTypeRegistry not yet primed.  Calls to `#register` not valid until after primed&quot;);
+&nbsp;        } else if (type == null) {
+&nbsp;            throw new HibernateException(&quot;Type to register cannot be null&quot;);
+<b class="fc">&nbsp;        } else {</b>
+&nbsp;            this.applyOrOverwriteEntry(type);
+<b class="fc">&nbsp;            if (CollectionHelper.isEmpty(keys)) {</b>
+<b class="fc">&nbsp;                LOG.typeDefinedNoRegistrationKeys(type);</b>
+<b class="fc">&nbsp;            } else {</b>
+&nbsp;                this.applyRegistrationKeys(type, keys);
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void applyOrOverwriteEntry(BasicType&lt;?&gt; type) {
+&nbsp;        JdbcType jdbcType = type.getJdbcType();
+<b class="fc">&nbsp;        BasicType&lt;?&gt; existing = (BasicType)this.registryForJdbcType(jdbcType).put(type.getMappedJavaType(), type);</b>
+<b class="fc">&nbsp;        if (existing != null) {</b>
+<b class="fc">&nbsp;            LOG.debugf(&quot;BasicTypeRegistry registration overwritten (%s + %s); previous =`%s`&quot;, jdbcType.getFriendlyName(), type.getJavaTypeDescriptor(), existing);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public &lt;T&gt; CustomType&lt;T&gt; register(UserType&lt;T&gt; type, String... keys) {</b>
+&nbsp;        CustomType&lt;T&gt; customType = new CustomType(type, keys, this.typeConfiguration);
+&nbsp;        this.register(customType);
+&nbsp;        return customType;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="pc">&nbsp;    public void unregister(String... keys) {</b>
+<b class="pc">&nbsp;        for(String key : keys) {</b>
+&nbsp;            this.typesByName.remove(key);
+&nbsp;        }
+&nbsp;
+<b class="pc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    @Internal
+&nbsp;    public void addTypeReferenceRegistrationKey(String typeReferenceKey, String... additionalTypeReferenceKeys) {
+&nbsp;        BasicTypeReference&lt;?&gt; basicTypeReference = (BasicTypeReference)this.typeReferencesByName.get(typeReferenceKey);
+<b class="fc">&nbsp;        if (basicTypeReference == null) {</b>
+<b class="fc">&nbsp;            throw new IllegalArgumentException(&quot;Couldn&#39;t find type reference with name: &quot; + typeReferenceKey);</b>
+&nbsp;        } else {
+&nbsp;            for(String additionalTypeReferenceKey : additionalTypeReferenceKeys) {
+&nbsp;                this.typeReferencesByName.put(additionalTypeReferenceKey, basicTypeReference);
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isPrimed() {
+&nbsp;        return this.primed;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public void primed() {
+&nbsp;        this.primed = true;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void addPrimeEntry(BasicType&lt;?&gt; type, String legacyTypeClassName, String[] registrationKeys) {
+&nbsp;        if (this.primed) {
+&nbsp;            throw new IllegalStateException(&quot;BasicTypeRegistry already primed&quot;);
+<b class="pc">&nbsp;        } else if (type == null) {</b>
+<b class="nc">&nbsp;            throw new HibernateException(&quot;Type to register cannot be null&quot;);</b>
+&nbsp;        } else {
+&nbsp;            this.primeRegistryEntry(type);
+<b class="pc">&nbsp;            if (StringHelper.isNotEmpty(legacyTypeClassName)) {</b>
+<b class="nc">&nbsp;                this.typesByName.put(legacyTypeClassName, type);</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if (registrationKeys != null &amp;&amp; registrationKeys.length != 0) {</b>
+&nbsp;                this.applyRegistrationKeys(type, registrationKeys);
+&nbsp;            } else {
+<b class="pc">&nbsp;                LOG.typeDefinedNoRegistrationKeys(type);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;        }
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void addPrimeEntry(BasicTypeReference&lt;?&gt; type, String legacyTypeClassName, String[] registrationKeys) {
+&nbsp;        if (this.primed) {
+&nbsp;            throw new IllegalStateException(&quot;BasicTypeRegistry already primed&quot;);
+<b class="fc">&nbsp;        } else if (type == null) {</b>
+<b class="fc">&nbsp;            throw new HibernateException(&quot;Type to register cannot be null&quot;);</b>
+<b class="pc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            if (StringHelper.isNotEmpty(legacyTypeClassName)) {</b>
+&nbsp;                this.typeReferencesByName.put(legacyTypeClassName, type);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            if (registrationKeys != null &amp;&amp; registrationKeys.length != 0) {
+&nbsp;                this.applyRegistrationKeys(type, registrationKeys);
+&nbsp;            } else {
+&nbsp;                LOG.typeDefinedNoRegistrationKeys(type);
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private void primeRegistryEntry(BasicType&lt;?&gt; type) {
+&nbsp;        JdbcType jdbcType = type.getJdbcType();
+&nbsp;        BasicType&lt;?&gt; existing = (BasicType)this.registryForJdbcType(jdbcType).get(type.getMappedJavaType());
+<b class="nc">&nbsp;        if (existing != null) {</b>
+<b class="nc">&nbsp;            LOG.debugf(&quot;Skipping registration of BasicType (%s + %s); still priming.  existing = %s&quot;, jdbcType.getFriendlyName(), type.getJavaTypeDescriptor(), existing);</b>
+&nbsp;        } else {
+&nbsp;            this.registryForJdbcType(jdbcType).put(type.getMappedJavaType(), type);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private Map&lt;JavaType&lt;?&gt;, BasicType&lt;?&gt;&gt; registryForJdbcType(JdbcType jdbcType) {</b>
+<b class="nc">&nbsp;        return (Map)this.registryValues.computeIfAbsent(jdbcType, (key) -&gt; new ConcurrentHashMap());</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private void applyRegistrationKeys(BasicType&lt;?&gt; type, String[] keys) {</b>
+&nbsp;        for(String key : keys) {
+&nbsp;            if (key != null) {
+&nbsp;                key = key.intern();
+&nbsp;                LOG.debugf(&quot;Adding type registration %s -&gt; %s&quot;, key, type);
+&nbsp;                org.hibernate.type.Type old = (org.hibernate.type.Type)this.typesByName.put(key, type);
+&nbsp;                if (old != null &amp;&amp; old != type) {
+&nbsp;                    LOG.debugf(&quot;Type registration key [%s] overrode previous entry : `%s`&quot;, key, old);
+&nbsp;                }
+<b class="fc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    private void applyRegistrationKeys(BasicTypeReference&lt;?&gt; type, String[] keys) {
+&nbsp;        for(String key : keys) {
+&nbsp;            if (key != null) {
+<b class="pc">&nbsp;                key = key.intern();</b>
+<b class="nc">&nbsp;                LOG.debugf(&quot;Adding type registration %s -&gt; %s&quot;, key, type);</b>
+&nbsp;                BasicTypeReference&lt;?&gt; old = (BasicTypeReference)this.typeReferencesByName.put(key, type);
+&nbsp;                if (old != null &amp;&amp; old != type) {
+<b class="pc">&nbsp;                    LOG.debugf(&quot;Type registration key [%s] overrode previous entry : `%s`&quot;, key, old);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
+</div>
+</body>
+</html>

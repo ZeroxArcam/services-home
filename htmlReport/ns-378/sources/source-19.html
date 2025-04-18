@@ -1,0 +1,333 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > SynthesizedMergedAnnotationInvocationHandler</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.core.annotation</a>
+</div>
+
+<h1>Coverage Summary for Class: SynthesizedMergedAnnotationInvocationHandler (org.springframework.core.annotation)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SynthesizedMergedAnnotationInvocationHandler</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    53.8%
+  </span>
+  <span class="absValue">
+    (7/13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    16.9%
+  </span>
+  <span class="absValue">
+    (12/71)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    30.9%
+  </span>
+  <span class="absValue">
+    (34/110)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.core.annotation;
+&nbsp;
+&nbsp;import java.lang.annotation.Annotation;
+&nbsp;import java.lang.reflect.Array;
+&nbsp;import java.lang.reflect.InvocationHandler;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;import java.lang.reflect.Proxy;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.NoSuchElementException;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.ClassUtils;
+&nbsp;import org.springframework.util.ObjectUtils;
+&nbsp;import org.springframework.util.ReflectionUtils;
+&nbsp;
+&nbsp;final class SynthesizedMergedAnnotationInvocationHandler&lt;A extends Annotation&gt; implements InvocationHandler {
+&nbsp;    private final MergedAnnotation&lt;?&gt; annotation;
+&nbsp;    private final Class&lt;A&gt; type;
+&nbsp;    private final AttributeMethods attributes;
+&nbsp;    private final Map&lt;String, Object&gt; valueCache = new ConcurrentHashMap(8);
+&nbsp;    @Nullable
+&nbsp;    private volatile Integer hashCode;
+&nbsp;    @Nullable
+&nbsp;    private volatile String string;
+&nbsp;
+&nbsp;    private SynthesizedMergedAnnotationInvocationHandler(MergedAnnotation&lt;A&gt; annotation, Class&lt;A&gt; type) {
+&nbsp;        Assert.notNull(annotation, &quot;MergedAnnotation must not be null&quot;);
+&nbsp;        Assert.notNull(type, &quot;Type must not be null&quot;);
+&nbsp;        Assert.isTrue(type.isAnnotation(), &quot;Type must be an annotation&quot;);
+&nbsp;        this.annotation = annotation;
+&nbsp;        this.type = type;
+&nbsp;        this.attributes = AttributeMethods.forAnnotationType(type);
+&nbsp;    }
+&nbsp;
+&nbsp;    public Object invoke(Object proxy, Method method, Object[] args) {
+&nbsp;        if (this.attributes.indexOf(method.getName()) != -1) {
+&nbsp;            return this.getAttributeValue(method);
+&nbsp;        } else {
+&nbsp;            if (method.getParameterCount() == 0) {
+&nbsp;                switch (method.getName()) {
+&nbsp;                    case &quot;annotationType&quot; -&gt; {
+&nbsp;                        return this.type;
+&nbsp;                    }
+&nbsp;                    case &quot;hashCode&quot; -&gt; {
+&nbsp;                        return this.annotationHashCode();
+&nbsp;                    }
+&nbsp;                    case &quot;toString&quot; -&gt; {
+&nbsp;                        return this.annotationToString();
+<b class="fc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            if (ReflectionUtils.isEqualsMethod(method)) {
+&nbsp;                return this.annotationEquals(args[0]);
+&nbsp;            } else {
+&nbsp;                throw new AnnotationConfigurationException(String.format(&quot;Method [%s] is unsupported for synthesized annotation type [%s]&quot;, method, this.type));
+&nbsp;            }
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private boolean annotationEquals(Object other) {</b>
+<b class="fc">&nbsp;        if (this == other) {</b>
+<b class="fc">&nbsp;            return true;</b>
+<b class="fc">&nbsp;        } else if (!this.type.isInstance(other)) {</b>
+&nbsp;            return false;
+&nbsp;        } else {
+&nbsp;            for(int i = 0; i &lt; this.attributes.size(); ++i) {
+&nbsp;                Method attribute = this.attributes.get(i);
+&nbsp;                Object thisValue = this.getAttributeValue(attribute);
+<b class="fc">&nbsp;                Object otherValue = AnnotationUtils.invokeAnnotationMethod(attribute, other);</b>
+<b class="fc">&nbsp;                if (!ObjectUtils.nullSafeEquals(thisValue, otherValue)) {</b>
+&nbsp;                    return false;
+<b class="pc">&nbsp;                }</b>
+<b class="pc">&nbsp;            }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;            return true;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private int annotationHashCode() {</b>
+<b class="nc">&nbsp;        Integer hashCode = this.hashCode;</b>
+&nbsp;        if (hashCode == null) {
+<b class="nc">&nbsp;            hashCode = this.computeHashCode();</b>
+&nbsp;            this.hashCode = hashCode;
+&nbsp;        }
+&nbsp;
+&nbsp;        return hashCode;
+&nbsp;    }
+&nbsp;
+&nbsp;    private Integer computeHashCode() {
+&nbsp;        int hashCode = 0;
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; this.attributes.size(); ++i) {</b>
+&nbsp;            Method attribute = this.attributes.get(i);
+<b class="nc">&nbsp;            Object value = this.getAttributeValue(attribute);</b>
+<b class="nc">&nbsp;            hashCode += 127 * attribute.getName().hashCode() ^ ObjectUtils.nullSafeHashCode(value);</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return hashCode;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private String annotationToString() {</b>
+<b class="nc">&nbsp;        String string = this.string;</b>
+&nbsp;        if (string == null) {
+&nbsp;            StringBuilder builder = (new StringBuilder(&quot;@&quot;)).append(getName(this.type)).append(&#39;(&#39;);
+<b class="nc">&nbsp;</b>
+&nbsp;            for(int i = 0; i &lt; this.attributes.size(); ++i) {
+&nbsp;                Method attribute = this.attributes.get(i);
+&nbsp;                if (i &gt; 0) {
+&nbsp;                    builder.append(&quot;, &quot;);
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                builder.append(attribute.getName());</b>
+<b class="fc">&nbsp;                builder.append(&#39;=&#39;);</b>
+<b class="fc">&nbsp;                builder.append(this.toString(this.getAttributeValue(attribute)));</b>
+<b class="fc">&nbsp;            }</b>
+&nbsp;
+<b class="fc">&nbsp;            builder.append(&#39;)&#39;);</b>
+&nbsp;            string = builder.toString();
+&nbsp;            this.string = string;
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;        return string;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private String toString(Object value) {</b>
+&nbsp;        if (value instanceof String str) {
+<b class="fc">&nbsp;            return &quot;\&quot;&quot; + str + &quot;\&quot;&quot;;</b>
+&nbsp;        } else if (value instanceof Character) {
+&nbsp;            return &quot;&#39;&quot; + value.toString() + &quot;&#39;&quot;;
+&nbsp;        } else if (value instanceof Byte) {
+<b class="nc">&nbsp;            return String.format(&quot;(byte) 0x%02X&quot;, value);</b>
+<b class="nc">&nbsp;        } else if (value instanceof Long) {</b>
+<b class="nc">&nbsp;            Long longValue = (Long)value;</b>
+<b class="nc">&nbsp;            return Long.toString(longValue) + &quot;L&quot;;</b>
+<b class="nc">&nbsp;        } else if (value instanceof Float) {</b>
+<b class="nc">&nbsp;            Float floatValue = (Float)value;</b>
+<b class="nc">&nbsp;            return Float.toString(floatValue) + &quot;f&quot;;</b>
+&nbsp;        } else if (value instanceof Double) {
+<b class="nc">&nbsp;            Double doubleValue = (Double)value;</b>
+<b class="nc">&nbsp;            return Double.toString(doubleValue) + &quot;d&quot;;</b>
+<b class="nc">&nbsp;        } else if (value instanceof Enum) {</b>
+&nbsp;            Enum&lt;?&gt; e = (Enum)value;
+<b class="nc">&nbsp;            return e.name();</b>
+<b class="nc">&nbsp;        } else if (value instanceof Class) {</b>
+<b class="nc">&nbsp;            Class&lt;?&gt; clazz = (Class)value;</b>
+&nbsp;            return getName(clazz) + &quot;.class&quot;;
+<b class="nc">&nbsp;        } else if (value.getClass().isArray()) {</b>
+&nbsp;            StringBuilder builder = new StringBuilder(&quot;{&quot;);
+&nbsp;
+&nbsp;            for(int i = 0; i &lt; Array.getLength(value); ++i) {
+&nbsp;                if (i &gt; 0) {
+&nbsp;                    builder.append(&quot;, &quot;);
+&nbsp;                }
+&nbsp;
+&nbsp;                builder.append(this.toString(Array.get(value, i)));
+&nbsp;            }
+&nbsp;
+&nbsp;            builder.append(&#39;}&#39;);
+&nbsp;            return builder.toString();
+&nbsp;        } else {
+&nbsp;            return String.valueOf(value);
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private Object getAttributeValue(Method method) {</b>
+&nbsp;        Object value = this.valueCache.computeIfAbsent(method.getName(), (attributeName) -&gt; {
+<b class="nc">&nbsp;            Class&lt;?&gt; type = ClassUtils.resolvePrimitiveIfNecessary(method.getReturnType());</b>
+<b class="nc">&nbsp;            return this.annotation.getValue(attributeName, type).orElseThrow(() -&gt; new NoSuchElementException(&quot;No value found for attribute named &#39;&quot; + attributeName + &quot;&#39; in merged annotation &quot; + getName(this.annotation.getType())));</b>
+&nbsp;        });
+<b class="nc">&nbsp;        if (value.getClass().isArray() &amp;&amp; Array.getLength(value) &gt; 0) {</b>
+<b class="nc">&nbsp;            value = this.cloneArray(value);</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return value;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private Object cloneArray(Object array) {</b>
+&nbsp;        if (array instanceof boolean[] booleans) {
+<b class="nc">&nbsp;            return (([Z)booleans).clone();</b>
+<b class="nc">&nbsp;        } else if (array instanceof byte[] bytes) {</b>
+&nbsp;            return (([B)bytes).clone();
+<b class="nc">&nbsp;        } else if (array instanceof char[] chars) {</b>
+<b class="nc">&nbsp;            return (([C)chars).clone();</b>
+&nbsp;        } else if (array instanceof double[] doubles) {
+<b class="nc">&nbsp;            return (([D)doubles).clone();</b>
+<b class="nc">&nbsp;        } else if (array instanceof float[] floats) {</b>
+&nbsp;            return (([F)floats).clone();
+<b class="nc">&nbsp;        } else if (array instanceof int[] ints) {</b>
+<b class="nc">&nbsp;            return (([I)ints).clone();</b>
+<b class="nc">&nbsp;        } else if (array instanceof long[] longs) {</b>
+<b class="nc">&nbsp;            return (([J)longs).clone();</b>
+<b class="nc">&nbsp;        } else if (array instanceof short[] shorts) {</b>
+&nbsp;            return (([S)shorts).clone();
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            return ((Object[])array).clone();
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    static &lt;A extends Annotation&gt; A createProxy(MergedAnnotation&lt;A&gt; annotation, Class&lt;A&gt; type) {</b>
+&nbsp;        ClassLoader classLoader = type.getClassLoader();
+&nbsp;        Class&lt;?&gt;[] interfaces = new Class[]{type};
+&nbsp;        InvocationHandler handler = new SynthesizedMergedAnnotationInvocationHandler(annotation, type);
+<b class="fc">&nbsp;        return (A)(Proxy.newProxyInstance(classLoader, interfaces, handler));</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="nc">&nbsp;    private static String getName(Class&lt;?&gt; clazz) {</b>
+<b class="nc">&nbsp;        String canonicalName = clazz.getCanonicalName();</b>
+&nbsp;        return canonicalName != null ? canonicalName : clazz.getName();
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:58</div>
+</div>
+</body>
+</html>

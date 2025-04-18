@@ -1,0 +1,274 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > DateTimeSerializerBase</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.fasterxml.jackson.databind.ser.std</a>
+</div>
+
+<h1>Coverage Summary for Class: DateTimeSerializerBase (com.fasterxml.jackson.databind.ser.std)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DateTimeSerializerBase</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    12.5%
+  </span>
+  <span class="absValue">
+    (1/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    2.1%
+  </span>
+  <span class="absValue">
+    (1/48)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    6.2%
+  </span>
+  <span class="absValue">
+    (4/64)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package com.fasterxml.jackson.databind.ser.std;
+&nbsp;
+&nbsp;import com.fasterxml.jackson.annotation.JsonFormat;
+&nbsp;import com.fasterxml.jackson.annotation.JsonFormat.Shape;
+&nbsp;import com.fasterxml.jackson.core.JsonGenerator;
+&nbsp;import com.fasterxml.jackson.core.JsonParser.NumberType;
+&nbsp;import com.fasterxml.jackson.databind.BeanProperty;
+&nbsp;import com.fasterxml.jackson.databind.JavaType;
+&nbsp;import com.fasterxml.jackson.databind.JsonMappingException;
+&nbsp;import com.fasterxml.jackson.databind.JsonNode;
+&nbsp;import com.fasterxml.jackson.databind.JsonSerializer;
+&nbsp;import com.fasterxml.jackson.databind.SerializationFeature;
+&nbsp;import com.fasterxml.jackson.databind.SerializerProvider;
+&nbsp;import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrapper;
+&nbsp;import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonValueFormat;
+&nbsp;import com.fasterxml.jackson.databind.ser.ContextualSerializer;
+&nbsp;import com.fasterxml.jackson.databind.util.StdDateFormat;
+&nbsp;import java.io.IOException;
+&nbsp;import java.lang.reflect.Type;
+&nbsp;import java.text.DateFormat;
+&nbsp;import java.text.SimpleDateFormat;
+&nbsp;import java.util.Date;
+&nbsp;import java.util.Locale;
+&nbsp;import java.util.TimeZone;
+&nbsp;import java.util.concurrent.atomic.AtomicReference;
+&nbsp;
+&nbsp;public abstract class DateTimeSerializerBase&lt;T&gt; extends StdScalarSerializer&lt;T&gt; implements ContextualSerializer {
+&nbsp;    protected final Boolean _useTimestamp;
+&nbsp;    protected final DateFormat _customFormat;
+&nbsp;    protected final AtomicReference&lt;DateFormat&gt; _reusedCustomFormat;
+&nbsp;
+&nbsp;    protected DateTimeSerializerBase(Class&lt;T&gt; type, Boolean useTimestamp, DateFormat customFormat) {
+&nbsp;        super(type);
+&nbsp;        this._useTimestamp = useTimestamp;
+&nbsp;        this._customFormat = customFormat;
+&nbsp;        this._reusedCustomFormat = customFormat == null ? null : new AtomicReference();
+&nbsp;    }
+&nbsp;
+&nbsp;    public abstract DateTimeSerializerBase&lt;T&gt; withFormat(Boolean var1, DateFormat var2);
+&nbsp;
+&nbsp;    public JsonSerializer&lt;?&gt; createContextual(SerializerProvider serializers, BeanProperty property) throws JsonMappingException {
+&nbsp;        JsonFormat.Value format = this.findFormatOverrides(serializers, property, this.handledType());
+&nbsp;        if (format == null) {
+&nbsp;            return this;
+&nbsp;        } else {
+&nbsp;            JsonFormat.Shape shape = format.getShape();
+&nbsp;            if (shape.isNumeric()) {
+<b class="fc">&nbsp;                return this.withFormat(Boolean.TRUE, (DateFormat)null);</b>
+<b class="fc">&nbsp;            } else if (format.hasPattern()) {</b>
+<b class="fc">&nbsp;                Locale loc = format.hasLocale() ? format.getLocale() : serializers.getLocale();</b>
+<b class="pc">&nbsp;                SimpleDateFormat df = new SimpleDateFormat(format.getPattern(), loc);</b>
+&nbsp;                TimeZone tz = format.hasTimeZone() ? format.getTimeZone() : serializers.getTimeZone();
+&nbsp;                df.setTimeZone(tz);
+&nbsp;                return this.withFormat(Boolean.FALSE, df);
+&nbsp;            } else {
+&nbsp;                boolean hasLocale = format.hasLocale();
+&nbsp;                boolean hasTZ = format.hasTimeZone();
+&nbsp;                boolean asString = shape == Shape.STRING;
+&nbsp;                if (!hasLocale &amp;&amp; !hasTZ &amp;&amp; !asString) {
+&nbsp;                    return this;
+&nbsp;                } else {
+<b class="nc">&nbsp;                    DateFormat df0 = serializers.getConfig().getDateFormat();</b>
+<b class="nc">&nbsp;                    if (df0 instanceof StdDateFormat) {</b>
+<b class="nc">&nbsp;                        StdDateFormat std = (StdDateFormat)df0;</b>
+&nbsp;                        if (format.hasLocale()) {
+&nbsp;                            std = std.withLocale(format.getLocale());
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                        if (format.hasTimeZone()) {</b>
+&nbsp;                            std = std.withTimeZone(format.getTimeZone());
+&nbsp;                        }
+&nbsp;
+&nbsp;                        return this.withFormat(Boolean.FALSE, std);
+<b class="nc">&nbsp;                    } else {</b>
+<b class="nc">&nbsp;                        if (!(df0 instanceof SimpleDateFormat)) {</b>
+<b class="nc">&nbsp;                            serializers.reportBadDefinition(this.handledType(), String.format(&quot;Configured `DateFormat` (%s) not a `SimpleDateFormat`; cannot configure `Locale` or `TimeZone`&quot;, df0.getClass().getName()));</b>
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                        SimpleDateFormat df = (SimpleDateFormat)df0;</b>
+<b class="nc">&nbsp;                        if (hasLocale) {</b>
+<b class="nc">&nbsp;                            df = new SimpleDateFormat(df.toPattern(), format.getLocale());</b>
+<b class="nc">&nbsp;                        } else {</b>
+&nbsp;                            df = (SimpleDateFormat)df.clone();
+&nbsp;                        }
+&nbsp;
+<b class="nc">&nbsp;                        TimeZone newTz = format.getTimeZone();</b>
+<b class="nc">&nbsp;                        boolean changeTZ = newTz != null &amp;&amp; !newTz.equals(df.getTimeZone());</b>
+<b class="nc">&nbsp;                        if (changeTZ) {</b>
+&nbsp;                            df.setTimeZone(newTz);
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                        return this.withFormat(Boolean.FALSE, df);
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public boolean isEmpty(SerializerProvider serializers, T value) {</b>
+&nbsp;        return false;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    protected abstract long _timestamp(T var1);
+<b class="nc">&nbsp;</b>
+&nbsp;    /** @deprecated */
+&nbsp;    @Deprecated
+&nbsp;    public JsonNode getSchema(SerializerProvider serializers, Type typeHint) {
+&nbsp;        return this.createSchemaNode(this._asTimestamp(serializers) ? &quot;number&quot; : &quot;string&quot;, true);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void acceptJsonFormatVisitor(JsonFormatVisitorWrapper visitor, JavaType typeHint) throws JsonMappingException {</b>
+&nbsp;        this._acceptJsonFormatVisitor(visitor, typeHint, this._asTimestamp(visitor.getProvider()));
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public abstract void serialize(T var1, JsonGenerator var2, SerializerProvider var3) throws IOException;</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    protected boolean _asTimestamp(SerializerProvider serializers) {
+<b class="nc">&nbsp;        if (this._useTimestamp != null) {</b>
+&nbsp;            return this._useTimestamp;
+<b class="nc">&nbsp;        } else if (this._customFormat == null) {</b>
+&nbsp;            if (serializers != null) {
+<b class="nc">&nbsp;                return serializers.isEnabled(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);</b>
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                throw new IllegalArgumentException(&quot;Null SerializerProvider passed for &quot; + this.handledType().getName());</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void _acceptJsonFormatVisitor(JsonFormatVisitorWrapper visitor, JavaType typeHint, boolean asNumber) throws JsonMappingException {
+&nbsp;        if (asNumber) {
+&nbsp;            this.visitIntFormat(visitor, typeHint, NumberType.LONG, JsonValueFormat.UTC_MILLISEC);
+&nbsp;        } else {
+&nbsp;            this.visitStringFormat(visitor, typeHint, JsonValueFormat.DATE_TIME);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void _serializeAsString(Date value, JsonGenerator g, SerializerProvider provider) throws IOException {
+<b class="nc">&nbsp;        if (this._customFormat == null) {</b>
+&nbsp;            provider.defaultSerializeDateValue(value, g);
+&nbsp;        } else {
+&nbsp;            DateFormat f = (DateFormat)this._reusedCustomFormat.getAndSet((Object)null);
+&nbsp;            if (f == null) {
+&nbsp;                f = (DateFormat)this._customFormat.clone();
+&nbsp;            }
+&nbsp;
+&nbsp;            g.writeString(f.format(value));
+&nbsp;            this._reusedCustomFormat.compareAndSet((Object)null, f);
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 21:00</div>
+</div>
+</body>
+</html>

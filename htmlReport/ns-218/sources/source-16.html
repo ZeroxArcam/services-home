@@ -1,0 +1,360 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ValueExtractorResolver</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.validator.internal.engine.valueextraction</a>
+</div>
+
+<h1>Coverage Summary for Class: ValueExtractorResolver (org.hibernate.validator.internal.engine.valueextraction)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ValueExtractorResolver</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    10.5%
+  </span>
+  <span class="absValue">
+    (2/19)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/52)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    4.8%
+  </span>
+  <span class="absValue">
+    (6/124)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.validator.internal.engine.valueextraction;
+&nbsp;
+&nbsp;import java.lang.invoke.MethodHandles;
+&nbsp;import java.lang.reflect.Type;
+&nbsp;import java.lang.reflect.TypeVariable;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.HashSet;
+&nbsp;import java.util.Iterator;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Objects;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import java.util.stream.Collectors;
+&nbsp;import org.hibernate.validator.internal.util.CollectionHelper;
+&nbsp;import org.hibernate.validator.internal.util.Contracts;
+&nbsp;import org.hibernate.validator.internal.util.ReflectionHelper;
+&nbsp;import org.hibernate.validator.internal.util.TypeHelper;
+&nbsp;import org.hibernate.validator.internal.util.TypeVariableBindings;
+&nbsp;import org.hibernate.validator.internal.util.TypeVariables;
+&nbsp;import org.hibernate.validator.internal.util.logging.Log;
+&nbsp;import org.hibernate.validator.internal.util.logging.LoggerFactory;
+&nbsp;
+&nbsp;public class ValueExtractorResolver {
+&nbsp;    private static final Log LOG = LoggerFactory.make(MethodHandles.lookup());
+&nbsp;    private final Set&lt;ValueExtractorDescriptor&gt; registeredValueExtractors;
+&nbsp;    private final ConcurrentHashMap&lt;ValueExtractorCacheKey, Set&lt;ValueExtractorDescriptor&gt;&gt; possibleValueExtractorsByRuntimeTypeAndTypeParameter = new ConcurrentHashMap();
+&nbsp;    private final ConcurrentHashMap&lt;Class&lt;?&gt;, Set&lt;ValueExtractorDescriptor&gt;&gt; possibleValueExtractorsByRuntimeType = new ConcurrentHashMap();
+&nbsp;    private final Set&lt;Class&lt;?&gt;&gt; nonContainerTypes = Collections.newSetFromMap(new ConcurrentHashMap());
+&nbsp;
+&nbsp;    ValueExtractorResolver(Set&lt;ValueExtractorDescriptor&gt; valueExtractors) {
+&nbsp;        this.registeredValueExtractors = CollectionHelper.toImmutableSet(valueExtractors);
+&nbsp;    }
+&nbsp;
+&nbsp;    public Set&lt;ValueExtractorDescriptor&gt; getMaximallySpecificValueExtractors(Class&lt;?&gt; declaredType) {
+&nbsp;        return this.getRuntimeCompliantValueExtractors(declaredType, this.registeredValueExtractors);
+&nbsp;    }
+&nbsp;
+&nbsp;    public ValueExtractorDescriptor getMaximallySpecificAndContainerElementCompliantValueExtractor(Class&lt;?&gt; declaredType, TypeVariable&lt;?&gt; typeParameter) {
+&nbsp;        return this.getUniqueValueExtractorOrThrowException(declaredType, this.getRuntimeAndContainerElementCompliantValueExtractorsFromPossibleCandidates(declaredType, typeParameter, declaredType, this.registeredValueExtractors));
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public ValueExtractorDescriptor getMaximallySpecificAndRuntimeContainerElementCompliantValueExtractor(Type declaredType, TypeVariable&lt;?&gt; typeParameter, Class&lt;?&gt; runtimeType, Collection&lt;ValueExtractorDescriptor&gt; valueExtractorCandidates) {</b>
+&nbsp;        Contracts.assertNotEmpty(valueExtractorCandidates, &quot;Value extractor candidates cannot be empty&quot;);
+&nbsp;        return valueExtractorCandidates.size() == 1 ? (ValueExtractorDescriptor)valueExtractorCandidates.iterator().next() : this.getUniqueValueExtractorOrThrowException(runtimeType, this.getRuntimeAndContainerElementCompliantValueExtractorsFromPossibleCandidates(declaredType, typeParameter, runtimeType, valueExtractorCandidates));
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public ValueExtractorDescriptor getMaximallySpecificValueExtractorForAllContainerElements(Class&lt;?&gt; runtimeType, Set&lt;ValueExtractorDescriptor&gt; potentialValueExtractorDescriptors) {</b>
+&nbsp;        return TypeHelper.isAssignable(Map.class, runtimeType) ? MapValueExtractor.DESCRIPTOR : this.getUniqueValueExtractorOrThrowException(runtimeType, this.getRuntimeCompliantValueExtractors(runtimeType, potentialValueExtractorDescriptors));
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+<b class="fc">&nbsp;    public Set&lt;ValueExtractorDescriptor&gt; getValueExtractorCandidatesForCascadedValidation(Type declaredType, TypeVariable&lt;?&gt; typeParameter) {</b>
+&nbsp;        Set&lt;ValueExtractorDescriptor&gt; valueExtractorDescriptors = new HashSet();
+<b class="fc">&nbsp;        valueExtractorDescriptors.addAll(this.getRuntimeAndContainerElementCompliantValueExtractorsFromPossibleCandidates(declaredType, typeParameter, TypeHelper.getErasedReferenceType(declaredType), this.registeredValueExtractors));</b>
+<b class="fc">&nbsp;        valueExtractorDescriptors.addAll(this.getPotentiallyRuntimeTypeCompliantAndContainerElementCompliantValueExtractors(declaredType, typeParameter));</b>
+&nbsp;        return CollectionHelper.toImmutableSet(valueExtractorDescriptors);
+&nbsp;    }
+&nbsp;
+&nbsp;    public Set&lt;ValueExtractorDescriptor&gt; getValueExtractorCandidatesForContainerDetectionOfGlobalCascadedValidation(Type enclosingType) {
+&nbsp;        boolean mapAssignable = TypeHelper.isAssignable(Map.class, enclosingType);
+&nbsp;        Class&lt;?&gt; enclosingClass = ReflectionHelper.getClassFromType(enclosingType);
+&nbsp;        return (Set)this.getRuntimeCompliantValueExtractors(enclosingClass, this.registeredValueExtractors).stream().filter((ved) -&gt; !mapAssignable || !ved.equals(MapKeyExtractor.DESCRIPTOR)).collect(Collectors.collectingAndThen(Collectors.toSet(), CollectionHelper::toImmutableSet));
+&nbsp;    }
+&nbsp;
+&nbsp;    public Set&lt;ValueExtractorDescriptor&gt; getPotentialValueExtractorCandidatesForCascadedValidation(Type declaredType) {
+<b class="nc">&nbsp;        return (Set)this.registeredValueExtractors.stream().filter((e) -&gt; TypeHelper.isAssignable(declaredType, e.getContainerType())).collect(Collectors.collectingAndThen(Collectors.toSet(), CollectionHelper::toImmutableSet));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void clear() {
+&nbsp;        this.nonContainerTypes.clear();
+&nbsp;        this.possibleValueExtractorsByRuntimeType.clear();
+&nbsp;        this.possibleValueExtractorsByRuntimeTypeAndTypeParameter.clear();
+&nbsp;    }
+&nbsp;
+&nbsp;    private Set&lt;ValueExtractorDescriptor&gt; getPotentiallyRuntimeTypeCompliantAndContainerElementCompliantValueExtractors(Type declaredType, TypeVariable&lt;?&gt; typeParameter) {
+&nbsp;        boolean isInternal = TypeVariables.isInternal(typeParameter);
+&nbsp;        Type erasedDeclaredType = TypeHelper.getErasedReferenceType(declaredType);
+<b class="nc">&nbsp;        Set&lt;ValueExtractorDescriptor&gt; typeCompatibleExtractors = (Set)this.registeredValueExtractors.stream().filter((e) -&gt; TypeHelper.isAssignable(erasedDeclaredType, e.getContainerType())).collect(Collectors.toSet());</b>
+&nbsp;        Set&lt;ValueExtractorDescriptor&gt; containerElementCompliantExtractors = new HashSet();
+<b class="nc">&nbsp;</b>
+&nbsp;        for(ValueExtractorDescriptor extractorDescriptor : typeCompatibleExtractors) {
+&nbsp;            TypeVariable&lt;?&gt; typeParameterBoundToExtractorType;
+&nbsp;            if (!isInternal) {
+&nbsp;                Map&lt;Class&lt;?&gt;, Map&lt;TypeVariable&lt;?&gt;, TypeVariable&lt;?&gt;&gt;&gt; allBindings = TypeVariableBindings.getTypeVariableBindings(extractorDescriptor.getContainerType());
+&nbsp;                Map&lt;TypeVariable&lt;?&gt;, TypeVariable&lt;?&gt;&gt; bindingsForExtractorType = (Map)allBindings.get(erasedDeclaredType);
+&nbsp;                typeParameterBoundToExtractorType = this.bind(extractorDescriptor.getExtractedTypeParameter(), bindingsForExtractorType);
+&nbsp;            } else {
+&nbsp;                typeParameterBoundToExtractorType = typeParameter;
+&nbsp;            }
+&nbsp;
+&nbsp;            if (Objects.equals(typeParameter, typeParameterBoundToExtractorType)) {
+&nbsp;                containerElementCompliantExtractors.add(extractorDescriptor);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return containerElementCompliantExtractors;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private ValueExtractorDescriptor getUniqueValueExtractorOrThrowException(Class&lt;?&gt; runtimeType, Set&lt;ValueExtractorDescriptor&gt; maximallySpecificContainerElementCompliantValueExtractors) {</b>
+&nbsp;        if (maximallySpecificContainerElementCompliantValueExtractors.size() == 1) {
+&nbsp;            return (ValueExtractorDescriptor)maximallySpecificContainerElementCompliantValueExtractors.iterator().next();
+<b class="nc">&nbsp;        } else if (maximallySpecificContainerElementCompliantValueExtractors.isEmpty()) {</b>
+&nbsp;            return null;
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            throw LOG.getUnableToGetMostSpecificValueExtractorDueToSeveralMaximallySpecificValueExtractorsDeclaredException(runtimeType, ValueExtractorHelper.toValueExtractorClasses(maximallySpecificContainerElementCompliantValueExtractors));
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private Set&lt;ValueExtractorDescriptor&gt; getMaximallySpecificValueExtractors(Set&lt;ValueExtractorDescriptor&gt; possibleValueExtractors) {
+&nbsp;        Set&lt;ValueExtractorDescriptor&gt; valueExtractorDescriptors = CollectionHelper.newHashSet(possibleValueExtractors.size());
+&nbsp;
+&nbsp;        for(ValueExtractorDescriptor descriptor : possibleValueExtractors) {
+&nbsp;            if (valueExtractorDescriptors.isEmpty()) {
+&nbsp;                valueExtractorDescriptors.add(descriptor);
+&nbsp;            } else {
+&nbsp;                Iterator&lt;ValueExtractorDescriptor&gt; candidatesIterator = valueExtractorDescriptors.iterator();
+&nbsp;                boolean isNewRoot = true;
+&nbsp;
+&nbsp;                while(candidatesIterator.hasNext()) {
+&nbsp;                    ValueExtractorDescriptor candidate = (ValueExtractorDescriptor)candidatesIterator.next();
+&nbsp;                    if (!candidate.getContainerType().equals(descriptor.getContainerType())) {
+&nbsp;                        if (TypeHelper.isAssignable(candidate.getContainerType(), descriptor.getContainerType())) {
+&nbsp;                            candidatesIterator.remove();
+&nbsp;                        } else if (TypeHelper.isAssignable(descriptor.getContainerType(), candidate.getContainerType())) {
+&nbsp;                            isNewRoot = false;
+&nbsp;                        }
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                if (isNewRoot) {
+<b class="nc">&nbsp;                    valueExtractorDescriptors.add(descriptor);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return valueExtractorDescriptors;
+&nbsp;    }
+&nbsp;
+&nbsp;    private Set&lt;ValueExtractorDescriptor&gt; getRuntimeCompliantValueExtractors(Class&lt;?&gt; runtimeType, Set&lt;ValueExtractorDescriptor&gt; potentialValueExtractorDescriptors) {
+&nbsp;        if (this.nonContainerTypes.contains(runtimeType)) {
+&nbsp;            return Collections.emptySet();
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            Set&lt;ValueExtractorDescriptor&gt; valueExtractorDescriptors = (Set)this.possibleValueExtractorsByRuntimeType.get(runtimeType);
+<b class="nc">&nbsp;            if (valueExtractorDescriptors != null) {</b>
+<b class="nc">&nbsp;                return valueExtractorDescriptors;</b>
+&nbsp;            } else {
+<b class="nc">&nbsp;                Set&lt;ValueExtractorDescriptor&gt; possibleValueExtractors = (Set)potentialValueExtractorDescriptors.stream().filter((e) -&gt; TypeHelper.isAssignable(e.getContainerType(), runtimeType)).collect(Collectors.toSet());</b>
+&nbsp;                valueExtractorDescriptors = this.getMaximallySpecificValueExtractors(possibleValueExtractors);
+<b class="nc">&nbsp;                if (valueExtractorDescriptors.isEmpty()) {</b>
+&nbsp;                    this.nonContainerTypes.add(runtimeType);
+&nbsp;                    return Collections.emptySet();
+&nbsp;                } else {
+&nbsp;                    Set&lt;ValueExtractorDescriptor&gt; valueExtractorDescriptorsToCache = CollectionHelper.toImmutableSet(valueExtractorDescriptors);
+&nbsp;                    Set&lt;ValueExtractorDescriptor&gt; cachedValueExtractorDescriptors = (Set)this.possibleValueExtractorsByRuntimeType.putIfAbsent(runtimeType, valueExtractorDescriptorsToCache);
+&nbsp;                    return cachedValueExtractorDescriptors != null ? cachedValueExtractorDescriptors : valueExtractorDescriptorsToCache;
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private Set&lt;ValueExtractorDescriptor&gt; getRuntimeAndContainerElementCompliantValueExtractorsFromPossibleCandidates(Type declaredType, TypeVariable&lt;?&gt; typeParameter, Class&lt;?&gt; runtimeType, Collection&lt;ValueExtractorDescriptor&gt; valueExtractorCandidates) {
+&nbsp;        if (this.nonContainerTypes.contains(runtimeType)) {
+&nbsp;            return Collections.emptySet();
+&nbsp;        } else {
+&nbsp;            ValueExtractorCacheKey cacheKey = new ValueExtractorCacheKey(runtimeType, typeParameter);
+&nbsp;            Set&lt;ValueExtractorDescriptor&gt; valueExtractorDescriptors = (Set)this.possibleValueExtractorsByRuntimeTypeAndTypeParameter.get(cacheKey);
+<b class="nc">&nbsp;            if (valueExtractorDescriptors != null) {</b>
+&nbsp;                return valueExtractorDescriptors;
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                boolean isInternal = TypeVariables.isInternal(typeParameter);</b>
+<b class="nc">&nbsp;                Class&lt;?&gt; erasedDeclaredType = TypeHelper.getErasedReferenceType(declaredType);</b>
+<b class="nc">&nbsp;                Set&lt;ValueExtractorDescriptor&gt; possibleValueExtractors = (Set)valueExtractorCandidates.stream().filter((e) -&gt; TypeHelper.isAssignable(e.getContainerType(), runtimeType)).filter((extractorDescriptor) -&gt; this.checkValueExtractorTypeCompatibility(typeParameter, isInternal, erasedDeclaredType, extractorDescriptor)).collect(Collectors.toSet());</b>
+<b class="nc">&nbsp;                valueExtractorDescriptors = this.getMaximallySpecificValueExtractors(possibleValueExtractors);</b>
+&nbsp;                if (valueExtractorDescriptors.isEmpty()) {
+&nbsp;                    this.nonContainerTypes.add(runtimeType);
+&nbsp;                    return Collections.emptySet();
+&nbsp;                } else {
+&nbsp;                    Set&lt;ValueExtractorDescriptor&gt; valueExtractorDescriptorsToCache = CollectionHelper.toImmutableSet(valueExtractorDescriptors);
+&nbsp;                    Set&lt;ValueExtractorDescriptor&gt; cachedValueExtractorDescriptors = (Set)this.possibleValueExtractorsByRuntimeTypeAndTypeParameter.putIfAbsent(cacheKey, valueExtractorDescriptorsToCache);
+&nbsp;                    return cachedValueExtractorDescriptors != null ? cachedValueExtractorDescriptors : valueExtractorDescriptorsToCache;
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean checkValueExtractorTypeCompatibility(TypeVariable&lt;?&gt; typeParameter, boolean isInternal, Class&lt;?&gt; erasedDeclaredType, ValueExtractorDescriptor extractorDescriptor) {
+&nbsp;        return TypeHelper.isAssignable(extractorDescriptor.getContainerType(), erasedDeclaredType) ? this.validateValueExtractorCompatibility(isInternal, erasedDeclaredType, extractorDescriptor.getContainerType(), typeParameter, extractorDescriptor.getExtractedTypeParameter()) : this.validateValueExtractorCompatibility(isInternal, extractorDescriptor.getContainerType(), erasedDeclaredType, extractorDescriptor.getExtractedTypeParameter(), typeParameter);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private boolean validateValueExtractorCompatibility(boolean isInternal, Class&lt;?&gt; typeForBinding, Class&lt;?&gt; typeToBind, TypeVariable&lt;?&gt; typeParameterForBinding, TypeVariable&lt;?&gt; typeParameterToCompare) {</b>
+<b class="nc">&nbsp;        TypeVariable&lt;?&gt; typeParameterBoundToExtractorType;</b>
+<b class="nc">&nbsp;        if (!isInternal) {</b>
+<b class="nc">&nbsp;            Map&lt;Class&lt;?&gt;, Map&lt;TypeVariable&lt;?&gt;, TypeVariable&lt;?&gt;&gt;&gt; allBindings = TypeVariableBindings.getTypeVariableBindings(typeForBinding);</b>
+&nbsp;            Map&lt;TypeVariable&lt;?&gt;, TypeVariable&lt;?&gt;&gt; bindingsForExtractorType = (Map)allBindings.get(typeToBind);
+&nbsp;            typeParameterBoundToExtractorType = this.bind(typeParameterForBinding, bindingsForExtractorType);
+&nbsp;        } else {
+<b class="nc">&nbsp;            typeParameterBoundToExtractorType = typeParameterForBinding;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return Objects.equals(typeParameterToCompare, typeParameterBoundToExtractorType);
+&nbsp;    }
+&nbsp;
+&nbsp;    private TypeVariable&lt;?&gt; bind(TypeVariable&lt;?&gt; typeParameter, Map&lt;TypeVariable&lt;?&gt;, TypeVariable&lt;?&gt;&gt; bindings) {
+&nbsp;        return bindings != null ? (TypeVariable)bindings.get(typeParameter) : null;
+&nbsp;    }
+&nbsp;
+&nbsp;    private static class ValueExtractorCacheKey {
+&nbsp;        private Class&lt;?&gt; type;
+<b class="nc">&nbsp;        private TypeVariable&lt;?&gt; typeParameter;</b>
+<b class="nc">&nbsp;        private int hashCode;</b>
+&nbsp;
+<b class="nc">&nbsp;        ValueExtractorCacheKey(Class&lt;?&gt; type, TypeVariable&lt;?&gt; typeParameter) {</b>
+<b class="nc">&nbsp;            this.type = type;</b>
+<b class="nc">&nbsp;            this.typeParameter = typeParameter;</b>
+<b class="nc">&nbsp;            this.hashCode = this.buildHashCode();</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        public boolean equals(Object o) {
+<b class="nc">&nbsp;            if (this == o) {</b>
+&nbsp;                return true;
+&nbsp;            } else if (o == null) {
+<b class="nc">&nbsp;                return false;</b>
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                ValueExtractorCacheKey that = (ValueExtractorCacheKey)o;</b>
+&nbsp;                return Objects.equals(this.type, that.type) &amp;&amp; Objects.equals(this.typeParameter, that.typeParameter);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        public int hashCode() {
+<b class="nc">&nbsp;            return this.hashCode;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        private int buildHashCode() {</b>
+<b class="nc">&nbsp;            int result = this.type.hashCode();</b>
+&nbsp;            result = 31 * result + (this.typeParameter != null ? this.typeParameter.hashCode() : 0);
+&nbsp;            return result;
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:54</div>
+</div>
+</body>
+</html>

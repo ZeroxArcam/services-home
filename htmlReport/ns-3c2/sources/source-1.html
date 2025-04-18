@@ -1,0 +1,254 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > AbstractRoutingDataSource</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.jdbc.datasource.lookup</a>
+</div>
+
+<h1>Coverage Summary for Class: AbstractRoutingDataSource (org.springframework.jdbc.datasource.lookup)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AbstractRoutingDataSource</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/19)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/24)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/42)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.jdbc.datasource.lookup;
+&nbsp;
+&nbsp;import java.sql.Connection;
+&nbsp;import java.sql.ConnectionBuilder;
+&nbsp;import java.sql.SQLException;
+&nbsp;import java.sql.ShardingKeyBuilder;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.Map;
+&nbsp;import javax.sql.DataSource;
+&nbsp;import org.springframework.beans.factory.InitializingBean;
+&nbsp;import org.springframework.jdbc.datasource.AbstractDataSource;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.CollectionUtils;
+&nbsp;
+&nbsp;public abstract class AbstractRoutingDataSource extends AbstractDataSource implements InitializingBean {
+&nbsp;    @Nullable
+&nbsp;    private Map&lt;Object, Object&gt; targetDataSources;
+&nbsp;    @Nullable
+&nbsp;    private Object defaultTargetDataSource;
+&nbsp;    private boolean lenientFallback = true;
+&nbsp;    private DataSourceLookup dataSourceLookup = new JndiDataSourceLookup();
+&nbsp;    @Nullable
+&nbsp;    private Map&lt;Object, DataSource&gt; resolvedDataSources;
+&nbsp;    @Nullable
+&nbsp;    private DataSource resolvedDefaultDataSource;
+&nbsp;
+&nbsp;    public AbstractRoutingDataSource() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setTargetDataSources(Map&lt;Object, Object&gt; targetDataSources) {
+&nbsp;        this.targetDataSources = targetDataSources;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setDefaultTargetDataSource(Object defaultTargetDataSource) {
+&nbsp;        this.defaultTargetDataSource = defaultTargetDataSource;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setLenientFallback(boolean lenientFallback) {
+<b class="nc">&nbsp;        this.lenientFallback = lenientFallback;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setDataSourceLookup(@Nullable DataSourceLookup dataSourceLookup) {
+&nbsp;        this.dataSourceLookup = (DataSourceLookup)(dataSourceLookup != null ? dataSourceLookup : new JndiDataSourceLookup());
+&nbsp;    }
+&nbsp;
+&nbsp;    public void afterPropertiesSet() {
+<b class="nc">&nbsp;        this.initialize();</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void initialize() {
+&nbsp;        if (this.targetDataSources == null) {
+&nbsp;            throw new IllegalArgumentException(&quot;Property &#39;targetDataSources&#39; is required&quot;);
+&nbsp;        } else {
+&nbsp;            this.resolvedDataSources = CollectionUtils.newHashMap(this.targetDataSources.size());
+&nbsp;            this.targetDataSources.forEach((key, value) -&gt; {
+&nbsp;                Object lookupKey = this.resolveSpecifiedLookupKey(key);
+&nbsp;                DataSource dataSource = this.resolveSpecifiedDataSource(value);
+&nbsp;                this.resolvedDataSources.put(lookupKey, dataSource);
+&nbsp;            });
+&nbsp;            if (this.defaultTargetDataSource != null) {
+&nbsp;                this.resolvedDefaultDataSource = this.resolveSpecifiedDataSource(this.defaultTargetDataSource);
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Object resolveSpecifiedLookupKey(Object lookupKey) {
+&nbsp;        return lookupKey;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected DataSource resolveSpecifiedDataSource(Object dataSourceObject) throws IllegalArgumentException {
+&nbsp;        if (dataSourceObject instanceof DataSource dataSource) {
+&nbsp;            return dataSource;
+&nbsp;        } else if (dataSourceObject instanceof String dataSourceName) {
+&nbsp;            return this.dataSourceLookup.getDataSource(dataSourceName);
+&nbsp;        } else {
+&nbsp;            throw new IllegalArgumentException(&quot;Illegal data source value - only [javax.sql.DataSource] and String supported: &quot; + String.valueOf(dataSourceObject));
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public Map&lt;Object, DataSource&gt; getResolvedDataSources() {
+<b class="nc">&nbsp;        Assert.state(this.resolvedDataSources != null, &quot;DataSources not resolved yet - call afterPropertiesSet&quot;);</b>
+&nbsp;        return Collections.unmodifiableMap(this.resolvedDataSources);
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public DataSource getResolvedDefaultDataSource() {
+&nbsp;        return this.resolvedDefaultDataSource;
+&nbsp;    }
+&nbsp;
+&nbsp;    public Connection getConnection() throws SQLException {
+&nbsp;        return this.determineTargetDataSource().getConnection();
+&nbsp;    }
+&nbsp;
+&nbsp;    public Connection getConnection(String username, String password) throws SQLException {
+&nbsp;        return this.determineTargetDataSource().getConnection(username, password);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public ConnectionBuilder createConnectionBuilder() throws SQLException {</b>
+&nbsp;        return this.determineTargetDataSource().createConnectionBuilder();
+&nbsp;    }
+&nbsp;
+&nbsp;    public ShardingKeyBuilder createShardingKeyBuilder() throws SQLException {
+&nbsp;        return this.determineTargetDataSource().createShardingKeyBuilder();
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;T&gt; T unwrap(Class&lt;T&gt; iface) throws SQLException {
+&nbsp;        return (T)(iface.isInstance(this) ? this : this.determineTargetDataSource().unwrap(iface));
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public boolean isWrapperFor(Class&lt;?&gt; iface) throws SQLException {
+&nbsp;        return iface.isInstance(this) || this.determineTargetDataSource().isWrapperFor(iface);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected DataSource determineTargetDataSource() {
+&nbsp;        Assert.notNull(this.resolvedDataSources, &quot;DataSource router not initialized&quot;);
+&nbsp;        Object lookupKey = this.determineCurrentLookupKey();
+<b class="nc">&nbsp;        DataSource dataSource = (DataSource)this.resolvedDataSources.get(lookupKey);</b>
+&nbsp;        if (dataSource == null &amp;&amp; (this.lenientFallback || lookupKey == null)) {
+&nbsp;            dataSource = this.resolvedDefaultDataSource;
+&nbsp;        }
+&nbsp;
+&nbsp;        if (dataSource == null) {
+&nbsp;            throw new IllegalStateException(&quot;Cannot determine target DataSource for lookup key [&quot; + String.valueOf(lookupKey) + &quot;]&quot;);
+&nbsp;        } else {
+&nbsp;            return dataSource;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    protected abstract Object determineCurrentLookupKey();
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
+</div>
+</body>
+</html>

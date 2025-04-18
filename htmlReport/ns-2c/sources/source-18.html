@@ -1,0 +1,825 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > SerializerProvider</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.fasterxml.jackson.databind</a>
+</div>
+
+<h1>Coverage Summary for Class: SerializerProvider (com.fasterxml.jackson.databind)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SerializerProvider</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    2.7%
+  </span>
+  <span class="absValue">
+    (2/75)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/146)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    4.2%
+  </span>
+  <span class="absValue">
+    (13/307)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package com.fasterxml.jackson.databind;
+&nbsp;
+&nbsp;import com.fasterxml.jackson.annotation.JsonFormat;
+&nbsp;import com.fasterxml.jackson.annotation.JsonInclude;
+&nbsp;import com.fasterxml.jackson.annotation.ObjectIdGenerator;
+&nbsp;import com.fasterxml.jackson.core.JsonGenerator;
+&nbsp;import com.fasterxml.jackson.core.JsonParser;
+&nbsp;import com.fasterxml.jackson.core.ObjectCodec;
+&nbsp;import com.fasterxml.jackson.databind.cfg.ContextAttributes;
+&nbsp;import com.fasterxml.jackson.databind.cfg.DatatypeFeature;
+&nbsp;import com.fasterxml.jackson.databind.cfg.DatatypeFeatures;
+&nbsp;import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
+&nbsp;import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
+&nbsp;import com.fasterxml.jackson.databind.introspect.Annotated;
+&nbsp;import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
+&nbsp;import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
+&nbsp;import com.fasterxml.jackson.databind.ser.ContextualSerializer;
+&nbsp;import com.fasterxml.jackson.databind.ser.FilterProvider;
+&nbsp;import com.fasterxml.jackson.databind.ser.ResolvableSerializer;
+&nbsp;import com.fasterxml.jackson.databind.ser.SerializerCache;
+&nbsp;import com.fasterxml.jackson.databind.ser.SerializerFactory;
+&nbsp;import com.fasterxml.jackson.databind.ser.impl.FailingSerializer;
+&nbsp;import com.fasterxml.jackson.databind.ser.impl.ReadOnlyClassToSerializerMap;
+&nbsp;import com.fasterxml.jackson.databind.ser.impl.TypeWrappedSerializer;
+&nbsp;import com.fasterxml.jackson.databind.ser.impl.UnknownSerializer;
+&nbsp;import com.fasterxml.jackson.databind.ser.impl.WritableObjectId;
+&nbsp;import com.fasterxml.jackson.databind.ser.std.NullSerializer;
+&nbsp;import com.fasterxml.jackson.databind.type.TypeFactory;
+&nbsp;import com.fasterxml.jackson.databind.util.ClassUtil;
+&nbsp;import com.fasterxml.jackson.databind.util.TokenBuffer;
+&nbsp;import java.io.IOException;
+&nbsp;import java.text.DateFormat;
+&nbsp;import java.util.Date;
+&nbsp;import java.util.Locale;
+&nbsp;import java.util.TimeZone;
+&nbsp;
+&nbsp;public abstract class SerializerProvider extends DatabindContext {
+&nbsp;    protected static final boolean CACHE_UNKNOWN_MAPPINGS = false;
+&nbsp;    public static final JsonSerializer&lt;Object&gt; DEFAULT_NULL_KEY_SERIALIZER = new FailingSerializer(&quot;Null key for a Map not allowed in JSON (use a converting NullKeySerializer?)&quot;);
+&nbsp;    protected static final JsonSerializer&lt;Object&gt; DEFAULT_UNKNOWN_SERIALIZER = new UnknownSerializer();
+&nbsp;    protected final SerializationConfig _config;
+&nbsp;    protected final Class&lt;?&gt; _serializationView;
+&nbsp;    protected final SerializerFactory _serializerFactory;
+&nbsp;    protected final SerializerCache _serializerCache;
+&nbsp;    protected transient ContextAttributes _attributes;
+&nbsp;    protected JsonSerializer&lt;Object&gt; _unknownTypeSerializer;
+&nbsp;    protected JsonSerializer&lt;Object&gt; _keySerializer;
+&nbsp;    protected JsonSerializer&lt;Object&gt; _nullValueSerializer;
+&nbsp;    protected JsonSerializer&lt;Object&gt; _nullKeySerializer;
+&nbsp;    protected final ReadOnlyClassToSerializerMap _knownSerializers;
+&nbsp;    protected DateFormat _dateFormat;
+&nbsp;    protected final boolean _stdNullValueSerializer;
+&nbsp;
+&nbsp;    public SerializerProvider() {
+&nbsp;        this._unknownTypeSerializer = DEFAULT_UNKNOWN_SERIALIZER;
+<b class="fc">&nbsp;        this._nullValueSerializer = NullSerializer.instance;</b>
+&nbsp;        this._nullKeySerializer = DEFAULT_NULL_KEY_SERIALIZER;
+&nbsp;        this._config = null;
+&nbsp;        this._serializerFactory = null;
+&nbsp;        this._serializerCache = new SerializerCache();
+&nbsp;        this._knownSerializers = null;
+&nbsp;        this._serializationView = null;
+&nbsp;        this._attributes = null;
+&nbsp;        this._stdNullValueSerializer = true;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected SerializerProvider(SerializerProvider src, SerializationConfig config, SerializerFactory f) {
+<b class="fc">&nbsp;        this._unknownTypeSerializer = DEFAULT_UNKNOWN_SERIALIZER;</b>
+&nbsp;        this._nullValueSerializer = NullSerializer.instance;
+&nbsp;        this._nullKeySerializer = DEFAULT_NULL_KEY_SERIALIZER;
+&nbsp;        this._serializerFactory = f;
+&nbsp;        this._config = config;
+&nbsp;        this._serializerCache = src._serializerCache;
+&nbsp;        this._unknownTypeSerializer = src._unknownTypeSerializer;
+&nbsp;        this._keySerializer = src._keySerializer;
+&nbsp;        this._nullValueSerializer = src._nullValueSerializer;
+&nbsp;        this._nullKeySerializer = src._nullKeySerializer;
+&nbsp;        this._stdNullValueSerializer = this._nullValueSerializer == DEFAULT_NULL_KEY_SERIALIZER;
+&nbsp;        this._serializationView = config.getActiveView();
+&nbsp;        this._attributes = config.getAttributes();
+&nbsp;        this._knownSerializers = this._serializerCache.getReadOnlyLookupMap();
+&nbsp;    }
+&nbsp;
+&nbsp;    protected SerializerProvider(SerializerProvider src) {
+&nbsp;        this._unknownTypeSerializer = DEFAULT_UNKNOWN_SERIALIZER;
+&nbsp;        this._nullValueSerializer = NullSerializer.instance;
+&nbsp;        this._nullKeySerializer = DEFAULT_NULL_KEY_SERIALIZER;
+&nbsp;        this._config = null;
+&nbsp;        this._serializationView = null;
+&nbsp;        this._serializerFactory = null;
+&nbsp;        this._knownSerializers = null;
+&nbsp;        this._serializerCache = new SerializerCache();
+&nbsp;        this._unknownTypeSerializer = src._unknownTypeSerializer;
+&nbsp;        this._keySerializer = src._keySerializer;
+&nbsp;        this._nullValueSerializer = src._nullValueSerializer;
+&nbsp;        this._nullKeySerializer = src._nullKeySerializer;
+&nbsp;        this._stdNullValueSerializer = src._stdNullValueSerializer;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected SerializerProvider(SerializerProvider src, SerializerCache serializerCache) {
+&nbsp;        this._unknownTypeSerializer = DEFAULT_UNKNOWN_SERIALIZER;
+&nbsp;        this._nullValueSerializer = NullSerializer.instance;
+&nbsp;        this._nullKeySerializer = DEFAULT_NULL_KEY_SERIALIZER;
+&nbsp;        this._serializerCache = serializerCache;
+&nbsp;        this._config = src._config;
+&nbsp;        this._serializationView = src._serializationView;
+&nbsp;        this._serializerFactory = src._serializerFactory;
+&nbsp;        this._attributes = src._attributes;
+&nbsp;        this._knownSerializers = src._knownSerializers;
+&nbsp;        this._unknownTypeSerializer = src._unknownTypeSerializer;
+&nbsp;        this._nullValueSerializer = src._nullValueSerializer;
+&nbsp;        this._nullKeySerializer = src._nullKeySerializer;
+&nbsp;        this._keySerializer = src._keySerializer;
+&nbsp;        this._stdNullValueSerializer = src._stdNullValueSerializer;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setDefaultKeySerializer(JsonSerializer&lt;Object&gt; ks) {
+&nbsp;        if (ks == null) {
+&nbsp;            throw new IllegalArgumentException(&quot;Cannot pass null JsonSerializer&quot;);
+&nbsp;        } else {
+&nbsp;            this._keySerializer = ks;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setNullValueSerializer(JsonSerializer&lt;Object&gt; nvs) {
+&nbsp;        if (nvs == null) {
+&nbsp;            throw new IllegalArgumentException(&quot;Cannot pass null JsonSerializer&quot;);
+&nbsp;        } else {
+&nbsp;            this._nullValueSerializer = nvs;
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setNullKeySerializer(JsonSerializer&lt;Object&gt; nks) {
+&nbsp;        if (nks == null) {
+&nbsp;            throw new IllegalArgumentException(&quot;Cannot pass null JsonSerializer&quot;);
+&nbsp;        } else {
+&nbsp;            this._nullKeySerializer = nks;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public final SerializationConfig getConfig() {
+&nbsp;        return this._config;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public final AnnotationIntrospector getAnnotationIntrospector() {
+&nbsp;        return this._config.getAnnotationIntrospector();
+&nbsp;    }
+&nbsp;
+&nbsp;    public final TypeFactory getTypeFactory() {
+&nbsp;        return this._config.getTypeFactory();
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public JavaType constructSpecializedType(JavaType baseType, Class&lt;?&gt; subclass) throws IllegalArgumentException {
+&nbsp;        return baseType.hasRawClass(subclass) ? baseType : this.getConfig().getTypeFactory().constructSpecializedType(baseType, subclass, true);
+&nbsp;    }
+&nbsp;
+&nbsp;    public final Class&lt;?&gt; getActiveView() {
+&nbsp;        return this._serializationView;
+&nbsp;    }
+&nbsp;
+&nbsp;    public final boolean canOverrideAccessModifiers() {
+&nbsp;        return this._config.canOverrideAccessModifiers();
+&nbsp;    }
+&nbsp;
+&nbsp;    public final boolean isEnabled(MapperFeature feature) {
+&nbsp;        return this._config.isEnabled(feature);
+&nbsp;    }
+&nbsp;
+&nbsp;    public final boolean isEnabled(DatatypeFeature feature) {
+&nbsp;        return this._config.isEnabled(feature);
+&nbsp;    }
+&nbsp;
+&nbsp;    public final DatatypeFeatures getDatatypeFeatures() {
+&nbsp;        return this._config.getDatatypeFeatures();
+&nbsp;    }
+&nbsp;
+&nbsp;    public final JsonFormat.Value getDefaultPropertyFormat(Class&lt;?&gt; baseType) {
+&nbsp;        return this._config.getDefaultPropertyFormat(baseType);
+&nbsp;    }
+&nbsp;
+&nbsp;    public final JsonInclude.Value getDefaultPropertyInclusion(Class&lt;?&gt; baseType) {
+&nbsp;        return this._config.getDefaultPropertyInclusion(baseType);
+&nbsp;    }
+&nbsp;
+&nbsp;    public Locale getLocale() {
+&nbsp;        return this._config.getLocale();
+&nbsp;    }
+&nbsp;
+&nbsp;    public TimeZone getTimeZone() {
+&nbsp;        return this._config.getTimeZone();
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public Object getAttribute(Object key) {</b>
+<b class="fc">&nbsp;        return this._attributes.getAttribute(key);</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+<b class="fc">&nbsp;    public SerializerProvider setAttribute(Object key, Object value) {</b>
+&nbsp;        this._attributes = this._attributes.withPerCallAttribute(key, value);
+<b class="fc">&nbsp;        return this;</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public final boolean isEnabled(SerializationFeature feature) {
+<b class="fc">&nbsp;        return this._config.isEnabled(feature);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public final boolean hasSerializationFeatures(int featureMask) {
+&nbsp;        return this._config.hasSerializationFeatures(featureMask);
+&nbsp;    }
+&nbsp;
+&nbsp;    public final FilterProvider getFilterProvider() {
+&nbsp;        return this._config.getFilterProvider();
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public JsonGenerator getGenerator() {</b>
+<b class="nc">&nbsp;        return null;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public TokenBuffer bufferForValueConversion(ObjectCodec oc) {</b>
+<b class="nc">&nbsp;        return new TokenBuffer(oc, false);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public final TokenBuffer bufferForValueConversion() {</b>
+&nbsp;        return this.bufferForValueConversion((ObjectCodec)null);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public abstract WritableObjectId findObjectId(Object var1, ObjectIdGenerator&lt;?&gt; var2);</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public JsonSerializer&lt;Object&gt; findValueSerializer(Class&lt;?&gt; valueType, BeanProperty property) throws JsonMappingException {
+&nbsp;        JsonSerializer&lt;Object&gt; ser = this._knownSerializers.untypedValueSerializer(valueType);
+&nbsp;        if (ser == null) {
+&nbsp;            ser = this._serializerCache.untypedValueSerializer(valueType);
+<b class="nc">&nbsp;            if (ser == null) {</b>
+&nbsp;                ser = this._serializerCache.untypedValueSerializer(this._config.constructType(valueType));
+&nbsp;                if (ser == null) {
+&nbsp;                    ser = this._createAndCacheUntypedSerializer(valueType);
+&nbsp;                    if (ser == null) {
+&nbsp;                        ser = this.getUnknownTypeSerializer(valueType);
+&nbsp;                        return ser;
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return this.handleSecondaryContextualization(ser, property);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public JsonSerializer&lt;Object&gt; findValueSerializer(JavaType valueType, BeanProperty property) throws JsonMappingException {
+&nbsp;        if (valueType == null) {
+<b class="nc">&nbsp;            this.reportMappingProblem(&quot;Null passed for `valueType` of `findValueSerializer()`&quot;);</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        JsonSerializer&lt;Object&gt; ser = this._knownSerializers.untypedValueSerializer(valueType);</b>
+<b class="nc">&nbsp;        if (ser == null) {</b>
+<b class="nc">&nbsp;            ser = this._serializerCache.untypedValueSerializer(valueType);</b>
+&nbsp;            if (ser == null) {
+<b class="nc">&nbsp;                ser = this._createAndCacheUntypedSerializer(valueType);</b>
+&nbsp;                if (ser == null) {
+&nbsp;                    ser = this.getUnknownTypeSerializer(valueType.getRawClass());
+&nbsp;                    return ser;
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return this.handleSecondaryContextualization(ser, property);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public JsonSerializer&lt;Object&gt; findValueSerializer(Class&lt;?&gt; valueType) throws JsonMappingException {</b>
+<b class="nc">&nbsp;        JsonSerializer&lt;Object&gt; ser = this._knownSerializers.untypedValueSerializer(valueType);</b>
+<b class="nc">&nbsp;        if (ser == null) {</b>
+<b class="nc">&nbsp;            ser = this._serializerCache.untypedValueSerializer(valueType);</b>
+&nbsp;            if (ser == null) {
+<b class="nc">&nbsp;                ser = this._serializerCache.untypedValueSerializer(this._config.constructType(valueType));</b>
+<b class="nc">&nbsp;                if (ser == null) {</b>
+&nbsp;                    ser = this._createAndCacheUntypedSerializer(valueType);
+<b class="nc">&nbsp;                    if (ser == null) {</b>
+<b class="nc">&nbsp;                        ser = this.getUnknownTypeSerializer(valueType);</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return ser;
+&nbsp;    }
+&nbsp;
+&nbsp;    public JsonSerializer&lt;Object&gt; findValueSerializer(JavaType valueType) throws JsonMappingException {
+&nbsp;        JsonSerializer&lt;Object&gt; ser = this._knownSerializers.untypedValueSerializer(valueType);
+&nbsp;        if (ser == null) {
+&nbsp;            ser = this._serializerCache.untypedValueSerializer(valueType);
+&nbsp;            if (ser == null) {
+&nbsp;                ser = this._createAndCacheUntypedSerializer(valueType);
+&nbsp;                if (ser == null) {
+&nbsp;                    ser = this.getUnknownTypeSerializer(valueType.getRawClass());
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return ser;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public JsonSerializer&lt;Object&gt; findPrimaryPropertySerializer(JavaType valueType, BeanProperty property) throws JsonMappingException {
+<b class="nc">&nbsp;        JsonSerializer&lt;Object&gt; ser = this._knownSerializers.untypedValueSerializer(valueType);</b>
+&nbsp;        if (ser == null) {
+&nbsp;            ser = this._serializerCache.untypedValueSerializer(valueType);
+&nbsp;            if (ser == null) {
+&nbsp;                ser = this._createAndCacheUntypedSerializer(valueType);
+&nbsp;                if (ser == null) {
+&nbsp;                    ser = this.getUnknownTypeSerializer(valueType.getRawClass());
+&nbsp;                    return ser;
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return this.handlePrimaryContextualization(ser, property);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public JsonSerializer&lt;Object&gt; findPrimaryPropertySerializer(Class&lt;?&gt; valueType, BeanProperty property) throws JsonMappingException {</b>
+&nbsp;        JsonSerializer&lt;Object&gt; ser = this._knownSerializers.untypedValueSerializer(valueType);
+<b class="nc">&nbsp;        if (ser == null) {</b>
+&nbsp;            ser = this._serializerCache.untypedValueSerializer(valueType);
+&nbsp;            if (ser == null) {
+&nbsp;                ser = this._serializerCache.untypedValueSerializer(this._config.constructType(valueType));
+&nbsp;                if (ser == null) {
+&nbsp;                    ser = this._createAndCacheUntypedSerializer(valueType);
+&nbsp;                    if (ser == null) {
+&nbsp;                        ser = this.getUnknownTypeSerializer(valueType);
+&nbsp;                        return ser;
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        return this.handlePrimaryContextualization(ser, property);
+&nbsp;    }
+&nbsp;
+&nbsp;    public JsonSerializer&lt;Object&gt; findContentValueSerializer(JavaType valueType, BeanProperty property) throws JsonMappingException {
+&nbsp;        JsonSerializer&lt;Object&gt; ser = this._knownSerializers.untypedValueSerializer(valueType);
+&nbsp;        if (ser == null) {
+&nbsp;            ser = this._serializerCache.untypedValueSerializer(valueType);
+&nbsp;            if (ser == null) {
+&nbsp;                ser = this._createAndCacheUntypedSerializer(valueType);
+&nbsp;                if (ser == null) {
+&nbsp;                    ser = this.getUnknownTypeSerializer(valueType.getRawClass());
+&nbsp;                    return ser;
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return this.handleSecondaryContextualization(ser, property);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public JsonSerializer&lt;Object&gt; findContentValueSerializer(Class&lt;?&gt; valueType, BeanProperty property) throws JsonMappingException {
+&nbsp;        JsonSerializer&lt;Object&gt; ser = this._knownSerializers.untypedValueSerializer(valueType);
+<b class="nc">&nbsp;        if (ser == null) {</b>
+&nbsp;            ser = this._serializerCache.untypedValueSerializer(valueType);
+&nbsp;            if (ser == null) {
+&nbsp;                ser = this._serializerCache.untypedValueSerializer(this._config.constructType(valueType));
+&nbsp;                if (ser == null) {
+&nbsp;                    ser = this._createAndCacheUntypedSerializer(valueType);
+&nbsp;                    if (ser == null) {
+<b class="nc">&nbsp;                        ser = this.getUnknownTypeSerializer(valueType);</b>
+<b class="nc">&nbsp;                        return ser;</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return this.handleSecondaryContextualization(ser, property);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public JsonSerializer&lt;Object&gt; findTypedValueSerializer(Class&lt;?&gt; valueType, boolean cache, BeanProperty property) throws JsonMappingException {
+&nbsp;        JsonSerializer&lt;Object&gt; ser = this._knownSerializers.typedValueSerializer(valueType);
+&nbsp;        if (ser != null) {
+<b class="nc">&nbsp;            return ser;</b>
+&nbsp;        } else {
+&nbsp;            ser = this._serializerCache.typedValueSerializer(valueType);
+&nbsp;            if (ser != null) {
+&nbsp;                return ser;
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                ser = this.findValueSerializer(valueType, property);
+&nbsp;                TypeSerializer typeSer = this._serializerFactory.createTypeSerializer(this._config, this._config.constructType(valueType));
+&nbsp;                if (typeSer != null) {
+&nbsp;                    typeSer = typeSer.forProperty(property);
+<b class="nc">&nbsp;                    ser = new TypeWrappedSerializer(typeSer, ser);</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                if (cache) {
+&nbsp;                    this._serializerCache.addTypedSerializer(valueType, ser);
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                return ser;
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public JsonSerializer&lt;Object&gt; findTypedValueSerializer(JavaType valueType, boolean cache, BeanProperty property) throws JsonMappingException {
+&nbsp;        JsonSerializer&lt;Object&gt; ser = this._knownSerializers.typedValueSerializer(valueType);
+&nbsp;        if (ser != null) {
+&nbsp;            return ser;
+&nbsp;        } else {
+<b class="nc">&nbsp;            ser = this._serializerCache.typedValueSerializer(valueType);</b>
+&nbsp;            if (ser != null) {
+&nbsp;                return ser;
+&nbsp;            } else {
+&nbsp;                ser = this.findValueSerializer(valueType, property);
+&nbsp;                TypeSerializer typeSer = this._serializerFactory.createTypeSerializer(this._config, valueType);
+&nbsp;                if (typeSer != null) {
+&nbsp;                    typeSer = typeSer.forProperty(property);
+&nbsp;                    ser = new TypeWrappedSerializer(typeSer, ser);
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if (cache) {</b>
+&nbsp;                    this._serializerCache.addTypedSerializer(valueType, ser);
+&nbsp;                }
+&nbsp;
+&nbsp;                return ser;
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public TypeSerializer findTypeSerializer(JavaType javaType) throws JsonMappingException {
+&nbsp;        return this._serializerFactory.createTypeSerializer(this._config, javaType);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public JsonSerializer&lt;Object&gt; findKeySerializer(JavaType keyType, BeanProperty property) throws JsonMappingException {
+&nbsp;        JsonSerializer&lt;Object&gt; ser = this._serializerFactory.createKeySerializer(this, keyType, this._keySerializer);
+&nbsp;        return this._handleContextualResolvable(ser, property);
+&nbsp;    }
+&nbsp;
+&nbsp;    public JsonSerializer&lt;Object&gt; findKeySerializer(Class&lt;?&gt; rawKeyType, BeanProperty property) throws JsonMappingException {
+&nbsp;        return this.findKeySerializer(this._config.constructType(rawKeyType), property);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public JsonSerializer&lt;Object&gt; getDefaultNullKeySerializer() {</b>
+&nbsp;        return this._nullKeySerializer;
+&nbsp;    }
+&nbsp;
+&nbsp;    public JsonSerializer&lt;Object&gt; getDefaultNullValueSerializer() {
+&nbsp;        return this._nullValueSerializer;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public JsonSerializer&lt;Object&gt; findNullKeySerializer(JavaType serializationType, BeanProperty property) throws JsonMappingException {
+&nbsp;        return this._nullKeySerializer;
+&nbsp;    }
+&nbsp;
+&nbsp;    public JsonSerializer&lt;Object&gt; findNullValueSerializer(BeanProperty property) throws JsonMappingException {
+&nbsp;        return this._nullValueSerializer;
+&nbsp;    }
+&nbsp;
+&nbsp;    public JsonSerializer&lt;Object&gt; getUnknownTypeSerializer(Class&lt;?&gt; unknownType) {
+&nbsp;        return (JsonSerializer&lt;Object&gt;)(unknownType == Object.class ? this._unknownTypeSerializer : new UnknownSerializer(unknownType));
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isUnknownTypeSerializer(JsonSerializer&lt;?&gt; ser) {
+&nbsp;        if (ser != this._unknownTypeSerializer &amp;&amp; ser != null) {
+&nbsp;            return this.isEnabled(SerializationFeature.FAIL_ON_EMPTY_BEANS) &amp;&amp; ser.getClass() == UnknownSerializer.class;
+&nbsp;        } else {
+&nbsp;            return true;
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public abstract JsonSerializer&lt;Object&gt; serializerInstance(Annotated var1, Object var2) throws JsonMappingException;
+&nbsp;
+&nbsp;    public abstract Object includeFilterInstance(BeanPropertyDefinition var1, Class&lt;?&gt; var2) throws JsonMappingException;
+&nbsp;
+&nbsp;    public abstract boolean includeFilterSuppressNulls(Object var1) throws JsonMappingException;
+&nbsp;
+&nbsp;    public JsonSerializer&lt;?&gt; handlePrimaryContextualization(JsonSerializer&lt;?&gt; ser, BeanProperty property) throws JsonMappingException {
+<b class="nc">&nbsp;        if (ser != null &amp;&amp; ser instanceof ContextualSerializer) {</b>
+&nbsp;            ser = ((ContextualSerializer)ser).createContextual(this, property);
+&nbsp;        }
+&nbsp;
+&nbsp;        return ser;
+&nbsp;    }
+&nbsp;
+&nbsp;    public JsonSerializer&lt;?&gt; handleSecondaryContextualization(JsonSerializer&lt;?&gt; ser, BeanProperty property) throws JsonMappingException {
+&nbsp;        if (ser != null &amp;&amp; ser instanceof ContextualSerializer) {
+&nbsp;            ser = ((ContextualSerializer)ser).createContextual(this, property);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        return ser;
+&nbsp;    }
+&nbsp;
+&nbsp;    public final void defaultSerializeValue(Object value, JsonGenerator gen) throws IOException {
+&nbsp;        if (value == null) {
+&nbsp;            if (this._stdNullValueSerializer) {
+&nbsp;                gen.writeNull();
+&nbsp;            } else {
+&nbsp;                this._nullValueSerializer.serialize((Object)null, gen, this);
+&nbsp;            }
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            Class&lt;?&gt; cls = value.getClass();
+&nbsp;            this.findTypedValueSerializer(cls, true, (BeanProperty)null).serialize(value, gen, this);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public final void defaultSerializeField(String fieldName, Object value, JsonGenerator gen) throws IOException {
+&nbsp;        gen.writeFieldName(fieldName);
+&nbsp;        if (value == null) {
+&nbsp;            if (this._stdNullValueSerializer) {
+&nbsp;                gen.writeNull();
+&nbsp;            } else {
+&nbsp;                this._nullValueSerializer.serialize((Object)null, gen, this);
+&nbsp;            }
+&nbsp;        } else {
+&nbsp;            Class&lt;?&gt; cls = value.getClass();
+&nbsp;            this.findTypedValueSerializer(cls, true, (BeanProperty)null).serialize(value, gen, this);
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public final void defaultSerializeDateValue(long timestamp, JsonGenerator gen) throws IOException {
+&nbsp;        if (this.isEnabled(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)) {
+&nbsp;            gen.writeNumber(timestamp);
+&nbsp;        } else {
+&nbsp;            gen.writeString(this._dateFormat().format(new Date(timestamp)));
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public final void defaultSerializeDateValue(Date date, JsonGenerator gen) throws IOException {
+&nbsp;        if (this.isEnabled(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)) {
+&nbsp;            gen.writeNumber(date.getTime());
+&nbsp;        } else {
+&nbsp;            gen.writeString(this._dateFormat().format(date));
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void defaultSerializeDateKey(long timestamp, JsonGenerator gen) throws IOException {
+&nbsp;        if (this.isEnabled(SerializationFeature.WRITE_DATE_KEYS_AS_TIMESTAMPS)) {
+&nbsp;            gen.writeFieldName(String.valueOf(timestamp));
+&nbsp;        } else {
+&nbsp;            gen.writeFieldName(this._dateFormat().format(new Date(timestamp)));
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void defaultSerializeDateKey(Date date, JsonGenerator gen) throws IOException {
+&nbsp;        if (this.isEnabled(SerializationFeature.WRITE_DATE_KEYS_AS_TIMESTAMPS)) {
+&nbsp;            gen.writeFieldName(String.valueOf(date.getTime()));
+&nbsp;        } else {
+&nbsp;            gen.writeFieldName(this._dateFormat().format(date));
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public final void defaultSerializeNull(JsonGenerator gen) throws IOException {
+&nbsp;        if (this._stdNullValueSerializer) {
+&nbsp;            gen.writeNull();
+&nbsp;        } else {
+&nbsp;            this._nullValueSerializer.serialize((Object)null, gen, this);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void reportMappingProblem(String message, Object... args) throws JsonMappingException {
+&nbsp;        throw this.mappingException(message, args);
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;T&gt; T reportBadTypeDefinition(BeanDescription bean, String msg, Object... msgArgs) throws JsonMappingException {
+&nbsp;        String beanDesc = bean == null ? &quot;N/A&quot; : ClassUtil.nameOf(bean.getBeanClass());
+&nbsp;        msg = String.format(&quot;Invalid type definition for type %s: %s&quot;, beanDesc, this._format(msg, msgArgs));
+<b class="nc">&nbsp;        throw InvalidDefinitionException.from(this.getGenerator(), msg, bean, (BeanPropertyDefinition)null);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public &lt;T&gt; T reportBadPropertyDefinition(BeanDescription bean, BeanPropertyDefinition prop, String message, Object... msgArgs) throws JsonMappingException {</b>
+<b class="nc">&nbsp;        message = this._format(message, msgArgs);</b>
+&nbsp;        String propName = &quot;N/A&quot;;
+<b class="nc">&nbsp;        if (prop != null) {</b>
+<b class="nc">&nbsp;            propName = this._quotedString(prop.getName());</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        String beanDesc = &quot;N/A&quot;;
+<b class="nc">&nbsp;        if (bean != null) {</b>
+<b class="nc">&nbsp;            beanDesc = ClassUtil.nameOf(bean.getBeanClass());</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        message = String.format(&quot;Invalid definition for property %s (of type %s): %s&quot;, propName, beanDesc, message);
+&nbsp;        throw InvalidDefinitionException.from(this.getGenerator(), message, bean, prop);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public &lt;T&gt; T reportBadDefinition(JavaType type, String msg) throws JsonMappingException {
+&nbsp;        throw InvalidDefinitionException.from(this.getGenerator(), msg, type);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public &lt;T&gt; T reportBadDefinition(JavaType type, String msg, Throwable cause) throws JsonMappingException {</b>
+&nbsp;        throw InvalidDefinitionException.from(this.getGenerator(), msg, type).withCause(cause);
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;T&gt; T reportBadDefinition(Class&lt;?&gt; raw, String msg, Throwable cause) throws JsonMappingException {
+&nbsp;        throw InvalidDefinitionException.from(this.getGenerator(), msg, this.constructType(raw)).withCause(cause);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void reportMappingProblem(Throwable t, String message, Object... msgArgs) throws JsonMappingException {
+&nbsp;        message = this._format(message, msgArgs);
+&nbsp;        throw JsonMappingException.from(this.getGenerator(), message, t);
+&nbsp;    }
+&nbsp;
+&nbsp;    public JsonMappingException invalidTypeIdException(JavaType baseType, String typeId, String extraDesc) {
+&nbsp;        String msg = String.format(&quot;Could not resolve type id &#39;%s&#39; as a subtype of %s&quot;, typeId, ClassUtil.getTypeDescription(baseType));
+&nbsp;        return InvalidTypeIdException.from((JsonParser)null, this._colonConcat(msg, extraDesc), baseType, typeId);
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @deprecated */
+<b class="nc">&nbsp;    @Deprecated</b>
+<b class="nc">&nbsp;    public JsonMappingException mappingException(String message, Object... msgArgs) {</b>
+&nbsp;        return JsonMappingException.from(this.getGenerator(), this._format(message, msgArgs));
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    /** @deprecated */</b>
+<b class="nc">&nbsp;    @Deprecated</b>
+<b class="nc">&nbsp;    protected JsonMappingException mappingException(Throwable t, String message, Object... msgArgs) {</b>
+<b class="nc">&nbsp;        return JsonMappingException.from(this.getGenerator(), this._format(message, msgArgs), t);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    protected void _reportIncompatibleRootType(Object value, JavaType rootType) throws IOException {
+&nbsp;        if (rootType.isPrimitive()) {
+&nbsp;            Class&lt;?&gt; wrapperType = ClassUtil.wrapperType(rootType.getRawClass());
+<b class="nc">&nbsp;            if (wrapperType.isAssignableFrom(value.getClass())) {</b>
+&nbsp;                return;
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        this.reportBadDefinition(rootType, String.format(&quot;Incompatible types: declared root type (%s) vs %s&quot;, rootType, ClassUtil.classNameOf(value)));
+&nbsp;    }
+&nbsp;
+&nbsp;    protected JsonSerializer&lt;Object&gt; _findExplicitUntypedSerializer(Class&lt;?&gt; runtimeType) throws JsonMappingException {
+&nbsp;        JsonSerializer&lt;Object&gt; ser = this._knownSerializers.untypedValueSerializer(runtimeType);
+&nbsp;        if (ser == null) {
+&nbsp;            ser = this._serializerCache.untypedValueSerializer(runtimeType);
+&nbsp;            if (ser == null) {
+&nbsp;                ser = this._createAndCacheUntypedSerializer(runtimeType);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return this.isUnknownTypeSerializer(ser) ? null : ser;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected JsonSerializer&lt;Object&gt; _createAndCacheUntypedSerializer(Class&lt;?&gt; rawType) throws JsonMappingException {</b>
+<b class="nc">&nbsp;        JavaType fullType = this._config.constructType(rawType);</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        JsonSerializer&lt;Object&gt; ser;</b>
+<b class="nc">&nbsp;        try {</b>
+<b class="nc">&nbsp;            ser = this._createUntypedSerializer(fullType);</b>
+&nbsp;        } catch (IllegalArgumentException iae) {
+&nbsp;            this.reportBadDefinition(fullType, ClassUtil.exceptionMessage(iae));
+&nbsp;            ser = null;
+&nbsp;        }
+&nbsp;
+&nbsp;        if (ser != null) {
+&nbsp;            this._serializerCache.addAndResolveNonTypedSerializer(rawType, fullType, ser, this);
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return ser;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected JsonSerializer&lt;Object&gt; _createAndCacheUntypedSerializer(JavaType type) throws JsonMappingException {
+&nbsp;        JsonSerializer&lt;Object&gt; ser;
+&nbsp;        try {
+&nbsp;            ser = this._createUntypedSerializer(type);
+&nbsp;        } catch (IllegalArgumentException iae) {
+&nbsp;            ser = null;
+&nbsp;            this.reportMappingProblem(iae, ClassUtil.exceptionMessage(iae));
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if (ser != null) {</b>
+<b class="nc">&nbsp;            this._serializerCache.addAndResolveNonTypedSerializer(type, ser, this);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return ser;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    protected JsonSerializer&lt;Object&gt; _createUntypedSerializer(JavaType type) throws JsonMappingException {
+&nbsp;        return this._serializerFactory.createSerializer(this, type);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected JsonSerializer&lt;Object&gt; _handleContextualResolvable(JsonSerializer&lt;?&gt; ser, BeanProperty property) throws JsonMappingException {
+&nbsp;        if (ser instanceof ResolvableSerializer) {
+<b class="nc">&nbsp;            ((ResolvableSerializer)ser).resolve(this);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        return this.handleSecondaryContextualization(ser, property);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected JsonSerializer&lt;Object&gt; _handleResolvable(JsonSerializer&lt;?&gt; ser) throws JsonMappingException {
+&nbsp;        if (ser instanceof ResolvableSerializer) {
+&nbsp;            ((ResolvableSerializer)ser).resolve(this);
+&nbsp;        }
+&nbsp;
+&nbsp;        return ser;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected final DateFormat _dateFormat() {
+&nbsp;        if (this._dateFormat != null) {
+&nbsp;            return this._dateFormat;
+&nbsp;        } else {
+&nbsp;            DateFormat df = this._config.getDateFormat();
+&nbsp;            DateFormat var2;
+<b class="nc">&nbsp;            this._dateFormat = var2 = (DateFormat)df.clone();</b>
+<b class="nc">&nbsp;            return var2;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
+</div>
+</body>
+</html>

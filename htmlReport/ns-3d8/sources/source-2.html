@@ -1,0 +1,317 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > BeanOverrideHandler</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.test.context.bean.override</a>
+</div>
+
+<h1>Coverage Summary for Class: BeanOverrideHandler (org.springframework.test.context.bean.override)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">BeanOverrideHandler</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    24%
+  </span>
+  <span class="absValue">
+    (6/25)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    12%
+  </span>
+  <span class="absValue">
+    (6/50)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    20.7%
+  </span>
+  <span class="absValue">
+    (18/87)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.test.context.bean.override;
+&nbsp;
+&nbsp;import java.lang.annotation.Annotation;
+&nbsp;import java.lang.reflect.AnnotatedElement;
+&nbsp;import java.lang.reflect.Field;
+&nbsp;import java.lang.reflect.Modifier;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.Comparator;
+&nbsp;import java.util.HashSet;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Objects;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.concurrent.atomic.AtomicBoolean;
+&nbsp;import java.util.function.BiConsumer;
+&nbsp;import org.springframework.beans.BeanUtils;
+&nbsp;import org.springframework.beans.factory.config.BeanDefinition;
+&nbsp;import org.springframework.beans.factory.config.SingletonBeanRegistry;
+&nbsp;import org.springframework.core.ResolvableType;
+&nbsp;import org.springframework.core.annotation.MergedAnnotation;
+&nbsp;import org.springframework.core.annotation.MergedAnnotations;
+&nbsp;import org.springframework.core.annotation.MergedAnnotations.SearchStrategy;
+&nbsp;import org.springframework.core.style.ToStringCreator;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.test.context.TestContextAnnotationUtils;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.ReflectionUtils;
+&nbsp;
+&nbsp;public abstract class BeanOverrideHandler {
+&nbsp;    private static final Comparator&lt;MergedAnnotation&lt;? extends Annotation&gt;&gt; reversedMetaDistance = Comparator.comparingInt(MergedAnnotation::getDistance).reversed();
+&nbsp;    @Nullable
+&nbsp;    private final Field field;
+&nbsp;    private final Set&lt;Annotation&gt; qualifierAnnotations;
+&nbsp;    private final ResolvableType beanType;
+&nbsp;    @Nullable
+&nbsp;    private final String beanName;
+&nbsp;    private final BeanOverrideStrategy strategy;
+&nbsp;
+&nbsp;    protected BeanOverrideHandler(@Nullable Field field, ResolvableType beanType, @Nullable String beanName, BeanOverrideStrategy strategy) {
+&nbsp;        this.field = field;
+&nbsp;        this.qualifierAnnotations = getQualifierAnnotations(field);
+&nbsp;        this.beanType = beanType;
+&nbsp;        this.beanName = beanName;
+&nbsp;        this.strategy = strategy;
+&nbsp;    }
+&nbsp;
+&nbsp;    public static List&lt;BeanOverrideHandler&gt; forTestClass(Class&lt;?&gt; testClass) {
+&nbsp;        return findHandlers(testClass, true);
+&nbsp;    }
+&nbsp;
+&nbsp;    static List&lt;BeanOverrideHandler&gt; findAllHandlers(Class&lt;?&gt; testClass) {
+&nbsp;        return findHandlers(testClass, false);
+&nbsp;    }
+&nbsp;
+&nbsp;    private static List&lt;BeanOverrideHandler&gt; findHandlers(Class&lt;?&gt; testClass, boolean localFieldsOnly) {
+&nbsp;        List&lt;BeanOverrideHandler&gt; handlers = new ArrayList();
+&nbsp;        findHandlers(testClass, testClass, handlers, localFieldsOnly, new HashSet());
+&nbsp;        return handlers;
+&nbsp;    }
+&nbsp;
+&nbsp;    private static void findHandlers(Class&lt;?&gt; clazz, Class&lt;?&gt; testClass, List&lt;BeanOverrideHandler&gt; handlers, boolean localFieldsOnly, Set&lt;Class&lt;?&gt;&gt; visitedEnclosingClasses) {
+&nbsp;        if (!localFieldsOnly &amp;&amp; TestContextAnnotationUtils.searchEnclosingClass(clazz)) {
+&nbsp;            Class&lt;?&gt; enclosingClass = clazz.getEnclosingClass();
+&nbsp;            if (visitedEnclosingClasses.add(enclosingClass)) {
+&nbsp;                findHandlers(enclosingClass, testClass, handlers, localFieldsOnly, visitedEnclosingClasses);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        Class&lt;?&gt; superclass = clazz.getSuperclass();
+&nbsp;        if (superclass != null &amp;&amp; superclass != Object.class) {
+<b class="fc">&nbsp;            findHandlers(superclass, testClass, handlers, localFieldsOnly, visitedEnclosingClasses);</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        if (!localFieldsOnly) {
+&nbsp;            for(Class&lt;?&gt; ifc : clazz.getInterfaces()) {
+&nbsp;                findHandlers(ifc, testClass, handlers, localFieldsOnly, visitedEnclosingClasses);
+&nbsp;            }
+&nbsp;
+&nbsp;            processClass(clazz, testClass, handlers);
+&nbsp;        }
+&nbsp;
+&nbsp;        ReflectionUtils.doWithLocalFields(clazz, (field) -&gt; processField(field, testClass, handlers));
+&nbsp;    }
+&nbsp;
+&nbsp;    private static void processClass(Class&lt;?&gt; clazz, Class&lt;?&gt; testClass, List&lt;BeanOverrideHandler&gt; handlers) {
+&nbsp;        processElement(clazz, testClass, (processor, composedAnnotation) -&gt; {
+&nbsp;            List var10000 = processor.createHandlers(composedAnnotation, testClass);
+&nbsp;            Objects.requireNonNull(handlers);
+<b class="nc">&nbsp;            var10000.forEach(handlers::add);</b>
+&nbsp;        });
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private static void processField(Field field, Class&lt;?&gt; testClass, List&lt;BeanOverrideHandler&gt; handlers) {</b>
+<b class="nc">&nbsp;        AtomicBoolean overrideAnnotationFound = new AtomicBoolean();</b>
+<b class="nc">&nbsp;        processElement(field, testClass, (processor, composedAnnotation) -&gt; {</b>
+&nbsp;            Assert.state(!Modifier.isStatic(field.getModifiers()), () -&gt; &quot;@BeanOverride field must not be static: &quot; + String.valueOf(field));
+&nbsp;            Assert.state(overrideAnnotationFound.compareAndSet(false, true), () -&gt; &quot;Multiple @BeanOverride annotations found on field: &quot; + String.valueOf(field));
+&nbsp;            handlers.add(processor.createHandler(composedAnnotation, testClass, field));
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    private static void processElement(AnnotatedElement element, Class&lt;?&gt; testClass, BiConsumer&lt;BeanOverrideProcessor, Annotation&gt; consumer) {
+&nbsp;        MergedAnnotations.from(element, SearchStrategy.DIRECT).stream(BeanOverride.class).sorted(reversedMetaDistance).forEach((mergedAnnotation) -&gt; {
+&nbsp;            MergedAnnotation&lt;?&gt; metaSource = mergedAnnotation.getMetaSource();
+&nbsp;            Assert.state(metaSource != null, &quot;@BeanOverride annotation must be meta-present&quot;);
+&nbsp;            BeanOverride beanOverride = (BeanOverride)mergedAnnotation.synthesize();
+&nbsp;            BeanOverrideProcessor processor = (BeanOverrideProcessor)BeanUtils.instantiateClass(beanOverride.value());
+&nbsp;            Annotation composedAnnotation = metaSource.synthesize();
+<b class="nc">&nbsp;            consumer.accept(processor, composedAnnotation);</b>
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public final Field getField() {
+&nbsp;        return this.field;
+&nbsp;    }
+&nbsp;
+&nbsp;    public final ResolvableType getBeanType() {
+&nbsp;        return this.beanType;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public final String getBeanName() {
+&nbsp;        return this.beanName;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public final BeanOverrideStrategy getStrategy() {
+&nbsp;        return this.strategy;
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    final Object createOverrideInstance(String beanName, @Nullable BeanDefinition existingBeanDefinition, @Nullable Object existingBeanInstance, SingletonBeanRegistry singletonBeanRegistry) {</b>
+&nbsp;        Object override = this.createOverrideInstance(beanName, existingBeanDefinition, existingBeanInstance);
+&nbsp;        this.trackOverrideInstance(override, singletonBeanRegistry);
+&nbsp;        return override;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected abstract Object createOverrideInstance(String beanName, @Nullable BeanDefinition existingBeanDefinition, @Nullable Object existingBeanInstance);
+&nbsp;
+&nbsp;    protected void trackOverrideInstance(Object override, SingletonBeanRegistry singletonBeanRegistry) {
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean equals(Object other) {
+&nbsp;        if (other == this) {
+&nbsp;            return true;
+&nbsp;        } else if (other != null &amp;&amp; other.getClass() == this.getClass()) {
+&nbsp;            BeanOverrideHandler that = (BeanOverrideHandler)other;
+&nbsp;            if (Objects.equals(this.beanType.getType(), that.beanType.getType()) &amp;&amp; Objects.equals(this.beanName, that.beanName) &amp;&amp; Objects.equals(this.strategy, that.strategy)) {
+&nbsp;                if (this.beanName != null) {
+&nbsp;                    return true;
+&nbsp;                } else if (this.field == null) {
+<b class="pc">&nbsp;                    return that.field == null;</b>
+<b class="nc">&nbsp;                } else {</b>
+<b class="nc">&nbsp;                    return that.field != null &amp;&amp; this.field.getName().equals(that.field.getName()) &amp;&amp; this.qualifierAnnotations.equals(that.qualifierAnnotations);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            } else {
+&nbsp;                return false;
+&nbsp;            }
+&nbsp;        } else {
+<b class="fc">&nbsp;            return false;</b>
+<b class="pc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public int hashCode() {
+<b class="pc">&nbsp;        int hash = Objects.hash(new Object[]{this.getClass(), this.beanType.getType(), this.beanName, this.strategy});</b>
+&nbsp;        return this.beanName != null ? hash : hash + Objects.hash(new Object[]{this.field != null ? this.field.getName() : null, this.qualifierAnnotations});
+<b class="pc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public String toString() {
+&nbsp;        return (new ToStringCreator(this)).append(&quot;field&quot;, this.field).append(&quot;beanType&quot;, this.beanType).append(&quot;beanName&quot;, this.beanName).append(&quot;strategy&quot;, this.strategy).toString();
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    private static Set&lt;Annotation&gt; getQualifierAnnotations(@Nullable Field field) {
+&nbsp;        if (field == null) {
+&nbsp;            return Collections.emptySet();
+<b class="fc">&nbsp;        } else {</b>
+&nbsp;            Annotation[] candidates = field.getDeclaredAnnotations();
+&nbsp;            if (candidates.length == 0) {
+&nbsp;                return Collections.emptySet();
+<b class="fc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                Set&lt;Annotation&gt; annotations = new HashSet(candidates.length - 1);</b>
+&nbsp;
+&nbsp;                for(Annotation candidate : candidates) {
+&nbsp;                    if (!isBeanOverrideAnnotation(candidate.annotationType())) {
+<b class="nc">&nbsp;                        annotations.add(candidate);</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                return annotations;</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static boolean isBeanOverrideAnnotation(Class&lt;? extends Annotation&gt; type) {
+&nbsp;        return MergedAnnotations.from(type).isPresent(BeanOverride.class);
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,1837 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > PatternParser</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.aspectj.weaver.patterns</a>
+</div>
+
+<h1>Coverage Summary for Class: PatternParser (org.aspectj.weaver.patterns)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PatternParser</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    40.4%
+  </span>
+  <span class="absValue">
+    (38/94)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    19.3%
+  </span>
+  <span class="absValue">
+    (109/564)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    25.9%
+  </span>
+  <span class="absValue">
+    (259/1000)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.aspectj.weaver.patterns;
+&nbsp;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Set;
+&nbsp;import org.aspectj.weaver.ISourceContext;
+&nbsp;import org.aspectj.weaver.Member;
+&nbsp;import org.aspectj.weaver.MemberKind;
+&nbsp;import org.aspectj.weaver.Shadow;
+&nbsp;import org.aspectj.weaver.UnresolvedType;
+&nbsp;import org.aspectj.weaver.World;
+&nbsp;import org.aspectj.weaver.internal.tools.PointcutDesignatorHandlerBasedPointcut;
+&nbsp;import org.aspectj.weaver.tools.ContextBasedMatcher;
+&nbsp;import org.aspectj.weaver.tools.PointcutDesignatorHandler;
+&nbsp;
+&nbsp;public class PatternParser {
+&nbsp;    private ITokenSource tokenSource;
+&nbsp;    private ISourceContext sourceContext;
+&nbsp;    private boolean allowHasTypePatterns;
+&nbsp;    private Set&lt;PointcutDesignatorHandler&gt; pointcutDesignatorHandlers;
+&nbsp;    private World world;
+&nbsp;    private IToken pendingRightArrows;
+&nbsp;
+&nbsp;    public PatternParser(ITokenSource tokenSource) {
+&nbsp;        this.allowHasTypePatterns = false;
+&nbsp;        this.pointcutDesignatorHandlers = Collections.emptySet();
+&nbsp;        this.tokenSource = tokenSource;
+&nbsp;        this.sourceContext = tokenSource.getSourceContext();
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setPointcutDesignatorHandlers(Set&lt;PointcutDesignatorHandler&gt; handlers, World world) {
+&nbsp;        this.pointcutDesignatorHandlers = handlers;
+&nbsp;        this.world = world;
+&nbsp;    }
+&nbsp;
+&nbsp;    public PerClause maybeParsePerClause() {
+&nbsp;        IToken tok = this.tokenSource.peek();
+<b class="fc">&nbsp;        if (tok == IToken.EOF) {</b>
+&nbsp;            return null;
+&nbsp;        } else if (tok.isIdentifier()) {
+<b class="fc">&nbsp;            String name = tok.getString();</b>
+&nbsp;            if (name.equals(&quot;issingleton&quot;)) {
+&nbsp;                return this.parsePerSingleton();
+&nbsp;            } else if (name.equals(&quot;perthis&quot;)) {
+&nbsp;                return this.parsePerObject(true);
+&nbsp;            } else if (name.equals(&quot;pertarget&quot;)) {
+&nbsp;                return this.parsePerObject(false);
+<b class="fc">&nbsp;            } else if (name.equals(&quot;percflow&quot;)) {</b>
+<b class="fc">&nbsp;                return this.parsePerCflow(false);</b>
+<b class="fc">&nbsp;            } else if (name.equals(&quot;percflowbelow&quot;)) {</b>
+&nbsp;                return this.parsePerCflow(true);
+&nbsp;            } else {
+&nbsp;                return name.equals(&quot;pertypewithin&quot;) ? this.parsePerTypeWithin() : null;
+&nbsp;            }
+<b class="fc">&nbsp;        } else {</b>
+<b class="fc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private PerClause parsePerCflow(boolean isBelow) {</b>
+<b class="nc">&nbsp;        this.parseIdentifier();</b>
+<b class="nc">&nbsp;        this.eat(&quot;(&quot;);</b>
+&nbsp;        Pointcut entry = this.parsePointcut();
+<b class="nc">&nbsp;        this.eat(&quot;)&quot;);</b>
+<b class="nc">&nbsp;        return new PerCflow(entry, isBelow);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public boolean moreToParse() {</b>
+<b class="nc">&nbsp;        return this.tokenSource.hasMoreTokens();</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private PerClause parsePerObject(boolean isThis) {</b>
+<b class="nc">&nbsp;        this.parseIdentifier();</b>
+<b class="nc">&nbsp;        this.eat(&quot;(&quot;);</b>
+<b class="nc">&nbsp;        Pointcut entry = this.parsePointcut();</b>
+<b class="nc">&nbsp;        this.eat(&quot;)&quot;);</b>
+<b class="nc">&nbsp;        return new PerObject(entry, isThis);</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private PerClause parsePerTypeWithin() {
+&nbsp;        this.parseIdentifier();
+<b class="nc">&nbsp;        this.eat(&quot;(&quot;);</b>
+&nbsp;        TypePattern withinTypePattern = this.parseTypePattern();
+&nbsp;        this.eat(&quot;)&quot;);
+&nbsp;        return new PerTypeWithin(withinTypePattern);
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private PerClause parsePerSingleton() {</b>
+<b class="nc">&nbsp;        this.parseIdentifier();</b>
+<b class="nc">&nbsp;        this.eat(&quot;(&quot;);</b>
+&nbsp;        this.eat(&quot;)&quot;);
+&nbsp;        return new PerSingleton();
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public Declare parseDeclare() {
+&nbsp;        int startPos = this.tokenSource.peek().getStart();
+&nbsp;        this.eatIdentifier(&quot;declare&quot;);
+<b class="nc">&nbsp;        String kind = this.parseIdentifier();</b>
+<b class="nc">&nbsp;        Declare ret;</b>
+<b class="nc">&nbsp;        if (kind.equals(&quot;error&quot;)) {</b>
+<b class="nc">&nbsp;            this.eat(&quot;:&quot;);</b>
+<b class="nc">&nbsp;            ret = this.parseErrorOrWarning(true);</b>
+&nbsp;        } else if (kind.equals(&quot;warning&quot;)) {
+&nbsp;            this.eat(&quot;:&quot;);
+&nbsp;            ret = this.parseErrorOrWarning(false);
+<b class="nc">&nbsp;        } else if (kind.equals(&quot;precedence&quot;)) {</b>
+<b class="nc">&nbsp;            this.eat(&quot;:&quot;);</b>
+<b class="nc">&nbsp;            ret = this.parseDominates();</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            if (kind.equals(&quot;dominates&quot;)) {</b>
+&nbsp;                throw new ParserException(&quot;name changed to declare precedence&quot;, this.tokenSource.peek(-2));
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if (kind.equals(&quot;parents&quot;)) {</b>
+<b class="nc">&nbsp;                ret = this.parseParents();</b>
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                if (!kind.equals(&quot;soft&quot;)) {</b>
+&nbsp;                    throw new ParserException(&quot;expected one of error, warning, parents, soft, precedence, @type, @method, @constructor, @field&quot;, this.tokenSource.peek(-1));
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                this.eat(&quot;:&quot;);</b>
+&nbsp;                ret = this.parseSoft();
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        int endPos = this.tokenSource.peek(-1).getEnd();</b>
+<b class="nc">&nbsp;        ret.setLocation(this.sourceContext, startPos, endPos);</b>
+<b class="nc">&nbsp;        return ret;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public Declare parseDeclareAnnotation() {</b>
+<b class="nc">&nbsp;        int startPos = this.tokenSource.peek().getStart();</b>
+<b class="nc">&nbsp;        this.eatIdentifier(&quot;declare&quot;);</b>
+<b class="nc">&nbsp;        this.eat(&quot;@&quot;);</b>
+<b class="nc">&nbsp;        String kind = this.parseIdentifier();</b>
+<b class="nc">&nbsp;        this.eat(&quot;:&quot;);</b>
+<b class="nc">&nbsp;        Declare ret;</b>
+<b class="nc">&nbsp;        if (kind.equals(&quot;type&quot;)) {</b>
+<b class="nc">&nbsp;            ret = this.parseDeclareAtType();</b>
+<b class="nc">&nbsp;        } else if (kind.equals(&quot;method&quot;)) {</b>
+<b class="nc">&nbsp;            ret = this.parseDeclareAtMethod(true);</b>
+&nbsp;        } else if (kind.equals(&quot;field&quot;)) {
+<b class="nc">&nbsp;            ret = this.parseDeclareAtField();</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            if (!kind.equals(&quot;constructor&quot;)) {</b>
+&nbsp;                throw new ParserException(&quot;one of type, method, field, constructor&quot;, this.tokenSource.peek(-1));
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            ret = this.parseDeclareAtMethod(false);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        this.eat(&quot;;&quot;);
+<b class="nc">&nbsp;        int endPos = this.tokenSource.peek(-1).getEnd();</b>
+&nbsp;        ret.setLocation(this.sourceContext, startPos, endPos);
+<b class="nc">&nbsp;        return ret;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public DeclareAnnotation parseDeclareAtType() {</b>
+&nbsp;        this.allowHasTypePatterns = true;
+<b class="nc">&nbsp;        TypePattern p = this.parseTypePattern();</b>
+<b class="nc">&nbsp;        this.allowHasTypePatterns = false;</b>
+<b class="nc">&nbsp;        return new DeclareAnnotation(DeclareAnnotation.AT_TYPE, p);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public DeclareAnnotation parseDeclareAtMethod(boolean isMethod) {</b>
+<b class="nc">&nbsp;        ISignaturePattern sp = this.parseCompoundMethodOrConstructorSignaturePattern(isMethod);</b>
+<b class="nc">&nbsp;        return !isMethod ? new DeclareAnnotation(DeclareAnnotation.AT_CONSTRUCTOR, sp) : new DeclareAnnotation(DeclareAnnotation.AT_METHOD, sp);</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public DeclareAnnotation parseDeclareAtField() {
+<b class="nc">&nbsp;        ISignaturePattern compoundFieldSignaturePattern = this.parseCompoundFieldSignaturePattern();</b>
+<b class="nc">&nbsp;        DeclareAnnotation da = new DeclareAnnotation(DeclareAnnotation.AT_FIELD, compoundFieldSignaturePattern);</b>
+<b class="nc">&nbsp;        return da;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public ISignaturePattern parseCompoundFieldSignaturePattern() {
+&nbsp;        int index = this.tokenSource.getIndex();
+&nbsp;
+<b class="nc">&nbsp;        try {</b>
+<b class="nc">&nbsp;            ISignaturePattern atomicFieldSignaturePattern = this.parseMaybeParenthesizedFieldSignaturePattern();</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            while(this.isEitherAndOrOr()) {</b>
+&nbsp;                if (this.maybeEat(&quot;&amp;&amp;&quot;)) {
+&nbsp;                    atomicFieldSignaturePattern = new AndSignaturePattern(atomicFieldSignaturePattern, this.parseMaybeParenthesizedFieldSignaturePattern());
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+&nbsp;                if (this.maybeEat(&quot;||&quot;)) {
+<b class="nc">&nbsp;                    atomicFieldSignaturePattern = new OrSignaturePattern(atomicFieldSignaturePattern, this.parseMaybeParenthesizedFieldSignaturePattern());</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            return atomicFieldSignaturePattern;
+&nbsp;        } catch (ParserException e) {
+&nbsp;            int nowAt = this.tokenSource.getIndex();
+&nbsp;            this.tokenSource.setIndex(index);
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            try {</b>
+<b class="nc">&nbsp;                ISignaturePattern fsp = this.parseFieldSignaturePattern();</b>
+&nbsp;                return fsp;
+&nbsp;            } catch (Exception var5) {
+&nbsp;                this.tokenSource.setIndex(nowAt);
+<b class="nc">&nbsp;                throw e;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private boolean isEitherAndOrOr() {</b>
+<b class="nc">&nbsp;        String tokenstring = this.tokenSource.peek().getString();</b>
+<b class="nc">&nbsp;        return tokenstring.equals(&quot;&amp;&amp;&quot;) || tokenstring.equals(&quot;||&quot;);</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public ISignaturePattern parseCompoundMethodOrConstructorSignaturePattern(boolean isMethod) {</b>
+<b class="nc">&nbsp;        ISignaturePattern atomicMethodCtorSignaturePattern = this.parseMaybeParenthesizedMethodOrConstructorSignaturePattern(isMethod);</b>
+&nbsp;
+&nbsp;        while(this.isEitherAndOrOr()) {
+<b class="nc">&nbsp;            if (this.maybeEat(&quot;&amp;&amp;&quot;)) {</b>
+&nbsp;                atomicMethodCtorSignaturePattern = new AndSignaturePattern(atomicMethodCtorSignaturePattern, this.parseMaybeParenthesizedMethodOrConstructorSignaturePattern(isMethod));
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            if (this.maybeEat(&quot;||&quot;)) {</b>
+&nbsp;                atomicMethodCtorSignaturePattern = new OrSignaturePattern(atomicMethodCtorSignaturePattern, this.parseMaybeParenthesizedMethodOrConstructorSignaturePattern(isMethod));
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        return atomicMethodCtorSignaturePattern;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public DeclarePrecedence parseDominates() {
+&nbsp;        List&lt;TypePattern&gt; l = new ArrayList();
+&nbsp;
+&nbsp;        do {
+&nbsp;            l.add(this.parseTypePattern());
+<b class="nc">&nbsp;        } while(this.maybeEat(&quot;,&quot;));</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return new DeclarePrecedence(l);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private Declare parseParents() {</b>
+&nbsp;        this.eat(&quot;:&quot;);
+<b class="nc">&nbsp;        this.allowHasTypePatterns = true;</b>
+<b class="nc">&nbsp;        TypePattern p = this.parseTypePattern(false, false);</b>
+<b class="nc">&nbsp;        this.allowHasTypePatterns = false;</b>
+<b class="nc">&nbsp;        IToken t = this.tokenSource.next();</b>
+&nbsp;        if (!t.getString().equals(&quot;extends&quot;) &amp;&amp; !t.getString().equals(&quot;implements&quot;)) {
+<b class="nc">&nbsp;            throw new ParserException(&quot;extends or implements&quot;, t);</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            boolean isExtends = t.getString().equals(&quot;extends&quot;);</b>
+&nbsp;            List&lt;TypePattern&gt; l = new ArrayList();
+&nbsp;
+<b class="nc">&nbsp;            do {</b>
+&nbsp;                l.add(this.parseTypePattern());
+&nbsp;            } while(this.maybeEat(&quot;,&quot;));
+&nbsp;
+<b class="nc">&nbsp;            DeclareParents decp = new DeclareParents(p, l, isExtends);</b>
+&nbsp;            return decp;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private Declare parseSoft() {</b>
+&nbsp;        TypePattern p = this.parseTypePattern();
+&nbsp;        this.eat(&quot;:&quot;);
+&nbsp;        Pointcut pointcut = this.parsePointcut();
+&nbsp;        return new DeclareSoft(p, pointcut);
+&nbsp;    }
+&nbsp;
+&nbsp;    private Declare parseErrorOrWarning(boolean isError) {
+<b class="nc">&nbsp;        Pointcut pointcut = null;</b>
+<b class="nc">&nbsp;        int index = this.tokenSource.getIndex();</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        try {</b>
+<b class="nc">&nbsp;            pointcut = this.parsePointcut();</b>
+<b class="nc">&nbsp;        } catch (ParserException pe) {</b>
+<b class="nc">&nbsp;            try {</b>
+&nbsp;                this.tokenSource.setIndex(index);
+<b class="nc">&nbsp;                boolean oldValue = this.allowHasTypePatterns;</b>
+&nbsp;                TypePattern typePattern = null;
+<b class="nc">&nbsp;</b>
+&nbsp;                try {
+<b class="nc">&nbsp;                    this.allowHasTypePatterns = true;</b>
+<b class="nc">&nbsp;                    typePattern = this.parseTypePattern();</b>
+&nbsp;                } finally {
+&nbsp;                    this.allowHasTypePatterns = oldValue;
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                this.eat(&quot;:&quot;);</b>
+&nbsp;                String message = this.parsePossibleStringSequence(true);
+&nbsp;                return new DeclareTypeErrorOrWarning(isError, typePattern, message);
+&nbsp;            } catch (ParserException var12) {
+<b class="nc">&nbsp;                throw pe;</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        this.eat(&quot;:&quot;);
+&nbsp;        String message = this.parsePossibleStringSequence(true);
+&nbsp;        return new DeclareErrorOrWarning(isError, pointcut, message);
+&nbsp;    }
+&nbsp;
+&nbsp;    public Pointcut parsePointcut(boolean shouldConsumeAllInput) {
+&nbsp;        Pointcut p = this.parsePointcut();
+&nbsp;        if (shouldConsumeAllInput &amp;&amp; this.tokenSource.hasMoreTokens()) {
+&nbsp;            throw new ParserException(&quot;Found unexpected data after parsing pointcut&quot;, this.tokenSource.next());
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            return p;</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public Pointcut parsePointcut() {
+<b class="nc">&nbsp;        Pointcut p = this.parseAtomicPointcut();</b>
+<b class="nc">&nbsp;        if (this.maybeEat(&quot;&amp;&amp;&quot;)) {</b>
+<b class="nc">&nbsp;            p = new AndPointcut(p, this.parseNotOrPointcut());</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if (this.maybeEat(&quot;||&quot;)) {</b>
+&nbsp;            p = new OrPointcut(p, this.parsePointcut());
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        return p;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private Pointcut parseNotOrPointcut() {
+&nbsp;        Pointcut p = this.parseAtomicPointcut();
+&nbsp;        if (this.maybeEat(&quot;&amp;&amp;&quot;)) {
+&nbsp;            p = new AndPointcut(p, this.parseNotOrPointcut());
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return p;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private Pointcut parseAtomicPointcut() {
+&nbsp;        if (this.maybeEat(&quot;!&quot;)) {
+<b class="nc">&nbsp;            int startPos = this.tokenSource.peek(-1).getStart();</b>
+<b class="nc">&nbsp;            Pointcut p = new NotPointcut(this.parseAtomicPointcut(), startPos);</b>
+<b class="nc">&nbsp;            return p;</b>
+&nbsp;        } else if (this.maybeEat(&quot;(&quot;)) {
+<b class="nc">&nbsp;            Pointcut p = this.parsePointcut();</b>
+&nbsp;            this.eat(&quot;)&quot;);
+<b class="nc">&nbsp;            return p;</b>
+&nbsp;        } else if (this.maybeEat(&quot;@&quot;)) {
+&nbsp;            int startPos = this.tokenSource.peek().getStart();
+&nbsp;            Pointcut p = this.parseAnnotationPointcut();
+<b class="fc">&nbsp;            int endPos = this.tokenSource.peek(-1).getEnd();</b>
+<b class="fc">&nbsp;            p.setLocation(this.sourceContext, startPos, endPos);</b>
+<b class="fc">&nbsp;            return p;</b>
+&nbsp;        } else {
+&nbsp;            int startPos = this.tokenSource.peek().getStart();
+<b class="pc">&nbsp;            Pointcut p = this.parseSinglePointcut();</b>
+<b class="nc">&nbsp;            int endPos = this.tokenSource.peek(-1).getEnd();</b>
+&nbsp;            p.setLocation(this.sourceContext, startPos, endPos);
+&nbsp;            return p;
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Pointcut parseSinglePointcut() {
+<b class="fc">&nbsp;        int start = this.tokenSource.getIndex();</b>
+<b class="fc">&nbsp;        IToken t = this.tokenSource.peek();</b>
+<b class="fc">&nbsp;        Pointcut p = t.maybeGetParsedPointcut();</b>
+&nbsp;        if (p != null) {
+<b class="fc">&nbsp;            this.tokenSource.next();</b>
+&nbsp;            return p;
+&nbsp;        } else {
+&nbsp;            String kind = this.parseIdentifier();
+<b class="fc">&nbsp;            if (!kind.equals(&quot;execution&quot;) &amp;&amp; !kind.equals(&quot;call&quot;) &amp;&amp; !kind.equals(&quot;get&quot;) &amp;&amp; !kind.equals(&quot;set&quot;)) {</b>
+<b class="fc">&nbsp;                if (kind.equals(&quot;args&quot;)) {</b>
+<b class="fc">&nbsp;                    p = this.parseArgsPointcut();</b>
+<b class="fc">&nbsp;                } else if (kind.equals(&quot;this&quot;)) {</b>
+&nbsp;                    p = this.parseThisOrTargetPointcut(kind);
+<b class="pc">&nbsp;                } else if (kind.equals(&quot;target&quot;)) {</b>
+<b class="nc">&nbsp;                    p = this.parseThisOrTargetPointcut(kind);</b>
+<b class="nc">&nbsp;                } else if (kind.equals(&quot;within&quot;)) {</b>
+<b class="nc">&nbsp;                    p = this.parseWithinPointcut();</b>
+&nbsp;                } else if (kind.equals(&quot;withincode&quot;)) {
+<b class="fc">&nbsp;                    p = this.parseWithinCodePointcut();</b>
+<b class="fc">&nbsp;                } else if (kind.equals(&quot;cflow&quot;)) {</b>
+<b class="fc">&nbsp;                    p = this.parseCflowPointcut(false);</b>
+<b class="fc">&nbsp;                } else if (kind.equals(&quot;cflowbelow&quot;)) {</b>
+<b class="fc">&nbsp;                    p = this.parseCflowPointcut(true);</b>
+<b class="fc">&nbsp;                } else if (kind.equals(&quot;adviceexecution&quot;)) {</b>
+&nbsp;                    this.eat(&quot;(&quot;);
+<b class="fc">&nbsp;                    this.eat(&quot;)&quot;);</b>
+<b class="fc">&nbsp;                    p = new KindedPointcut(Shadow.AdviceExecution, new SignaturePattern(Member.ADVICE, ModifiersPattern.ANY, TypePattern.ANY, TypePattern.ANY, NamePattern.ANY, TypePatternList.ANY, ThrowsPattern.ANY, AnnotationTypePattern.ANY));</b>
+<b class="fc">&nbsp;                } else if (kind.equals(&quot;handler&quot;)) {</b>
+<b class="fc">&nbsp;                    this.eat(&quot;(&quot;);</b>
+<b class="fc">&nbsp;                    TypePattern typePat = this.parseTypePattern(false, false);</b>
+&nbsp;                    this.eat(&quot;)&quot;);
+&nbsp;                    p = new HandlerPointcut(typePat);
+&nbsp;                } else if (!kind.equals(&quot;lock&quot;) &amp;&amp; !kind.equals(&quot;unlock&quot;)) {
+<b class="fc">&nbsp;                    if (kind.equals(&quot;initialization&quot;)) {</b>
+<b class="fc">&nbsp;                        this.eat(&quot;(&quot;);</b>
+<b class="fc">&nbsp;                        SignaturePattern sig = this.parseConstructorSignaturePattern();</b>
+<b class="pc">&nbsp;                        this.eat(&quot;)&quot;);</b>
+<b class="nc">&nbsp;                        p = new KindedPointcut(Shadow.Initialization, sig);</b>
+<b class="nc">&nbsp;                    } else if (kind.equals(&quot;staticinitialization&quot;)) {</b>
+&nbsp;                        this.eat(&quot;(&quot;);
+&nbsp;                        TypePattern typePat = this.parseTypePattern(false, false);
+<b class="fc">&nbsp;                        this.eat(&quot;)&quot;);</b>
+&nbsp;                        p = new KindedPointcut(Shadow.StaticInitialization, new SignaturePattern(Member.STATIC_INITIALIZATION, ModifiersPattern.ANY, TypePattern.ANY, typePat, NamePattern.ANY, TypePatternList.EMPTY, ThrowsPattern.ANY, AnnotationTypePattern.ANY));
+&nbsp;                    } else if (kind.equals(&quot;preinitialization&quot;)) {
+<b class="pc">&nbsp;                        this.eat(&quot;(&quot;);</b>
+<b class="fc">&nbsp;                        SignaturePattern sig = this.parseConstructorSignaturePattern();</b>
+<b class="nc">&nbsp;                        this.eat(&quot;)&quot;);</b>
+<b class="nc">&nbsp;                        p = new KindedPointcut(Shadow.PreInitialization, sig);</b>
+<b class="nc">&nbsp;                    } else if (kind.equals(&quot;if&quot;)) {</b>
+<b class="nc">&nbsp;                        this.eat(&quot;(&quot;);</b>
+<b class="nc">&nbsp;                        if (this.maybeEatIdentifier(&quot;true&quot;)) {</b>
+<b class="nc">&nbsp;                            this.eat(&quot;)&quot;);</b>
+<b class="nc">&nbsp;                            p = new IfPointcut.IfTruePointcut();</b>
+<b class="nc">&nbsp;                        } else if (this.maybeEatIdentifier(&quot;false&quot;)) {</b>
+<b class="nc">&nbsp;                            this.eat(&quot;)&quot;);</b>
+<b class="nc">&nbsp;                            p = new IfPointcut.IfFalsePointcut();</b>
+<b class="nc">&nbsp;                        } else {</b>
+<b class="nc">&nbsp;                            if (!this.maybeEat(&quot;)&quot;)) {</b>
+<b class="nc">&nbsp;                                throw new ParserException(&quot;in annotation style, if(...) pointcuts cannot contain code. Use if() and put the code in the annotated method&quot;, t);</b>
+<b class="nc">&nbsp;                            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                            p = new IfPointcut(&quot;&quot;);</b>
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;                    } else {</b>
+&nbsp;                        boolean matchedByExtensionDesignator = false;
+&nbsp;
+<b class="nc">&nbsp;                        for(PointcutDesignatorHandler pcd : this.pointcutDesignatorHandlers) {</b>
+<b class="nc">&nbsp;                            if (pcd.getDesignatorName().equals(kind)) {</b>
+<b class="nc">&nbsp;                                p = this.parseDesignatorPointcut(pcd);</b>
+<b class="nc">&nbsp;                                matchedByExtensionDesignator = true;</b>
+<b class="nc">&nbsp;                            }</b>
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                        if (!matchedByExtensionDesignator) {</b>
+<b class="nc">&nbsp;                            this.tokenSource.setIndex(start);</b>
+<b class="nc">&nbsp;                            p = this.parseReferencePointcut();</b>
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                } else {</b>
+<b class="nc">&nbsp;                    p = this.parseMonitorPointcut(kind);</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                p = this.parseKindedPointcut(kind);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            return p;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private void assertNoTypeVariables(String[] tvs, String errorMessage, IToken token) {</b>
+<b class="nc">&nbsp;        if (tvs != null) {</b>
+&nbsp;            throw new ParserException(errorMessage, token);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public Pointcut parseAnnotationPointcut() {
+<b class="nc">&nbsp;        int start = this.tokenSource.getIndex();</b>
+<b class="nc">&nbsp;        IToken t = this.tokenSource.peek();</b>
+<b class="nc">&nbsp;        String kind = this.parseIdentifier();</b>
+<b class="nc">&nbsp;        IToken possibleTypeVariableToken = this.tokenSource.peek();</b>
+<b class="nc">&nbsp;        String[] typeVariables = this.maybeParseSimpleTypeVariableList();</b>
+<b class="nc">&nbsp;        if (typeVariables != null) {</b>
+<b class="nc">&nbsp;            String message = &quot;(&quot;;</b>
+&nbsp;            this.assertNoTypeVariables(typeVariables, message, possibleTypeVariableToken);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        this.tokenSource.setIndex(start);
+&nbsp;        if (kind.equals(&quot;annotation&quot;)) {
+&nbsp;            return this.parseAtAnnotationPointcut();
+&nbsp;        } else if (kind.equals(&quot;args&quot;)) {
+<b class="nc">&nbsp;            return this.parseArgsAnnotationPointcut();</b>
+&nbsp;        } else if (!kind.equals(&quot;this&quot;) &amp;&amp; !kind.equals(&quot;target&quot;)) {
+&nbsp;            if (kind.equals(&quot;within&quot;)) {
+<b class="nc">&nbsp;                return this.parseWithinAnnotationPointcut();</b>
+&nbsp;            } else if (kind.equals(&quot;withincode&quot;)) {
+&nbsp;                return this.parseWithinCodeAnnotationPointcut();
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                throw new ParserException(&quot;pointcut name&quot;, t);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            return this.parseThisOrTargetAnnotationPointcut();
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private Pointcut parseAtAnnotationPointcut() {</b>
+<b class="nc">&nbsp;        this.parseIdentifier();</b>
+&nbsp;        this.eat(&quot;(&quot;);
+&nbsp;        if (this.maybeEat(&quot;)&quot;)) {
+<b class="fc">&nbsp;            throw new ParserException(&quot;@AnnotationName or parameter&quot;, this.tokenSource.peek());</b>
+&nbsp;        } else {
+&nbsp;            ExactAnnotationTypePattern type = this.parseAnnotationNameOrVarTypePattern();
+&nbsp;            this.eat(&quot;)&quot;);
+<b class="nc">&nbsp;            return new AnnotationPointcut(type);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private SignaturePattern parseConstructorSignaturePattern() {
+&nbsp;        SignaturePattern ret = this.parseMethodOrConstructorSignaturePattern();
+<b class="fc">&nbsp;        if (ret.getKind() == Member.CONSTRUCTOR) {</b>
+<b class="fc">&nbsp;            return ret;</b>
+<b class="fc">&nbsp;        } else {</b>
+<b class="fc">&nbsp;            throw new ParserException(&quot;constructor pattern required, found method pattern&quot;, ret);</b>
+<b class="fc">&nbsp;        }</b>
+<b class="pc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private Pointcut parseWithinCodePointcut() {</b>
+&nbsp;        this.eat(&quot;(&quot;);
+<b class="fc">&nbsp;        SignaturePattern sig = this.parseMethodOrConstructorSignaturePattern();</b>
+<b class="fc">&nbsp;        this.eat(&quot;)&quot;);</b>
+<b class="fc">&nbsp;        return new WithincodePointcut(sig);</b>
+<b class="pc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="pc">&nbsp;    private Pointcut parseCflowPointcut(boolean isBelow) {</b>
+<b class="nc">&nbsp;        this.eat(&quot;(&quot;);</b>
+<b class="pc">&nbsp;        Pointcut entry = this.parsePointcut();</b>
+<b class="fc">&nbsp;        this.eat(&quot;)&quot;);</b>
+<b class="nc">&nbsp;        return new CflowPointcut(entry, isBelow, (int[])null);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private Pointcut parseWithinPointcut() {</b>
+&nbsp;        this.eat(&quot;(&quot;);
+&nbsp;        TypePattern type = this.parseTypePattern();
+&nbsp;        this.eat(&quot;)&quot;);
+<b class="fc">&nbsp;        return new WithinPointcut(type);</b>
+<b class="fc">&nbsp;    }</b>
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;    private Pointcut parseThisOrTargetPointcut(String kind) {</b>
+&nbsp;        this.eat(&quot;(&quot;);
+<b class="fc">&nbsp;        TypePattern type = this.parseTypePattern();</b>
+<b class="fc">&nbsp;        this.eat(&quot;)&quot;);</b>
+<b class="fc">&nbsp;        return new ThisOrTargetPointcut(kind.equals(&quot;this&quot;), type);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private Pointcut parseThisOrTargetAnnotationPointcut() {
+<b class="nc">&nbsp;        String kind = this.parseIdentifier();</b>
+<b class="nc">&nbsp;        this.eat(&quot;(&quot;);</b>
+<b class="nc">&nbsp;        if (this.maybeEat(&quot;)&quot;)) {</b>
+&nbsp;            throw new ParserException(&quot;expecting @AnnotationName or parameter, but found &#39;)&#39;&quot;, this.tokenSource.peek());
+&nbsp;        } else {
+<b class="nc">&nbsp;            ExactAnnotationTypePattern type = this.parseAnnotationNameOrVarTypePattern();</b>
+&nbsp;            this.eat(&quot;)&quot;);
+&nbsp;            return new ThisOrTargetAnnotationPointcut(kind.equals(&quot;this&quot;), type);
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private Pointcut parseWithinAnnotationPointcut() {</b>
+<b class="nc">&nbsp;        this.parseIdentifier();</b>
+<b class="nc">&nbsp;        this.eat(&quot;(&quot;);</b>
+&nbsp;        if (this.maybeEat(&quot;)&quot;)) {
+&nbsp;            throw new ParserException(&quot;expecting @AnnotationName or parameter, but found &#39;)&#39;&quot;, this.tokenSource.peek());
+&nbsp;        } else {
+&nbsp;            AnnotationTypePattern type = this.parseAnnotationNameOrVarTypePattern();
+<b class="nc">&nbsp;            this.eat(&quot;)&quot;);</b>
+<b class="nc">&nbsp;            return new WithinAnnotationPointcut(type);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private Pointcut parseWithinCodeAnnotationPointcut() {
+&nbsp;        this.parseIdentifier();
+&nbsp;        this.eat(&quot;(&quot;);
+&nbsp;        if (this.maybeEat(&quot;)&quot;)) {
+&nbsp;            throw new ParserException(&quot;expecting @AnnotationName or parameter, but found &#39;)&#39;&quot;, this.tokenSource.peek());
+&nbsp;        } else {
+&nbsp;            ExactAnnotationTypePattern type = this.parseAnnotationNameOrVarTypePattern();
+&nbsp;            this.eat(&quot;)&quot;);
+<b class="nc">&nbsp;            return new WithinCodeAnnotationPointcut(type);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private Pointcut parseArgsPointcut() {
+&nbsp;        TypePatternList arguments = this.parseArgumentsPattern(false);
+&nbsp;        return new ArgsPointcut(arguments);
+&nbsp;    }
+&nbsp;
+&nbsp;    private Pointcut parseArgsAnnotationPointcut() {
+&nbsp;        this.parseIdentifier();
+&nbsp;        AnnotationPatternList arguments = this.parseArgumentsAnnotationPattern();
+<b class="nc">&nbsp;        return new ArgsAnnotationPointcut(arguments);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private Pointcut parseReferencePointcut() {</b>
+&nbsp;        TypePattern onType = this.parseTypePattern();
+&nbsp;        NamePattern name = null;
+&nbsp;        if (onType.typeParameters.size() &gt; 0) {
+<b class="nc">&nbsp;            this.eat(&quot;.&quot;);</b>
+<b class="nc">&nbsp;            name = this.parseNamePattern();</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            name = this.tryToExtractName(onType);</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if (name == null) {</b>
+<b class="nc">&nbsp;            throw new ParserException(&quot;name pattern&quot;, this.tokenSource.peek());</b>
+&nbsp;        } else {
+&nbsp;            if (onType.toString().equals(&quot;&quot;)) {
+&nbsp;                onType = null;
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;</b>
+<b class="pc">&nbsp;            String simpleName = name.maybeGetSimpleName();</b>
+<b class="nc">&nbsp;            if (simpleName == null) {</b>
+&nbsp;                throw new ParserException(&quot;(&quot;, this.tokenSource.peek(-1));
+<b class="fc">&nbsp;            } else {</b>
+<b class="fc">&nbsp;                TypePatternList arguments = this.parseArgumentsPattern(false);</b>
+<b class="fc">&nbsp;                return new ReferencePointcut(onType, simpleName, arguments);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private Pointcut parseDesignatorPointcut(PointcutDesignatorHandler pcdHandler) {</b>
+<b class="nc">&nbsp;        this.eat(&quot;(&quot;);</b>
+<b class="nc">&nbsp;        int parenCount = 1;</b>
+&nbsp;        StringBuilder pointcutBody = new StringBuilder();
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        while(parenCount &gt; 0) {</b>
+<b class="nc">&nbsp;            if (this.maybeEat(&quot;(&quot;)) {</b>
+&nbsp;                ++parenCount;
+&nbsp;                pointcutBody.append(&quot;(&quot;);
+&nbsp;            } else if (this.maybeEat(&quot;)&quot;)) {
+&nbsp;                --parenCount;
+&nbsp;                if (parenCount &gt; 0) {
+&nbsp;                    pointcutBody.append(&quot;)&quot;);
+&nbsp;                }
+&nbsp;            } else {
+&nbsp;                pointcutBody.append(this.nextToken().getString());
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        ContextBasedMatcher pcExpr = pcdHandler.parse(pointcutBody.toString());
+&nbsp;        return new PointcutDesignatorHandlerBasedPointcut(pcExpr, this.world);
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public List&lt;String&gt; parseDottedIdentifier() {</b>
+&nbsp;        List&lt;String&gt; ret = new ArrayList();
+&nbsp;        ret.add(this.parseIdentifier());
+&nbsp;
+<b class="nc">&nbsp;        while(this.maybeEat(&quot;.&quot;)) {</b>
+<b class="nc">&nbsp;            ret.add(this.parseIdentifier());</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return ret;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private KindedPointcut parseKindedPointcut(String kind) {
+<b class="nc">&nbsp;        this.eat(&quot;(&quot;);</b>
+<b class="nc">&nbsp;        Shadow.Kind shadowKind = null;</b>
+&nbsp;        SignaturePattern sig;
+<b class="nc">&nbsp;        if (kind.equals(&quot;execution&quot;)) {</b>
+<b class="nc">&nbsp;            sig = this.parseMethodOrConstructorSignaturePattern();</b>
+&nbsp;            if (sig.getKind() == Member.METHOD) {
+&nbsp;                shadowKind = Shadow.MethodExecution;
+<b class="nc">&nbsp;            } else if (sig.getKind() == Member.CONSTRUCTOR) {</b>
+<b class="nc">&nbsp;                shadowKind = Shadow.ConstructorExecution;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        } else if (kind.equals(&quot;call&quot;)) {
+&nbsp;            sig = this.parseMethodOrConstructorSignaturePattern();
+<b class="nc">&nbsp;            if (sig.getKind() == Member.METHOD) {</b>
+<b class="nc">&nbsp;                shadowKind = Shadow.MethodCall;</b>
+&nbsp;            } else if (sig.getKind() == Member.CONSTRUCTOR) {
+&nbsp;                shadowKind = Shadow.ConstructorCall;
+&nbsp;            }
+<b class="nc">&nbsp;        } else if (kind.equals(&quot;get&quot;)) {</b>
+<b class="nc">&nbsp;            sig = this.parseFieldSignaturePattern();</b>
+<b class="nc">&nbsp;            shadowKind = Shadow.FieldGet;</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            if (!kind.equals(&quot;set&quot;)) {</b>
+<b class="nc">&nbsp;                throw new ParserException(&quot;bad kind: &quot; + kind, this.tokenSource.peek());</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            sig = this.parseFieldSignaturePattern();</b>
+<b class="nc">&nbsp;            shadowKind = Shadow.FieldSet;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        this.eat(&quot;)&quot;);
+<b class="nc">&nbsp;        return new KindedPointcut(shadowKind, sig);</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private KindedPointcut parseMonitorPointcut(String kind) {</b>
+<b class="nc">&nbsp;        this.eat(&quot;(&quot;);</b>
+&nbsp;        this.eat(&quot;)&quot;);
+&nbsp;        return kind.equals(&quot;lock&quot;) ? new KindedPointcut(Shadow.SynchronizationLock, new SignaturePattern(Member.MONITORENTER, ModifiersPattern.ANY, TypePattern.ANY, TypePattern.ANY, NamePattern.ANY, TypePatternList.ANY, ThrowsPattern.ANY, AnnotationTypePattern.ANY)) : new KindedPointcut(Shadow.SynchronizationUnlock, new SignaturePattern(Member.MONITORENTER, ModifiersPattern.ANY, TypePattern.ANY, TypePattern.ANY, NamePattern.ANY, TypePatternList.ANY, ThrowsPattern.ANY, AnnotationTypePattern.ANY));
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public TypePattern parseTypePattern() {</b>
+<b class="nc">&nbsp;        return this.parseTypePattern(false, false);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public TypePattern parseTypePattern(boolean insideTypeParameters, boolean parameterAnnotationsPossible) {</b>
+&nbsp;        TypePattern p = this.parseAtomicTypePattern(insideTypeParameters, parameterAnnotationsPossible);
+&nbsp;        if (this.maybeEat(&quot;&amp;&amp;&quot;)) {
+&nbsp;            p = new AndTypePattern(p, this.parseNotOrTypePattern(insideTypeParameters, parameterAnnotationsPossible));
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        if (this.maybeEat(&quot;||&quot;)) {
+<b class="fc">&nbsp;            p = new OrTypePattern(p, this.parseTypePattern(insideTypeParameters, parameterAnnotationsPossible));</b>
+<b class="pc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+<b class="pc">&nbsp;        return p;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private TypePattern parseNotOrTypePattern(boolean insideTypeParameters, boolean parameterAnnotationsPossible) {</b>
+&nbsp;        TypePattern p = this.parseAtomicTypePattern(insideTypeParameters, parameterAnnotationsPossible);
+<b class="nc">&nbsp;        if (this.maybeEat(&quot;&amp;&amp;&quot;)) {</b>
+<b class="nc">&nbsp;            p = new AndTypePattern(p, this.parseTypePattern(insideTypeParameters, parameterAnnotationsPossible));</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return p;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private TypePattern parseAtomicTypePattern(boolean insideTypeParameters, boolean parameterAnnotationsPossible) {</b>
+<b class="nc">&nbsp;        AnnotationTypePattern ap = this.maybeParseAnnotationPattern();</b>
+<b class="nc">&nbsp;        if (this.maybeEat(&quot;!&quot;)) {</b>
+<b class="nc">&nbsp;            TypePattern p = null;</b>
+<b class="nc">&nbsp;            TypePattern tp = this.parseAtomicTypePattern(insideTypeParameters, parameterAnnotationsPossible);</b>
+<b class="nc">&nbsp;            if (!(ap instanceof AnyAnnotationTypePattern)) {</b>
+&nbsp;                TypePattern var11 = new NotTypePattern(tp);
+<b class="nc">&nbsp;                p = new AndTypePattern(this.setAnnotationPatternForTypePattern(TypePattern.ANY, ap, false), var11);</b>
+&nbsp;            } else {
+<b class="fc">&nbsp;                p = new NotTypePattern(tp);</b>
+<b class="fc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            return p;
+&nbsp;        } else if (!this.maybeEat(&quot;(&quot;)) {
+&nbsp;            int startPos = this.tokenSource.peek().getStart();
+<b class="nc">&nbsp;            if (ap.start != -1) {</b>
+&nbsp;                startPos = ap.start;
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            TypePattern p = this.parseSingleTypePattern(insideTypeParameters);</b>
+<b class="nc">&nbsp;            int endPos = this.tokenSource.peek(-1).getEnd();</b>
+&nbsp;            p = this.setAnnotationPatternForTypePattern(p, ap, false);
+&nbsp;            p.setLocation(this.sourceContext, startPos, endPos);
+&nbsp;            return p;
+&nbsp;        } else {
+<b class="nc">&nbsp;            int openParenPos = this.tokenSource.peek(-1).getStart();</b>
+&nbsp;            TypePattern p = this.parseTypePattern(insideTypeParameters, false);
+&nbsp;            if (p instanceof NotTypePattern &amp;&amp; !(ap instanceof AnyAnnotationTypePattern)) {
+&nbsp;                TypePattern tp = this.setAnnotationPatternForTypePattern(TypePattern.ANY, ap, parameterAnnotationsPossible);
+&nbsp;                p = new AndTypePattern(tp, p);
+&nbsp;            } else {
+&nbsp;                p = this.setAnnotationPatternForTypePattern(p, ap, parameterAnnotationsPossible);
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            this.eat(&quot;)&quot;);
+&nbsp;            int closeParenPos = this.tokenSource.peek(-1).getStart();
+&nbsp;            boolean isVarArgs = this.maybeEat(&quot;...&quot;);
+<b class="fc">&nbsp;            if (isVarArgs) {</b>
+<b class="pc">&nbsp;                p.setIsVarArgs(isVarArgs);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            boolean isIncludeSubtypes = this.maybeEat(&quot;+&quot;);
+<b class="pc">&nbsp;            if (isIncludeSubtypes) {</b>
+<b class="nc">&nbsp;                p.includeSubtypes = true;</b>
+&nbsp;            }
+<b class="fc">&nbsp;</b>
+&nbsp;            p.start = openParenPos;
+&nbsp;            p.end = closeParenPos;
+&nbsp;            return p;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private TypePattern setAnnotationPatternForTypePattern(TypePattern t, AnnotationTypePattern ap, boolean parameterAnnotationsPattern) {
+<b class="nc">&nbsp;        if (parameterAnnotationsPattern) {</b>
+&nbsp;            ap.setForParameterAnnotationMatch();
+&nbsp;        }
+&nbsp;
+&nbsp;        if (ap != AnnotationTypePattern.ANY) {
+&nbsp;            if (t == TypePattern.ANY) {
+<b class="fc">&nbsp;                if (t.annotationPattern == AnnotationTypePattern.ANY) {</b>
+&nbsp;                    return new AnyWithAnnotationTypePattern(ap);
+<b class="pc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                return new AnyWithAnnotationTypePattern(new AndAnnotationTypePattern(ap, t.annotationPattern));
+&nbsp;            }
+&nbsp;
+&nbsp;            if (t.annotationPattern == AnnotationTypePattern.ANY) {
+&nbsp;                t.setAnnotationTypePattern(ap);
+&nbsp;            } else {
+<b class="nc">&nbsp;                t.setAnnotationTypePattern(new AndAnnotationTypePattern(ap, t.annotationPattern));</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return t;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public AnnotationTypePattern maybeParseAnnotationPattern() {
+<b class="nc">&nbsp;        AnnotationTypePattern ret = AnnotationTypePattern.ANY;</b>
+&nbsp;        AnnotationTypePattern nextPattern = null;
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;        while((nextPattern = this.maybeParseSingleAnnotationPattern()) != null) {</b>
+<b class="nc">&nbsp;            if (ret == AnnotationTypePattern.ANY) {</b>
+<b class="nc">&nbsp;                ret = nextPattern;</b>
+&nbsp;            } else {
+&nbsp;                ret = new AndAnnotationTypePattern(ret, nextPattern);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        return ret;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public AnnotationTypePattern maybeParseSingleAnnotationPattern() {</b>
+<b class="nc">&nbsp;        AnnotationTypePattern ret = null;</b>
+<b class="nc">&nbsp;        Map&lt;String, String&gt; values = null;</b>
+<b class="nc">&nbsp;        int startIndex = this.tokenSource.getIndex();</b>
+&nbsp;        if (this.maybeEat(&quot;!&quot;)) {
+<b class="nc">&nbsp;            if (this.maybeEat(&quot;@&quot;)) {</b>
+<b class="nc">&nbsp;                if (this.maybeEat(&quot;(&quot;)) {</b>
+<b class="nc">&nbsp;                    TypePattern p = this.parseTypePattern();</b>
+&nbsp;                    ret = new NotAnnotationTypePattern(new WildAnnotationTypePattern(p));
+<b class="nc">&nbsp;                    this.eat(&quot;)&quot;);</b>
+<b class="nc">&nbsp;                    return ret;</b>
+<b class="nc">&nbsp;                } else {</b>
+&nbsp;                    TypePattern p = this.parseSingleTypePattern();
+<b class="fc">&nbsp;                    if (this.maybeEatAdjacent(&quot;(&quot;)) {</b>
+<b class="pc">&nbsp;                        values = this.parseAnnotationValues();</b>
+<b class="nc">&nbsp;                        this.eat(&quot;)&quot;);</b>
+&nbsp;                        ret = new NotAnnotationTypePattern(new WildAnnotationTypePattern(p, values));
+<b class="fc">&nbsp;                    } else {</b>
+<b class="fc">&nbsp;                        ret = new NotAnnotationTypePattern(new WildAnnotationTypePattern(p));</b>
+<b class="fc">&nbsp;                    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;                    return ret;</b>
+&nbsp;                }
+&nbsp;            } else {
+&nbsp;                this.tokenSource.setIndex(startIndex);
+&nbsp;                return ret;
+<b class="fc">&nbsp;            }</b>
+<b class="pc">&nbsp;        } else if (this.maybeEat(&quot;@&quot;)) {</b>
+<b class="nc">&nbsp;            if (this.maybeEat(&quot;(&quot;)) {</b>
+&nbsp;                TypePattern p = this.parseTypePattern();
+<b class="pc">&nbsp;                ret = new WildAnnotationTypePattern(p);</b>
+<b class="nc">&nbsp;                this.eat(&quot;)&quot;);</b>
+<b class="nc">&nbsp;                return ret;</b>
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                int atPos = this.tokenSource.peek(-1).getStart();
+<b class="nc">&nbsp;                TypePattern p = this.parseSingleTypePattern();</b>
+&nbsp;                if (this.maybeEatAdjacent(&quot;(&quot;)) {
+&nbsp;                    values = this.parseAnnotationValues();
+&nbsp;                    this.eat(&quot;)&quot;);
+<b class="nc">&nbsp;                    ret = new WildAnnotationTypePattern(p, values);</b>
+<b class="nc">&nbsp;                } else {</b>
+&nbsp;                    ret = new WildAnnotationTypePattern(p);
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                ret.start = atPos;
+<b class="fc">&nbsp;                return ret;</b>
+&nbsp;            }
+&nbsp;        } else {
+&nbsp;            this.tokenSource.setIndex(startIndex);
+<b class="fc">&nbsp;            return ret;</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;    }</b>
+<b class="pc">&nbsp;</b>
+<b class="fc">&nbsp;    public Map&lt;String, String&gt; parseAnnotationValues() {</b>
+&nbsp;        Map&lt;String, String&gt; values = new HashMap();
+<b class="nc">&nbsp;        boolean seenDefaultValue = false;</b>
+&nbsp;
+&nbsp;        do {
+<b class="fc">&nbsp;            String possibleKeyString = this.parseAnnotationNameValuePattern();</b>
+&nbsp;            if (possibleKeyString == null) {
+&nbsp;                throw new ParserException(&quot;expecting simple literal &quot;, this.tokenSource.peek(-1));
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            if (this.maybeEat(&quot;=&quot;)) {</b>
+<b class="fc">&nbsp;                String valueString = this.parseAnnotationNameValuePattern();</b>
+&nbsp;                if (valueString == null) {
+<b class="fc">&nbsp;                    throw new ParserException(&quot;expecting simple literal &quot;, this.tokenSource.peek(-1));</b>
+<b class="pc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                values.put(possibleKeyString, valueString);</b>
+<b class="nc">&nbsp;            } else if (this.maybeEat(&quot;!=&quot;)) {</b>
+<b class="nc">&nbsp;                String valueString = this.parseAnnotationNameValuePattern();</b>
+<b class="nc">&nbsp;                if (valueString == null) {</b>
+<b class="nc">&nbsp;                    throw new ParserException(&quot;expecting simple literal &quot;, this.tokenSource.peek(-1));</b>
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                values.put(possibleKeyString + &quot;!&quot;, valueString);</b>
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                if (seenDefaultValue) {</b>
+<b class="nc">&nbsp;                    throw new ParserException(&quot;cannot specify two default values&quot;, this.tokenSource.peek(-1));</b>
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+&nbsp;                seenDefaultValue = true;
+<b class="nc">&nbsp;                values.put(&quot;value&quot;, possibleKeyString);</b>
+&nbsp;            }
+&nbsp;        } while(this.maybeEat(&quot;,&quot;));
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return values;</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public TypePattern parseSingleTypePattern() {</b>
+<b class="pc">&nbsp;        return this.parseSingleTypePattern(false);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public TypePattern parseSingleTypePattern(boolean insideTypeParameters) {</b>
+<b class="nc">&nbsp;        if (insideTypeParameters &amp;&amp; this.maybeEat(&quot;?&quot;)) {</b>
+&nbsp;            return this.parseGenericsWildcardTypePattern();
+<b class="fc">&nbsp;        } else {</b>
+<b class="fc">&nbsp;            if (this.allowHasTypePatterns) {</b>
+<b class="pc">&nbsp;                if (this.maybeEatIdentifier(&quot;hasmethod&quot;)) {</b>
+<b class="nc">&nbsp;                    return this.parseHasMethodTypePattern();</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                if (this.maybeEatIdentifier(&quot;hasfield&quot;)) {
+<b class="fc">&nbsp;                    return this.parseHasFieldTypePattern();</b>
+&nbsp;                }
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;            if (this.maybeEatIdentifier(&quot;is&quot;)) {
+&nbsp;                int pos = this.tokenSource.getIndex() - 1;
+<b class="fc">&nbsp;                TypePattern typeIsPattern = this.parseIsTypePattern();</b>
+<b class="fc">&nbsp;                if (typeIsPattern != null) {</b>
+&nbsp;                    return typeIsPattern;
+&nbsp;                }
+&nbsp;
+&nbsp;                this.tokenSource.setIndex(pos);
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            List&lt;NamePattern&gt; names = this.parseDottedNamePattern();</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            int dim;
+<b class="nc">&nbsp;            for(dim = 0; this.maybeEat(&quot;[&quot;); ++dim) {</b>
+<b class="nc">&nbsp;                this.eat(&quot;]&quot;);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            TypePatternList typeParameters = this.maybeParseTypeParameterList();
+<b class="nc">&nbsp;            int endPos = this.tokenSource.peek(-1).getEnd();</b>
+&nbsp;
+<b class="nc">&nbsp;            boolean includeSubtypes;</b>
+<b class="nc">&nbsp;            for(includeSubtypes = this.maybeEat(&quot;+&quot;); this.maybeEat(&quot;[&quot;); ++dim) {</b>
+<b class="nc">&nbsp;                this.eat(&quot;]&quot;);</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            boolean isVarArgs = this.maybeEat(&quot;...&quot;);</b>
+&nbsp;            return (TypePattern)(names.size() == 1 &amp;&amp; ((NamePattern)names.get(0)).isAny() &amp;&amp; dim == 0 &amp;&amp; !isVarArgs &amp;&amp; typeParameters == null ? TypePattern.ANY : new WildTypePattern(names, includeSubtypes, dim + (isVarArgs ? 1 : 0), endPos, isVarArgs, typeParameters));
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public TypePattern parseHasMethodTypePattern() {
+&nbsp;        int startPos = this.tokenSource.peek(-1).getStart();
+<b class="nc">&nbsp;        this.eat(&quot;(&quot;);</b>
+&nbsp;        SignaturePattern sp = this.parseMethodOrConstructorSignaturePattern();
+<b class="nc">&nbsp;        this.eat(&quot;)&quot;);</b>
+<b class="nc">&nbsp;        int endPos = this.tokenSource.peek(-1).getEnd();</b>
+&nbsp;        HasMemberTypePattern ret = new HasMemberTypePattern(sp);
+<b class="nc">&nbsp;        ret.setLocation(this.sourceContext, startPos, endPos);</b>
+<b class="nc">&nbsp;        return ret;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public TypePattern parseIsTypePattern() {</b>
+&nbsp;        int startPos = this.tokenSource.peek(-1).getStart();
+&nbsp;        if (!this.maybeEatAdjacent(&quot;(&quot;)) {
+&nbsp;            return null;
+<b class="fc">&nbsp;        } else {</b>
+&nbsp;            IToken token = this.tokenSource.next();
+&nbsp;            TypeCategoryTypePattern typeIsPattern = null;
+&nbsp;            if (token.isIdentifier()) {
+<b class="pc">&nbsp;                String category = token.getString();</b>
+<b class="nc">&nbsp;                if (category.equals(&quot;ClassType&quot;)) {</b>
+&nbsp;                    typeIsPattern = new TypeCategoryTypePattern(1);
+<b class="pc">&nbsp;                } else if (category.equals(&quot;AspectType&quot;)) {</b>
+<b class="nc">&nbsp;                    typeIsPattern = new TypeCategoryTypePattern(3);</b>
+<b class="nc">&nbsp;                } else if (category.equals(&quot;InterfaceType&quot;)) {</b>
+&nbsp;                    typeIsPattern = new TypeCategoryTypePattern(2);
+<b class="nc">&nbsp;                } else if (category.equals(&quot;InnerType&quot;)) {</b>
+<b class="nc">&nbsp;                    typeIsPattern = new TypeCategoryTypePattern(4);</b>
+&nbsp;                } else if (category.equals(&quot;AnonymousType&quot;)) {
+&nbsp;                    typeIsPattern = new TypeCategoryTypePattern(5);
+&nbsp;                } else if (category.equals(&quot;EnumType&quot;)) {
+&nbsp;                    typeIsPattern = new TypeCategoryTypePattern(6);
+&nbsp;                } else if (category.equals(&quot;AnnotationType&quot;)) {
+&nbsp;                    typeIsPattern = new TypeCategoryTypePattern(7);
+&nbsp;                } else if (category.equals(&quot;FinalType&quot;)) {
+&nbsp;                    typeIsPattern = new TypeCategoryTypePattern(8);
+&nbsp;                } else if (category.equals(&quot;AbstractType&quot;)) {
+&nbsp;                    typeIsPattern = new TypeCategoryTypePattern(9);
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            if (typeIsPattern == null) {
+&nbsp;                return null;
+&nbsp;            } else if (!this.maybeEat(&quot;)&quot;)) {
+&nbsp;                throw new ParserException(&quot;)&quot;, this.tokenSource.peek());
+&nbsp;            } else {
+&nbsp;                int endPos = this.tokenSource.peek(-1).getEnd();
+&nbsp;                typeIsPattern.setLocation(this.tokenSource.getSourceContext(), startPos, endPos);
+&nbsp;                return typeIsPattern;
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public TypePattern parseHasFieldTypePattern() {
+&nbsp;        int startPos = this.tokenSource.peek(-1).getStart();
+&nbsp;        this.eat(&quot;(&quot;);
+&nbsp;        SignaturePattern sp = this.parseFieldSignaturePattern();
+<b class="pc">&nbsp;        this.eat(&quot;)&quot;);</b>
+<b class="nc">&nbsp;        int endPos = this.tokenSource.peek(-1).getEnd();</b>
+<b class="nc">&nbsp;        HasMemberTypePattern ret = new HasMemberTypePattern(sp);</b>
+<b class="nc">&nbsp;        ret.setLocation(this.sourceContext, startPos, endPos);</b>
+<b class="nc">&nbsp;        return ret;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public TypePattern parseGenericsWildcardTypePattern() {</b>
+&nbsp;        List&lt;NamePattern&gt; names = new ArrayList();
+&nbsp;        names.add(new NamePattern(&quot;?&quot;));
+<b class="fc">&nbsp;        TypePattern upperBound = null;</b>
+&nbsp;        TypePattern[] additionalInterfaceBounds = new TypePattern[0];
+<b class="fc">&nbsp;        TypePattern lowerBound = null;</b>
+<b class="pc">&nbsp;        if (this.maybeEatIdentifier(&quot;extends&quot;)) {</b>
+<b class="nc">&nbsp;            upperBound = this.parseTypePattern(false, false);</b>
+<b class="nc">&nbsp;            additionalInterfaceBounds = this.maybeParseAdditionalInterfaceBounds();</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if (this.maybeEatIdentifier(&quot;super&quot;)) {</b>
+<b class="fc">&nbsp;            lowerBound = this.parseTypePattern(false, false);</b>
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+&nbsp;        int endPos = this.tokenSource.peek(-1).getEnd();
+&nbsp;        return new WildTypePattern(names, false, 0, endPos, false, (TypePatternList)null, upperBound, additionalInterfaceBounds, lowerBound);
+<b class="pc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected ExactAnnotationTypePattern parseAnnotationNameOrVarTypePattern() {</b>
+&nbsp;        ExactAnnotationTypePattern p = null;
+&nbsp;        int startPos = this.tokenSource.peek().getStart();
+<b class="fc">&nbsp;        if (this.maybeEat(&quot;@&quot;)) {</b>
+&nbsp;            throw new ParserException(&quot;@Foo form was deprecated in AspectJ 5 M2: annotation name or var &quot;, this.tokenSource.peek(-1));
+&nbsp;        } else {
+<b class="pc">&nbsp;            p = this.parseSimpleAnnotationName();</b>
+<b class="fc">&nbsp;            int endPos = this.tokenSource.peek(-1).getEnd();</b>
+&nbsp;            p.setLocation(this.sourceContext, startPos, endPos);
+&nbsp;            if (this.maybeEat(&quot;(&quot;)) {
+&nbsp;                String formalName = this.parseIdentifier();
+&nbsp;                p = new ExactAnnotationFieldTypePattern(p, formalName);
+&nbsp;                this.eat(&quot;)&quot;);
+&nbsp;            }
+&nbsp;
+&nbsp;            return p;
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private ExactAnnotationTypePattern parseSimpleAnnotationName() {
+<b class="nc">&nbsp;        StringBuilder annotationName = new StringBuilder();</b>
+<b class="nc">&nbsp;        annotationName.append(this.parseIdentifier());</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        while(this.maybeEat(&quot;.&quot;)) {</b>
+<b class="nc">&nbsp;            annotationName.append(&#39;.&#39;);</b>
+<b class="nc">&nbsp;            annotationName.append(this.parseIdentifier());</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        UnresolvedType type = UnresolvedType.forName(annotationName.toString());
+&nbsp;        ExactAnnotationTypePattern p = new ExactAnnotationTypePattern(type, (Map)null);
+&nbsp;        return p;
+&nbsp;    }
+&nbsp;
+&nbsp;    public List&lt;NamePattern&gt; parseDottedNamePattern() {
+&nbsp;        List&lt;NamePattern&gt; names = new ArrayList();
+&nbsp;        StringBuilder buf = new StringBuilder();
+&nbsp;        IToken previous = null;
+&nbsp;        boolean justProcessedEllipsis = false;
+<b class="nc">&nbsp;        boolean justProcessedDot = false;</b>
+<b class="nc">&nbsp;        boolean onADot = false;</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        while(true) {
+<b class="nc">&nbsp;            IToken tok = null;</b>
+<b class="nc">&nbsp;            int startPos = this.tokenSource.peek().getStart();</b>
+<b class="nc">&nbsp;            String afterDot = null;</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            while(true) {</b>
+<b class="nc">&nbsp;                if (previous != null &amp;&amp; previous.getString().equals(&quot;.&quot;)) {</b>
+<b class="nc">&nbsp;                    justProcessedDot = true;</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                tok = this.tokenSource.peek();</b>
+<b class="nc">&nbsp;                onADot = tok.getString().equals(&quot;.&quot;);</b>
+<b class="nc">&nbsp;                if (previous != null &amp;&amp; !this.isAdjacent(previous, tok)) {</b>
+<b class="nc">&nbsp;                    break;</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                if (tok.getString() != &quot;*&quot; &amp;&amp; (!tok.isIdentifier() || tok.getString() == &quot;...&quot;)) {</b>
+<b class="nc">&nbsp;                    if (tok.getString() == &quot;...&quot; || tok.getLiteralKind() == null) {</b>
+<b class="nc">&nbsp;                        break;</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                    String s = tok.getString();</b>
+<b class="nc">&nbsp;                    int dot = s.indexOf(46);</b>
+&nbsp;                    if (dot != -1) {
+&nbsp;                        buf.append(s.substring(0, dot));
+<b class="nc">&nbsp;                        afterDot = s.substring(dot + 1);</b>
+<b class="nc">&nbsp;                        previous = this.tokenSource.next();</b>
+&nbsp;                        break;
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                    buf.append(s);
+<b class="nc">&nbsp;                } else {</b>
+<b class="nc">&nbsp;                    buf.append(tok.getString());</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                previous = this.tokenSource.next();
+&nbsp;            }
+&nbsp;
+&nbsp;            int endPos = this.tokenSource.peek(-1).getEnd();
+&nbsp;            if (buf.length() == 0 &amp;&amp; names.isEmpty()) {
+&nbsp;                throw new ParserException(&quot;name pattern&quot;, tok);
+&nbsp;            }
+&nbsp;
+&nbsp;            if (buf.length() == 0 &amp;&amp; justProcessedEllipsis) {
+&nbsp;                throw new ParserException(&quot;name pattern cannot finish with ..&quot;, tok);
+&nbsp;            }
+&nbsp;
+&nbsp;            if (buf.length() == 0 &amp;&amp; justProcessedDot &amp;&amp; !onADot) {
+&nbsp;                throw new ParserException(&quot;name pattern cannot finish with .&quot;, tok);
+&nbsp;            }
+&nbsp;
+&nbsp;            if (buf.length() == 0) {
+&nbsp;                names.add(NamePattern.ELLIPSIS);
+&nbsp;                justProcessedEllipsis = true;
+&nbsp;            } else {
+&nbsp;                this.checkLegalName(buf.toString(), previous);
+&nbsp;                NamePattern ret = new NamePattern(buf.toString());
+&nbsp;                ret.setLocation(this.sourceContext, startPos, endPos);
+&nbsp;                names.add(ret);
+&nbsp;                justProcessedEllipsis = false;
+&nbsp;            }
+&nbsp;
+&nbsp;            if (afterDot == null) {
+<b class="nc">&nbsp;                buf.setLength(0);</b>
+<b class="nc">&nbsp;                if (!this.maybeEat(&quot;.&quot;)) {</b>
+<b class="nc">&nbsp;                    return names;</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                previous = this.tokenSource.peek(-1);</b>
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                buf.setLength(0);</b>
+&nbsp;                buf.append(afterDot);
+&nbsp;                Object var14 = null;
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public String parseAnnotationNameValuePattern() {</b>
+<b class="nc">&nbsp;        StringBuilder buf = new StringBuilder();</b>
+<b class="nc">&nbsp;        this.tokenSource.peek().getStart();</b>
+<b class="nc">&nbsp;        boolean dotOK = false;</b>
+<b class="nc">&nbsp;        int depth = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;        while(true) {</b>
+<b class="nc">&nbsp;            IToken tok = this.tokenSource.peek();</b>
+&nbsp;            if (tok.getString() == &quot;)&quot; &amp;&amp; depth == 0 || tok.getString() == &quot;!=&quot; &amp;&amp; depth == 0 || tok.getString() == &quot;=&quot; &amp;&amp; depth == 0 || tok.getString() == &quot;,&quot; &amp;&amp; depth == 0) {
+<b class="nc">&nbsp;                return buf.toString();</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            if (tok == IToken.EOF) {
+&nbsp;                throw new ParserException(&quot;eof&quot;, this.tokenSource.peek());
+&nbsp;            }
+&nbsp;
+&nbsp;            if (tok.getString() == &quot;(&quot;) {
+&nbsp;                ++depth;
+&nbsp;            }
+&nbsp;
+&nbsp;            if (tok.getString() == &quot;)&quot;) {
+&nbsp;                --depth;
+&nbsp;            }
+&nbsp;
+&nbsp;            if (tok.getString() == &quot;{&quot;) {
+&nbsp;                ++depth;
+&nbsp;            }
+&nbsp;
+&nbsp;            if (tok.getString() == &quot;}&quot;) {
+&nbsp;                --depth;
+&nbsp;            }
+&nbsp;
+&nbsp;            if (tok.getString() == &quot;.&quot; &amp;&amp; !dotOK) {
+&nbsp;                throw new ParserException(&quot;dot not expected&quot;, tok);
+&nbsp;            }
+&nbsp;
+&nbsp;            buf.append(tok.getString());
+&nbsp;            this.tokenSource.next();
+&nbsp;            dotOK = true;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public NamePattern parseNamePattern() {
+&nbsp;        StringBuilder buf = new StringBuilder();
+<b class="fc">&nbsp;        IToken previous = null;</b>
+<b class="fc">&nbsp;        int startPos = this.tokenSource.peek().getStart();</b>
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;        IToken tok;</b>
+&nbsp;        while(true) {
+<b class="fc">&nbsp;            tok = this.tokenSource.peek();</b>
+<b class="fc">&nbsp;            if (previous != null &amp;&amp; !this.isAdjacent(previous, tok)) {</b>
+<b class="fc">&nbsp;                break;</b>
+&nbsp;            }
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;            if (tok.getString() != &quot;*&quot; &amp;&amp; !tok.isIdentifier()) {</b>
+<b class="nc">&nbsp;                if (tok.getLiteralKind() == null) {</b>
+<b class="nc">&nbsp;                    break;</b>
+&nbsp;                }
+<b class="fc">&nbsp;</b>
+&nbsp;                String s = tok.getString();
+&nbsp;                if (s.indexOf(46) != -1) {
+&nbsp;                    break;
+&nbsp;                }
+&nbsp;
+&nbsp;                buf.append(s);
+&nbsp;            } else {
+&nbsp;                buf.append(tok.getString());
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;            previous = this.tokenSource.next();</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;        int endPos = this.tokenSource.peek(-1).getEnd();
+<b class="fc">&nbsp;        if (buf.length() == 0) {</b>
+<b class="fc">&nbsp;            throw new ParserException(&quot;name pattern&quot;, tok);</b>
+<b class="fc">&nbsp;        } else {</b>
+&nbsp;            this.checkLegalName(buf.toString(), previous);
+&nbsp;            NamePattern ret = new NamePattern(buf.toString());
+&nbsp;            ret.setLocation(this.sourceContext, startPos, endPos);
+&nbsp;            return ret;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void checkLegalName(String s, IToken tok) {
+&nbsp;        char ch = s.charAt(0);
+&nbsp;        if (ch != &#39;*&#39; &amp;&amp; !Character.isJavaIdentifierStart(ch)) {
+&nbsp;            throw new ParserException(&quot;illegal identifier start (&quot; + ch + &quot;)&quot;, tok);
+&nbsp;        } else {
+&nbsp;            int i = 1;
+&nbsp;
+&nbsp;            for(int len = s.length(); i &lt; len; ++i) {
+&nbsp;                ch = s.charAt(i);
+&nbsp;                if (ch != &#39;*&#39; &amp;&amp; !Character.isJavaIdentifierPart(ch)) {
+&nbsp;                    throw new ParserException(&quot;illegal identifier character (&quot; + ch + &quot;)&quot;, tok);
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean isAdjacent(IToken first, IToken second) {
+&nbsp;        return first.getEnd() == second.getStart() - 1;
+&nbsp;    }
+&nbsp;
+&nbsp;    public ModifiersPattern parseModifiersPattern() {
+&nbsp;        int requiredFlags = 0;
+<b class="fc">&nbsp;        int forbiddenFlags = 0;</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;        while(true) {</b>
+<b class="fc">&nbsp;            int start = this.tokenSource.getIndex();</b>
+<b class="fc">&nbsp;            boolean isForbidden = false;</b>
+<b class="fc">&nbsp;            isForbidden = this.maybeEat(&quot;!&quot;);</b>
+&nbsp;            IToken t = this.tokenSource.next();
+&nbsp;            int flag = ModifiersPattern.getModifierFlag(t.getString());
+<b class="fc">&nbsp;            if (flag == -1) {</b>
+<b class="fc">&nbsp;                this.tokenSource.setIndex(start);</b>
+<b class="fc">&nbsp;                if (requiredFlags == 0 &amp;&amp; forbiddenFlags == 0) {</b>
+&nbsp;                    return ModifiersPattern.ANY;
+<b class="fc">&nbsp;                }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;                return new ModifiersPattern(requiredFlags, forbiddenFlags);
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;            if (isForbidden) {</b>
+<b class="fc">&nbsp;                forbiddenFlags |= flag;</b>
+&nbsp;            } else {
+&nbsp;                requiredFlags |= flag;
+&nbsp;            }
+<b class="pc">&nbsp;        }</b>
+<b class="fc">&nbsp;    }</b>
+<b class="pc">&nbsp;</b>
+&nbsp;    public TypePatternList parseArgumentsPattern(boolean parameterAnnotationsPossible) {
+<b class="pc">&nbsp;        List&lt;TypePattern&gt; patterns = new ArrayList();</b>
+&nbsp;        this.eat(&quot;(&quot;);
+<b class="nc">&nbsp;        if (this.maybeEat(&quot;)&quot;)) {</b>
+<b class="nc">&nbsp;            return new TypePatternList();</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            do {</b>
+<b class="nc">&nbsp;                if (this.maybeEat(&quot;.&quot;)) {</b>
+<b class="nc">&nbsp;                    this.eat(&quot;.&quot;);</b>
+&nbsp;                    patterns.add(TypePattern.ELLIPSIS);
+&nbsp;                } else {
+<b class="nc">&nbsp;                    patterns.add(this.parseTypePattern(false, parameterAnnotationsPossible));</b>
+&nbsp;                }
+&nbsp;            } while(this.maybeEat(&quot;,&quot;));
+&nbsp;
+<b class="fc">&nbsp;            this.eat(&quot;)&quot;);</b>
+&nbsp;            return new TypePatternList(patterns);
+&nbsp;        }
+<b class="fc">&nbsp;    }</b>
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;    public AnnotationPatternList parseArgumentsAnnotationPattern() {</b>
+&nbsp;        List&lt;AnnotationTypePattern&gt; patterns = new ArrayList();
+&nbsp;        this.eat(&quot;(&quot;);
+<b class="pc">&nbsp;        if (this.maybeEat(&quot;)&quot;)) {</b>
+<b class="nc">&nbsp;            return new AnnotationPatternList();</b>
+&nbsp;        } else {
+<b class="pc">&nbsp;            do {</b>
+<b class="nc">&nbsp;                if (this.maybeEat(&quot;.&quot;)) {</b>
+&nbsp;                    this.eat(&quot;.&quot;);
+&nbsp;                    patterns.add(AnnotationTypePattern.ELLIPSIS);
+<b class="pc">&nbsp;                } else if (this.maybeEat(&quot;*&quot;)) {</b>
+<b class="nc">&nbsp;                    patterns.add(AnnotationTypePattern.ANY);</b>
+<b class="nc">&nbsp;                } else {</b>
+&nbsp;                    patterns.add(this.parseAnnotationNameOrVarTypePattern());
+<b class="fc">&nbsp;                }</b>
+<b class="fc">&nbsp;            } while(this.maybeEat(&quot;,&quot;));</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;            this.eat(&quot;)&quot;);</b>
+<b class="fc">&nbsp;            return new AnnotationPatternList(patterns);</b>
+&nbsp;        }
+&nbsp;    }
+<b class="pc">&nbsp;</b>
+<b class="fc">&nbsp;    public ThrowsPattern parseOptionalThrowsPattern() {</b>
+&nbsp;        IToken t = this.tokenSource.peek();
+<b class="fc">&nbsp;        if (t.isIdentifier() &amp;&amp; t.getString().equals(&quot;throws&quot;)) {</b>
+&nbsp;            this.tokenSource.next();
+&nbsp;            List&lt;TypePattern&gt; required = new ArrayList();
+&nbsp;            List&lt;TypePattern&gt; forbidden = new ArrayList();
+<b class="fc">&nbsp;</b>
+&nbsp;            do {
+&nbsp;                boolean isForbidden = this.maybeEat(&quot;!&quot;);
+<b class="nc">&nbsp;                TypePattern p = this.parseTypePattern();</b>
+<b class="nc">&nbsp;                if (isForbidden) {</b>
+<b class="nc">&nbsp;                    forbidden.add(p);</b>
+&nbsp;                } else {
+&nbsp;                    required.add(p);
+&nbsp;                }
+<b class="fc">&nbsp;            } while(this.maybeEat(&quot;,&quot;));</b>
+&nbsp;
+&nbsp;            return new ThrowsPattern(new TypePatternList(required), new TypePatternList(forbidden));
+&nbsp;        } else {
+&nbsp;            return ThrowsPattern.ANY;
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public SignaturePattern parseMethodOrConstructorSignaturePattern() {</b>
+<b class="nc">&nbsp;        int startPos = this.tokenSource.peek().getStart();</b>
+<b class="nc">&nbsp;        AnnotationTypePattern annotationPattern = this.maybeParseAnnotationPattern();</b>
+&nbsp;        ModifiersPattern modifiers = this.parseModifiersPattern();
+<b class="nc">&nbsp;        TypePattern returnType = this.parseTypePattern(false, false);</b>
+&nbsp;        NamePattern name = null;
+<b class="nc">&nbsp;        TypePattern declaringType;</b>
+&nbsp;        MemberKind kind;
+&nbsp;        if (this.maybeEatNew(returnType)) {
+<b class="nc">&nbsp;            kind = Member.CONSTRUCTOR;</b>
+&nbsp;            if (returnType.toString().length() == 0) {
+&nbsp;                declaringType = TypePattern.ANY;
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                declaringType = returnType;
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            returnType = TypePattern.ANY;
+&nbsp;            name = NamePattern.ANY;
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            kind = Member.METHOD;</b>
+&nbsp;            IToken nameToken = this.tokenSource.peek();
+&nbsp;            declaringType = this.parseTypePattern(false, false);
+&nbsp;            if (this.maybeEat(&quot;.&quot;)) {
+<b class="nc">&nbsp;                nameToken = this.tokenSource.peek();</b>
+<b class="nc">&nbsp;                name = this.parseNamePattern();</b>
+&nbsp;            } else {
+<b class="nc">&nbsp;                name = this.tryToExtractName(declaringType);</b>
+<b class="nc">&nbsp;                if (declaringType.toString().equals(&quot;&quot;)) {</b>
+&nbsp;                    declaringType = TypePattern.ANY;
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            if (name == null) {</b>
+<b class="nc">&nbsp;                throw new ParserException(&quot;name pattern&quot;, this.tokenSource.peek());</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            String simpleName = name.maybeGetSimpleName();</b>
+<b class="nc">&nbsp;            if (simpleName != null &amp;&amp; simpleName.equals(&quot;new&quot;)) {</b>
+&nbsp;                throw new ParserException(&quot;method name (not constructor)&quot;, nameToken);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        TypePatternList parameterTypes = this.parseArgumentsPattern(true);
+<b class="nc">&nbsp;        ThrowsPattern throwsPattern = this.parseOptionalThrowsPattern();</b>
+&nbsp;        SignaturePattern ret = new SignaturePattern(kind, modifiers, returnType, declaringType, name, parameterTypes, throwsPattern, annotationPattern);
+&nbsp;        int endPos = this.tokenSource.peek(-1).getEnd();
+&nbsp;        ret.setLocation(this.sourceContext, startPos, endPos);
+<b class="nc">&nbsp;        return ret;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private boolean maybeEatNew(TypePattern returnType) {</b>
+&nbsp;        if (returnType instanceof WildTypePattern) {
+<b class="nc">&nbsp;            WildTypePattern p = (WildTypePattern)returnType;</b>
+<b class="nc">&nbsp;            if (p.maybeExtractName(&quot;new&quot;)) {</b>
+<b class="nc">&nbsp;                return true;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        int start = this.tokenSource.getIndex();</b>
+<b class="nc">&nbsp;        if (this.maybeEat(&quot;.&quot;)) {</b>
+<b class="nc">&nbsp;            String id = this.maybeEatIdentifier();</b>
+&nbsp;            if (id != null &amp;&amp; id.equals(&quot;new&quot;)) {
+<b class="nc">&nbsp;                return true;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            this.tokenSource.setIndex(start);
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return false;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public ISignaturePattern parseMaybeParenthesizedFieldSignaturePattern() {
+&nbsp;        boolean negated = this.tokenSource.peek().getString().equals(&quot;!&quot;) &amp;&amp; this.tokenSource.peek(1).getString().equals(&quot;(&quot;);
+<b class="nc">&nbsp;        if (negated) {</b>
+<b class="nc">&nbsp;            this.eat(&quot;!&quot;);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        ISignaturePattern result = null;
+<b class="nc">&nbsp;        if (this.maybeEat(&quot;(&quot;)) {</b>
+<b class="nc">&nbsp;            result = this.parseCompoundFieldSignaturePattern();</b>
+<b class="nc">&nbsp;            this.eat(&quot;)&quot;, &quot;missing &#39;)&#39; - unbalanced parentheses around field signature pattern in declare @field&quot;);</b>
+<b class="nc">&nbsp;            if (negated) {</b>
+&nbsp;                result = new NotSignaturePattern(result);
+&nbsp;            }
+&nbsp;        } else {
+<b class="fc">&nbsp;            result = this.parseFieldSignaturePattern();</b>
+<b class="pc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return result;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public ISignaturePattern parseMaybeParenthesizedMethodOrConstructorSignaturePattern(boolean isMethod) {</b>
+<b class="pc">&nbsp;        boolean negated = this.tokenSource.peek().getString().equals(&quot;!&quot;) &amp;&amp; this.tokenSource.peek(1).getString().equals(&quot;(&quot;);</b>
+<b class="nc">&nbsp;        if (negated) {</b>
+&nbsp;            this.eat(&quot;!&quot;);
+&nbsp;        }
+&nbsp;
+&nbsp;        ISignaturePattern result = null;
+&nbsp;        if (this.maybeEat(&quot;(&quot;)) {
+&nbsp;            result = this.parseCompoundMethodOrConstructorSignaturePattern(isMethod);
+<b class="fc">&nbsp;            this.eat(&quot;)&quot;, &quot;missing &#39;)&#39; - unbalanced parentheses around method/ctor signature pattern in declare annotation&quot;);</b>
+&nbsp;            if (negated) {
+&nbsp;                result = new NotSignaturePattern(result);
+&nbsp;            }
+<b class="fc">&nbsp;        } else {</b>
+<b class="fc">&nbsp;            SignaturePattern sp = this.parseMethodOrConstructorSignaturePattern();</b>
+&nbsp;            boolean isConstructorPattern = sp.getKind() == Member.CONSTRUCTOR;
+&nbsp;            if (isMethod &amp;&amp; isConstructorPattern) {
+<b class="fc">&nbsp;                throw new ParserException(&quot;method signature pattern&quot;, this.tokenSource.peek(-1));</b>
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;            if (!isMethod &amp;&amp; !isConstructorPattern) {</b>
+<b class="fc">&nbsp;                throw new ParserException(&quot;constructor signature pattern&quot;, this.tokenSource.peek(-1));</b>
+<b class="pc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            result = sp;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return result;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public SignaturePattern parseFieldSignaturePattern() {
+&nbsp;        int startPos = this.tokenSource.peek().getStart();
+<b class="fc">&nbsp;        AnnotationTypePattern annotationPattern = this.maybeParseAnnotationPattern();</b>
+<b class="pc">&nbsp;        ModifiersPattern modifiers = this.parseModifiersPattern();</b>
+<b class="fc">&nbsp;        TypePattern returnType = this.parseTypePattern();</b>
+&nbsp;        TypePattern declaringType = this.parseTypePattern();
+<b class="nc">&nbsp;        NamePattern name;</b>
+&nbsp;        if (this.maybeEat(&quot;.&quot;)) {
+&nbsp;            name = this.parseNamePattern();
+&nbsp;        } else {
+&nbsp;            name = this.tryToExtractName(declaringType);
+<b class="fc">&nbsp;            if (name == null) {</b>
+<b class="fc">&nbsp;                throw new ParserException(&quot;name pattern&quot;, this.tokenSource.peek());</b>
+&nbsp;            }
+&nbsp;
+<b class="pc">&nbsp;            if (declaringType.toString().equals(&quot;&quot;)) {</b>
+<b class="nc">&nbsp;                declaringType = TypePattern.ANY;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="pc">&nbsp;        SignaturePattern ret = new SignaturePattern(Member.FIELD, modifiers, returnType, declaringType, name, TypePatternList.ANY, ThrowsPattern.ANY, annotationPattern);</b>
+<b class="fc">&nbsp;        int endPos = this.tokenSource.peek(-1).getEnd();</b>
+<b class="fc">&nbsp;        ret.setLocation(this.sourceContext, startPos, endPos);</b>
+&nbsp;        return ret;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="pc">&nbsp;    private NamePattern tryToExtractName(TypePattern nextType) {</b>
+<b class="fc">&nbsp;        if (nextType == TypePattern.ANY) {</b>
+<b class="fc">&nbsp;            return NamePattern.ANY;</b>
+&nbsp;        } else if (nextType instanceof WildTypePattern) {
+&nbsp;            WildTypePattern p = (WildTypePattern)nextType;
+&nbsp;            return p.extractName();
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            return null;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public TypeVariablePatternList maybeParseTypeVariableList() {
+&nbsp;        if (!this.maybeEat(&quot;&lt;&quot;)) {
+<b class="nc">&nbsp;            return null;</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            List&lt;TypeVariablePattern&gt; typeVars = new ArrayList();</b>
+<b class="nc">&nbsp;            TypeVariablePattern t = this.parseTypeVariable();</b>
+<b class="nc">&nbsp;            typeVars.add(t);</b>
+&nbsp;
+<b class="nc">&nbsp;            while(this.maybeEat(&quot;,&quot;)) {</b>
+&nbsp;                TypeVariablePattern nextT = this.parseTypeVariable();
+<b class="nc">&nbsp;                typeVars.add(nextT);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            this.eat(&quot;&gt;&quot;);
+&nbsp;            TypeVariablePattern[] tvs = new TypeVariablePattern[typeVars.size()];
+&nbsp;            typeVars.toArray(tvs);
+<b class="fc">&nbsp;            return new TypeVariablePatternList(tvs);</b>
+<b class="pc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public String[] maybeParseSimpleTypeVariableList() {</b>
+&nbsp;        if (!this.maybeEat(&quot;&lt;&quot;)) {
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            List&lt;String&gt; typeVarNames = new ArrayList();</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            do {</b>
+&nbsp;                typeVarNames.add(this.parseIdentifier());
+<b class="nc">&nbsp;            } while(this.maybeEat(&quot;,&quot;));</b>
+&nbsp;
+<b class="nc">&nbsp;            this.eat(&quot;&gt;&quot;, &quot;&#39;,&#39; or &#39;&gt;&#39;&quot;);</b>
+<b class="nc">&nbsp;            String[] tvs = new String[typeVarNames.size()];</b>
+&nbsp;            typeVarNames.toArray(tvs);
+<b class="fc">&nbsp;            return tvs;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public TypePatternList maybeParseTypeParameterList() {</b>
+<b class="fc">&nbsp;        if (!this.maybeEat(&quot;&lt;&quot;)) {</b>
+<b class="fc">&nbsp;            return null;</b>
+<b class="fc">&nbsp;        } else {</b>
+&nbsp;            List&lt;TypePattern&gt; typePats = new ArrayList();
+&nbsp;
+<b class="fc">&nbsp;            do {</b>
+&nbsp;                TypePattern tp = this.parseTypePattern(true, false);
+&nbsp;                typePats.add(tp);
+<b class="pc">&nbsp;            } while(this.maybeEat(&quot;,&quot;));</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            this.eat(&quot;&gt;&quot;);</b>
+<b class="nc">&nbsp;            TypePattern[] tps = new TypePattern[typePats.size()];</b>
+&nbsp;            typePats.toArray(tps);
+<b class="nc">&nbsp;            return new TypePatternList(tps);</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public TypeVariablePattern parseTypeVariable() {
+<b class="fc">&nbsp;        TypePattern upperBound = null;</b>
+<b class="fc">&nbsp;        TypePattern[] additionalInterfaceBounds = null;</b>
+<b class="fc">&nbsp;        TypePattern lowerBound = null;</b>
+<b class="pc">&nbsp;        String typeVariableName = this.parseIdentifier();</b>
+<b class="nc">&nbsp;        if (this.maybeEatIdentifier(&quot;extends&quot;)) {</b>
+<b class="nc">&nbsp;            upperBound = this.parseTypePattern();</b>
+&nbsp;            additionalInterfaceBounds = this.maybeParseAdditionalInterfaceBounds();
+<b class="fc">&nbsp;        } else if (this.maybeEatIdentifier(&quot;super&quot;)) {</b>
+<b class="pc">&nbsp;            lowerBound = this.parseTypePattern();</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return new TypeVariablePattern(typeVariableName, upperBound, additionalInterfaceBounds, lowerBound);
+<b class="pc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private TypePattern[] maybeParseAdditionalInterfaceBounds() {
+<b class="fc">&nbsp;        List&lt;TypePattern&gt; boundsList = new ArrayList();</b>
+&nbsp;
+<b class="pc">&nbsp;        while(this.maybeEat(&quot;&amp;&quot;)) {</b>
+<b class="nc">&nbsp;            TypePattern tp = this.parseTypePattern();</b>
+&nbsp;            boundsList.add(tp);
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if (boundsList.size() == 0) {</b>
+&nbsp;            return null;
+<b class="fc">&nbsp;        } else {</b>
+<b class="fc">&nbsp;            TypePattern[] ret = new TypePattern[boundsList.size()];</b>
+&nbsp;            boundsList.toArray(ret);
+<b class="fc">&nbsp;            return ret;</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public String parsePossibleStringSequence(boolean shouldEnd) {
+&nbsp;        StringBuilder result = new StringBuilder();
+<b class="pc">&nbsp;        IToken token = this.tokenSource.next();</b>
+<b class="nc">&nbsp;        if (token.getLiteralKind() == null) {</b>
+<b class="nc">&nbsp;            throw new ParserException(&quot;string&quot;, token);</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            while(token.getLiteralKind().equals(&quot;string&quot;)) {
+&nbsp;                result.append(token.getString());
+<b class="fc">&nbsp;                boolean plus = this.maybeEat(&quot;+&quot;);</b>
+<b class="pc">&nbsp;                if (!plus) {</b>
+<b class="nc">&nbsp;                    break;</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                token = this.tokenSource.next();
+<b class="nc">&nbsp;                if (token.getLiteralKind() == null) {</b>
+&nbsp;                    throw new ParserException(&quot;string&quot;, token);
+&nbsp;                }
+<b class="fc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            this.eatIdentifier(&quot;;&quot;);
+&nbsp;            IToken t = this.tokenSource.next();
+<b class="nc">&nbsp;            if (shouldEnd &amp;&amp; t != IToken.EOF) {</b>
+<b class="nc">&nbsp;                throw new ParserException(&quot;&lt;string&gt;;&quot;, token);</b>
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                int currentIndex = this.tokenSource.getIndex();
+<b class="nc">&nbsp;                this.tokenSource.setIndex(currentIndex - 1);</b>
+<b class="nc">&nbsp;                return result.toString();</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public String parseStringLiteral() {
+&nbsp;        IToken token = this.tokenSource.next();
+<b class="nc">&nbsp;        String literalKind = token.getLiteralKind();</b>
+&nbsp;        if (literalKind == &quot;string&quot;) {
+<b class="nc">&nbsp;            return token.getString();</b>
+&nbsp;        } else {
+&nbsp;            throw new ParserException(&quot;string&quot;, token);
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public String parseIdentifier() {</b>
+&nbsp;        IToken token = this.tokenSource.next();
+<b class="nc">&nbsp;        if (token.isIdentifier()) {</b>
+<b class="nc">&nbsp;            return token.getString();</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            throw new ParserException(&quot;identifier&quot;, token);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void eatIdentifier(String expectedValue) {
+<b class="nc">&nbsp;        IToken next = this.tokenSource.next();</b>
+<b class="nc">&nbsp;        if (!next.getString().equals(expectedValue)) {</b>
+<b class="nc">&nbsp;            throw new ParserException(expectedValue, next);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public boolean maybeEatIdentifier(String expectedValue) {</b>
+&nbsp;        IToken next = this.tokenSource.peek();
+<b class="nc">&nbsp;        if (next.getString().equals(expectedValue)) {</b>
+&nbsp;            this.tokenSource.next();
+&nbsp;            return true;
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            return false;
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void eat(String expectedValue) {
+&nbsp;        this.eat(expectedValue, expectedValue);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private void eat(String expectedValue, String expectedMessage) {</b>
+<b class="nc">&nbsp;        IToken next = this.nextToken();</b>
+<b class="nc">&nbsp;        if (next.getString() != expectedValue) {</b>
+&nbsp;            if (expectedValue.equals(&quot;&gt;&quot;) &amp;&amp; next.getString().startsWith(&quot;&gt;&quot;)) {
+&nbsp;                this.pendingRightArrows = BasicToken.makeLiteral(next.getString().substring(1).intern(), &quot;string&quot;, next.getStart() + 1, next.getEnd());
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                throw new ParserException(expectedMessage, next);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private IToken nextToken() {
+<b class="nc">&nbsp;        if (this.pendingRightArrows != null) {</b>
+<b class="nc">&nbsp;            IToken ret = this.pendingRightArrows;</b>
+&nbsp;            this.pendingRightArrows = null;
+&nbsp;            return ret;
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            return this.tokenSource.next();
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public boolean maybeEatAdjacent(String token) {</b>
+&nbsp;        IToken next = this.tokenSource.peek();
+&nbsp;        if (next.getString() == token &amp;&amp; this.isAdjacent(this.tokenSource.peek(-1), next)) {
+&nbsp;            this.tokenSource.next();
+<b class="pc">&nbsp;            return true;</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="pc">&nbsp;            return false;</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public boolean maybeEat(String token) {</b>
+&nbsp;        IToken next = this.tokenSource.peek();
+&nbsp;        if (next.getString() == token) {
+&nbsp;            this.tokenSource.next();
+&nbsp;            return true;
+&nbsp;        } else {
+&nbsp;            return false;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public String maybeEatIdentifier() {
+<b class="nc">&nbsp;        IToken next = this.tokenSource.peek();</b>
+<b class="nc">&nbsp;        if (next.isIdentifier()) {</b>
+&nbsp;            this.tokenSource.next();
+<b class="nc">&nbsp;            return next.getString();</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            return null;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public boolean peek(String token) {
+<b class="nc">&nbsp;        IToken next = this.tokenSource.peek();</b>
+<b class="nc">&nbsp;        return next.getString() == token;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public void checkEof() {
+&nbsp;        IToken last = this.tokenSource.next();
+&nbsp;        if (last != IToken.EOF) {
+&nbsp;            throw new ParserException(&quot;unexpected pointcut element: &quot; + last.toString(), last);
+<b class="pc">&nbsp;        }</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public PatternParser(String data) {</b>
+&nbsp;        this(BasicTokenSource.makeTokenSource(data, (ISourceContext)null));
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public PatternParser(String data, ISourceContext context) {</b>
+<b class="nc">&nbsp;        this(BasicTokenSource.makeTokenSource(data, context));</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 21:00</div>
+</div>
+</body>
+</html>

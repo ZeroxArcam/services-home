@@ -1,0 +1,271 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > EventEngine</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.event.spi</a>
+</div>
+
+<h1>Coverage Summary for Class: EventEngine (org.hibernate.event.spi)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">EventEngine</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (3/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (2/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    75%
+  </span>
+  <span class="absValue">
+    (18/24)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">EventEngine$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    16.7%
+  </span>
+  <span class="absValue">
+    (1/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    4.3%
+  </span>
+  <span class="absValue">
+    (1/23)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (4/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    12.5%
+  </span>
+  <span class="absValue">
+    (2/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    40.4%
+  </span>
+  <span class="absValue">
+    (19/47)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.event.spi;
+&nbsp;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.function.Consumer;
+&nbsp;import org.hibernate.HibernateException;
+&nbsp;import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
+&nbsp;import org.hibernate.boot.spi.MetadataImplementor;
+&nbsp;import org.hibernate.engine.spi.SessionFactoryImplementor;
+&nbsp;import org.hibernate.event.service.internal.EventListenerRegistryImpl;
+&nbsp;import org.hibernate.event.service.spi.EventListenerGroup;
+&nbsp;import org.hibernate.event.service.spi.EventListenerRegistry;
+&nbsp;import org.hibernate.internal.util.collections.CollectionHelper;
+&nbsp;import org.hibernate.jpa.event.internal.CallbacksFactory;
+&nbsp;import org.hibernate.jpa.event.spi.CallbackRegistry;
+&nbsp;import org.hibernate.service.spi.Stoppable;
+&nbsp;
+&nbsp;public class EventEngine {
+&nbsp;    private final Map&lt;String, EventType&lt;?&gt;&gt; registeredEventTypes;
+&nbsp;    private final EventListenerRegistry listenerRegistry;
+&nbsp;    private final CallbackRegistry callbackRegistry;
+&nbsp;
+&nbsp;    public EventEngine(MetadataImplementor mappings, SessionFactoryImplementor sessionFactory) {
+&nbsp;        this.callbackRegistry = CallbacksFactory.buildCallbackRegistry(sessionFactory.getSessionFactoryOptions(), sessionFactory.getServiceRegistry(), mappings.getEntityBindings());
+&nbsp;        final EventListenerRegistryImpl.Builder listenerRegistryBuilder = new EventListenerRegistryImpl.Builder(this.callbackRegistry, sessionFactory.getSessionFactoryOptions().isJpaBootstrap());
+&nbsp;        final Map&lt;String, EventType&lt;?&gt;&gt; eventTypes = new HashMap();
+&nbsp;        EventType.registerStandardTypes(eventTypes);
+&nbsp;        EventEngineContributions contributionManager = new EventEngineContributions() {
+&nbsp;            public &lt;T&gt; EventType&lt;T&gt; findEventType(String name) {
+&nbsp;                return (EventType)eventTypes.get(name);
+&nbsp;            }
+<b class="fc">&nbsp;</b>
+&nbsp;            public &lt;T&gt; EventType&lt;T&gt; contributeEventType(String name, Class&lt;T&gt; listenerRole) {
+&nbsp;                EventType&lt;T&gt; eventType = this.&lt;T&gt;registerEventType(name, listenerRole);
+&nbsp;                listenerRegistryBuilder.prepareListeners(eventType);
+&nbsp;                return eventType;
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;            private &lt;T&gt; EventType&lt;T&gt; registerEventType(String name, Class&lt;T&gt; listenerRole) {
+&nbsp;                if (name == null) {
+&nbsp;                    throw new HibernateException(&quot;Custom event-type name must be non-null.&quot;);
+&nbsp;                } else if (listenerRole == null) {
+&nbsp;                    throw new HibernateException(&quot;Custom event-type listener role must be non-null.&quot;);
+<b class="fc">&nbsp;                } else if (eventTypes.containsKey(name)) {</b>
+&nbsp;                    EventType&lt;?&gt; existing = (EventType)eventTypes.get(name);
+<b class="fc">&nbsp;                    throw new HibernateException(&quot;Custom event-type already registered: &quot; + name + &quot; =&gt; &quot; + existing);</b>
+&nbsp;                } else {
+&nbsp;                    EventType&lt;T&gt; eventType = EventType.create(name, listenerRole, eventTypes.size());
+<b class="fc">&nbsp;                    eventTypes.put(name, eventType);</b>
+<b class="fc">&nbsp;                    return eventType;</b>
+&nbsp;                }
+<b class="fc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            @SafeVarargs
+&nbsp;            public final &lt;T&gt; EventType&lt;T&gt; contributeEventType(String name, Class&lt;T&gt; listenerRole, T... defaultListeners) {
+<b class="nc">&nbsp;                EventType&lt;T&gt; eventType = this.&lt;T&gt;contributeEventType(name, listenerRole);</b>
+&nbsp;                if (defaultListeners != null) {
+&nbsp;                    listenerRegistryBuilder.getListenerGroup(eventType).appendListeners(defaultListeners);
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                return eventType;</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            public &lt;T&gt; void configureListeners(EventType&lt;T&gt; eventType, Consumer&lt;EventListenerGroup&lt;T&gt;&gt; action) {
+<b class="nc">&nbsp;                if (!eventTypes.containsValue(eventType)) {</b>
+&nbsp;                    throw new HibernateException(&quot;EventType [&quot; + eventType + &quot;] not registered&quot;);
+&nbsp;                } else {
+&nbsp;                    action.accept(listenerRegistryBuilder.getListenerGroup(eventType));
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        };
+&nbsp;        Collection&lt;EventEngineContributor&gt; discoveredContributors = ((ClassLoaderService)sessionFactory.getServiceRegistry().requireService(ClassLoaderService.class)).loadJavaServices(EventEngineContributor.class);
+<b class="nc">&nbsp;        if (CollectionHelper.isNotEmpty(discoveredContributors)) {</b>
+<b class="nc">&nbsp;            for(EventEngineContributor contributor : discoveredContributors) {</b>
+&nbsp;                contributor.contribute(contributionManager);
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        this.registeredEventTypes = Collections.unmodifiableMap(eventTypes);</b>
+<b class="nc">&nbsp;        this.listenerRegistry = listenerRegistryBuilder.buildRegistry(this.registeredEventTypes);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Collection&lt;EventType&lt;?&gt;&gt; getRegisteredEventTypes() {
+&nbsp;        return this.registeredEventTypes.values();
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public &lt;T&gt; EventType&lt;T&gt; findRegisteredEventType(String name) {
+<b class="nc">&nbsp;        return (EventType)this.registeredEventTypes.get(name);</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public EventListenerRegistry getListenerRegistry() {</b>
+<b class="nc">&nbsp;        return this.listenerRegistry;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public CallbackRegistry getCallbackRegistry() {
+&nbsp;        return this.callbackRegistry;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public void stop() {</b>
+<b class="nc">&nbsp;        if (this.listenerRegistry instanceof Stoppable) {</b>
+&nbsp;            ((Stoppable)this.listenerRegistry).stop();
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        this.callbackRegistry.release();
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
+</div>
+</body>
+</html>

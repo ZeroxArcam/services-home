@@ -1,0 +1,275 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ModelAttributeMethodProcessor</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.web.method.annotation</a>
+</div>
+
+<h1>Coverage Summary for Class: ModelAttributeMethodProcessor (org.springframework.web.method.annotation)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ModelAttributeMethodProcessor</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    8.3%
+  </span>
+  <span class="absValue">
+    (1/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/46)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    5.2%
+  </span>
+  <span class="absValue">
+    (3/58)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.web.method.annotation;
+&nbsp;
+&nbsp;import java.lang.annotation.Annotation;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Optional;
+&nbsp;import org.apache.commons.logging.Log;
+&nbsp;import org.apache.commons.logging.LogFactory;
+&nbsp;import org.springframework.beans.BeanUtils;
+&nbsp;import org.springframework.core.MethodParameter;
+&nbsp;import org.springframework.core.ResolvableType;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.ObjectUtils;
+&nbsp;import org.springframework.validation.BindingResult;
+&nbsp;import org.springframework.validation.Errors;
+&nbsp;import org.springframework.validation.annotation.ValidationAnnotationUtils;
+&nbsp;import org.springframework.web.bind.MethodArgumentNotValidException;
+&nbsp;import org.springframework.web.bind.WebDataBinder;
+&nbsp;import org.springframework.web.bind.annotation.ModelAttribute;
+&nbsp;import org.springframework.web.bind.support.WebDataBinderFactory;
+&nbsp;import org.springframework.web.bind.support.WebRequestDataBinder;
+&nbsp;import org.springframework.web.context.request.NativeWebRequest;
+&nbsp;import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+&nbsp;import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
+&nbsp;import org.springframework.web.method.support.ModelAndViewContainer;
+&nbsp;
+&nbsp;public class ModelAttributeMethodProcessor implements HandlerMethodArgumentResolver, HandlerMethodReturnValueHandler {
+&nbsp;    protected final Log logger = LogFactory.getLog(this.getClass());
+&nbsp;    private final boolean annotationNotRequired;
+&nbsp;
+&nbsp;    public ModelAttributeMethodProcessor(boolean annotationNotRequired) {
+&nbsp;        this.annotationNotRequired = annotationNotRequired;
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean supportsParameter(MethodParameter parameter) {
+&nbsp;        return parameter.hasParameterAnnotation(ModelAttribute.class) || this.annotationNotRequired &amp;&amp; !BeanUtils.isSimpleProperty(parameter.getParameterType());
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public final Object resolveArgument(MethodParameter parameter, @Nullable ModelAndViewContainer mavContainer, NativeWebRequest webRequest, @Nullable WebDataBinderFactory binderFactory) throws Exception {
+&nbsp;        Assert.state(mavContainer != null, &quot;ModelAttributeMethodProcessor requires ModelAndViewContainer&quot;);
+&nbsp;        Assert.state(binderFactory != null, &quot;ModelAttributeMethodProcessor requires WebDataBinderFactory&quot;);
+&nbsp;        String name = ModelFactory.getNameForParameter(parameter);
+&nbsp;        ModelAttribute ann = (ModelAttribute)parameter.getParameterAnnotation(ModelAttribute.class);
+&nbsp;        if (ann != null) {
+&nbsp;            mavContainer.setBinding(name, ann.binding());
+&nbsp;        }
+&nbsp;
+&nbsp;        BindingResult bindingResult = null;
+&nbsp;        Object attribute;
+&nbsp;        if (mavContainer.containsAttribute(name)) {
+&nbsp;            attribute = mavContainer.getModel().get(name);
+&nbsp;            if (attribute == null || ObjectUtils.unwrapOptional(attribute) == null) {
+&nbsp;                bindingResult = binderFactory.createBinder(webRequest, (Object)null, name).getBindingResult();
+&nbsp;                attribute = wrapAsOptionalIfNecessary(parameter, (Object)null);
+&nbsp;            }
+&nbsp;        } else {
+&nbsp;            try {
+&nbsp;                attribute = this.createAttribute(name, parameter, binderFactory, webRequest);
+&nbsp;            } catch (MethodArgumentNotValidException ex) {
+&nbsp;                if (this.isBindExceptionRequired(parameter)) {
+&nbsp;                    throw ex;
+&nbsp;                }
+<b class="fc">&nbsp;</b>
+&nbsp;                attribute = wrapAsOptionalIfNecessary(parameter, ex.getTarget());
+&nbsp;                bindingResult = ex.getBindingResult();
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        if (bindingResult == null) {
+&nbsp;            ResolvableType type = ResolvableType.forMethodParameter(parameter);
+&nbsp;            WebDataBinder binder = binderFactory.createBinder(webRequest, attribute, name, type);
+&nbsp;            if (attribute == null) {
+&nbsp;                this.constructAttribute(binder, webRequest);
+<b class="fc">&nbsp;                attribute = wrapAsOptionalIfNecessary(parameter, binder.getTarget());</b>
+<b class="fc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            if (!binder.getBindingResult().hasErrors()) {
+&nbsp;                if (!mavContainer.isBindingDisabled(name)) {
+&nbsp;                    this.bindRequestParameters(binder, webRequest);
+&nbsp;                }
+&nbsp;
+&nbsp;                this.validateIfApplicable(binder, parameter);
+&nbsp;            }
+&nbsp;
+&nbsp;            if (binder.getBindingResult().hasErrors() &amp;&amp; this.isBindExceptionRequired(binder, parameter)) {
+<b class="nc">&nbsp;                throw new MethodArgumentNotValidException(parameter, binder.getBindingResult());</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            if (!parameter.getParameterType().isInstance(attribute)) {
+&nbsp;                attribute = binder.convertIfNecessary(binder.getTarget(), parameter.getParameterType(), parameter);
+&nbsp;            }
+&nbsp;
+&nbsp;            bindingResult = binder.getBindingResult();
+&nbsp;        }
+&nbsp;
+&nbsp;        Map&lt;String, Object&gt; bindingResultModel = bindingResult.getModel();
+&nbsp;        mavContainer.removeAttributes(bindingResultModel);
+&nbsp;        mavContainer.addAllAttributes(bindingResultModel);
+&nbsp;        return attribute;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    private static Object wrapAsOptionalIfNecessary(MethodParameter parameter, @Nullable Object target) {
+<b class="nc">&nbsp;        return parameter.getParameterType() == Optional.class ? Optional.ofNullable(target) : target;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    @Nullable</b>
+<b class="nc">&nbsp;    protected Object createAttribute(String attributeName, MethodParameter parameter, WebDataBinderFactory binderFactory, NativeWebRequest request) throws Exception {</b>
+<b class="nc">&nbsp;        return null;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected void constructAttribute(WebDataBinder binder, NativeWebRequest request) {
+&nbsp;        ((WebRequestDataBinder)binder).construct(request);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    protected void bindRequestParameters(WebDataBinder binder, NativeWebRequest request) {</b>
+<b class="nc">&nbsp;        ((WebRequestDataBinder)binder).bind(request);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected void validateIfApplicable(WebDataBinder binder, MethodParameter parameter) {</b>
+&nbsp;        for(Annotation ann : parameter.getParameterAnnotations()) {
+&nbsp;            Object[] validationHints = ValidationAnnotationUtils.determineValidationHints(ann);
+&nbsp;            if (validationHints != null) {
+&nbsp;                binder.validate(validationHints);
+&nbsp;                break;
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected boolean isBindExceptionRequired(WebDataBinder binder, MethodParameter parameter) {
+<b class="nc">&nbsp;        return this.isBindExceptionRequired(parameter);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected boolean isBindExceptionRequired(MethodParameter parameter) {
+&nbsp;        int i = parameter.getParameterIndex();
+&nbsp;        Class&lt;?&gt;[] paramTypes = parameter.getExecutable().getParameterTypes();
+<b class="nc">&nbsp;        boolean hasBindingResult = paramTypes.length &gt; i + 1 &amp;&amp; Errors.class.isAssignableFrom(paramTypes[i + 1]);</b>
+<b class="nc">&nbsp;        return !hasBindingResult;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public boolean supportsReturnType(MethodParameter returnType) {</b>
+<b class="nc">&nbsp;        return returnType.hasMethodAnnotation(ModelAttribute.class) || this.annotationNotRequired &amp;&amp; !BeanUtils.isSimpleProperty(returnType.getParameterType());</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void handleReturnValue(@Nullable Object returnValue, MethodParameter returnType, ModelAndViewContainer mavContainer, NativeWebRequest webRequest) throws Exception {</b>
+<b class="nc">&nbsp;        if (returnValue != null) {</b>
+&nbsp;            String name = ModelFactory.getNameForReturnValue(returnValue, returnType);
+<b class="nc">&nbsp;            mavContainer.addAttribute(name, returnValue);</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

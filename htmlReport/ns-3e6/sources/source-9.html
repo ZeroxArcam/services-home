@@ -1,0 +1,200 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > SpringTransactionAnnotationParser</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.transaction.annotation</a>
+</div>
+
+<h1>Coverage Summary for Class: SpringTransactionAnnotationParser (org.springframework.transaction.annotation)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SpringTransactionAnnotationParser</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    57.1%
+  </span>
+  <span class="absValue">
+    (4/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    7.1%
+  </span>
+  <span class="absValue">
+    (1/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    18.8%
+  </span>
+  <span class="absValue">
+    (6/32)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.transaction.annotation;
+&nbsp;
+&nbsp;import java.io.Serializable;
+&nbsp;import java.lang.reflect.AnnotatedElement;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Set;
+&nbsp;import org.springframework.core.annotation.AnnotatedElementUtils;
+&nbsp;import org.springframework.core.annotation.AnnotationAttributes;
+&nbsp;import org.springframework.core.annotation.AnnotationUtils;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.transaction.interceptor.NoRollbackRuleAttribute;
+&nbsp;import org.springframework.transaction.interceptor.RollbackRuleAttribute;
+&nbsp;import org.springframework.transaction.interceptor.RuleBasedTransactionAttribute;
+&nbsp;import org.springframework.transaction.interceptor.TransactionAttribute;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.StringUtils;
+&nbsp;
+&nbsp;public class SpringTransactionAnnotationParser implements TransactionAnnotationParser, Serializable {
+&nbsp;    public SpringTransactionAnnotationParser() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isCandidateClass(Class&lt;?&gt; targetClass) {
+&nbsp;        return AnnotationUtils.isCandidateClass(targetClass, Transactional.class);
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public TransactionAttribute parseTransactionAnnotation(AnnotatedElement element) {
+&nbsp;        AnnotationAttributes attributes = AnnotatedElementUtils.findMergedAnnotationAttributes(element, Transactional.class, false, false);
+&nbsp;        return attributes != null ? this.parseTransactionAnnotation(attributes) : null;
+&nbsp;    }
+&nbsp;
+&nbsp;    public TransactionAttribute parseTransactionAnnotation(Transactional ann) {
+&nbsp;        return this.parseTransactionAnnotation(AnnotationUtils.getAnnotationAttributes(ann, false, false));
+&nbsp;    }
+&nbsp;
+&nbsp;    protected TransactionAttribute parseTransactionAnnotation(AnnotationAttributes attributes) {
+&nbsp;        RuleBasedTransactionAttribute rbta = new RuleBasedTransactionAttribute();
+&nbsp;        Propagation propagation = (Propagation)attributes.getEnum(&quot;propagation&quot;);
+&nbsp;        rbta.setPropagationBehavior(propagation.value());
+<b class="fc">&nbsp;        Isolation isolation = (Isolation)attributes.getEnum(&quot;isolation&quot;);</b>
+&nbsp;        rbta.setIsolationLevel(isolation.value());
+&nbsp;        rbta.setTimeout(attributes.getNumber(&quot;timeout&quot;).intValue());
+&nbsp;        String timeoutString = attributes.getString(&quot;timeoutString&quot;);
+<b class="fc">&nbsp;        Assert.isTrue(!StringUtils.hasText(timeoutString) || rbta.getTimeout() &lt; 0, &quot;Specify &#39;timeout&#39; or &#39;timeoutString&#39;, not both&quot;);</b>
+&nbsp;        rbta.setTimeoutString(timeoutString);
+&nbsp;        rbta.setReadOnly(attributes.getBoolean(&quot;readOnly&quot;));
+&nbsp;        rbta.setQualifier(attributes.getString(&quot;value&quot;));
+&nbsp;        rbta.setLabels(Set.of(attributes.getStringArray(&quot;label&quot;)));
+&nbsp;        List&lt;RollbackRuleAttribute&gt; rollbackRules = new ArrayList();
+<b class="fc">&nbsp;</b>
+&nbsp;        for(Class&lt;?&gt; rbRule : attributes.getClassArray(&quot;rollbackFor&quot;)) {
+<b class="pc">&nbsp;            rollbackRules.add(new RollbackRuleAttribute(rbRule));</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        for(String rbRule : attributes.getStringArray(&quot;rollbackForClassName&quot;)) {
+<b class="fc">&nbsp;            rollbackRules.add(new RollbackRuleAttribute(rbRule));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        for(Class&lt;?&gt; rbRule : attributes.getClassArray(&quot;noRollbackFor&quot;)) {
+&nbsp;            rollbackRules.add(new NoRollbackRuleAttribute(rbRule));
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        for(String rbRule : attributes.getStringArray(&quot;noRollbackForClassName&quot;)) {
+&nbsp;            rollbackRules.add(new NoRollbackRuleAttribute(rbRule));
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        rbta.setRollbackRules(rollbackRules);</b>
+<b class="nc">&nbsp;        return rbta;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public boolean equals(@Nullable Object other) {
+<b class="nc">&nbsp;        return other instanceof SpringTransactionAnnotationParser;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public int hashCode() {
+<b class="nc">&nbsp;        return SpringTransactionAnnotationParser.class.hashCode();</b>
+&nbsp;    }
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:54</div>
+</div>
+</body>
+</html>

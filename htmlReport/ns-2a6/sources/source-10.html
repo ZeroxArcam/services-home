@@ -1,0 +1,446 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > BeanDefinitionValueResolver</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.beans.factory.support</a>
+</div>
+
+<h1>Coverage Summary for Class: BeanDefinitionValueResolver (org.springframework.beans.factory.support)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">BeanDefinitionValueResolver</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    26.3%
+  </span>
+  <span class="absValue">
+    (5/19)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    26.7%
+  </span>
+  <span class="absValue">
+    (24/90)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    24.1%
+  </span>
+  <span class="absValue">
+    (40/166)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.beans.factory.support;
+&nbsp;
+&nbsp;import java.lang.reflect.Array;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.LinkedHashSet;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Properties;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.function.BiFunction;
+&nbsp;import org.springframework.beans.BeanWrapper;
+&nbsp;import org.springframework.beans.BeanWrapperImpl;
+&nbsp;import org.springframework.beans.BeansException;
+&nbsp;import org.springframework.beans.TypeConverter;
+&nbsp;import org.springframework.beans.factory.BeanCreationException;
+&nbsp;import org.springframework.beans.factory.BeanDefinitionStoreException;
+&nbsp;import org.springframework.beans.factory.BeanFactory;
+&nbsp;import org.springframework.beans.factory.FactoryBean;
+&nbsp;import org.springframework.beans.factory.config.BeanDefinition;
+&nbsp;import org.springframework.beans.factory.config.BeanDefinitionHolder;
+&nbsp;import org.springframework.beans.factory.config.DependencyDescriptor;
+&nbsp;import org.springframework.beans.factory.config.NamedBeanHolder;
+&nbsp;import org.springframework.beans.factory.config.RuntimeBeanNameReference;
+&nbsp;import org.springframework.beans.factory.config.RuntimeBeanReference;
+&nbsp;import org.springframework.beans.factory.config.TypedStringValue;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.ClassUtils;
+&nbsp;import org.springframework.util.CollectionUtils;
+&nbsp;import org.springframework.util.ObjectUtils;
+&nbsp;import org.springframework.util.StringUtils;
+&nbsp;
+&nbsp;public class BeanDefinitionValueResolver {
+&nbsp;    private final AbstractAutowireCapableBeanFactory beanFactory;
+&nbsp;    private final String beanName;
+&nbsp;    private final BeanDefinition beanDefinition;
+&nbsp;    private final TypeConverter typeConverter;
+&nbsp;
+&nbsp;    public BeanDefinitionValueResolver(AbstractAutowireCapableBeanFactory beanFactory, String beanName, BeanDefinition beanDefinition, TypeConverter typeConverter) {
+&nbsp;        this.beanFactory = beanFactory;
+&nbsp;        this.beanName = beanName;
+&nbsp;        this.beanDefinition = beanDefinition;
+&nbsp;        this.typeConverter = typeConverter;
+&nbsp;    }
+&nbsp;
+&nbsp;    public BeanDefinitionValueResolver(AbstractAutowireCapableBeanFactory beanFactory, String beanName, BeanDefinition beanDefinition) {
+&nbsp;        this.beanFactory = beanFactory;
+&nbsp;        this.beanName = beanName;
+&nbsp;        this.beanDefinition = beanDefinition;
+&nbsp;        BeanWrapper beanWrapper = new BeanWrapperImpl();
+&nbsp;        beanFactory.initBeanWrapper(beanWrapper);
+&nbsp;        this.typeConverter = beanWrapper;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public Object resolveValueIfNecessary(Object argName, @Nullable Object value) {
+&nbsp;        if (value instanceof RuntimeBeanReference ref) {
+&nbsp;            return this.resolveReference(argName, ref);
+&nbsp;        } else if (value instanceof RuntimeBeanNameReference ref) {
+&nbsp;            String refName = ref.getBeanName();
+&nbsp;            refName = String.valueOf(this.doEvaluate(refName));
+&nbsp;            if (!this.beanFactory.containsBean(refName)) {
+&nbsp;                throw new BeanDefinitionStoreException(&quot;Invalid bean name &#39;&quot; + refName + &quot;&#39; in bean reference for &quot; + String.valueOf(argName));
+&nbsp;            } else {
+&nbsp;                return refName;
+&nbsp;            }
+&nbsp;        } else if (value instanceof BeanDefinitionHolder bdHolder) {
+&nbsp;            return this.resolveInnerBean(bdHolder.getBeanName(), bdHolder.getBeanDefinition(), (name, mbd) -&gt; this.resolveInnerBeanValue(argName, name, mbd));
+&nbsp;        } else if (value instanceof BeanDefinition bd) {
+&nbsp;            return this.resolveInnerBean((String)null, bd, (name, mbd) -&gt; this.resolveInnerBeanValue(argName, name, mbd));
+&nbsp;        } else if (value instanceof DependencyDescriptor dependencyDescriptor) {
+&nbsp;            Set&lt;String&gt; autowiredBeanNames = new LinkedHashSet(2);
+&nbsp;            Object result = this.beanFactory.resolveDependency(dependencyDescriptor, this.beanName, autowiredBeanNames, this.typeConverter);
+&nbsp;
+&nbsp;            for(String autowiredBeanName : autowiredBeanNames) {
+&nbsp;                if (this.beanFactory.containsBean(autowiredBeanName)) {
+&nbsp;                    this.beanFactory.registerDependentBean(autowiredBeanName, this.beanName);
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            return result;</b>
+&nbsp;        } else if (value instanceof ManagedArray managedArray) {
+<b class="fc">&nbsp;            Class&lt;?&gt; elementType = managedArray.resolvedElementType;</b>
+<b class="fc">&nbsp;            if (elementType == null) {</b>
+<b class="fc">&nbsp;                String elementTypeName = managedArray.getElementTypeName();</b>
+<b class="fc">&nbsp;                if (StringUtils.hasText(elementTypeName)) {</b>
+&nbsp;                    try {
+&nbsp;                        elementType = ClassUtils.forName(elementTypeName, this.beanFactory.getBeanClassLoader());
+&nbsp;                        managedArray.resolvedElementType = elementType;
+&nbsp;                    } catch (Throwable ex) {
+&nbsp;                        throw new BeanCreationException(this.beanDefinition.getResourceDescription(), this.beanName, &quot;Error resolving array type for &quot; + String.valueOf(argName), ex);
+&nbsp;                    }
+&nbsp;                } else {
+&nbsp;                    elementType = Object.class;
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            return this.resolveManagedArray(argName, (List)value, elementType);
+<b class="nc">&nbsp;        } else if (value instanceof ManagedList&lt;?&gt; managedList) {</b>
+<b class="nc">&nbsp;            return this.resolveManagedList(argName, managedList);</b>
+<b class="nc">&nbsp;        } else if (value instanceof ManagedSet&lt;?&gt; managedSet) {</b>
+<b class="nc">&nbsp;            return this.resolveManagedSet(argName, managedSet);</b>
+<b class="nc">&nbsp;        } else if (value instanceof ManagedMap&lt;?, ?&gt; managedMap) {</b>
+<b class="nc">&nbsp;            return this.resolveManagedMap(argName, managedMap);</b>
+&nbsp;        } else if (value instanceof ManagedProperties original) {
+&nbsp;            Properties copy = new Properties();
+&nbsp;            original.forEach((propKey, propValue) -&gt; {
+&nbsp;                if (propKey instanceof TypedStringValue typedStringValue) {
+&nbsp;                    propKey = this.evaluate(typedStringValue);
+&nbsp;                }
+&nbsp;
+&nbsp;                if (propValue instanceof TypedStringValue typedStringValue) {
+&nbsp;                    propValue = this.evaluate(typedStringValue);
+&nbsp;                }
+&nbsp;
+&nbsp;                if (propKey != null &amp;&amp; propValue != null) {
+&nbsp;                    copy.put(propKey, propValue);
+&nbsp;                } else {
+&nbsp;                    throw new BeanCreationException(this.beanDefinition.getResourceDescription(), this.beanName, &quot;Error converting Properties key/value pair for &quot; + String.valueOf(argName) + &quot;: resolved to null&quot;);
+&nbsp;                }
+&nbsp;            });
+&nbsp;            return copy;
+&nbsp;        } else if (value instanceof TypedStringValue typedStringValue) {
+&nbsp;            Object valueObject = this.evaluate(typedStringValue);
+&nbsp;
+&nbsp;            try {
+&nbsp;                Class&lt;?&gt; resolvedTargetType = this.resolveTargetType(typedStringValue);
+&nbsp;                return resolvedTargetType != null ? this.typeConverter.convertIfNecessary(valueObject, resolvedTargetType) : valueObject;
+&nbsp;            } catch (Throwable ex) {
+<b class="fc">&nbsp;                throw new BeanCreationException(this.beanDefinition.getResourceDescription(), this.beanName, &quot;Error converting typed String value for &quot; + String.valueOf(argName), ex);</b>
+<b class="fc">&nbsp;            }</b>
+&nbsp;        } else {
+<b class="pc">&nbsp;            return value instanceof NullBean ? null : this.evaluate(value);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public &lt;T&gt; T resolveInnerBean(@Nullable String innerBeanName, BeanDefinition innerBd, BiFunction&lt;String, RootBeanDefinition, T&gt; resolver) {</b>
+&nbsp;        String nameToUse = innerBeanName != null ? innerBeanName : &quot;(inner bean)#&quot; + ObjectUtils.getIdentityHexString(innerBd);
+&nbsp;        return (T)resolver.apply(nameToUse, this.beanFactory.getMergedBeanDefinition(nameToUse, innerBd, this.beanDefinition));
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="pc">&nbsp;    @Nullable</b>
+&nbsp;    protected Object evaluate(TypedStringValue value) {
+<b class="nc">&nbsp;        Object result = this.doEvaluate(value.getValue());</b>
+<b class="nc">&nbsp;        if (!ObjectUtils.nullSafeEquals(result, value.getValue())) {</b>
+&nbsp;            value.setDynamic();
+<b class="pc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return result;</b>
+&nbsp;    }
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;    @Nullable</b>
+<b class="nc">&nbsp;    protected Object evaluate(@Nullable Object value) {</b>
+&nbsp;        if (value instanceof String str) {
+<b class="nc">&nbsp;            return this.doEvaluate(str);</b>
+<b class="nc">&nbsp;        } else if (value instanceof String[] values) {</b>
+<b class="nc">&nbsp;            boolean actuallyResolved = false;</b>
+&nbsp;            Object[] resolvedValues = new Object[values.length];
+&nbsp;
+<b class="nc">&nbsp;            for(int i = 0; i &lt; values.length; ++i) {</b>
+&nbsp;                String originalValue = values[i];
+<b class="pc">&nbsp;                Object resolvedValue = this.doEvaluate(originalValue);</b>
+&nbsp;                if (resolvedValue != originalValue) {
+<b class="nc">&nbsp;                    actuallyResolved = true;</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                resolvedValues[i] = resolvedValue;</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            return actuallyResolved ? resolvedValues : values;</b>
+&nbsp;        } else {
+&nbsp;            return value;
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    @Nullable
+&nbsp;    private Object doEvaluate(@Nullable String value) {
+&nbsp;        return this.beanFactory.evaluateBeanDefinitionString(value, this.beanDefinition);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    @Nullable
+&nbsp;    protected Class&lt;?&gt; resolveTargetType(TypedStringValue value) throws ClassNotFoundException {
+<b class="nc">&nbsp;        return value.hasTargetType() ? value.getTargetType() : value.resolveTargetType(this.beanFactory.getBeanClassLoader());</b>
+&nbsp;    }
+<b class="pc">&nbsp;</b>
+&nbsp;    @Nullable
+<b class="nc">&nbsp;    private Object resolveReference(Object argName, RuntimeBeanReference ref) {</b>
+&nbsp;        try {
+<b class="pc">&nbsp;            Class&lt;?&gt; beanType = ref.getBeanType();</b>
+&nbsp;            Object bean;
+<b class="nc">&nbsp;            if (ref.isToParent()) {</b>
+&nbsp;                BeanFactory parent = this.beanFactory.getParentBeanFactory();
+<b class="pc">&nbsp;                if (parent == null) {</b>
+&nbsp;                    throw new BeanCreationException(this.beanDefinition.getResourceDescription(), this.beanName, &quot;Cannot resolve reference to bean &quot; + String.valueOf(ref) + &quot; in parent factory: no parent factory available&quot;);
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="pc">&nbsp;                if (beanType != null) {</b>
+&nbsp;                    bean = parent.getBean(beanType);
+<b class="nc">&nbsp;                } else {</b>
+<b class="nc">&nbsp;                    bean = parent.getBean(String.valueOf(this.doEvaluate(ref.getBeanName())));</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                String resolvedName;
+<b class="nc">&nbsp;                if (beanType != null) {</b>
+<b class="nc">&nbsp;                    NamedBeanHolder&lt;?&gt; namedBean = this.beanFactory.resolveNamedBean(beanType);</b>
+&nbsp;                    bean = namedBean.getBeanInstance();
+<b class="nc">&nbsp;                    resolvedName = namedBean.getBeanName();</b>
+<b class="nc">&nbsp;                } else {</b>
+<b class="nc">&nbsp;                    resolvedName = String.valueOf(this.doEvaluate(ref.getBeanName()));</b>
+&nbsp;                    bean = this.beanFactory.getBean(resolvedName);
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+&nbsp;                this.beanFactory.registerDependentBean(resolvedName, this.beanName);
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="pc">&nbsp;            if (bean instanceof NullBean) {</b>
+&nbsp;                bean = null;
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            return bean;</b>
+<b class="nc">&nbsp;        } catch (BeansException ex) {</b>
+<b class="nc">&nbsp;            throw new BeanCreationException(this.beanDefinition.getResourceDescription(), this.beanName, &quot;Cannot resolve reference to bean &#39;&quot; + ref.getBeanName() + &quot;&#39; while setting &quot; + String.valueOf(argName), ex);</b>
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    @Nullable
+&nbsp;    private Object resolveInnerBeanValue(Object argName, String innerBeanName, RootBeanDefinition mbd) {
+&nbsp;        try {
+&nbsp;            String actualInnerBeanName = innerBeanName;
+<b class="nc">&nbsp;            if (mbd.isSingleton()) {</b>
+<b class="nc">&nbsp;                actualInnerBeanName = this.adaptInnerBeanName(innerBeanName);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            this.beanFactory.registerContainedBean(actualInnerBeanName, this.beanName);
+<b class="pc">&nbsp;            String[] dependsOn = mbd.getDependsOn();</b>
+<b class="nc">&nbsp;            if (dependsOn != null) {</b>
+&nbsp;                for(String dependsOnBean : dependsOn) {
+&nbsp;                    this.beanFactory.registerDependentBean(dependsOnBean, actualInnerBeanName);
+<b class="fc">&nbsp;                    this.beanFactory.getBean(dependsOnBean);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            Object innerBean = this.beanFactory.createBean(actualInnerBeanName, mbd, (Object[])null);
+&nbsp;            if (innerBean instanceof FactoryBean&lt;?&gt; factoryBean) {
+&nbsp;                boolean synthetic = mbd.isSynthetic();
+&nbsp;                innerBean = this.beanFactory.getObjectFromFactoryBean(factoryBean, actualInnerBeanName, !synthetic);
+&nbsp;            }
+&nbsp;
+&nbsp;            if (innerBean instanceof NullBean) {
+&nbsp;                innerBean = null;
+&nbsp;            }
+&nbsp;
+&nbsp;            return innerBean;
+&nbsp;        } catch (BeansException ex) {
+&nbsp;            throw new BeanCreationException(this.beanDefinition.getResourceDescription(), this.beanName, &quot;Cannot create inner bean &#39;&quot; + innerBeanName + &quot;&#39; &quot; + (mbd.getBeanClassName() != null ? &quot;of type [&quot; + mbd.getBeanClassName() + &quot;] &quot; : &quot;&quot;) + &quot;while setting &quot; + String.valueOf(argName), ex);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private String adaptInnerBeanName(String innerBeanName) {</b>
+&nbsp;        String actualInnerBeanName = innerBeanName;
+&nbsp;        int counter = 0;
+&nbsp;
+&nbsp;        for(String prefix = innerBeanName + &quot;#&quot;; this.beanFactory.isBeanNameInUse(actualInnerBeanName); actualInnerBeanName = prefix + counter) {
+&nbsp;            ++counter;
+&nbsp;        }
+&nbsp;
+&nbsp;        return actualInnerBeanName;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private Object resolveManagedArray(Object argName, List&lt;?&gt; ml, Class&lt;?&gt; elementType) {</b>
+<b class="nc">&nbsp;        Object resolved = Array.newInstance(elementType, ml.size());</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; ml.size(); ++i) {</b>
+&nbsp;            Array.set(resolved, i, this.resolveValueIfNecessary(new KeyedArgName(argName, i), ml.get(i)));
+&nbsp;        }
+&nbsp;
+&nbsp;        return resolved;
+&nbsp;    }
+&nbsp;
+&nbsp;    private List&lt;?&gt; resolveManagedList(Object argName, List&lt;?&gt; ml) {
+&nbsp;        List&lt;Object&gt; resolved = new ArrayList(ml.size());
+&nbsp;
+<b class="fc">&nbsp;        for(int i = 0; i &lt; ml.size(); ++i) {</b>
+<b class="fc">&nbsp;            resolved.add(this.resolveValueIfNecessary(new KeyedArgName(argName, i), ml.get(i)));</b>
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;        return resolved;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private Set&lt;?&gt; resolveManagedSet(Object argName, Set&lt;?&gt; ms) {</b>
+<b class="fc">&nbsp;        Set&lt;Object&gt; resolved = CollectionUtils.newLinkedHashSet(ms.size());</b>
+<b class="pc">&nbsp;        int i = 0;</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        for(Object m : ms) {
+<b class="fc">&nbsp;            resolved.add(this.resolveValueIfNecessary(new KeyedArgName(argName, i), m));</b>
+&nbsp;            ++i;
+<b class="pc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return resolved;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private Map&lt;?, ?&gt; resolveManagedMap(Object argName, Map&lt;?, ?&gt; mm) {
+&nbsp;        Map&lt;Object, Object&gt; resolved = CollectionUtils.newLinkedHashMap(mm.size());
+&nbsp;        mm.forEach((key, value) -&gt; {
+&nbsp;            Object resolvedKey = this.resolveValueIfNecessary(argName, key);
+&nbsp;            Object resolvedValue = this.resolveValueIfNecessary(new KeyedArgName(argName, key), value);
+&nbsp;            resolved.put(resolvedKey, resolvedValue);
+&nbsp;        });
+&nbsp;        return resolved;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    private static class KeyedArgName {
+&nbsp;        private final Object argName;
+&nbsp;        private final Object key;
+&nbsp;
+&nbsp;        public KeyedArgName(Object argName, Object key) {
+&nbsp;            this.argName = argName;
+&nbsp;            this.key = key;
+&nbsp;        }
+&nbsp;
+&nbsp;        public String toString() {
+&nbsp;            String var10000 = String.valueOf(this.argName);
+<b class="nc">&nbsp;            return var10000 + &quot; with key [&quot; + String.valueOf(this.key) + &quot;]&quot;;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:58</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,455 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > TestContextManager</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.test.context</a>
+</div>
+
+<h1>Coverage Summary for Class: TestContextManager (org.springframework.test.context)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TestContextManager</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    64%
+  </span>
+  <span class="absValue">
+    (16/25)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    28.6%
+  </span>
+  <span class="absValue">
+    (20/70)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    42.4%
+  </span>
+  <span class="absValue">
+    (59/139)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.test.context;
+&nbsp;
+&nbsp;import java.lang.reflect.Constructor;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Set;
+&nbsp;import org.apache.commons.logging.Log;
+&nbsp;import org.apache.commons.logging.LogFactory;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.ClassUtils;
+&nbsp;import org.springframework.util.CollectionUtils;
+&nbsp;import org.springframework.util.ReflectionUtils;
+&nbsp;
+&nbsp;public class TestContextManager {
+&nbsp;    private static final Log logger = LogFactory.getLog(TestContextManager.class);
+&nbsp;    private static final Set&lt;Class&lt;? extends Throwable&gt;&gt; skippedExceptionTypes = CollectionUtils.newLinkedHashSet(3);
+&nbsp;    private final TestContext testContext;
+&nbsp;    private final ThreadLocal&lt;TestContext&gt; testContextHolder;
+&nbsp;    private final List&lt;TestExecutionListener&gt; testExecutionListeners;
+&nbsp;
+&nbsp;    public TestContextManager(Class&lt;?&gt; testClass) {
+&nbsp;        this(BootstrapUtils.resolveTestContextBootstrapper(testClass));
+&nbsp;    }
+&nbsp;
+&nbsp;    public TestContextManager(TestContextBootstrapper testContextBootstrapper) {
+&nbsp;        this.testExecutionListeners = new ArrayList(8);
+&nbsp;        this.testContext = testContextBootstrapper.buildTestContext();
+&nbsp;        this.testContextHolder = ThreadLocal.withInitial(() -&gt; copyTestContext(this.testContext));
+&nbsp;        this.registerTestExecutionListeners(testContextBootstrapper.getTestExecutionListeners());
+&nbsp;    }
+&nbsp;
+&nbsp;    public final TestContext getTestContext() {
+&nbsp;        return (TestContext)this.testContextHolder.get();
+&nbsp;    }
+&nbsp;
+&nbsp;    public void registerTestExecutionListeners(List&lt;TestExecutionListener&gt; testExecutionListeners) {
+&nbsp;        this.registerTestExecutionListeners((TestExecutionListener[])testExecutionListeners.toArray(new TestExecutionListener[0]));
+&nbsp;    }
+&nbsp;
+&nbsp;    public void registerTestExecutionListeners(TestExecutionListener... testExecutionListeners) {
+&nbsp;        for(TestExecutionListener listener : testExecutionListeners) {
+&nbsp;            if (logger.isTraceEnabled()) {
+&nbsp;                logger.trace(&quot;Registering TestExecutionListener: &quot; + typeName(listener));
+&nbsp;            }
+&nbsp;
+&nbsp;            this.testExecutionListeners.add(listener);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public final List&lt;TestExecutionListener&gt; getTestExecutionListeners() {
+&nbsp;        return this.testExecutionListeners;
+&nbsp;    }
+&nbsp;
+&nbsp;    private List&lt;TestExecutionListener&gt; getReversedTestExecutionListeners() {
+&nbsp;        List&lt;TestExecutionListener&gt; listenersReversed = new ArrayList(this.getTestExecutionListeners());
+&nbsp;        Collections.reverse(listenersReversed);
+&nbsp;        return listenersReversed;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void beforeTestClass() throws Exception {
+&nbsp;        try {
+&nbsp;            Class&lt;?&gt; testClass = this.getTestContext().getTestClass();
+&nbsp;            if (logger.isTraceEnabled()) {
+&nbsp;                logger.trace(&quot;beforeTestClass(): class [&quot; + typeName(testClass) + &quot;]&quot;);
+&nbsp;            }
+&nbsp;
+&nbsp;            this.getTestContext().updateState((Object)null, (Method)null, (Throwable)null);
+&nbsp;
+&nbsp;            for(TestExecutionListener testExecutionListener : this.getTestExecutionListeners()) {
+&nbsp;                try {
+&nbsp;                    testExecutionListener.beforeTestClass(this.getTestContext());
+&nbsp;                } catch (Throwable ex) {
+&nbsp;                    this.logException(ex, &quot;beforeTestClass&quot;, testExecutionListener, testClass);
+&nbsp;                    ReflectionUtils.rethrowException(ex);
+&nbsp;                }
+&nbsp;            }
+&nbsp;        } finally {
+&nbsp;            this.resetMethodInvoker();
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void prepareTestInstance(Object testInstance) throws Exception {
+&nbsp;        try {
+<b class="fc">&nbsp;            if (logger.isTraceEnabled()) {</b>
+&nbsp;                logger.trace(&quot;prepareTestInstance(): instance [&quot; + String.valueOf(testInstance) + &quot;]&quot;);
+<b class="fc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            this.getTestContext().updateState(testInstance, (Method)null, (Throwable)null);
+&nbsp;
+<b class="fc">&nbsp;            for(TestExecutionListener testExecutionListener : this.getTestExecutionListeners()) {</b>
+&nbsp;                try {
+<b class="fc">&nbsp;                    testExecutionListener.prepareTestInstance(this.getTestContext());</b>
+&nbsp;                } catch (Throwable var8) {
+<b class="fc">&nbsp;                    if (isSkippedException(var8)) {</b>
+&nbsp;                        if (logger.isInfoEnabled()) {
+&nbsp;                            logger.info(&quot;Caught exception while allowing TestExecutionListener [%s] to prepare test instance [%s]&quot;.formatted(typeName(testExecutionListener), testInstance), var8);
+&nbsp;                        }
+&nbsp;                    } else if (logger.isWarnEnabled()) {
+&nbsp;                        logger.warn(&quot;Caught exception while allowing TestExecutionListener [%s] to prepare test instance [%s]&quot;.formatted(typeName(testExecutionListener), testInstance), var8);
+&nbsp;                    }
+<b class="fc">&nbsp;</b>
+&nbsp;                    ReflectionUtils.rethrowException(var8);
+&nbsp;                }
+&nbsp;            }
+&nbsp;        } finally {
+&nbsp;            this.resetMethodInvoker();
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void beforeTestMethod(Object testInstance, Method testMethod) throws Exception {
+&nbsp;        try {
+&nbsp;            String callbackName = &quot;beforeTestMethod&quot;;
+&nbsp;            this.prepareForBeforeCallback(callbackName, testInstance, testMethod);
+&nbsp;
+&nbsp;            for(TestExecutionListener testExecutionListener : this.getTestExecutionListeners()) {
+<b class="fc">&nbsp;                try {</b>
+&nbsp;                    testExecutionListener.beforeTestMethod(this.getTestContext());
+&nbsp;                } catch (Throwable ex) {
+&nbsp;                    this.handleBeforeException(ex, callbackName, testExecutionListener, testInstance, testMethod);
+&nbsp;                }
+&nbsp;            }
+&nbsp;        } finally {
+&nbsp;            this.resetMethodInvoker();
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void beforeTestExecution(Object testInstance, Method testMethod) throws Exception {
+&nbsp;        try {
+&nbsp;            String callbackName = &quot;beforeTestExecution&quot;;
+<b class="fc">&nbsp;            this.prepareForBeforeCallback(callbackName, testInstance, testMethod);</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;            for(TestExecutionListener testExecutionListener : this.getTestExecutionListeners()) {</b>
+<b class="fc">&nbsp;                try {</b>
+&nbsp;                    testExecutionListener.beforeTestExecution(this.getTestContext());
+&nbsp;                } catch (Throwable ex) {
+&nbsp;                    this.handleBeforeException(ex, callbackName, testExecutionListener, testInstance, testMethod);
+&nbsp;                }
+&nbsp;            }
+&nbsp;        } finally {
+<b class="fc">&nbsp;            this.resetMethodInvoker();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void afterTestExecution(Object testInstance, Method testMethod, @Nullable Throwable exception) throws Exception {
+&nbsp;        try {
+&nbsp;            String callbackName = &quot;afterTestExecution&quot;;
+&nbsp;            this.prepareForAfterCallback(callbackName, testInstance, testMethod, exception);
+<b class="fc">&nbsp;            Throwable afterTestExecutionException = null;</b>
+&nbsp;
+&nbsp;            for(TestExecutionListener testExecutionListener : this.getReversedTestExecutionListeners()) {
+&nbsp;                try {
+&nbsp;                    testExecutionListener.afterTestExecution(this.getTestContext());
+&nbsp;                } catch (Throwable ex) {
+&nbsp;                    this.logException(ex, callbackName, testExecutionListener, testInstance, testMethod);
+&nbsp;                    if (afterTestExecutionException == null) {
+<b class="fc">&nbsp;                        afterTestExecutionException = ex;</b>
+<b class="pc">&nbsp;                    } else {</b>
+<b class="nc">&nbsp;                        afterTestExecutionException.addSuppressed(ex);</b>
+&nbsp;                    }
+<b class="fc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            if (afterTestExecutionException != null) {
+&nbsp;                ReflectionUtils.rethrowException(afterTestExecutionException);
+&nbsp;            }
+&nbsp;        } finally {
+&nbsp;            this.resetMethodInvoker();
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public void afterTestMethod(Object testInstance, Method testMethod, @Nullable Throwable exception) throws Exception {
+&nbsp;        try {
+&nbsp;            String callbackName = &quot;afterTestMethod&quot;;
+&nbsp;            this.prepareForAfterCallback(callbackName, testInstance, testMethod, exception);
+&nbsp;            Throwable afterTestMethodException = null;
+&nbsp;
+&nbsp;            for(TestExecutionListener testExecutionListener : this.getReversedTestExecutionListeners()) {
+<b class="fc">&nbsp;                try {</b>
+<b class="fc">&nbsp;                    testExecutionListener.afterTestMethod(this.getTestContext());</b>
+<b class="fc">&nbsp;                } catch (Throwable ex) {</b>
+&nbsp;                    this.logException(ex, callbackName, testExecutionListener, testInstance, testMethod);
+&nbsp;                    if (afterTestMethodException == null) {
+&nbsp;                        afterTestMethodException = ex;
+&nbsp;                    } else {
+&nbsp;                        afterTestMethodException.addSuppressed(ex);
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            if (afterTestMethodException != null) {
+&nbsp;                ReflectionUtils.rethrowException(afterTestMethodException);
+&nbsp;            }
+&nbsp;        } finally {
+&nbsp;            this.resetMethodInvoker();
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public void afterTestClass() throws Exception {</b>
+<b class="pc">&nbsp;        Class&lt;?&gt; testClass = this.getTestContext().getTestClass();</b>
+<b class="nc">&nbsp;        if (logger.isTraceEnabled()) {</b>
+&nbsp;            logger.trace(&quot;afterTestClass(): class [&quot; + typeName(testClass) + &quot;]&quot;);
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+<b class="fc">&nbsp;        this.getTestContext().updateState((Object)null, (Method)null, (Throwable)null);</b>
+&nbsp;        Throwable afterTestClassException = null;
+<b class="fc">&nbsp;</b>
+&nbsp;        for(TestExecutionListener testExecutionListener : this.getReversedTestExecutionListeners()) {
+&nbsp;            try {
+<b class="nc">&nbsp;                testExecutionListener.afterTestClass(this.getTestContext());</b>
+<b class="nc">&nbsp;            } catch (Throwable ex) {</b>
+&nbsp;                this.logException(ex, &quot;afterTestClass&quot;, testExecutionListener, testClass);
+&nbsp;                if (afterTestClassException == null) {
+&nbsp;                    afterTestClassException = ex;
+&nbsp;                } else {
+<b class="fc">&nbsp;                    afterTestClassException.addSuppressed(ex);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        this.testContextHolder.remove();
+&nbsp;        if (afterTestClassException != null) {
+&nbsp;            ReflectionUtils.rethrowException(afterTestClassException);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private void resetMethodInvoker() {
+&nbsp;        this.getTestContext().setMethodInvoker(MethodInvoker.DEFAULT_INVOKER);
+&nbsp;    }
+&nbsp;
+&nbsp;    private void prepareForBeforeCallback(String callbackName, Object testInstance, Method testMethod) {
+&nbsp;        if (logger.isTraceEnabled()) {
+&nbsp;            logger.trace(&quot;%s(): instance [%s], method [%s]&quot;.formatted(callbackName, testInstance, testMethod));
+&nbsp;        }
+&nbsp;
+&nbsp;        this.getTestContext().updateState(testInstance, testMethod, (Throwable)null);
+&nbsp;    }
+&nbsp;
+<b class="pc">&nbsp;    private void prepareForAfterCallback(String callbackName, Object testInstance, Method testMethod, @Nullable Throwable exception) {</b>
+<b class="nc">&nbsp;        if (logger.isTraceEnabled()) {</b>
+&nbsp;            logger.trace(&quot;%s(): instance [%s], method [%s], exception [%s]&quot;.formatted(callbackName, testInstance, testMethod, exception));
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+<b class="pc">&nbsp;        this.getTestContext().updateState(testInstance, testMethod, exception);</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    private void handleBeforeException(Throwable ex, String callbackName, TestExecutionListener testExecutionListener, Object testInstance, Method testMethod) throws Exception {
+&nbsp;        this.logException(ex, callbackName, testExecutionListener, testInstance, testMethod);
+<b class="pc">&nbsp;        ReflectionUtils.rethrowException(ex);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private void logException(Throwable ex, String callbackName, TestExecutionListener testExecutionListener, Class&lt;?&gt; testClass) {
+&nbsp;        if (isSkippedException(ex)) {
+<b class="nc">&nbsp;            if (logger.isInfoEnabled()) {</b>
+&nbsp;                logger.info(&quot;Caught exception while invoking &#39;%s&#39; callback on TestExecutionListener [%s] for test class [%s]&quot;.formatted(callbackName, typeName(testExecutionListener), typeName(testClass)), ex);
+&nbsp;            }
+<b class="pc">&nbsp;        } else if (logger.isWarnEnabled()) {</b>
+<b class="fc">&nbsp;            logger.warn(&quot;Caught exception while invoking &#39;%s&#39; callback on TestExecutionListener [%s] for test class [%s]&quot;.formatted(callbackName, typeName(testExecutionListener), typeName(testClass)), ex);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+<b class="fc">&nbsp;    private void logException(Throwable ex, String callbackName, TestExecutionListener testExecutionListener, Object testInstance, Method testMethod) {</b>
+&nbsp;        if (isSkippedException(ex)) {
+&nbsp;            if (logger.isInfoEnabled()) {
+&nbsp;                logger.info(&quot;Caught exception while invoking &#39;%s&#39; callback on TestExecutionListener [%s] for test method [%s] and test instance [%s]&quot;.formatted(callbackName, typeName(testExecutionListener), testMethod, testInstance), ex);
+&nbsp;            }
+<b class="fc">&nbsp;        } else if (logger.isWarnEnabled()) {</b>
+&nbsp;            logger.warn(&quot;Caught exception while invoking &#39;%s&#39; callback on TestExecutionListener [%s] for test method [%s] and test instance [%s]&quot;.formatted(callbackName, typeName(testExecutionListener), testMethod, testInstance), ex);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private static TestContext copyTestContext(TestContext testContext) {
+&nbsp;        Constructor&lt;? extends TestContext&gt; constructor = ClassUtils.getConstructorIfAvailable(testContext.getClass(), new Class[]{testContext.getClass()});
+&nbsp;        if (constructor != null) {
+&nbsp;            try {
+&nbsp;                ReflectionUtils.makeAccessible(constructor);
+&nbsp;                return (TestContext)constructor.newInstance(testContext);
+&nbsp;            } catch (Exception ex) {
+&nbsp;                if (logger.isInfoEnabled()) {
+&nbsp;                    logger.info(&quot;Failed to invoke copy constructor for [%s]; concurrent test execution is therefore likely not supported.&quot;.formatted(testContext), ex);
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return testContext;
+&nbsp;    }
+&nbsp;
+&nbsp;    private static String typeName(Object obj) {
+&nbsp;        if (obj == null) {
+&nbsp;            return &quot;null&quot;;
+&nbsp;        } else if (obj instanceof Class) {
+&nbsp;            Class&lt;?&gt; type = (Class)obj;
+&nbsp;            return type.getName();
+&nbsp;        } else {
+&nbsp;            return obj.getClass().getName();
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private static void registerSkippedExceptionType(String name) {</b>
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            Class&lt;? extends Throwable&gt; exceptionType = ClassUtils.forName(name, TestContextManager.class.getClassLoader());
+<b class="nc">&nbsp;            skippedExceptionTypes.add(exceptionType);</b>
+&nbsp;        } catch (LinkageError | ClassNotFoundException var2) {
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private static boolean isSkippedException(Throwable ex) {
+&nbsp;        for(Class&lt;? extends Throwable&gt; skippedExceptionType : skippedExceptionTypes) {
+&nbsp;            if (skippedExceptionType.isInstance(ex)) {
+&nbsp;                return true;
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        return false;
+&nbsp;    }
+&nbsp;
+&nbsp;    static {
+&nbsp;        registerSkippedExceptionType(&quot;org.opentest4j.TestAbortedException&quot;);
+&nbsp;        registerSkippedExceptionType(&quot;org.junit.AssumptionViolatedException&quot;);
+&nbsp;        registerSkippedExceptionType(&quot;org.testng.SkipException&quot;);
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:54</div>
+</div>
+</body>
+</html>

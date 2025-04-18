@@ -1,0 +1,599 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ScheduledAnnotationBeanPostProcessor</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.scheduling.annotation</a>
+</div>
+
+<h1>Coverage Summary for Class: ScheduledAnnotationBeanPostProcessor (org.springframework.scheduling.annotation)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ScheduledAnnotationBeanPostProcessor</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    43.3%
+  </span>
+  <span class="absValue">
+    (13/30)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    11.6%
+  </span>
+  <span class="absValue">
+    (13/112)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    20.8%
+  </span>
+  <span class="absValue">
+    (41/197)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.scheduling.annotation;
+&nbsp;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;import java.time.Duration;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.IdentityHashMap;
+&nbsp;import java.util.LinkedHashSet;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Objects;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import java.util.concurrent.CopyOnWriteArrayList;
+&nbsp;import java.util.concurrent.ScheduledExecutorService;
+&nbsp;import java.util.concurrent.TimeUnit;
+&nbsp;import org.apache.commons.logging.Log;
+&nbsp;import org.apache.commons.logging.LogFactory;
+&nbsp;import org.springframework.aop.framework.AopInfrastructureBean;
+&nbsp;import org.springframework.aop.framework.AopProxyUtils;
+&nbsp;import org.springframework.aop.support.AopUtils;
+&nbsp;import org.springframework.beans.factory.BeanFactory;
+&nbsp;import org.springframework.beans.factory.BeanFactoryAware;
+&nbsp;import org.springframework.beans.factory.BeanNameAware;
+&nbsp;import org.springframework.beans.factory.DisposableBean;
+&nbsp;import org.springframework.beans.factory.ListableBeanFactory;
+&nbsp;import org.springframework.beans.factory.SmartInitializingSingleton;
+&nbsp;import org.springframework.beans.factory.config.DestructionAwareBeanPostProcessor;
+&nbsp;import org.springframework.beans.factory.config.SingletonBeanRegistry;
+&nbsp;import org.springframework.beans.factory.support.MergedBeanDefinitionPostProcessor;
+&nbsp;import org.springframework.beans.factory.support.RootBeanDefinition;
+&nbsp;import org.springframework.context.ApplicationContext;
+&nbsp;import org.springframework.context.ApplicationContextAware;
+&nbsp;import org.springframework.context.ApplicationListener;
+&nbsp;import org.springframework.context.EmbeddedValueResolverAware;
+&nbsp;import org.springframework.context.event.ApplicationContextEvent;
+&nbsp;import org.springframework.context.event.ContextClosedEvent;
+&nbsp;import org.springframework.context.event.ContextRefreshedEvent;
+&nbsp;import org.springframework.core.MethodIntrospector;
+&nbsp;import org.springframework.core.Ordered;
+&nbsp;import org.springframework.core.annotation.AnnotatedElementUtils;
+&nbsp;import org.springframework.core.annotation.AnnotationAwareOrderComparator;
+&nbsp;import org.springframework.core.annotation.AnnotationUtils;
+&nbsp;import org.springframework.format.annotation.DurationFormat;
+&nbsp;import org.springframework.format.annotation.DurationFormat.Unit;
+&nbsp;import org.springframework.format.datetime.standard.DurationFormatterUtils;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.scheduling.TaskScheduler;
+&nbsp;import org.springframework.scheduling.config.CronTask;
+&nbsp;import org.springframework.scheduling.config.FixedDelayTask;
+&nbsp;import org.springframework.scheduling.config.FixedRateTask;
+&nbsp;import org.springframework.scheduling.config.OneTimeTask;
+&nbsp;import org.springframework.scheduling.config.ScheduledTask;
+&nbsp;import org.springframework.scheduling.config.ScheduledTaskHolder;
+&nbsp;import org.springframework.scheduling.config.ScheduledTaskRegistrar;
+&nbsp;import org.springframework.scheduling.config.TaskSchedulerRouter;
+&nbsp;import org.springframework.scheduling.support.CronTrigger;
+&nbsp;import org.springframework.scheduling.support.ScheduledMethodRunnable;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.ClassUtils;
+&nbsp;import org.springframework.util.StringUtils;
+&nbsp;import org.springframework.util.StringValueResolver;
+&nbsp;
+&nbsp;public class ScheduledAnnotationBeanPostProcessor implements ScheduledTaskHolder, MergedBeanDefinitionPostProcessor, DestructionAwareBeanPostProcessor, Ordered, EmbeddedValueResolverAware, BeanNameAware, BeanFactoryAware, ApplicationContextAware, SmartInitializingSingleton, DisposableBean, ApplicationListener&lt;ApplicationContextEvent&gt; {
+&nbsp;    public static final String DEFAULT_TASK_SCHEDULER_BEAN_NAME = &quot;taskScheduler&quot;;
+&nbsp;    private static final boolean reactiveStreamsPresent = ClassUtils.isPresent(&quot;org.reactivestreams.Publisher&quot;, ScheduledAnnotationBeanPostProcessor.class.getClassLoader());
+&nbsp;    protected final Log logger = LogFactory.getLog(this.getClass());
+&nbsp;    private final ScheduledTaskRegistrar registrar;
+&nbsp;    @Nullable
+&nbsp;    private Object scheduler;
+&nbsp;    @Nullable
+&nbsp;    private StringValueResolver embeddedValueResolver;
+&nbsp;    @Nullable
+&nbsp;    private String beanName;
+&nbsp;    @Nullable
+&nbsp;    private BeanFactory beanFactory;
+&nbsp;    @Nullable
+&nbsp;    private ApplicationContext applicationContext;
+&nbsp;    @Nullable
+&nbsp;    private TaskSchedulerRouter localScheduler;
+&nbsp;    private final Set&lt;Class&lt;?&gt;&gt; nonAnnotatedClasses = ConcurrentHashMap.newKeySet(64);
+&nbsp;    private final Map&lt;Object, Set&lt;ScheduledTask&gt;&gt; scheduledTasks = new IdentityHashMap(16);
+&nbsp;    private final Map&lt;Object, List&lt;Runnable&gt;&gt; reactiveSubscriptions = new IdentityHashMap(16);
+&nbsp;    private final Set&lt;Object&gt; manualCancellationOnContextClose = Collections.newSetFromMap(new IdentityHashMap(16));
+&nbsp;
+&nbsp;    public ScheduledAnnotationBeanPostProcessor() {
+&nbsp;        this.registrar = new ScheduledTaskRegistrar();
+&nbsp;    }
+&nbsp;
+&nbsp;    public ScheduledAnnotationBeanPostProcessor(ScheduledTaskRegistrar registrar) {
+&nbsp;        Assert.notNull(registrar, &quot;ScheduledTaskRegistrar must not be null&quot;);
+&nbsp;        this.registrar = registrar;
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getOrder() {
+&nbsp;        return Integer.MAX_VALUE;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setScheduler(Object scheduler) {
+&nbsp;        this.scheduler = scheduler;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setEmbeddedValueResolver(StringValueResolver resolver) {
+&nbsp;        this.embeddedValueResolver = resolver;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setBeanName(String beanName) {
+&nbsp;        this.beanName = beanName;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setBeanFactory(BeanFactory beanFactory) {
+&nbsp;        this.beanFactory = beanFactory;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setApplicationContext(ApplicationContext applicationContext) {
+&nbsp;        this.applicationContext = applicationContext;
+&nbsp;        if (this.beanFactory == null) {
+&nbsp;            this.beanFactory = applicationContext;
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void afterSingletonsInstantiated() {
+&nbsp;        this.nonAnnotatedClasses.clear();
+<b class="fc">&nbsp;        if (this.applicationContext == null) {</b>
+<b class="fc">&nbsp;            this.finishRegistration();</b>
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void finishRegistration() {
+&nbsp;        if (this.scheduler != null) {
+&nbsp;            this.registrar.setScheduler(this.scheduler);
+&nbsp;        } else {
+&nbsp;            this.localScheduler = new TaskSchedulerRouter();
+&nbsp;            this.localScheduler.setBeanName(this.beanName);
+&nbsp;            this.localScheduler.setBeanFactory(this.beanFactory);
+&nbsp;            this.registrar.setTaskScheduler(this.localScheduler);
+&nbsp;        }
+&nbsp;
+&nbsp;        BeanFactory beans = this.beanFactory;
+&nbsp;        if (beans instanceof ListableBeanFactory lbf) {
+&nbsp;            Map&lt;String, SchedulingConfigurer&gt; beans = lbf.getBeansOfType(SchedulingConfigurer.class);
+&nbsp;            List&lt;SchedulingConfigurer&gt; configurers = new ArrayList(beans.values());
+&nbsp;            AnnotationAwareOrderComparator.sort(configurers);
+&nbsp;
+&nbsp;            for(SchedulingConfigurer configurer : configurers) {
+&nbsp;                configurer.configureTasks(this.registrar);
+&nbsp;            }
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+<b class="fc">&nbsp;        this.registrar.afterPropertiesSet();</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class&lt;?&gt; beanType, String beanName) {
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public Object postProcessBeforeInitialization(Object bean, String beanName) {
+&nbsp;        return bean;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public Object postProcessAfterInitialization(Object bean, String beanName) {</b>
+<b class="fc">&nbsp;        if (!(bean instanceof AopInfrastructureBean) &amp;&amp; !(bean instanceof TaskScheduler) &amp;&amp; !(bean instanceof ScheduledExecutorService)) {</b>
+&nbsp;            Class&lt;?&gt; targetClass = AopProxyUtils.ultimateTargetClass(bean);
+&nbsp;            if (!this.nonAnnotatedClasses.contains(targetClass) &amp;&amp; AnnotationUtils.isCandidateClass(targetClass, List.of(Scheduled.class, Schedules.class))) {
+&nbsp;                Map&lt;Method, Set&lt;Scheduled&gt;&gt; annotatedMethods = MethodIntrospector.selectMethods(targetClass, (method) -&gt; {
+&nbsp;                    Set&lt;Scheduled&gt; scheduledAnnotations = AnnotatedElementUtils.getMergedRepeatableAnnotations(method, Scheduled.class, Schedules.class);
+&nbsp;                    return !scheduledAnnotations.isEmpty() ? scheduledAnnotations : null;
+&nbsp;                });
+&nbsp;                if (annotatedMethods.isEmpty()) {
+&nbsp;                    this.nonAnnotatedClasses.add(targetClass);
+&nbsp;                    if (this.logger.isTraceEnabled()) {
+<b class="nc">&nbsp;                        this.logger.trace(&quot;No @Scheduled annotations found on bean class: &quot; + String.valueOf(targetClass));</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                } else {</b>
+&nbsp;                    annotatedMethods.forEach((method, scheduledAnnotations) -&gt; scheduledAnnotations.forEach((scheduled) -&gt; this.processScheduled(scheduled, method, bean)));
+&nbsp;                    if (this.logger.isTraceEnabled()) {
+&nbsp;                        this.logger.trace(annotatedMethods.size() + &quot; @Scheduled methods processed on bean &#39;&quot; + beanName + &quot;&#39;: &quot; + String.valueOf(annotatedMethods));
+&nbsp;                    }
+&nbsp;
+<b class="fc">&nbsp;                    if (this.beanFactory == null || this.beanFactory.containsBean(beanName) &amp;&amp; this.beanFactory.isSingleton(beanName)) {</b>
+&nbsp;                        BeanFactory var6 = this.beanFactory;
+&nbsp;                        if (!(var6 instanceof SingletonBeanRegistry)) {
+&nbsp;                            return bean;
+&nbsp;                        }
+&nbsp;
+&nbsp;                        SingletonBeanRegistry sbr = (SingletonBeanRegistry)var6;
+&nbsp;                        if (!sbr.containsSingleton(beanName)) {
+&nbsp;                            return bean;
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+&nbsp;                    this.manualCancellationOnContextClose.add(bean);
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            return bean;
+&nbsp;        } else {
+&nbsp;            return bean;
+&nbsp;        }
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected void processScheduled(Scheduled scheduled, Method method, Object bean) {
+&nbsp;        if (reactiveStreamsPresent &amp;&amp; ScheduledAnnotationReactiveSupport.isReactive(method)) {
+&nbsp;            this.processScheduledAsync(scheduled, method, bean);
+<b class="fc">&nbsp;        } else {</b>
+&nbsp;            this.processScheduledSync(scheduled, method, bean);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void processScheduledSync(Scheduled scheduled, Method method, Object bean) {
+&nbsp;        Runnable task;
+&nbsp;        try {
+&nbsp;            task = this.createRunnable(bean, method, scheduled.scheduler());
+&nbsp;        } catch (IllegalArgumentException ex) {
+<b class="fc">&nbsp;            String var10002 = method.getName();</b>
+&nbsp;            throw new IllegalStateException(&quot;Could not create recurring task for @Scheduled method &#39;&quot; + var10002 + &quot;&#39;: &quot; + ex.getMessage());
+&nbsp;        }
+&nbsp;
+&nbsp;        this.processScheduledTask(scheduled, task, method, bean);
+&nbsp;    }
+&nbsp;
+&nbsp;    private void processScheduledAsync(Scheduled scheduled, Method method, Object bean) {
+&nbsp;        Runnable task;
+&nbsp;        try {
+<b class="fc">&nbsp;            ScheduledTaskRegistrar var10003 = this.registrar;</b>
+<b class="pc">&nbsp;            Objects.requireNonNull(var10003);</b>
+<b class="nc">&nbsp;            task = ScheduledAnnotationReactiveSupport.createSubscriptionRunnable(method, bean, scheduled, var10003::getObservationRegistry, (List)this.reactiveSubscriptions.computeIfAbsent(bean, (k) -&gt; new CopyOnWriteArrayList()));</b>
+&nbsp;        } catch (IllegalArgumentException ex) {
+&nbsp;            String var10002 = method.getName();
+&nbsp;            throw new IllegalStateException(&quot;Could not create recurring task for @Scheduled method &#39;&quot; + var10002 + &quot;&#39;: &quot; + ex.getMessage());
+&nbsp;        }
+&nbsp;
+&nbsp;        this.processScheduledTask(scheduled, task, method, bean);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private void processScheduledTask(Scheduled scheduled, Runnable runnable, Method method, Object bean) {
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            boolean processedSchedule = false;
+<b class="nc">&nbsp;            String errorMessage = &quot;Exactly one of the &#39;cron&#39;, &#39;fixedDelay&#39; or &#39;fixedRate&#39; attributes is required&quot;;</b>
+&nbsp;            Set&lt;ScheduledTask&gt; tasks = new LinkedHashSet(4);
+&nbsp;            Duration initialDelay = toDuration(scheduled.initialDelay(), scheduled.timeUnit());
+&nbsp;            String initialDelayString = scheduled.initialDelayString();
+&nbsp;            if (StringUtils.hasText(initialDelayString)) {
+<b class="nc">&nbsp;                Assert.isTrue(initialDelay.isNegative(), &quot;Specify &#39;initialDelay&#39; or &#39;initialDelayString&#39;, not both&quot;);</b>
+<b class="nc">&nbsp;                if (this.embeddedValueResolver != null) {</b>
+&nbsp;                    initialDelayString = this.embeddedValueResolver.resolveStringValue(initialDelayString);
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                if (StringUtils.hasLength(initialDelayString)) {</b>
+<b class="nc">&nbsp;                    try {</b>
+<b class="nc">&nbsp;                        initialDelay = toDuration(initialDelayString, scheduled.timeUnit());</b>
+&nbsp;                    } catch (RuntimeException ex) {
+&nbsp;                        throw new IllegalArgumentException(&quot;Invalid initialDelayString value \&quot;&quot; + initialDelayString + &quot;\&quot;; &quot; + String.valueOf(ex));
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            String cron = scheduled.cron();</b>
+<b class="nc">&nbsp;            if (StringUtils.hasText(cron)) {</b>
+&nbsp;                String zone = scheduled.zone();
+&nbsp;                if (this.embeddedValueResolver != null) {
+&nbsp;                    cron = this.embeddedValueResolver.resolveStringValue(cron);
+<b class="nc">&nbsp;                    zone = this.embeddedValueResolver.resolveStringValue(zone);</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                if (StringUtils.hasLength(cron)) {
+&nbsp;                    Assert.isTrue(initialDelay.isNegative(), &quot;&#39;initialDelay&#39; not supported for cron triggers&quot;);
+&nbsp;                    processedSchedule = true;
+<b class="fc">&nbsp;                    if (!&quot;-&quot;.equals(cron)) {</b>
+&nbsp;                        CronTrigger trigger;
+&nbsp;                        if (StringUtils.hasText(zone)) {
+&nbsp;                            trigger = new CronTrigger(cron, StringUtils.parseTimeZoneString(zone));
+<b class="fc">&nbsp;                        } else {</b>
+&nbsp;                            trigger = new CronTrigger(cron);
+&nbsp;                        }
+&nbsp;
+&nbsp;                        tasks.add(this.registrar.scheduleCronTask(new CronTask(runnable, trigger)));
+<b class="pc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            Duration delayToUse = initialDelay.isNegative() ? Duration.ZERO : initialDelay;
+&nbsp;            Duration fixedDelay = toDuration(scheduled.fixedDelay(), scheduled.timeUnit());
+<b class="fc">&nbsp;            if (!fixedDelay.isNegative()) {</b>
+<b class="pc">&nbsp;                Assert.isTrue(!processedSchedule, errorMessage);</b>
+<b class="pc">&nbsp;                processedSchedule = true;</b>
+<b class="fc">&nbsp;                tasks.add(this.registrar.scheduleFixedDelayTask(new FixedDelayTask(runnable, fixedDelay, delayToUse)));</b>
+&nbsp;            }
+<b class="fc">&nbsp;</b>
+&nbsp;            String fixedDelayString = scheduled.fixedDelayString();
+<b class="pc">&nbsp;            if (StringUtils.hasText(fixedDelayString)) {</b>
+&nbsp;                if (this.embeddedValueResolver != null) {
+<b class="pc">&nbsp;                    fixedDelayString = this.embeddedValueResolver.resolveStringValue(fixedDelayString);</b>
+<b class="fc">&nbsp;                }</b>
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;                if (StringUtils.hasLength(fixedDelayString)) {</b>
+&nbsp;                    Assert.isTrue(!processedSchedule, errorMessage);
+&nbsp;                    processedSchedule = true;
+&nbsp;
+&nbsp;                    try {
+<b class="nc">&nbsp;                        fixedDelay = toDuration(fixedDelayString, scheduled.timeUnit());</b>
+<b class="nc">&nbsp;                    } catch (RuntimeException ex) {</b>
+<b class="nc">&nbsp;                        throw new IllegalArgumentException(&quot;Invalid fixedDelayString value \&quot;&quot; + fixedDelayString + &quot;\&quot;; &quot; + String.valueOf(ex));</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;
+&nbsp;                    tasks.add(this.registrar.scheduleFixedDelayTask(new FixedDelayTask(runnable, fixedDelay, delayToUse)));
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            Duration fixedRate = toDuration(scheduled.fixedRate(), scheduled.timeUnit());
+&nbsp;            if (!fixedRate.isNegative()) {
+<b class="nc">&nbsp;                Assert.isTrue(!processedSchedule, errorMessage);</b>
+&nbsp;                processedSchedule = true;
+&nbsp;                tasks.add(this.registrar.scheduleFixedRateTask(new FixedRateTask(runnable, fixedRate, delayToUse)));
+&nbsp;            }
+<b class="fc">&nbsp;</b>
+&nbsp;            String fixedRateString = scheduled.fixedRateString();
+&nbsp;            if (StringUtils.hasText(fixedRateString)) {
+&nbsp;                if (this.embeddedValueResolver != null) {
+&nbsp;                    fixedRateString = this.embeddedValueResolver.resolveStringValue(fixedRateString);
+&nbsp;                }
+&nbsp;
+&nbsp;                if (StringUtils.hasLength(fixedRateString)) {
+&nbsp;                    Assert.isTrue(!processedSchedule, errorMessage);
+&nbsp;                    processedSchedule = true;
+&nbsp;
+&nbsp;                    try {
+&nbsp;                        fixedRate = toDuration(fixedRateString, scheduled.timeUnit());
+&nbsp;                    } catch (RuntimeException ex) {
+&nbsp;                        throw new IllegalArgumentException(&quot;Invalid fixedRateString value \&quot;&quot; + fixedRateString + &quot;\&quot;; &quot; + String.valueOf(ex));
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    tasks.add(this.registrar.scheduleFixedRateTask(new FixedRateTask(runnable, fixedRate, delayToUse)));</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if (!processedSchedule) {</b>
+&nbsp;                if (initialDelay.isNegative()) {
+&nbsp;                    throw new IllegalArgumentException(&quot;One-time task only supported with specified initial delay&quot;);
+&nbsp;                }
+&nbsp;
+&nbsp;                tasks.add(this.registrar.scheduleOneTimeTask(new OneTimeTask(runnable, delayToUse)));
+&nbsp;            }
+&nbsp;
+&nbsp;            synchronized(this.scheduledTasks) {
+&nbsp;                Set&lt;ScheduledTask&gt; regTasks = (Set)this.scheduledTasks.computeIfAbsent(bean, (key) -&gt; new LinkedHashSet(4));
+&nbsp;                regTasks.addAll(tasks);
+&nbsp;            }
+&nbsp;        } catch (IllegalArgumentException ex) {
+&nbsp;            String var10002 = method.getName();
+&nbsp;            throw new IllegalStateException(&quot;Encountered invalid @Scheduled method &#39;&quot; + var10002 + &quot;&#39;: &quot; + ex.getMessage());
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected Runnable createRunnable(Object target, Method method, @Nullable String qualifier) {</b>
+<b class="nc">&nbsp;        Runnable runnable = this.createRunnable(target, method);</b>
+&nbsp;        if (runnable != null) {
+<b class="nc">&nbsp;            return runnable;</b>
+&nbsp;        } else {
+&nbsp;            Assert.isTrue(method.getParameterCount() == 0, &quot;Only no-arg methods may be annotated with @Scheduled&quot;);
+&nbsp;            Method invocableMethod = AopUtils.selectInvocableMethod(method, target.getClass());
+&nbsp;            ScheduledTaskRegistrar var10005 = this.registrar;
+&nbsp;            Objects.requireNonNull(var10005);
+&nbsp;            return new ScheduledMethodRunnable(target, invocableMethod, qualifier, var10005::getObservationRegistry);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @deprecated */
+&nbsp;    @Deprecated(
+&nbsp;        since = &quot;6.1&quot;
+&nbsp;    )
+&nbsp;    @Nullable
+&nbsp;    protected Runnable createRunnable(Object target, Method method) {
+&nbsp;        return null;
+&nbsp;    }
+&nbsp;
+&nbsp;    private static Duration toDuration(long value, TimeUnit timeUnit) {
+<b class="nc">&nbsp;        try {</b>
+<b class="nc">&nbsp;            return Duration.of(value, timeUnit.toChronoUnit());</b>
+<b class="nc">&nbsp;        } catch (Exception ex) {</b>
+&nbsp;            String var10002 = String.valueOf(timeUnit);
+&nbsp;            throw new IllegalArgumentException(&quot;Unsupported unit &quot; + var10002 + &quot; for value \&quot;&quot; + value + &quot;\&quot;: &quot; + ex.getMessage());
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private static Duration toDuration(String value, TimeUnit timeUnit) {</b>
+&nbsp;        DurationFormat.Unit unit = Unit.fromChronoUnit(timeUnit.toChronoUnit());
+&nbsp;        return DurationFormatterUtils.detectAndParse(value, unit);
+&nbsp;    }
+&nbsp;
+&nbsp;    public Set&lt;ScheduledTask&gt; getScheduledTasks() {
+&nbsp;        Set&lt;ScheduledTask&gt; result = new LinkedHashSet();
+&nbsp;        synchronized(this.scheduledTasks) {
+&nbsp;            for(Set&lt;ScheduledTask&gt; tasks : this.scheduledTasks.values()) {
+&nbsp;                result.addAll(tasks);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        result.addAll(this.registrar.getScheduledTasks());
+&nbsp;        return result;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public void postProcessBeforeDestruction(Object bean, String beanName) {
+<b class="nc">&nbsp;        this.cancelScheduledTasks(bean);</b>
+&nbsp;        this.manualCancellationOnContextClose.remove(bean);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public boolean requiresDestruction(Object bean) {</b>
+<b class="nc">&nbsp;        synchronized(this.scheduledTasks) {</b>
+<b class="nc">&nbsp;            return this.scheduledTasks.containsKey(bean) || this.reactiveSubscriptions.containsKey(bean);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private void cancelScheduledTasks(Object bean) {</b>
+&nbsp;        Set&lt;ScheduledTask&gt; tasks;
+<b class="nc">&nbsp;        List&lt;Runnable&gt; liveSubscriptions;</b>
+&nbsp;        synchronized(this.scheduledTasks) {
+&nbsp;            tasks = (Set)this.scheduledTasks.remove(bean);
+<b class="nc">&nbsp;            liveSubscriptions = (List)this.reactiveSubscriptions.remove(bean);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        if (tasks != null) {
+&nbsp;            for(ScheduledTask task : tasks) {
+&nbsp;                task.cancel(false);
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if (liveSubscriptions != null) {</b>
+<b class="nc">&nbsp;            for(Runnable subscription : liveSubscriptions) {</b>
+<b class="nc">&nbsp;                subscription.run();</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void destroy() {</b>
+&nbsp;        synchronized(this.scheduledTasks) {
+<b class="nc">&nbsp;            for(Set&lt;ScheduledTask&gt; tasks : this.scheduledTasks.values()) {</b>
+<b class="nc">&nbsp;                for(ScheduledTask task : tasks) {</b>
+&nbsp;                    task.cancel(false);
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            this.scheduledTasks.clear();</b>
+&nbsp;
+&nbsp;            for(List&lt;Runnable&gt; liveSubscriptions : this.reactiveSubscriptions.values()) {
+&nbsp;                for(Runnable liveSubscription : liveSubscriptions) {
+&nbsp;                    liveSubscription.run();
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            this.reactiveSubscriptions.clear();
+<b class="nc">&nbsp;            this.manualCancellationOnContextClose.clear();</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        this.registrar.destroy();</b>
+<b class="nc">&nbsp;        if (this.localScheduler != null) {</b>
+&nbsp;            this.localScheduler.destroy();
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public void onApplicationEvent(ApplicationContextEvent event) {
+<b class="nc">&nbsp;        if (event.getApplicationContext() == this.applicationContext) {</b>
+<b class="nc">&nbsp;            if (event instanceof ContextRefreshedEvent) {</b>
+<b class="nc">&nbsp;                this.finishRegistration();</b>
+&nbsp;            } else if (event instanceof ContextClosedEvent) {
+<b class="nc">&nbsp;                for(Object bean : this.manualCancellationOnContextClose) {</b>
+&nbsp;                    this.cancelScheduledTasks(bean);
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+&nbsp;                this.manualCancellationOnContextClose.clear();
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:57</div>
+</div>
+</body>
+</html>

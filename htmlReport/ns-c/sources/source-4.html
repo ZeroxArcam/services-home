@@ -1,0 +1,377 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ContextBase</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">ch.qos.logback.core</a>
+</div>
+
+<h1>Coverage Summary for Class: ContextBase (ch.qos.logback.core)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ContextBase</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    54.1%
+  </span>
+  <span class="absValue">
+    (20/37)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    26.5%
+  </span>
+  <span class="absValue">
+    (9/34)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    51.2%
+  </span>
+  <span class="absValue">
+    (44/86)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package ch.qos.logback.core;
+&nbsp;
+&nbsp;import ch.qos.logback.core.spi.ConfigurationEvent;
+&nbsp;import ch.qos.logback.core.spi.ConfigurationEventListener;
+&nbsp;import ch.qos.logback.core.spi.LifeCycle;
+&nbsp;import ch.qos.logback.core.spi.SequenceNumberGenerator;
+&nbsp;import ch.qos.logback.core.status.InfoStatus;
+&nbsp;import ch.qos.logback.core.status.StatusManager;
+&nbsp;import ch.qos.logback.core.util.ExecutorServiceUtil;
+&nbsp;import ch.qos.logback.core.util.NetworkAddressUtil;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import java.util.concurrent.CopyOnWriteArrayList;
+&nbsp;import java.util.concurrent.ExecutorService;
+&nbsp;import java.util.concurrent.ScheduledExecutorService;
+&nbsp;import java.util.concurrent.ScheduledFuture;
+&nbsp;import java.util.concurrent.ThreadPoolExecutor;
+&nbsp;import java.util.concurrent.locks.ReentrantLock;
+&nbsp;
+&nbsp;public class ContextBase implements Context, LifeCycle {
+&nbsp;    private long birthTime = System.currentTimeMillis();
+&nbsp;    private String name;
+&nbsp;    private StatusManager sm = new BasicStatusManager();
+&nbsp;    Map&lt;String, String&gt; propertyMap = new HashMap();
+&nbsp;    Map&lt;String, Object&gt; objectMap = new ConcurrentHashMap();
+&nbsp;    protected ReentrantLock configurationLock = new ReentrantLock();
+&nbsp;    private final List&lt;ConfigurationEventListener&gt; configurationEventListenerList = new CopyOnWriteArrayList();
+&nbsp;    private ScheduledExecutorService scheduledExecutorService;
+&nbsp;    private ThreadPoolExecutor threadPoolExecutor;
+&nbsp;    private ExecutorService alternateExecutorService;
+&nbsp;    protected List&lt;ScheduledFuture&lt;?&gt;&gt; scheduledFutures = new ArrayList(1);
+<b class="fc">&nbsp;    private LifeCycleManager lifeCycleManager;</b>
+&nbsp;    private SequenceNumberGenerator sequenceNumberGenerator;
+&nbsp;    private volatile boolean started;
+<b class="fc">&nbsp;</b>
+&nbsp;    public ContextBase() {
+&nbsp;        this.initCollisionMaps();
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public StatusManager getStatusManager() {</b>
+&nbsp;        return this.sm;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+<b class="fc">&nbsp;    public void setStatusManager(StatusManager statusManager) {</b>
+&nbsp;        if (statusManager == null) {
+&nbsp;            throw new IllegalArgumentException(&quot;null StatusManager not allowed&quot;);
+&nbsp;        } else {
+&nbsp;            this.sm = statusManager;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public Map&lt;String, String&gt; getCopyOfPropertyMap() {</b>
+&nbsp;        return new HashMap(this.propertyMap);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void putProperty(String key, String val) {
+&nbsp;        if (&quot;HOSTNAME&quot;.equalsIgnoreCase(key)) {
+&nbsp;            this.putHostnameProperty(val);
+<b class="fc">&nbsp;        } else {</b>
+<b class="fc">&nbsp;            this.propertyMap.put(key, val);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    protected void initCollisionMaps() {
+&nbsp;        this.putObject(&quot;FA_FILENAMES_MAP&quot;, new HashMap());
+&nbsp;        this.putObject(&quot;RFA_FILENAME_PATTERN_COLLISION_MAP&quot;, new HashMap());
+&nbsp;    }
+&nbsp;
+&nbsp;    public void addSubstitutionProperty(String key, String value) {
+&nbsp;        if (key != null &amp;&amp; value != null) {
+&nbsp;            value = value.trim();
+&nbsp;            this.propertyMap.put(key, value);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getProperty(String key) {
+&nbsp;        if (&quot;CONTEXT_NAME&quot;.equals(key)) {
+&nbsp;            return this.getName();
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            return &quot;HOSTNAME&quot;.equalsIgnoreCase(key) ? this.lazyGetHostname() : (String)this.propertyMap.get(key);</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private String lazyGetHostname() {
+&nbsp;        String hostname = (String)this.propertyMap.get(&quot;HOSTNAME&quot;);
+<b class="fc">&nbsp;        if (hostname == null) {</b>
+&nbsp;            hostname = (new NetworkAddressUtil(this)).safelyGetLocalHostName();
+&nbsp;            this.putHostnameProperty(hostname);
+&nbsp;        }
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;        return hostname;</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    private void putHostnameProperty(String hostname) {
+&nbsp;        String existingHostname = (String)this.propertyMap.get(&quot;HOSTNAME&quot;);
+&nbsp;        if (existingHostname == null) {
+&nbsp;            this.propertyMap.put(&quot;HOSTNAME&quot;, hostname);
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Object getObject(String key) {
+&nbsp;        return this.objectMap.get(key);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void putObject(String key, Object value) {
+&nbsp;        this.objectMap.put(key, value);
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public void removeObject(String key) {
+&nbsp;        this.objectMap.remove(key);
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getName() {
+&nbsp;        return this.name;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void start() {
+&nbsp;        this.started = true;
+<b class="pc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="pc">&nbsp;    public void stop() {</b>
+<b class="nc">&nbsp;        this.stopExecutorServices();</b>
+&nbsp;        this.started = false;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public boolean isStarted() {
+&nbsp;        return this.started;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void reset() {</b>
+<b class="nc">&nbsp;        this.removeShutdownHook();</b>
+<b class="nc">&nbsp;        this.getLifeCycleManager().reset();</b>
+&nbsp;        this.propertyMap.clear();
+<b class="nc">&nbsp;        this.objectMap.clear();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setName(String name) throws IllegalStateException {
+<b class="nc">&nbsp;        if (name == null || !name.equals(this.name)) {</b>
+<b class="nc">&nbsp;            if (this.name != null &amp;&amp; !&quot;default&quot;.equals(this.name)) {</b>
+<b class="nc">&nbsp;                throw new IllegalStateException(&quot;Context has been already given a name&quot;);</b>
+&nbsp;            } else {
+&nbsp;                this.name = name;
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public long getBirthTime() {</b>
+&nbsp;        return this.birthTime;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public ReentrantLock getConfigurationLock() {</b>
+&nbsp;        return this.configurationLock;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public synchronized ExecutorService getExecutorService() {</b>
+&nbsp;        if (this.threadPoolExecutor == null) {
+&nbsp;            this.threadPoolExecutor = ExecutorServiceUtil.newThreadPoolExecutor();
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+&nbsp;        return this.threadPoolExecutor;
+&nbsp;    }
+&nbsp;
+&nbsp;    public synchronized ExecutorService getAlternateExecutorService() {
+&nbsp;        if (this.alternateExecutorService == null) {
+&nbsp;            this.alternateExecutorService = ExecutorServiceUtil.newAlternateThreadPoolExecutor();
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+&nbsp;        return this.alternateExecutorService;
+&nbsp;    }
+&nbsp;
+&nbsp;    public synchronized ScheduledExecutorService getScheduledExecutorService() {
+&nbsp;        if (this.scheduledExecutorService == null) {
+<b class="fc">&nbsp;            this.scheduledExecutorService = ExecutorServiceUtil.newScheduledExecutorService();</b>
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+&nbsp;        return this.scheduledExecutorService;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    private synchronized void stopExecutorServices() {</b>
+&nbsp;        ExecutorServiceUtil.shutdown(this.scheduledExecutorService);
+&nbsp;        this.scheduledExecutorService = null;
+&nbsp;        ExecutorServiceUtil.shutdown(this.threadPoolExecutor);
+&nbsp;        this.threadPoolExecutor = null;
+&nbsp;    }
+&nbsp;
+&nbsp;    private void removeShutdownHook() {
+&nbsp;        Thread hook = (Thread)this.getObject(&quot;SHUTDOWN_HOOK&quot;);
+<b class="fc">&nbsp;        if (hook != null) {</b>
+<b class="fc">&nbsp;            this.removeObject(&quot;SHUTDOWN_HOOK&quot;);</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;            try {</b>
+&nbsp;                this.sm.add(new InfoStatus(&quot;Removing shutdownHook &quot; + String.valueOf(hook), this));
+&nbsp;                Runtime runtime = Runtime.getRuntime();
+&nbsp;                boolean result = runtime.removeShutdownHook(hook);
+&nbsp;                this.sm.add(new InfoStatus(&quot;ShutdownHook removal result: &quot; + result, this));
+&nbsp;            } catch (IllegalStateException var4) {
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void register(LifeCycle component) {
+<b class="pc">&nbsp;        this.getLifeCycleManager().register(component);</b>
+&nbsp;    }
+&nbsp;
+<b class="pc">&nbsp;    synchronized LifeCycleManager getLifeCycleManager() {</b>
+<b class="fc">&nbsp;        if (this.lifeCycleManager == null) {</b>
+&nbsp;            this.lifeCycleManager = new LifeCycleManager();
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return this.lifeCycleManager;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public String toString() {</b>
+&nbsp;        return this.name;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public void addScheduledFuture(ScheduledFuture&lt;?&gt; scheduledFuture) {</b>
+&nbsp;        this.scheduledFutures.add(scheduledFuture);
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @deprecated */
+&nbsp;    @Deprecated
+&nbsp;    public List&lt;ScheduledFuture&lt;?&gt;&gt; getScheduledFutures() {
+<b class="nc">&nbsp;        return this.getCopyOfScheduledFutures();</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public List&lt;ScheduledFuture&lt;?&gt;&gt; getCopyOfScheduledFutures() {</b>
+&nbsp;        return new ArrayList(this.scheduledFutures);
+&nbsp;    }
+&nbsp;
+&nbsp;    public SequenceNumberGenerator getSequenceNumberGenerator() {
+<b class="nc">&nbsp;        return this.sequenceNumberGenerator;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public void setSequenceNumberGenerator(SequenceNumberGenerator sequenceNumberGenerator) {</b>
+&nbsp;        this.sequenceNumberGenerator = sequenceNumberGenerator;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void addConfigurationEventListener(ConfigurationEventListener listener) {
+<b class="nc">&nbsp;        this.configurationEventListenerList.add(listener);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public void removeConfigurationEventListener(ConfigurationEventListener listener) {</b>
+&nbsp;        this.configurationEventListenerList.remove(listener);
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public void fireConfigurationEvent(ConfigurationEvent configurationEvent) {</b>
+<b class="fc">&nbsp;        this.configurationEventListenerList.forEach((l) -&gt; l.listen(configurationEvent));</b>
+&nbsp;    }
+<b class="fc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:57</div>
+</div>
+</body>
+</html>

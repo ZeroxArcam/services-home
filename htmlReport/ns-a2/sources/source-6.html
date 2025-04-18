@@ -1,0 +1,267 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > InvocationsFinder</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.mockito.internal.invocation</a>
+</div>
+
+<h1>Coverage Summary for Class: InvocationsFinder (org.mockito.internal.invocation)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">InvocationsFinder</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    7.7%
+  </span>
+  <span class="absValue">
+    (1/13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/46)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    1.8%
+  </span>
+  <span class="absValue">
+    (1/57)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.mockito.internal.invocation;
+&nbsp;
+&nbsp;import java.util.LinkedList;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Objects;
+&nbsp;import java.util.stream.Collectors;
+&nbsp;import java.util.stream.Stream;
+&nbsp;import org.mockito.internal.verification.api.InOrderContext;
+&nbsp;import org.mockito.invocation.Invocation;
+&nbsp;import org.mockito.invocation.Location;
+&nbsp;import org.mockito.invocation.MatchableInvocation;
+&nbsp;
+&nbsp;public class InvocationsFinder {
+&nbsp;    private InvocationsFinder() {
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public static List&lt;Invocation&gt; findInvocations(List&lt;Invocation&gt; invocations, MatchableInvocation wanted) {</b>
+&nbsp;        Stream var10000 = invocations.stream();
+&nbsp;        Objects.requireNonNull(wanted);
+&nbsp;        return (List)var10000.filter(wanted::matches).collect(Collectors.toList());
+&nbsp;    }
+&nbsp;
+&nbsp;    public static List&lt;Invocation&gt; findAllMatchingUnverifiedChunks(List&lt;Invocation&gt; invocations, MatchableInvocation wanted, InOrderContext orderingContext) {
+<b class="nc">&nbsp;        List&lt;Invocation&gt; unverified = removeVerifiedInOrder(invocations, orderingContext);</b>
+<b class="nc">&nbsp;        Stream var10000 = unverified.stream();</b>
+&nbsp;        Objects.requireNonNull(wanted);
+&nbsp;        return (List)var10000.filter(wanted::matches).collect(Collectors.toList());
+&nbsp;    }
+&nbsp;
+&nbsp;    public static List&lt;Invocation&gt; findMatchingChunk(List&lt;Invocation&gt; invocations, MatchableInvocation wanted, int wantedCount, InOrderContext context) {
+&nbsp;        List&lt;Invocation&gt; unverified = removeVerifiedInOrder(invocations, context);
+&nbsp;        List&lt;Invocation&gt; firstChunk = getFirstMatchingChunk(wanted, unverified);
+&nbsp;        return wantedCount != firstChunk.size() ? findAllMatchingUnverifiedChunks(invocations, wanted, context) : firstChunk;
+&nbsp;    }
+&nbsp;
+&nbsp;    private static List&lt;Invocation&gt; getFirstMatchingChunk(MatchableInvocation wanted, List&lt;Invocation&gt; unverified) {
+&nbsp;        List&lt;Invocation&gt; firstChunk = new LinkedList();
+&nbsp;
+&nbsp;        for(Invocation invocation : unverified) {
+&nbsp;            if (wanted.matches(invocation)) {
+&nbsp;                firstChunk.add(invocation);
+&nbsp;            } else if (!firstChunk.isEmpty()) {
+&nbsp;                break;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return firstChunk;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public static Invocation findFirstMatchingUnverifiedInvocation(List&lt;Invocation&gt; invocations, MatchableInvocation wanted, InOrderContext context) {
+<b class="nc">&nbsp;        for(Invocation invocation : removeVerifiedInOrder(invocations, context)) {</b>
+<b class="nc">&nbsp;            if (wanted.matches(invocation)) {</b>
+&nbsp;                return invocation;
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        return null;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public static Invocation findSimilarInvocation(List&lt;Invocation&gt; invocations, MatchableInvocation wanted) {</b>
+<b class="nc">&nbsp;        Invocation firstSimilar = null;</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        for(Invocation invocation : invocations) {</b>
+<b class="nc">&nbsp;            if (wanted.hasSimilarMethod(invocation)) {</b>
+&nbsp;                if (firstSimilar == null) {
+&nbsp;                    firstSimilar = invocation;
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+&nbsp;                if (wanted.hasSameMethod(invocation)) {
+&nbsp;                    return invocation;
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return firstSimilar;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public static Invocation findFirstUnverified(List&lt;Invocation&gt; invocations) {</b>
+&nbsp;        return findFirstUnverified(invocations, (Object)null);
+&nbsp;    }
+&nbsp;
+&nbsp;    static Invocation findFirstUnverified(List&lt;Invocation&gt; invocations, Object mock) {
+<b class="nc">&nbsp;        for(Invocation i : invocations) {</b>
+<b class="nc">&nbsp;            boolean mockIsValid = mock == null || mock == i.getMock();</b>
+<b class="nc">&nbsp;            if (!i.isVerified() &amp;&amp; mockIsValid) {</b>
+&nbsp;                return i;
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return null;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public static Location getLastLocation(List&lt;Invocation&gt; invocations) {
+&nbsp;        if (invocations.isEmpty()) {
+&nbsp;            return null;
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            Invocation last = (Invocation)invocations.get(invocations.size() - 1);
+&nbsp;            return last.getLocation();
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public static Invocation findPreviousVerifiedInOrder(List&lt;Invocation&gt; invocations, InOrderContext context) {
+&nbsp;        Stream var10000 = invocations.stream();
+<b class="nc">&nbsp;        Objects.requireNonNull(context);</b>
+<b class="nc">&nbsp;        List&lt;Invocation&gt; verifiedOnly = (List)var10000.filter(context::isVerified).collect(Collectors.toList());</b>
+<b class="nc">&nbsp;        return verifiedOnly.isEmpty() ? null : (Invocation)verifiedOnly.get(verifiedOnly.size() - 1);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private static List&lt;Invocation&gt; removeVerifiedInOrder(List&lt;Invocation&gt; invocations, InOrderContext orderingContext) {
+<b class="nc">&nbsp;        List&lt;Invocation&gt; unverified = new LinkedList();</b>
+&nbsp;
+&nbsp;        for(Invocation i : invocations) {
+&nbsp;            if (orderingContext.isVerified(i)) {
+<b class="nc">&nbsp;                unverified.clear();</b>
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                unverified.add(i);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return unverified;
+&nbsp;    }
+&nbsp;
+&nbsp;    public static List&lt;Location&gt; getAllLocations(List&lt;Invocation&gt; invocations) {
+<b class="nc">&nbsp;        List&lt;Location&gt; locations = new LinkedList();</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        for(Invocation invocation : invocations) {
+<b class="nc">&nbsp;            locations.add(invocation.getLocation());</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        return locations;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Invocation findFirstUnverifiedInOrder(InOrderContext context, List&lt;Invocation&gt; orderedInvocations) {
+&nbsp;        Invocation candidate = null;
+&nbsp;
+<b class="nc">&nbsp;        for(Invocation i : orderedInvocations) {</b>
+<b class="nc">&nbsp;            if (!context.isVerified(i)) {</b>
+<b class="nc">&nbsp;                candidate = candidate != null ? candidate : i;</b>
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                candidate = null;
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return candidate;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-20 13:42</div>
+</div>
+</body>
+</html>

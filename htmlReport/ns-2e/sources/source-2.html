@@ -1,0 +1,1477 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > BasicDeserializerFactory</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.fasterxml.jackson.databind.deser</a>
+</div>
+
+<h1>Coverage Summary for Class: BasicDeserializerFactory (com.fasterxml.jackson.databind.deser)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">BasicDeserializerFactory</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    10.3%
+  </span>
+  <span class="absValue">
+    (6/58)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/530)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    1.9%
+  </span>
+  <span class="absValue">
+    (13/702)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package com.fasterxml.jackson.databind.deser;
+&nbsp;
+&nbsp;import com.fasterxml.jackson.annotation.JacksonInject;
+&nbsp;import com.fasterxml.jackson.annotation.JsonCreator;
+&nbsp;import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+&nbsp;import com.fasterxml.jackson.annotation.JsonIncludeProperties;
+&nbsp;import com.fasterxml.jackson.annotation.JsonSetter;
+&nbsp;import com.fasterxml.jackson.annotation.Nulls;
+&nbsp;import com.fasterxml.jackson.annotation.JsonCreator.Mode;
+&nbsp;import com.fasterxml.jackson.core.JsonParser;
+&nbsp;import com.fasterxml.jackson.databind.AbstractTypeResolver;
+&nbsp;import com.fasterxml.jackson.databind.AnnotationIntrospector;
+&nbsp;import com.fasterxml.jackson.databind.BeanDescription;
+&nbsp;import com.fasterxml.jackson.databind.BeanProperty;
+&nbsp;import com.fasterxml.jackson.databind.DeserializationConfig;
+&nbsp;import com.fasterxml.jackson.databind.DeserializationContext;
+&nbsp;import com.fasterxml.jackson.databind.EnumNamingStrategy;
+&nbsp;import com.fasterxml.jackson.databind.JavaType;
+&nbsp;import com.fasterxml.jackson.databind.JsonDeserializer;
+&nbsp;import com.fasterxml.jackson.databind.JsonMappingException;
+&nbsp;import com.fasterxml.jackson.databind.JsonNode;
+&nbsp;import com.fasterxml.jackson.databind.KeyDeserializer;
+&nbsp;import com.fasterxml.jackson.databind.MapperFeature;
+&nbsp;import com.fasterxml.jackson.databind.PropertyMetadata;
+&nbsp;import com.fasterxml.jackson.databind.PropertyName;
+&nbsp;import com.fasterxml.jackson.databind.cfg.ConfigOverride;
+&nbsp;import com.fasterxml.jackson.databind.cfg.ConstructorDetector;
+&nbsp;import com.fasterxml.jackson.databind.cfg.DeserializerFactoryConfig;
+&nbsp;import com.fasterxml.jackson.databind.cfg.HandlerInstantiator;
+&nbsp;import com.fasterxml.jackson.databind.cfg.MapperConfig;
+&nbsp;import com.fasterxml.jackson.databind.deser.impl.CreatorCandidate;
+&nbsp;import com.fasterxml.jackson.databind.deser.impl.CreatorCollector;
+&nbsp;import com.fasterxml.jackson.databind.deser.impl.JDKValueInstantiators;
+&nbsp;import com.fasterxml.jackson.databind.deser.impl.JavaUtilCollectionsDeserializers;
+&nbsp;import com.fasterxml.jackson.databind.deser.std.ArrayBlockingQueueDeserializer;
+&nbsp;import com.fasterxml.jackson.databind.deser.std.AtomicReferenceDeserializer;
+&nbsp;import com.fasterxml.jackson.databind.deser.std.CollectionDeserializer;
+&nbsp;import com.fasterxml.jackson.databind.deser.std.DateDeserializers;
+&nbsp;import com.fasterxml.jackson.databind.deser.std.EnumDeserializer;
+<b class="fc">&nbsp;import com.fasterxml.jackson.databind.deser.std.EnumMapDeserializer;</b>
+<b class="fc">&nbsp;import com.fasterxml.jackson.databind.deser.std.EnumSetDeserializer;</b>
+<b class="fc">&nbsp;import com.fasterxml.jackson.databind.deser.std.JdkDeserializers;</b>
+<b class="fc">&nbsp;import com.fasterxml.jackson.databind.deser.std.JsonNodeDeserializer;</b>
+<b class="fc">&nbsp;import com.fasterxml.jackson.databind.deser.std.MapDeserializer;</b>
+<b class="fc">&nbsp;import com.fasterxml.jackson.databind.deser.std.MapEntryDeserializer;</b>
+&nbsp;import com.fasterxml.jackson.databind.deser.std.NumberDeserializers;
+&nbsp;import com.fasterxml.jackson.databind.deser.std.ObjectArrayDeserializer;
+&nbsp;import com.fasterxml.jackson.databind.deser.std.PrimitiveArrayDeserializers;
+&nbsp;import com.fasterxml.jackson.databind.deser.std.StdKeyDeserializers;
+&nbsp;import com.fasterxml.jackson.databind.deser.std.StringArrayDeserializer;
+<b class="fc">&nbsp;import com.fasterxml.jackson.databind.deser.std.StringCollectionDeserializer;</b>
+&nbsp;import com.fasterxml.jackson.databind.deser.std.StringDeserializer;
+&nbsp;import com.fasterxml.jackson.databind.deser.std.TokenBufferDeserializer;
+&nbsp;import com.fasterxml.jackson.databind.deser.std.UntypedObjectDeserializer;
+&nbsp;import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
+&nbsp;import com.fasterxml.jackson.databind.ext.OptionalHandlerFactory;
+&nbsp;import com.fasterxml.jackson.databind.introspect.Annotated;
+&nbsp;import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
+&nbsp;import com.fasterxml.jackson.databind.introspect.AnnotatedConstructor;
+&nbsp;import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
+&nbsp;import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
+&nbsp;import com.fasterxml.jackson.databind.introspect.AnnotatedParameter;
+&nbsp;import com.fasterxml.jackson.databind.introspect.AnnotatedWithParams;
+&nbsp;import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
+&nbsp;import com.fasterxml.jackson.databind.introspect.EnumNamingStrategyFactory;
+&nbsp;import com.fasterxml.jackson.databind.introspect.PotentialCreator;
+&nbsp;import com.fasterxml.jackson.databind.introspect.PotentialCreators;
+&nbsp;import com.fasterxml.jackson.databind.introspect.VisibilityChecker;
+&nbsp;import com.fasterxml.jackson.databind.jsontype.NamedType;
+&nbsp;import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
+<b class="fc">&nbsp;import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;</b>
+<b class="fc">&nbsp;import com.fasterxml.jackson.databind.type.ArrayType;</b>
+&nbsp;import com.fasterxml.jackson.databind.type.CollectionLikeType;
+&nbsp;import com.fasterxml.jackson.databind.type.CollectionType;
+&nbsp;import com.fasterxml.jackson.databind.type.MapLikeType;
+&nbsp;import com.fasterxml.jackson.databind.type.MapType;
+&nbsp;import com.fasterxml.jackson.databind.type.ReferenceType;
+&nbsp;import com.fasterxml.jackson.databind.type.TypeFactory;
+&nbsp;import com.fasterxml.jackson.databind.util.ClassUtil;
+&nbsp;import com.fasterxml.jackson.databind.util.EnumResolver;
+&nbsp;import com.fasterxml.jackson.databind.util.NameTransformer;
+&nbsp;import com.fasterxml.jackson.databind.util.TokenBuffer;
+<b class="nc">&nbsp;import java.io.Serializable;</b>
+&nbsp;import java.math.BigDecimal;
+&nbsp;import java.math.BigInteger;
+&nbsp;import java.util.AbstractList;
+&nbsp;import java.util.AbstractMap;
+&nbsp;import java.util.AbstractSet;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.Deque;
+&nbsp;import java.util.EnumMap;
+&nbsp;import java.util.EnumSet;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.HashSet;
+&nbsp;import java.util.Iterator;
+&nbsp;import java.util.LinkedHashMap;
+&nbsp;import java.util.LinkedHashSet;
+&nbsp;import java.util.LinkedList;
+<b class="fc">&nbsp;import java.util.List;</b>
+&nbsp;import java.util.Map;
+&nbsp;import java.util.NavigableMap;
+&nbsp;import java.util.NavigableSet;
+&nbsp;import java.util.Queue;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.SortedMap;
+&nbsp;import java.util.SortedSet;
+&nbsp;import java.util.TreeMap;
+<b class="fc">&nbsp;import java.util.TreeSet;</b>
+&nbsp;import java.util.concurrent.ArrayBlockingQueue;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import java.util.concurrent.ConcurrentMap;
+&nbsp;import java.util.concurrent.ConcurrentNavigableMap;
+&nbsp;import java.util.concurrent.ConcurrentSkipListMap;
+&nbsp;import java.util.concurrent.atomic.AtomicReference;
+&nbsp;
+&nbsp;public abstract class BasicDeserializerFactory extends DeserializerFactory implements Serializable {
+<b class="fc">&nbsp;    private static final Class&lt;?&gt; CLASS_OBJECT = Object.class;</b>
+&nbsp;    private static final Class&lt;?&gt; CLASS_STRING = String.class;
+&nbsp;    private static final Class&lt;?&gt; CLASS_CHAR_SEQUENCE = CharSequence.class;
+&nbsp;    private static final Class&lt;?&gt; CLASS_ITERABLE = Iterable.class;
+&nbsp;    private static final Class&lt;?&gt; CLASS_MAP_ENTRY = Map.Entry.class;
+&nbsp;    private static final Class&lt;?&gt; CLASS_SERIALIZABLE = Serializable.class;
+&nbsp;    protected static final PropertyName UNWRAPPED_CREATOR_PARAM_NAME = new PropertyName(&quot;@JsonUnwrapped&quot;);
+&nbsp;    protected final DeserializerFactoryConfig _factoryConfig;
+&nbsp;
+<b class="nc">&nbsp;    protected BasicDeserializerFactory(DeserializerFactoryConfig config) {</b>
+&nbsp;        this._factoryConfig = config;
+&nbsp;    }
+&nbsp;
+&nbsp;    public DeserializerFactoryConfig getFactoryConfig() {
+&nbsp;        return this._factoryConfig;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected abstract DeserializerFactory withConfig(DeserializerFactoryConfig var1);
+<b class="fc">&nbsp;</b>
+&nbsp;    public final DeserializerFactory withAdditionalDeserializers(Deserializers additional) {
+&nbsp;        return this.withConfig(this._factoryConfig.withAdditionalDeserializers(additional));
+&nbsp;    }
+&nbsp;
+&nbsp;    public final DeserializerFactory withAdditionalKeyDeserializers(KeyDeserializers additional) {
+&nbsp;        return this.withConfig(this._factoryConfig.withAdditionalKeyDeserializers(additional));
+&nbsp;    }
+&nbsp;
+&nbsp;    public final DeserializerFactory withDeserializerModifier(BeanDeserializerModifier modifier) {
+&nbsp;        return this.withConfig(this._factoryConfig.withDeserializerModifier(modifier));
+&nbsp;    }
+&nbsp;
+&nbsp;    public final DeserializerFactory withAbstractTypeResolver(AbstractTypeResolver resolver) {
+<b class="nc">&nbsp;        return this.withConfig(this._factoryConfig.withAbstractTypeResolver(resolver));</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public final DeserializerFactory withValueInstantiators(ValueInstantiators instantiators) {
+&nbsp;        return this.withConfig(this._factoryConfig.withValueInstantiators(instantiators));
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public JavaType mapAbstractType(DeserializationConfig config, JavaType type) throws JsonMappingException {</b>
+<b class="nc">&nbsp;        while(true) {</b>
+<b class="nc">&nbsp;            JavaType next = this._mapAbstractType2(config, type);</b>
+&nbsp;            if (next == null) {
+<b class="nc">&nbsp;                return type;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            Class&lt;?&gt; prevCls = type.getRawClass();
+&nbsp;            Class&lt;?&gt; nextCls = next.getRawClass();
+&nbsp;            if (prevCls == nextCls || !prevCls.isAssignableFrom(nextCls)) {
+&nbsp;                throw new IllegalArgumentException(&quot;Invalid abstract type resolution from &quot; + type + &quot; to &quot; + next + &quot;: latter is not a subtype of former&quot;);
+&nbsp;            }
+&nbsp;
+&nbsp;            type = next;
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private JavaType _mapAbstractType2(DeserializationConfig config, JavaType type) throws JsonMappingException {</b>
+<b class="nc">&nbsp;        Class&lt;?&gt; currClass = type.getRawClass();</b>
+<b class="nc">&nbsp;        if (this._factoryConfig.hasAbstractTypeResolvers()) {</b>
+<b class="nc">&nbsp;            for(AbstractTypeResolver resolver : this._factoryConfig.abstractTypeResolvers()) {</b>
+&nbsp;                JavaType concrete = resolver.findTypeMapping(config, type);
+&nbsp;                if (concrete != null &amp;&amp; !concrete.hasRawClass(currClass)) {
+&nbsp;                    return concrete;
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return null;
+&nbsp;    }
+&nbsp;
+&nbsp;    public ValueInstantiator findValueInstantiator(DeserializationContext ctxt, BeanDescription beanDesc) throws JsonMappingException {
+&nbsp;        DeserializationConfig config = ctxt.getConfig();
+&nbsp;        ValueInstantiator instantiator = null;
+&nbsp;        AnnotatedClass ac = beanDesc.getClassInfo();
+&nbsp;        Object instDef = config.getAnnotationIntrospector().findValueInstantiator(ac);
+&nbsp;        if (instDef != null) {
+&nbsp;            instantiator = this._valueInstantiatorInstance(config, ac, instDef);
+&nbsp;        }
+&nbsp;
+&nbsp;        if (instantiator == null) {
+&nbsp;            instantiator = JDKValueInstantiators.findStdValueInstantiator(config, beanDesc.getBeanClass());
+&nbsp;            if (instantiator == null) {
+<b class="nc">&nbsp;                instantiator = this._constructDefaultValueInstantiator(ctxt, beanDesc);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        if (this._factoryConfig.hasValueInstantiators()) {</b>
+<b class="nc">&nbsp;            for(ValueInstantiators insts : this._factoryConfig.valueInstantiators()) {</b>
+<b class="nc">&nbsp;                instantiator = insts.findValueInstantiator(config, beanDesc, instantiator);</b>
+<b class="nc">&nbsp;                if (instantiator == null) {</b>
+&nbsp;                    ctxt.reportBadTypeDefinition(beanDesc, &quot;Broken registered ValueInstantiators (of type %s): returned null ValueInstantiator&quot;, new Object[]{insts.getClass().getName()});
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if (instantiator != null) {</b>
+<b class="nc">&nbsp;            instantiator = instantiator.createContextual(ctxt, beanDesc);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        return instantiator;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected ValueInstantiator _constructDefaultValueInstantiator(DeserializationContext ctxt, BeanDescription beanDesc) throws JsonMappingException {</b>
+<b class="nc">&nbsp;        MapperConfig&lt;?&gt; config = ctxt.getConfig();</b>
+&nbsp;        PotentialCreators potentialCreators = beanDesc.getPotentialCreators();
+<b class="nc">&nbsp;        ConstructorDetector ctorDetector = config.getConstructorDetector();</b>
+<b class="nc">&nbsp;        VisibilityChecker&lt;?&gt; vchecker = config.getDefaultVisibilityChecker(beanDesc.getBeanClass(), beanDesc.getClassInfo());</b>
+&nbsp;        CreatorCollector creators = new CreatorCollector(beanDesc, config);
+<b class="nc">&nbsp;        if (potentialCreators.hasPropertiesBased()) {</b>
+&nbsp;            PotentialCreator primaryPropsBased = potentialCreators.propertiesBased;
+&nbsp;            if (primaryPropsBased.paramCount() == 0) {
+&nbsp;                creators.setDefaultCreator(primaryPropsBased.creator());
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                this._addSelectedPropertiesBasedCreator(ctxt, beanDesc, creators, CreatorCandidate.construct(config.getAnnotationIntrospector(), primaryPropsBased.creator(), primaryPropsBased.propertyDefs()));</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        boolean hasExplicitDelegating = this._addExplicitDelegatingCreators(ctxt, beanDesc, creators, potentialCreators.getExplicitDelegating());
+&nbsp;        if (beanDesc.getType().isConcrete()) {
+&nbsp;            boolean isNonStaticInnerClass = beanDesc.isNonStaticInnerClass();
+&nbsp;            if (!isNonStaticInnerClass) {
+&nbsp;                if (!creators.hasDefaultCreator()) {
+&nbsp;                    AnnotatedConstructor defaultCtor = beanDesc.findDefaultConstructor();
+&nbsp;                    if (defaultCtor != null) {
+&nbsp;                        creators.setDefaultCreator(defaultCtor);
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                boolean findImplicit = ctorDetector.shouldIntrospectorImplicitConstructors(beanDesc.getBeanClass());</b>
+<b class="nc">&nbsp;                if (findImplicit) {</b>
+&nbsp;                    this._addImplicitDelegatingConstructors(ctxt, beanDesc, vchecker, creators, potentialCreators.getImplicitDelegatingConstructors());
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        if (!hasExplicitDelegating) {
+&nbsp;            this._addImplicitDelegatingFactories(ctxt, vchecker, creators, potentialCreators.getImplicitDelegatingFactories());
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return creators.constructValueInstantiator(ctxt);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public ValueInstantiator _valueInstantiatorInstance(DeserializationConfig config, Annotated annotated, Object instDef) throws JsonMappingException {</b>
+<b class="nc">&nbsp;        if (instDef == null) {</b>
+&nbsp;            return null;
+&nbsp;        } else if (instDef instanceof ValueInstantiator) {
+<b class="nc">&nbsp;            return (ValueInstantiator)instDef;</b>
+<b class="nc">&nbsp;        } else if (!(instDef instanceof Class)) {</b>
+<b class="nc">&nbsp;            throw new IllegalStateException(&quot;AnnotationIntrospector returned key deserializer definition of type &quot; + instDef.getClass().getName() + &quot;; expected type KeyDeserializer or Class&lt;KeyDeserializer&gt; instead&quot;);</b>
+&nbsp;        } else {
+&nbsp;            Class&lt;?&gt; instClass = (Class)instDef;
+&nbsp;            if (ClassUtil.isBogusClass(instClass)) {
+&nbsp;                return null;
+<b class="nc">&nbsp;            } else if (!ValueInstantiator.class.isAssignableFrom(instClass)) {</b>
+&nbsp;                throw new IllegalStateException(&quot;AnnotationIntrospector returned Class &quot; + instClass.getName() + &quot;; expected Class&lt;ValueInstantiator&gt;&quot;);
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                HandlerInstantiator hi = config.getHandlerInstantiator();
+&nbsp;                if (hi != null) {
+<b class="nc">&nbsp;                    ValueInstantiator inst = hi.valueInstantiatorInstance(config, annotated, instClass);</b>
+&nbsp;                    if (inst != null) {
+&nbsp;                        return inst;
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                return (ValueInstantiator)ClassUtil.createInstance(instClass, config.canOverrideAccessModifiers());
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean _addExplicitDelegatingCreators(DeserializationContext ctxt, BeanDescription beanDesc, CreatorCollector creators, List&lt;PotentialCreator&gt; potentials) throws JsonMappingException {
+<b class="nc">&nbsp;        AnnotationIntrospector intr = ctxt.getAnnotationIntrospector();</b>
+<b class="nc">&nbsp;        boolean added = false;</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        for(PotentialCreator ctor : potentials) {</b>
+&nbsp;            added |= this._addExplicitDelegatingCreator(ctxt, beanDesc, creators, CreatorCandidate.construct(intr, ctor.creator(), (BeanPropertyDefinition[])null));
+&nbsp;        }
+&nbsp;
+&nbsp;        return added;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private void _addImplicitDelegatingConstructors(DeserializationContext ctxt, BeanDescription beanDesc, VisibilityChecker&lt;?&gt; vchecker, CreatorCollector creators, List&lt;PotentialCreator&gt; potentials) throws JsonMappingException {</b>
+<b class="nc">&nbsp;        AnnotationIntrospector intr = ctxt.getAnnotationIntrospector();</b>
+&nbsp;
+<b class="nc">&nbsp;        for(PotentialCreator candidate : potentials) {</b>
+&nbsp;            int argCount = candidate.paramCount();
+&nbsp;            AnnotatedWithParams ctor = candidate.creator();
+&nbsp;            if (argCount == 1) {
+<b class="nc">&nbsp;                this._handleSingleArgumentCreator(creators, ctor, false, vchecker.isCreatorVisible(ctor));</b>
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                SettableBeanProperty[] properties = new SettableBeanProperty[argCount];
+<b class="nc">&nbsp;                int injectCount = 0;</b>
+&nbsp;
+&nbsp;                for(int i = 0; i &lt; argCount; ++i) {
+<b class="nc">&nbsp;                    AnnotatedParameter param = ctor.getParameter(i);</b>
+&nbsp;                    JacksonInject.Value injectable = intr.findInjectableValue(param);
+&nbsp;                    if (injectable != null) {
+&nbsp;                        ++injectCount;
+&nbsp;                        properties[i] = this.constructCreatorProperty(ctxt, beanDesc, (PropertyName)null, i, param, injectable);
+&nbsp;                    } else {
+&nbsp;                        NameTransformer unwrapper = intr.findUnwrappingNameTransformer(param);
+<b class="nc">&nbsp;                        if (unwrapper != null) {</b>
+<b class="nc">&nbsp;                            this._reportUnwrappedCreatorProperty(ctxt, beanDesc, param);</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if (injectCount + 1 == argCount) {</b>
+<b class="nc">&nbsp;                    creators.addDelegatingCreator(ctor, false, properties, 0);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private void _addImplicitDelegatingFactories(DeserializationContext ctxt, VisibilityChecker&lt;?&gt; vchecker, CreatorCollector creators, List&lt;PotentialCreator&gt; potentials) throws JsonMappingException {</b>
+<b class="nc">&nbsp;        for(PotentialCreator candidate : potentials) {</b>
+<b class="nc">&nbsp;            int argCount = candidate.paramCount();</b>
+&nbsp;            AnnotatedWithParams factory = candidate.creator();
+<b class="nc">&nbsp;            if (argCount == 1) {</b>
+<b class="nc">&nbsp;                this._handleSingleArgumentCreator(creators, factory, false, vchecker.isCreatorVisible(factory));</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private boolean _addExplicitDelegatingCreator(DeserializationContext ctxt, BeanDescription beanDesc, CreatorCollector creators, CreatorCandidate candidate) throws JsonMappingException {</b>
+<b class="nc">&nbsp;        int ix = -1;</b>
+&nbsp;        int argCount = candidate.paramCount();
+&nbsp;        SettableBeanProperty[] properties = new SettableBeanProperty[argCount];
+<b class="nc">&nbsp;        if (argCount == 0) {</b>
+<b class="nc">&nbsp;            creators.addPropertyCreator(candidate.creator(), true, properties);</b>
+&nbsp;            return true;
+&nbsp;        } else {
+&nbsp;            for(int i = 0; i &lt; argCount; ++i) {
+&nbsp;                AnnotatedParameter param = candidate.parameter(i);
+&nbsp;                JacksonInject.Value injectId = candidate.injection(i);
+&nbsp;                if (injectId != null) {
+&nbsp;                    properties[i] = this.constructCreatorProperty(ctxt, beanDesc, (PropertyName)null, i, param, injectId);
+&nbsp;                } else if (ix &lt; 0) {
+&nbsp;                    ix = i;
+&nbsp;                } else {
+&nbsp;                    ctxt.reportBadTypeDefinition(beanDesc, &quot;More than one argument (#%d and #%d) left as delegating for Creator %s: only one allowed&quot;, new Object[]{ix, i, candidate});
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if (ix &lt; 0) {</b>
+<b class="nc">&nbsp;                ctxt.reportBadTypeDefinition(beanDesc, &quot;No argument left as delegating for Creator %s: exactly one required&quot;, new Object[]{candidate});</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            if (argCount == 1) {</b>
+<b class="nc">&nbsp;                return this._handleSingleArgumentCreator(creators, candidate.creator(), true, true);</b>
+&nbsp;            } else {
+<b class="nc">&nbsp;                creators.addDelegatingCreator(candidate.creator(), true, properties, ix);</b>
+&nbsp;                return true;
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void _addSelectedPropertiesBasedCreator(DeserializationContext ctxt, BeanDescription beanDesc, CreatorCollector creators, CreatorCandidate candidate) throws JsonMappingException {
+&nbsp;        int paramCount = candidate.paramCount();
+&nbsp;        SettableBeanProperty[] properties = new SettableBeanProperty[paramCount];
+<b class="nc">&nbsp;        int anySetterIx = -1;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; paramCount; ++i) {</b>
+<b class="nc">&nbsp;            JacksonInject.Value injectId = candidate.injection(i);</b>
+<b class="nc">&nbsp;            AnnotatedParameter param = candidate.parameter(i);</b>
+&nbsp;            PropertyName name = candidate.paramName(i);
+<b class="nc">&nbsp;            boolean isAnySetter = Boolean.TRUE.equals(ctxt.getAnnotationIntrospector().hasAnySetter(param));</b>
+<b class="nc">&nbsp;            if (isAnySetter) {</b>
+&nbsp;                if (anySetterIx &gt;= 0) {
+<b class="nc">&nbsp;                    ctxt.reportBadTypeDefinition(beanDesc, &quot;More than one &#39;any-setter&#39; specified (parameter #%d vs #%d)&quot;, new Object[]{anySetterIx, i});</b>
+&nbsp;                } else {
+&nbsp;                    anySetterIx = i;
+&nbsp;                }
+&nbsp;            } else if (name == null) {
+&nbsp;                NameTransformer unwrapper = ctxt.getAnnotationIntrospector().findUnwrappingNameTransformer(param);
+&nbsp;                if (unwrapper != null) {
+&nbsp;                    this._reportUnwrappedCreatorProperty(ctxt, beanDesc, param);
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                if (name == null &amp;&amp; injectId == null) {</b>
+&nbsp;                    ctxt.reportBadTypeDefinition(beanDesc, &quot;Argument #%d of Creator %s has no property name (and is not Injectable): can not use as property-based Creator&quot;, new Object[]{i, candidate});
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            properties[i] = this.constructCreatorProperty(ctxt, beanDesc, name, i, param, injectId);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        creators.addPropertyCreator(candidate.creator(), true, properties);</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private boolean _handleSingleArgumentCreator(CreatorCollector creators, AnnotatedWithParams ctor, boolean isCreator, boolean isVisible) {</b>
+<b class="nc">&nbsp;        Class&lt;?&gt; type = ctor.getRawParameterType(0);</b>
+<b class="nc">&nbsp;        if (type != String.class &amp;&amp; type != CLASS_CHAR_SEQUENCE) {</b>
+&nbsp;            if (type != Integer.TYPE &amp;&amp; type != Integer.class) {
+&nbsp;                if (type != Long.TYPE &amp;&amp; type != Long.class) {
+&nbsp;                    if (type != Double.TYPE &amp;&amp; type != Double.class) {
+&nbsp;                        if (type != Boolean.TYPE &amp;&amp; type != Boolean.class) {
+&nbsp;                            if (type == BigInteger.class &amp;&amp; (isCreator || isVisible)) {
+&nbsp;                                creators.addBigIntegerCreator(ctor, isCreator);
+&nbsp;                            }
+<b class="nc">&nbsp;</b>
+&nbsp;                            if (type == BigDecimal.class &amp;&amp; (isCreator || isVisible)) {
+<b class="nc">&nbsp;                                creators.addBigDecimalCreator(ctor, isCreator);</b>
+&nbsp;                            }
+&nbsp;
+&nbsp;                            if (isCreator) {
+&nbsp;                                creators.addDelegatingCreator(ctor, isCreator, (SettableBeanProperty[])null, 0);
+&nbsp;                                return true;
+&nbsp;                            } else {
+&nbsp;                                return false;
+&nbsp;                            }
+&nbsp;                        } else {
+&nbsp;                            if (isCreator || isVisible) {
+&nbsp;                                creators.addBooleanCreator(ctor, isCreator);
+&nbsp;                            }
+&nbsp;
+&nbsp;                            return true;
+&nbsp;                        }
+&nbsp;                    } else {
+&nbsp;                        if (isCreator || isVisible) {
+<b class="nc">&nbsp;                            creators.addDoubleCreator(ctor, isCreator);</b>
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                        return true;
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                } else {</b>
+<b class="nc">&nbsp;                    if (isCreator || isVisible) {</b>
+&nbsp;                        creators.addLongCreator(ctor, isCreator);
+&nbsp;                    }
+&nbsp;
+&nbsp;                    return true;
+&nbsp;                }
+&nbsp;            } else {
+&nbsp;                if (isCreator || isVisible) {
+&nbsp;                    creators.addIntCreator(ctor, isCreator);
+&nbsp;                }
+&nbsp;
+&nbsp;                return true;
+&nbsp;            }
+&nbsp;        } else {
+&nbsp;            if (isCreator || isVisible) {
+&nbsp;                creators.addStringCreator(ctor, isCreator);
+&nbsp;            }
+&nbsp;
+&nbsp;            return true;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void _reportUnwrappedCreatorProperty(DeserializationContext ctxt, BeanDescription beanDesc, AnnotatedParameter param) throws JsonMappingException {
+&nbsp;        ctxt.reportBadTypeDefinition(beanDesc, &quot;Cannot define Creator parameter %d as `@JsonUnwrapped`: combination not yet supported&quot;, new Object[]{param.getIndex()});
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected SettableBeanProperty constructCreatorProperty(DeserializationContext ctxt, BeanDescription beanDesc, PropertyName name, int index, AnnotatedParameter param, JacksonInject.Value injectable) throws JsonMappingException {</b>
+<b class="nc">&nbsp;        DeserializationConfig config = ctxt.getConfig();</b>
+&nbsp;        AnnotationIntrospector intr = ctxt.getAnnotationIntrospector();
+&nbsp;        PropertyMetadata metadata;
+<b class="nc">&nbsp;        PropertyName wrapperName;</b>
+&nbsp;        if (intr == null) {
+<b class="nc">&nbsp;            metadata = PropertyMetadata.STD_REQUIRED_OR_OPTIONAL;</b>
+<b class="nc">&nbsp;            wrapperName = null;</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            Boolean b = intr.hasRequiredMarker(param);</b>
+<b class="nc">&nbsp;            String desc = intr.findPropertyDescription(param);</b>
+<b class="nc">&nbsp;            Integer idx = intr.findPropertyIndex(param);</b>
+<b class="nc">&nbsp;            String def = intr.findPropertyDefaultValue(param);</b>
+<b class="nc">&nbsp;            metadata = PropertyMetadata.construct(b, desc, idx, def);</b>
+&nbsp;            wrapperName = intr.findWrapperName(param);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        JavaType type = this.resolveMemberAndTypeAnnotations(ctxt, param, param.getType());</b>
+&nbsp;        BeanProperty.Std property = new BeanProperty.Std(name, type, wrapperName, param, metadata);
+&nbsp;        TypeDeserializer typeDeser = (TypeDeserializer)type.getTypeHandler();
+&nbsp;        if (typeDeser == null) {
+<b class="nc">&nbsp;            typeDeser = this.findTypeDeserializer(config, type);</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        metadata = this._getSetterInfo(config, property, metadata);
+&nbsp;        SettableBeanProperty prop = CreatorProperty.construct(name, type, property.getWrapperName(), typeDeser, beanDesc.getClassAnnotations(), param, index, injectable, metadata);
+<b class="nc">&nbsp;        JsonDeserializer&lt;?&gt; deser = this.findDeserializerFromAnnotation(ctxt, param);</b>
+<b class="nc">&nbsp;        if (deser == null) {</b>
+&nbsp;            deser = (JsonDeserializer)type.getValueHandler();
+&nbsp;        }
+&nbsp;
+&nbsp;        if (deser != null) {
+<b class="nc">&nbsp;            deser = ctxt.handlePrimaryContextualization(deser, prop, type);</b>
+<b class="nc">&nbsp;            prop = prop.withValueDeserializer(deser);</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return prop;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private PropertyMetadata _getSetterInfo(MapperConfig&lt;?&gt; config, BeanProperty prop, PropertyMetadata metadata) {
+&nbsp;        AnnotationIntrospector intr = config.getAnnotationIntrospector();
+&nbsp;        boolean needMerge = true;
+&nbsp;        Nulls valueNulls = null;
+&nbsp;        Nulls contentNulls = null;
+&nbsp;        AnnotatedMember prim = prop.getMember();
+&nbsp;        if (prim != null) {
+&nbsp;            if (intr != null) {
+<b class="nc">&nbsp;                JsonSetter.Value setterInfo = intr.findSetterInfo(prim);</b>
+<b class="nc">&nbsp;                if (setterInfo != null) {</b>
+<b class="nc">&nbsp;                    valueNulls = setterInfo.nonDefaultValueNulls();</b>
+&nbsp;                    contentNulls = setterInfo.nonDefaultContentNulls();
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            if (needMerge || valueNulls == null || contentNulls == null) {</b>
+<b class="nc">&nbsp;                ConfigOverride co = config.getConfigOverride(prop.getType().getRawClass());</b>
+<b class="nc">&nbsp;                JsonSetter.Value setterInfo = co.getSetterInfo();</b>
+<b class="nc">&nbsp;                if (setterInfo != null) {</b>
+<b class="nc">&nbsp;                    if (valueNulls == null) {</b>
+&nbsp;                        valueNulls = setterInfo.nonDefaultValueNulls();
+<b class="nc">&nbsp;                    }</b>
+&nbsp;
+<b class="nc">&nbsp;                    if (contentNulls == null) {</b>
+&nbsp;                        contentNulls = setterInfo.nonDefaultContentNulls();
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if (needMerge || valueNulls == null || contentNulls == null) {</b>
+&nbsp;            JsonSetter.Value setterInfo = config.getDefaultSetterInfo();
+&nbsp;            if (valueNulls == null) {
+<b class="nc">&nbsp;                valueNulls = setterInfo.nonDefaultValueNulls();</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            if (contentNulls == null) {</b>
+&nbsp;                contentNulls = setterInfo.nonDefaultContentNulls();
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        if (valueNulls != null || contentNulls != null) {</b>
+&nbsp;            metadata = metadata.withNulls(valueNulls, contentNulls);
+&nbsp;        }
+&nbsp;
+&nbsp;        return metadata;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public JsonDeserializer&lt;?&gt; createArrayDeserializer(DeserializationContext ctxt, ArrayType type, BeanDescription beanDesc) throws JsonMappingException {</b>
+<b class="nc">&nbsp;        DeserializationConfig config = ctxt.getConfig();</b>
+<b class="nc">&nbsp;        JavaType elemType = type.getContentType();</b>
+<b class="nc">&nbsp;        JsonDeserializer&lt;Object&gt; contentDeser = (JsonDeserializer)elemType.getValueHandler();</b>
+&nbsp;        TypeDeserializer elemTypeDeser = (TypeDeserializer)elemType.getTypeHandler();
+<b class="nc">&nbsp;        if (elemTypeDeser == null) {</b>
+&nbsp;            elemTypeDeser = this.findTypeDeserializer(config, elemType);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        JsonDeserializer&lt;?&gt; deser = this._findCustomArrayDeserializer(type, config, beanDesc, elemTypeDeser, contentDeser);</b>
+&nbsp;        if (deser == null) {
+<b class="nc">&nbsp;            if (contentDeser == null) {</b>
+&nbsp;                if (elemType.isPrimitive()) {
+<b class="nc">&nbsp;                    deser = PrimitiveArrayDeserializers.forType(elemType.getRawClass());</b>
+<b class="nc">&nbsp;                } else if (elemType.hasRawClass(String.class)) {</b>
+<b class="nc">&nbsp;                    deser = StringArrayDeserializer.instance;</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            if (deser == null) {</b>
+<b class="nc">&nbsp;                deser = new ObjectArrayDeserializer(type, contentDeser, elemTypeDeser);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        if (this._factoryConfig.hasDeserializerModifiers()) {
+<b class="nc">&nbsp;            for(BeanDeserializerModifier mod : this._factoryConfig.deserializerModifiers()) {</b>
+<b class="nc">&nbsp;                deser = mod.modifyArrayDeserializer(config, type, beanDesc, deser);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        return deser;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public JsonDeserializer&lt;?&gt; createCollectionDeserializer(DeserializationContext ctxt, CollectionType type, BeanDescription beanDesc) throws JsonMappingException {</b>
+&nbsp;        JavaType contentType = type.getContentType();
+&nbsp;        JsonDeserializer&lt;Object&gt; contentDeser = (JsonDeserializer)contentType.getValueHandler();
+<b class="nc">&nbsp;        DeserializationConfig config = ctxt.getConfig();</b>
+<b class="nc">&nbsp;        TypeDeserializer contentTypeDeser = (TypeDeserializer)contentType.getTypeHandler();</b>
+<b class="nc">&nbsp;        if (contentTypeDeser == null) {</b>
+&nbsp;            contentTypeDeser = this.findTypeDeserializer(config, contentType);
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        JsonDeserializer&lt;?&gt; deser = this._findCustomCollectionDeserializer(type, config, beanDesc, contentTypeDeser, contentDeser);</b>
+<b class="nc">&nbsp;        if (deser == null) {</b>
+<b class="nc">&nbsp;            Class&lt;?&gt; collectionClass = type.getRawClass();</b>
+&nbsp;            if (contentDeser == null &amp;&amp; EnumSet.class.isAssignableFrom(collectionClass)) {
+<b class="nc">&nbsp;                deser = new EnumSetDeserializer(contentType, (JsonDeserializer)null, contentTypeDeser);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        if (deser == null) {
+&nbsp;            if (type.isInterface() || type.isAbstract()) {
+&nbsp;                CollectionType implType = this._mapAbstractCollectionType(type, config);
+&nbsp;                if (implType != null) {
+&nbsp;                    type = implType;
+<b class="nc">&nbsp;                    beanDesc = config.introspectForCreation(implType);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            if (deser == null) {
+&nbsp;                ValueInstantiator inst = this.findValueInstantiator(ctxt, beanDesc);
+&nbsp;                if (!inst.canCreateUsingDefault()) {
+&nbsp;                    if (type.hasRawClass(ArrayBlockingQueue.class)) {
+&nbsp;                        return new ArrayBlockingQueueDeserializer(type, contentDeser, contentTypeDeser, inst);
+&nbsp;                    }
+&nbsp;
+&nbsp;                    deser = JavaUtilCollectionsDeserializers.findForCollection(ctxt, type);
+&nbsp;                    if (deser != null) {
+&nbsp;                        return deser;
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                if (contentType.hasRawClass(String.class)) {</b>
+&nbsp;                    deser = new StringCollectionDeserializer(type, contentDeser, inst);
+&nbsp;                } else {
+&nbsp;                    deser = new CollectionDeserializer(type, contentDeser, contentTypeDeser, inst);
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        if (this._factoryConfig.hasDeserializerModifiers()) {</b>
+<b class="nc">&nbsp;            for(BeanDeserializerModifier mod : this._factoryConfig.deserializerModifiers()) {</b>
+<b class="nc">&nbsp;                deser = mod.modifyCollectionDeserializer(config, type, beanDesc, deser);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return deser;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected CollectionType _mapAbstractCollectionType(JavaType type, DeserializationConfig config) {</b>
+&nbsp;        Class&lt;?&gt; collectionClass = BasicDeserializerFactory.ContainerDefaultMappings.findCollectionFallback(type);
+&nbsp;        return collectionClass != null ? (CollectionType)config.getTypeFactory().constructSpecializedType(type, collectionClass, true) : null;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public JsonDeserializer&lt;?&gt; createCollectionLikeDeserializer(DeserializationContext ctxt, CollectionLikeType type, BeanDescription beanDesc) throws JsonMappingException {</b>
+<b class="nc">&nbsp;        JavaType contentType = type.getContentType();</b>
+&nbsp;        JsonDeserializer&lt;Object&gt; contentDeser = (JsonDeserializer)contentType.getValueHandler();
+&nbsp;        DeserializationConfig config = ctxt.getConfig();
+&nbsp;        TypeDeserializer contentTypeDeser = (TypeDeserializer)contentType.getTypeHandler();
+&nbsp;        if (contentTypeDeser == null) {
+<b class="nc">&nbsp;            contentTypeDeser = this.findTypeDeserializer(config, contentType);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        JsonDeserializer&lt;?&gt; deser = this._findCustomCollectionLikeDeserializer(type, config, beanDesc, contentTypeDeser, contentDeser);
+<b class="nc">&nbsp;        if (deser != null &amp;&amp; this._factoryConfig.hasDeserializerModifiers()) {</b>
+<b class="nc">&nbsp;            for(BeanDeserializerModifier mod : this._factoryConfig.deserializerModifiers()) {</b>
+&nbsp;                deser = mod.modifyCollectionLikeDeserializer(config, type, beanDesc, deser);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return deser;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public JsonDeserializer&lt;?&gt; createMapDeserializer(DeserializationContext ctxt, MapType type, BeanDescription beanDesc) throws JsonMappingException {</b>
+<b class="nc">&nbsp;        DeserializationConfig config = ctxt.getConfig();</b>
+&nbsp;        JavaType keyType = type.getKeyType();
+<b class="nc">&nbsp;        JavaType contentType = type.getContentType();</b>
+&nbsp;        JsonDeserializer&lt;Object&gt; contentDeser = (JsonDeserializer)contentType.getValueHandler();
+&nbsp;        KeyDeserializer keyDes = (KeyDeserializer)keyType.getValueHandler();
+&nbsp;        TypeDeserializer contentTypeDeser = (TypeDeserializer)contentType.getTypeHandler();
+&nbsp;        if (contentTypeDeser == null) {
+&nbsp;            contentTypeDeser = this.findTypeDeserializer(config, contentType);
+&nbsp;        }
+&nbsp;
+&nbsp;        JsonDeserializer&lt;?&gt; deser = this._findCustomMapDeserializer(type, config, beanDesc, keyDes, contentTypeDeser, contentDeser);
+&nbsp;        if (deser == null) {
+&nbsp;            Class&lt;?&gt; mapClass = type.getRawClass();
+&nbsp;            if (EnumMap.class.isAssignableFrom(mapClass)) {
+<b class="nc">&nbsp;                ValueInstantiator inst;</b>
+&nbsp;                if (mapClass == EnumMap.class) {
+<b class="nc">&nbsp;                    inst = null;</b>
+<b class="nc">&nbsp;                } else {</b>
+<b class="nc">&nbsp;                    inst = this.findValueInstantiator(ctxt, beanDesc);</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                if (!keyType.isEnumImplType()) {
+<b class="nc">&nbsp;                    throw new IllegalArgumentException(&quot;Cannot construct EnumMap; generic (key) type not available&quot;);</b>
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+&nbsp;                deser = new EnumMapDeserializer(type, inst, (KeyDeserializer)null, contentDeser, contentTypeDeser, (NullValueProvider)null);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            if (deser == null) {</b>
+<b class="nc">&nbsp;                if (!type.isInterface() &amp;&amp; !type.isAbstract()) {</b>
+<b class="nc">&nbsp;                    deser = JavaUtilCollectionsDeserializers.findForMap(ctxt, type);</b>
+&nbsp;                    if (deser != null) {
+&nbsp;                        return deser;
+&nbsp;                    }
+&nbsp;                } else {
+<b class="nc">&nbsp;                    MapType implType = this._mapAbstractMapType(type, config);</b>
+<b class="nc">&nbsp;                    if (implType != null) {</b>
+<b class="nc">&nbsp;                        type = implType;</b>
+<b class="nc">&nbsp;                        mapClass = implType.getRawClass();</b>
+<b class="nc">&nbsp;                        beanDesc = config.introspectForCreation(implType);</b>
+<b class="nc">&nbsp;                    } else {</b>
+&nbsp;                        if (type.getTypeHandler() == null) {
+<b class="nc">&nbsp;                            throw new IllegalArgumentException(&quot;Cannot find a deserializer for non-concrete Map type &quot; + type);</b>
+<b class="nc">&nbsp;                        }</b>
+&nbsp;
+&nbsp;                        deser = AbstractDeserializer.constructForNonPOJO(beanDesc);
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                if (deser == null) {</b>
+<b class="nc">&nbsp;                    ValueInstantiator inst = this.findValueInstantiator(ctxt, beanDesc);</b>
+<b class="nc">&nbsp;                    MapDeserializer md = new MapDeserializer(type, inst, keyDes, contentDeser, contentTypeDeser);</b>
+&nbsp;                    JsonIgnoreProperties.Value ignorals = config.getDefaultPropertyIgnorals(Map.class, beanDesc.getClassInfo());
+<b class="nc">&nbsp;                    Set&lt;String&gt; ignored = ignorals == null ? null : ignorals.findIgnoredForDeserialization();</b>
+<b class="nc">&nbsp;                    md.setIgnorableProperties(ignored);</b>
+&nbsp;                    JsonIncludeProperties.Value inclusions = config.getDefaultPropertyInclusions(Map.class, beanDesc.getClassInfo());
+&nbsp;                    Set&lt;String&gt; included = inclusions == null ? null : inclusions.getIncluded();
+<b class="nc">&nbsp;                    md.setIncludableProperties(included);</b>
+<b class="nc">&nbsp;                    deser = md;</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        if (this._factoryConfig.hasDeserializerModifiers()) {
+&nbsp;            for(BeanDeserializerModifier mod : this._factoryConfig.deserializerModifiers()) {
+&nbsp;                deser = mod.modifyMapDeserializer(config, type, beanDesc, deser);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return deser;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected MapType _mapAbstractMapType(JavaType type, DeserializationConfig config) {
+&nbsp;        Class&lt;?&gt; mapClass = BasicDeserializerFactory.ContainerDefaultMappings.findMapFallback(type);
+<b class="nc">&nbsp;        return mapClass != null ? (MapType)config.getTypeFactory().constructSpecializedType(type, mapClass, true) : null;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public JsonDeserializer&lt;?&gt; createMapLikeDeserializer(DeserializationContext ctxt, MapLikeType type, BeanDescription beanDesc) throws JsonMappingException {
+<b class="nc">&nbsp;        JavaType keyType = type.getKeyType();</b>
+&nbsp;        JavaType contentType = type.getContentType();
+<b class="nc">&nbsp;        DeserializationConfig config = ctxt.getConfig();</b>
+&nbsp;        JsonDeserializer&lt;Object&gt; contentDeser = (JsonDeserializer)contentType.getValueHandler();
+<b class="nc">&nbsp;        KeyDeserializer keyDes = (KeyDeserializer)keyType.getValueHandler();</b>
+<b class="nc">&nbsp;        TypeDeserializer contentTypeDeser = (TypeDeserializer)contentType.getTypeHandler();</b>
+&nbsp;        if (contentTypeDeser == null) {
+&nbsp;            contentTypeDeser = this.findTypeDeserializer(config, contentType);
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        JsonDeserializer&lt;?&gt; deser = this._findCustomMapLikeDeserializer(type, config, beanDesc, keyDes, contentTypeDeser, contentDeser);</b>
+<b class="nc">&nbsp;        if (deser != null &amp;&amp; this._factoryConfig.hasDeserializerModifiers()) {</b>
+<b class="nc">&nbsp;            for(BeanDeserializerModifier mod : this._factoryConfig.deserializerModifiers()) {</b>
+<b class="nc">&nbsp;                deser = mod.modifyMapLikeDeserializer(config, type, beanDesc, deser);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return deser;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public JsonDeserializer&lt;?&gt; createEnumDeserializer(DeserializationContext ctxt, JavaType type, BeanDescription beanDesc) throws JsonMappingException {
+&nbsp;        DeserializationConfig config = ctxt.getConfig();
+&nbsp;        Class&lt;?&gt; enumClass = type.getRawClass();
+<b class="nc">&nbsp;        JsonDeserializer&lt;?&gt; deser = this._findCustomEnumDeserializer(enumClass, config, beanDesc);</b>
+<b class="nc">&nbsp;        if (deser == null) {</b>
+<b class="nc">&nbsp;            if (enumClass == Enum.class) {</b>
+&nbsp;                return AbstractDeserializer.constructForNonPOJO(beanDesc);
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            ValueInstantiator valueInstantiator = this._constructDefaultValueInstantiator(ctxt, beanDesc);
+&nbsp;            SettableBeanProperty[] creatorProps = valueInstantiator == null ? null : valueInstantiator.getFromObjectArguments(ctxt.getConfig());
+&nbsp;
+&nbsp;            for(AnnotatedMethod factory : beanDesc.getFactoryMethods()) {
+&nbsp;                if (this._hasCreatorAnnotation(config, factory)) {
+&nbsp;                    if (factory.getParameterCount() == 0) {
+&nbsp;                        deser = EnumDeserializer.deserializerForNoArgsCreator(config, enumClass, factory);
+&nbsp;                    } else {
+&nbsp;                        Class&lt;?&gt; returnType = factory.getRawReturnType();
+&nbsp;                        if (!returnType.isAssignableFrom(enumClass)) {
+&nbsp;                            ctxt.reportBadDefinition(type, String.format(&quot;Invalid `@JsonCreator` annotated Enum factory method [%s]: needs to return compatible type&quot;, factory.toString()));
+&nbsp;                        }
+&nbsp;
+<b class="nc">&nbsp;                        deser = EnumDeserializer.deserializerForCreator(config, enumClass, factory, valueInstantiator, creatorProps);</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                    break;</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if (deser == null) {</b>
+&nbsp;                deser = new EnumDeserializer(this.constructEnumResolver(enumClass, config, beanDesc), config.isEnabled(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS), this.constructEnumNamingStrategyResolver(config, beanDesc.getClassInfo()), EnumResolver.constructUsingToString(config, beanDesc.getClassInfo()));
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        if (this._factoryConfig.hasDeserializerModifiers()) {
+<b class="nc">&nbsp;            for(BeanDeserializerModifier mod : this._factoryConfig.deserializerModifiers()) {</b>
+&nbsp;                deser = mod.modifyEnumDeserializer(config, type, beanDesc, deser);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return deser;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public JsonDeserializer&lt;?&gt; createTreeDeserializer(DeserializationConfig config, JavaType nodeType, BeanDescription beanDesc) throws JsonMappingException {
+&nbsp;        Class&lt;? extends JsonNode&gt; nodeClass = nodeType.getRawClass();
+&nbsp;        JsonDeserializer&lt;?&gt; custom = this._findCustomTreeNodeDeserializer(nodeClass, config, beanDesc);
+&nbsp;        return custom != null ? custom : JsonNodeDeserializer.getDeserializer(nodeClass);
+&nbsp;    }
+&nbsp;
+&nbsp;    public JsonDeserializer&lt;?&gt; createReferenceDeserializer(DeserializationContext ctxt, ReferenceType type, BeanDescription beanDesc) throws JsonMappingException {
+&nbsp;        JavaType contentType = type.getContentType();
+&nbsp;        JsonDeserializer&lt;Object&gt; contentDeser = (JsonDeserializer)contentType.getValueHandler();
+&nbsp;        DeserializationConfig config = ctxt.getConfig();
+&nbsp;        TypeDeserializer contentTypeDeser = (TypeDeserializer)contentType.getTypeHandler();
+&nbsp;        if (contentTypeDeser == null) {
+&nbsp;            contentTypeDeser = this.findTypeDeserializer(config, contentType);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        JsonDeserializer&lt;?&gt; deser = this._findCustomReferenceDeserializer(type, config, beanDesc, contentTypeDeser, contentDeser);</b>
+<b class="nc">&nbsp;        if (deser == null &amp;&amp; type.isTypeOrSubTypeOf(AtomicReference.class)) {</b>
+<b class="nc">&nbsp;            Class&lt;?&gt; rawType = type.getRawClass();</b>
+<b class="nc">&nbsp;            ValueInstantiator inst;</b>
+&nbsp;            if (rawType == AtomicReference.class) {
+<b class="nc">&nbsp;                inst = null;</b>
+&nbsp;            } else {
+&nbsp;                inst = this.findValueInstantiator(ctxt, beanDesc);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            return new AtomicReferenceDeserializer(type, inst, contentTypeDeser, contentDeser);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            if (deser != null &amp;&amp; this._factoryConfig.hasDeserializerModifiers()) {</b>
+<b class="nc">&nbsp;                for(BeanDeserializerModifier mod : this._factoryConfig.deserializerModifiers()) {</b>
+&nbsp;                    deser = mod.modifyReferenceDeserializer(config, type, beanDesc, deser);
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            return deser;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public TypeDeserializer findTypeDeserializer(DeserializationConfig config, JavaType baseType) throws JsonMappingException {</b>
+&nbsp;        BeanDescription bean = config.introspectClassAnnotations(baseType.getRawClass());
+<b class="nc">&nbsp;        AnnotatedClass ac = bean.getClassInfo();</b>
+&nbsp;        AnnotationIntrospector ai = config.getAnnotationIntrospector();
+<b class="nc">&nbsp;        TypeResolverBuilder&lt;?&gt; b = ai.findTypeResolver(config, ac, baseType);</b>
+&nbsp;        if (b == null) {
+&nbsp;            b = config.getDefaultTyper(baseType);
+&nbsp;            if (b == null) {
+&nbsp;                return null;
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        Collection&lt;NamedType&gt; subtypes = config.getSubtypeResolver().collectAndResolveSubtypesByTypeId(config, ac);
+&nbsp;        if (b.getDefaultImpl() == null &amp;&amp; baseType.isAbstract()) {
+<b class="nc">&nbsp;            JavaType defaultType = this.mapAbstractType(config, baseType);</b>
+&nbsp;            if (defaultType != null &amp;&amp; !defaultType.hasRawClass(baseType.getRawClass())) {
+&nbsp;                b = b.withDefaultImpl(defaultType.getRawClass());
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        try {</b>
+<b class="nc">&nbsp;            return b.buildTypeDeserializer(config, baseType, subtypes);</b>
+<b class="nc">&nbsp;        } catch (IllegalStateException | IllegalArgumentException e0) {</b>
+&nbsp;            throw InvalidDefinitionException.from((JsonParser)null, ClassUtil.exceptionMessage(e0), baseType).withCause(e0);
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected JsonDeserializer&lt;?&gt; findOptionalStdDeserializer(DeserializationContext ctxt, JavaType type, BeanDescription beanDesc) throws JsonMappingException {
+&nbsp;        return OptionalHandlerFactory.instance.findDeserializer(type, ctxt.getConfig(), beanDesc);
+&nbsp;    }
+&nbsp;
+&nbsp;    public KeyDeserializer createKeyDeserializer(DeserializationContext ctxt, JavaType type) throws JsonMappingException {
+&nbsp;        DeserializationConfig config = ctxt.getConfig();
+<b class="nc">&nbsp;        BeanDescription beanDesc = null;</b>
+&nbsp;        KeyDeserializer deser = null;
+<b class="nc">&nbsp;        if (this._factoryConfig.hasKeyDeserializers()) {</b>
+<b class="nc">&nbsp;            beanDesc = config.introspectClassAnnotations(type);</b>
+&nbsp;
+&nbsp;            for(KeyDeserializers d : this._factoryConfig.keyDeserializers()) {
+<b class="nc">&nbsp;                deser = d.findKeyDeserializer(type, config, beanDesc);</b>
+&nbsp;                if (deser != null) {
+<b class="nc">&nbsp;                    break;</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        if (deser == null) {</b>
+&nbsp;            if (beanDesc == null) {
+<b class="nc">&nbsp;                beanDesc = config.introspectClassAnnotations(type.getRawClass());</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            deser = this.findKeyDeserializerFromAnnotation(ctxt, beanDesc.getClassInfo());
+&nbsp;            if (deser == null) {
+&nbsp;                if (type.isEnumType()) {
+<b class="nc">&nbsp;                    deser = this._createEnumKeyDeserializer(ctxt, type);</b>
+&nbsp;                } else {
+&nbsp;                    deser = StdKeyDeserializers.findStringBasedKeyDeserializer(config, type);
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        if (deser != null &amp;&amp; this._factoryConfig.hasDeserializerModifiers()) {
+&nbsp;            for(BeanDeserializerModifier mod : this._factoryConfig.deserializerModifiers()) {
+&nbsp;                deser = mod.modifyKeyDeserializer(config, type, deser);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return deser;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private KeyDeserializer _createEnumKeyDeserializer(DeserializationContext ctxt, JavaType type) throws JsonMappingException {</b>
+&nbsp;        DeserializationConfig config = ctxt.getConfig();
+&nbsp;        Class&lt;?&gt; enumClass = type.getRawClass();
+&nbsp;        BeanDescription beanDesc = config.introspect(type);
+<b class="nc">&nbsp;        KeyDeserializer des = this.findKeyDeserializerFromAnnotation(ctxt, beanDesc.getClassInfo());</b>
+&nbsp;        if (des != null) {
+&nbsp;            return des;
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            JsonDeserializer&lt;?&gt; custom = this._findCustomEnumDeserializer(enumClass, config, beanDesc);
+<b class="nc">&nbsp;            if (custom != null) {</b>
+&nbsp;                return StdKeyDeserializers.constructDelegatingKeyDeserializer(config, type, custom);
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                JsonDeserializer&lt;?&gt; valueDesForKey = this.findDeserializerFromAnnotation(ctxt, beanDesc.getClassInfo());</b>
+&nbsp;                if (valueDesForKey != null) {
+&nbsp;                    return StdKeyDeserializers.constructDelegatingKeyDeserializer(config, type, valueDesForKey);
+&nbsp;                } else {
+<b class="nc">&nbsp;                    EnumResolver enumRes = this.constructEnumResolver(enumClass, config, beanDesc);</b>
+&nbsp;                    EnumResolver byEnumNamingResolver = this.constructEnumNamingStrategyResolver(config, beanDesc.getClassInfo());
+&nbsp;                    EnumResolver byToStringResolver = EnumResolver.constructUsingToString(config, beanDesc.getClassInfo());
+<b class="nc">&nbsp;                    EnumResolver byIndexResolver = EnumResolver.constructUsingIndex(config, beanDesc.getClassInfo());</b>
+&nbsp;                    Iterator var11 = beanDesc.getFactoryMethods().iterator();
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                    AnnotatedMethod factory;</b>
+&nbsp;                    while(true) {
+&nbsp;                        if (!var11.hasNext()) {
+&nbsp;                            return StdKeyDeserializers.constructEnumKeyDeserializer(enumRes, byEnumNamingResolver, byToStringResolver, byIndexResolver);
+&nbsp;                        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                        factory = (AnnotatedMethod)var11.next();</b>
+&nbsp;                        if (this._hasCreatorAnnotation(config, factory)) {
+<b class="nc">&nbsp;                            int argCount = factory.getParameterCount();</b>
+&nbsp;                            if (argCount != 1) {
+<b class="nc">&nbsp;                                break;</b>
+<b class="nc">&nbsp;                            }</b>
+&nbsp;
+<b class="nc">&nbsp;                            Class&lt;?&gt; returnType = factory.getRawReturnType();</b>
+&nbsp;                            if (!returnType.isAssignableFrom(enumClass)) {
+&nbsp;                                break;
+&nbsp;                            }
+&nbsp;
+&nbsp;                            if (factory.getRawParameterType(0) == String.class) {
+&nbsp;                                if (config.canOverrideAccessModifiers()) {
+&nbsp;                                    ClassUtil.checkAndFixAccess(factory.getMember(), ctxt.isEnabled(MapperFeature.OVERRIDE_PUBLIC_ACCESS_MODIFIERS));
+&nbsp;                                }
+&nbsp;
+&nbsp;                                return StdKeyDeserializers.constructEnumKeyDeserializer(enumRes, factory, byEnumNamingResolver, byToStringResolver, byIndexResolver);
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    throw new IllegalArgumentException(&quot;Unsuitable method (&quot; + factory + &quot;) decorated with @JsonCreator (for Enum type &quot; + enumClass.getName() + &quot;)&quot;);</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public boolean hasExplicitDeserializerFor(DeserializationConfig config, Class&lt;?&gt; valueType) {
+<b class="nc">&nbsp;        while(valueType.isArray()) {</b>
+&nbsp;            valueType = valueType.getComponentType();
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if (Enum.class.isAssignableFrom(valueType)) {</b>
+&nbsp;            return true;
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            String clsName = valueType.getName();
+&nbsp;            if (clsName.startsWith(&quot;java.&quot;)) {
+&nbsp;                if (Collection.class.isAssignableFrom(valueType)) {
+<b class="nc">&nbsp;                    return true;</b>
+<b class="nc">&nbsp;                } else if (Map.class.isAssignableFrom(valueType)) {</b>
+<b class="nc">&nbsp;                    return true;</b>
+&nbsp;                } else if (Number.class.isAssignableFrom(valueType)) {
+&nbsp;                    return NumberDeserializers.find(valueType, clsName) != null;
+<b class="nc">&nbsp;                } else if (!JdkDeserializers.hasDeserializerFor(valueType) &amp;&amp; valueType != CLASS_STRING &amp;&amp; valueType != Boolean.class &amp;&amp; valueType != EnumMap.class &amp;&amp; valueType != AtomicReference.class) {</b>
+<b class="nc">&nbsp;                    if (DateDeserializers.hasDeserializerFor(valueType)) {</b>
+&nbsp;                        return true;
+&nbsp;                    } else {
+&nbsp;                        return false;
+&nbsp;                    }
+<b class="nc">&nbsp;                } else {</b>
+<b class="nc">&nbsp;                    return true;</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            } else if (!clsName.startsWith(&quot;com.fasterxml.&quot;)) {</b>
+<b class="nc">&nbsp;                return OptionalHandlerFactory.instance.hasDeserializerFor(valueType);</b>
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                return JsonNode.class.isAssignableFrom(valueType) || valueType == TokenBuffer.class;</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public TypeDeserializer findPropertyTypeDeserializer(DeserializationConfig config, JavaType baseType, AnnotatedMember annotated) throws JsonMappingException {
+&nbsp;        AnnotationIntrospector ai = config.getAnnotationIntrospector();
+&nbsp;        TypeResolverBuilder&lt;?&gt; b = ai.findPropertyTypeResolver(config, annotated, baseType);
+<b class="nc">&nbsp;        if (b == null) {</b>
+<b class="nc">&nbsp;            return this.findTypeDeserializer(config, baseType);</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            Collection&lt;NamedType&gt; subtypes = config.getSubtypeResolver().collectAndResolveSubtypesByTypeId(config, annotated, baseType);
+&nbsp;
+<b class="nc">&nbsp;            try {</b>
+&nbsp;                return b.buildTypeDeserializer(config, baseType, subtypes);
+&nbsp;            } catch (IllegalStateException | IllegalArgumentException e0) {
+&nbsp;                throw InvalidDefinitionException.from((JsonParser)null, ClassUtil.exceptionMessage(e0), baseType).withCause(e0);
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public TypeDeserializer findPropertyContentTypeDeserializer(DeserializationConfig config, JavaType containerType, AnnotatedMember propertyEntity) throws JsonMappingException {</b>
+&nbsp;        AnnotationIntrospector ai = config.getAnnotationIntrospector();
+<b class="nc">&nbsp;        TypeResolverBuilder&lt;?&gt; b = ai.findPropertyContentTypeResolver(config, propertyEntity, containerType);</b>
+&nbsp;        JavaType contentType = containerType.getContentType();
+&nbsp;        if (b == null) {
+&nbsp;            return this.findTypeDeserializer(config, contentType);
+&nbsp;        } else {
+&nbsp;            Collection&lt;NamedType&gt; subtypes = config.getSubtypeResolver().collectAndResolveSubtypesByTypeId(config, propertyEntity, contentType);
+&nbsp;            return b.buildTypeDeserializer(config, contentType, subtypes);
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public JsonDeserializer&lt;?&gt; findDefaultDeserializer(DeserializationContext ctxt, JavaType type, BeanDescription beanDesc) throws JsonMappingException {</b>
+<b class="nc">&nbsp;        Class&lt;?&gt; rawType = type.getRawClass();</b>
+&nbsp;        if (rawType != CLASS_OBJECT &amp;&amp; rawType != CLASS_SERIALIZABLE) {
+&nbsp;            if (rawType != CLASS_STRING &amp;&amp; rawType != CLASS_CHAR_SEQUENCE) {
+&nbsp;                if (rawType == CLASS_ITERABLE) {
+<b class="nc">&nbsp;                    TypeFactory tf = ctxt.getTypeFactory();</b>
+&nbsp;                    JavaType[] tps = tf.findTypeParameters(type, CLASS_ITERABLE);
+&nbsp;                    JavaType elemType = tps != null &amp;&amp; tps.length == 1 ? tps[0] : TypeFactory.unknownType();
+<b class="nc">&nbsp;                    CollectionType ct = tf.constructCollectionType(Collection.class, elemType);</b>
+&nbsp;                    return this.createCollectionDeserializer(ctxt, ct, beanDesc);
+&nbsp;                } else if (rawType == CLASS_MAP_ENTRY) {
+&nbsp;                    JavaType kt = type.containedTypeOrUnknown(0);
+&nbsp;                    JavaType vt = type.containedTypeOrUnknown(1);
+&nbsp;                    TypeDeserializer vts = (TypeDeserializer)vt.getTypeHandler();
+&nbsp;                    if (vts == null) {
+<b class="nc">&nbsp;                        vts = this.findTypeDeserializer(ctxt.getConfig(), vt);</b>
+&nbsp;                    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                    JsonDeserializer&lt;Object&gt; valueDeser = (JsonDeserializer)vt.getValueHandler();</b>
+&nbsp;                    KeyDeserializer keyDes = (KeyDeserializer)kt.getValueHandler();
+<b class="nc">&nbsp;                    return new MapEntryDeserializer(type, keyDes, valueDeser, vts);</b>
+&nbsp;                } else {
+<b class="nc">&nbsp;                    String clsName = rawType.getName();</b>
+&nbsp;                    if (rawType.isPrimitive() || clsName.startsWith(&quot;java.&quot;)) {
+<b class="nc">&nbsp;                        JsonDeserializer&lt;?&gt; deser = NumberDeserializers.find(rawType, clsName);</b>
+<b class="nc">&nbsp;                        if (deser == null) {</b>
+<b class="nc">&nbsp;                            deser = DateDeserializers.find(rawType, clsName);</b>
+&nbsp;                        }
+&nbsp;
+&nbsp;                        if (deser != null) {
+<b class="nc">&nbsp;                            return deser;</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+&nbsp;                    if (rawType == TokenBuffer.class) {
+&nbsp;                        return new TokenBufferDeserializer();
+&nbsp;                    } else {
+&nbsp;                        JsonDeserializer&lt;?&gt; deser = this.findOptionalStdDeserializer(ctxt, type, beanDesc);
+&nbsp;                        return deser != null ? deser : JdkDeserializers.find(ctxt, rawType, clsName);
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            } else {
+&nbsp;                return StringDeserializer.instance;
+&nbsp;            }
+&nbsp;        } else {
+&nbsp;            DeserializationConfig config = ctxt.getConfig();
+&nbsp;            JavaType lt;
+<b class="nc">&nbsp;            JavaType mt;</b>
+<b class="nc">&nbsp;            if (this._factoryConfig.hasAbstractTypeResolvers()) {</b>
+&nbsp;                lt = this._findRemappedType(config, List.class);
+<b class="nc">&nbsp;                mt = this._findRemappedType(config, Map.class);</b>
+&nbsp;            } else {
+<b class="nc">&nbsp;                mt = null;</b>
+&nbsp;                lt = null;
+&nbsp;            }
+&nbsp;
+&nbsp;            return new UntypedObjectDeserializer(lt, mt);
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    protected JavaType _findRemappedType(DeserializationConfig config, Class&lt;?&gt; rawType) throws JsonMappingException {
+&nbsp;        JavaType type = this.mapAbstractType(config, config.constructType(rawType));
+<b class="nc">&nbsp;        return type != null &amp;&amp; !type.hasRawClass(rawType) ? type : null;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    protected JsonDeserializer&lt;?&gt; _findCustomTreeNodeDeserializer(Class&lt;? extends JsonNode&gt; type, DeserializationConfig config, BeanDescription beanDesc) throws JsonMappingException {
+<b class="nc">&nbsp;        for(Deserializers d : this._factoryConfig.deserializers()) {</b>
+<b class="nc">&nbsp;            JsonDeserializer&lt;?&gt; deser = d.findTreeNodeDeserializer(type, config, beanDesc);</b>
+<b class="nc">&nbsp;            if (deser != null) {</b>
+<b class="nc">&nbsp;                return deser;</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        return null;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    protected JsonDeserializer&lt;?&gt; _findCustomReferenceDeserializer(ReferenceType type, DeserializationConfig config, BeanDescription beanDesc, TypeDeserializer contentTypeDeserializer, JsonDeserializer&lt;?&gt; contentDeserializer) throws JsonMappingException {
+<b class="nc">&nbsp;        for(Deserializers d : this._factoryConfig.deserializers()) {</b>
+&nbsp;            JsonDeserializer&lt;?&gt; deser = d.findReferenceDeserializer(type, config, beanDesc, contentTypeDeserializer, contentDeserializer);
+<b class="nc">&nbsp;            if (deser != null) {</b>
+&nbsp;                return deser;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return null;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected JsonDeserializer&lt;Object&gt; _findCustomBeanDeserializer(JavaType type, DeserializationConfig config, BeanDescription beanDesc) throws JsonMappingException {</b>
+<b class="nc">&nbsp;        for(Deserializers d : this._factoryConfig.deserializers()) {</b>
+&nbsp;            JsonDeserializer&lt;?&gt; deser = d.findBeanDeserializer(type, config, beanDesc);
+<b class="nc">&nbsp;            if (deser != null) {</b>
+&nbsp;                return deser;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return null;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected JsonDeserializer&lt;?&gt; _findCustomArrayDeserializer(ArrayType type, DeserializationConfig config, BeanDescription beanDesc, TypeDeserializer elementTypeDeserializer, JsonDeserializer&lt;?&gt; elementDeserializer) throws JsonMappingException {</b>
+&nbsp;        for(Deserializers d : this._factoryConfig.deserializers()) {
+&nbsp;            JsonDeserializer&lt;?&gt; deser = d.findArrayDeserializer(type, config, beanDesc, elementTypeDeserializer, elementDeserializer);
+<b class="nc">&nbsp;            if (deser != null) {</b>
+&nbsp;                return deser;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return null;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected JsonDeserializer&lt;?&gt; _findCustomCollectionDeserializer(CollectionType type, DeserializationConfig config, BeanDescription beanDesc, TypeDeserializer elementTypeDeserializer, JsonDeserializer&lt;?&gt; elementDeserializer) throws JsonMappingException {
+<b class="nc">&nbsp;        for(Deserializers d : this._factoryConfig.deserializers()) {</b>
+&nbsp;            JsonDeserializer&lt;?&gt; deser = d.findCollectionDeserializer(type, config, beanDesc, elementTypeDeserializer, elementDeserializer);
+<b class="nc">&nbsp;            if (deser != null) {</b>
+&nbsp;                return deser;
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected JsonDeserializer&lt;?&gt; _findCustomCollectionLikeDeserializer(CollectionLikeType type, DeserializationConfig config, BeanDescription beanDesc, TypeDeserializer elementTypeDeserializer, JsonDeserializer&lt;?&gt; elementDeserializer) throws JsonMappingException {
+&nbsp;        for(Deserializers d : this._factoryConfig.deserializers()) {
+&nbsp;            JsonDeserializer&lt;?&gt; deser = d.findCollectionLikeDeserializer(type, config, beanDesc, elementTypeDeserializer, elementDeserializer);
+&nbsp;            if (deser != null) {
+&nbsp;                return deser;
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected JsonDeserializer&lt;?&gt; _findCustomEnumDeserializer(Class&lt;?&gt; type, DeserializationConfig config, BeanDescription beanDesc) throws JsonMappingException {</b>
+<b class="nc">&nbsp;        for(Deserializers d : this._factoryConfig.deserializers()) {</b>
+&nbsp;            JsonDeserializer&lt;?&gt; deser = d.findEnumDeserializer(type, config, beanDesc);
+<b class="nc">&nbsp;            if (deser != null) {</b>
+&nbsp;                return deser;
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        return null;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    protected JsonDeserializer&lt;?&gt; _findCustomMapDeserializer(MapType type, DeserializationConfig config, BeanDescription beanDesc, KeyDeserializer keyDeserializer, TypeDeserializer elementTypeDeserializer, JsonDeserializer&lt;?&gt; elementDeserializer) throws JsonMappingException {</b>
+<b class="nc">&nbsp;        for(Deserializers d : this._factoryConfig.deserializers()) {</b>
+&nbsp;            JsonDeserializer&lt;?&gt; deser = d.findMapDeserializer(type, config, beanDesc, keyDeserializer, elementTypeDeserializer, elementDeserializer);
+&nbsp;            if (deser != null) {
+&nbsp;                return deser;
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        return null;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected JsonDeserializer&lt;?&gt; _findCustomMapLikeDeserializer(MapLikeType type, DeserializationConfig config, BeanDescription beanDesc, KeyDeserializer keyDeserializer, TypeDeserializer elementTypeDeserializer, JsonDeserializer&lt;?&gt; elementDeserializer) throws JsonMappingException {
+<b class="nc">&nbsp;        for(Deserializers d : this._factoryConfig.deserializers()) {</b>
+&nbsp;            JsonDeserializer&lt;?&gt; deser = d.findMapLikeDeserializer(type, config, beanDesc, keyDeserializer, elementTypeDeserializer, elementDeserializer);
+<b class="nc">&nbsp;            if (deser != null) {</b>
+<b class="nc">&nbsp;                return deser;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        return null;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected JsonDeserializer&lt;Object&gt; findDeserializerFromAnnotation(DeserializationContext ctxt, Annotated ann) throws JsonMappingException {
+&nbsp;        AnnotationIntrospector intr = ctxt.getAnnotationIntrospector();
+&nbsp;        if (intr != null) {
+&nbsp;            Object deserDef = intr.findDeserializer(ann);
+&nbsp;            if (deserDef != null) {
+&nbsp;                return ctxt.deserializerInstance(ann, deserDef);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return null;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected KeyDeserializer findKeyDeserializerFromAnnotation(DeserializationContext ctxt, Annotated ann) throws JsonMappingException {</b>
+<b class="nc">&nbsp;        AnnotationIntrospector intr = ctxt.getAnnotationIntrospector();</b>
+<b class="nc">&nbsp;        if (intr != null) {</b>
+<b class="nc">&nbsp;            Object deserDef = intr.findKeyDeserializer(ann);</b>
+&nbsp;            if (deserDef != null) {
+&nbsp;                return ctxt.keyDeserializerInstance(ann, deserDef);
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return null;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected JsonDeserializer&lt;Object&gt; findContentDeserializerFromAnnotation(DeserializationContext ctxt, Annotated ann) throws JsonMappingException {
+<b class="nc">&nbsp;        AnnotationIntrospector intr = ctxt.getAnnotationIntrospector();</b>
+&nbsp;        if (intr != null) {
+&nbsp;            Object deserDef = intr.findContentDeserializer(ann);
+&nbsp;            if (deserDef != null) {
+<b class="nc">&nbsp;                return ctxt.deserializerInstance(ann, deserDef);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return null;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected JavaType resolveMemberAndTypeAnnotations(DeserializationContext ctxt, AnnotatedMember member, JavaType type) throws JsonMappingException {
+&nbsp;        AnnotationIntrospector intr = ctxt.getAnnotationIntrospector();
+&nbsp;        if (intr == null) {
+&nbsp;            return type;
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            if (type.isMapLikeType()) {
+<b class="nc">&nbsp;                JavaType keyType = type.getKeyType();</b>
+<b class="nc">&nbsp;                if (keyType != null) {</b>
+<b class="nc">&nbsp;                    Object kdDef = intr.findKeyDeserializer(member);</b>
+&nbsp;                    KeyDeserializer kd = ctxt.keyDeserializerInstance(member, kdDef);
+&nbsp;                    if (kd != null) {
+&nbsp;                        type = ((MapLikeType)type).withKeyValueHandler(kd);
+&nbsp;                        keyType = type.getKeyType();
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            if (type.hasContentType()) {
+&nbsp;                Object cdDef = intr.findContentDeserializer(member);
+&nbsp;                JsonDeserializer&lt;?&gt; cd = ctxt.deserializerInstance(member, cdDef);
+&nbsp;                if (cd != null) {
+<b class="nc">&nbsp;                    type = type.withContentValueHandler(cd);</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                TypeDeserializer contentTypeDeser = this.findPropertyContentTypeDeserializer(ctxt.getConfig(), type, member);
+&nbsp;                if (contentTypeDeser != null) {
+&nbsp;                    type = type.withContentTypeHandler(contentTypeDeser);
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            TypeDeserializer valueTypeDeser = this.findPropertyTypeDeserializer(ctxt.getConfig(), type, member);
+&nbsp;            if (valueTypeDeser != null) {
+&nbsp;                type = type.withTypeHandler(valueTypeDeser);
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            type = intr.refineDeserializationType(ctxt.getConfig(), member, type);</b>
+<b class="nc">&nbsp;            return type;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected EnumResolver constructEnumResolver(Class&lt;?&gt; enumClass, DeserializationConfig config, BeanDescription beanDesc) {</b>
+<b class="nc">&nbsp;        AnnotatedMember jvAcc = beanDesc.findJsonValueAccessor();</b>
+<b class="nc">&nbsp;        if (jvAcc != null) {</b>
+&nbsp;            if (config.canOverrideAccessModifiers()) {
+&nbsp;                ClassUtil.checkAndFixAccess(jvAcc.getMember(), config.isEnabled(MapperFeature.OVERRIDE_PUBLIC_ACCESS_MODIFIERS));
+&nbsp;            }
+&nbsp;
+&nbsp;            return EnumResolver.constructUsingMethod(config, beanDesc.getClassInfo(), jvAcc);
+&nbsp;        } else {
+<b class="nc">&nbsp;            return EnumResolver.constructFor(config, beanDesc.getClassInfo());</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    protected EnumResolver constructEnumNamingStrategyResolver(DeserializationConfig config, AnnotatedClass annotatedClass) {
+<b class="nc">&nbsp;        Object namingDef = config.getAnnotationIntrospector().findEnumNamingStrategy(config, annotatedClass);</b>
+<b class="nc">&nbsp;        EnumNamingStrategy enumNamingStrategy = EnumNamingStrategyFactory.createEnumNamingStrategyInstance(namingDef, config.canOverrideAccessModifiers());</b>
+<b class="nc">&nbsp;        return enumNamingStrategy == null ? null : EnumResolver.constructUsingEnumNamingStrategy(config, annotatedClass, enumNamingStrategy);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    /** @deprecated */</b>
+&nbsp;    @Deprecated
+&nbsp;    protected EnumResolver constructEnumNamingStrategyResolver(DeserializationConfig config, Class&lt;?&gt; enumClass, AnnotatedClass annotatedClass) {
+&nbsp;        Object namingDef = config.getAnnotationIntrospector().findEnumNamingStrategy(config, annotatedClass);
+&nbsp;        EnumNamingStrategy enumNamingStrategy = EnumNamingStrategyFactory.createEnumNamingStrategyInstance(namingDef, config.canOverrideAccessModifiers());
+<b class="nc">&nbsp;        return enumNamingStrategy == null ? null : EnumResolver.constructUsingEnumNamingStrategy(config, enumClass, enumNamingStrategy);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected boolean _hasCreatorAnnotation(MapperConfig&lt;?&gt; config, Annotated ann) {</b>
+&nbsp;        AnnotationIntrospector intr = config.getAnnotationIntrospector();
+&nbsp;        if (intr == null) {
+&nbsp;            return false;
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            JsonCreator.Mode mode = intr.findCreatorAnnotation(config, ann);
+&nbsp;            return mode != null &amp;&amp; mode != Mode.DISABLED;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected static class ContainerDefaultMappings {
+<b class="nc">&nbsp;        static final HashMap&lt;String, Class&lt;? extends Collection&gt;&gt; _collectionFallbacks;</b>
+<b class="nc">&nbsp;        static final HashMap&lt;String, Class&lt;? extends Map&gt;&gt; _mapFallbacks;</b>
+&nbsp;
+<b class="nc">&nbsp;        protected ContainerDefaultMappings() {</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        public static Class&lt;?&gt; findCollectionFallback(JavaType type) {</b>
+<b class="nc">&nbsp;            return (Class)_collectionFallbacks.get(type.getRawClass().getName());</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        public static Class&lt;?&gt; findMapFallback(JavaType type) {</b>
+<b class="nc">&nbsp;            return (Class)_mapFallbacks.get(type.getRawClass().getName());</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        static {</b>
+<b class="nc">&nbsp;            HashMap&lt;String, Class&lt;? extends Collection&gt;&gt; fallbacks = new HashMap();</b>
+<b class="nc">&nbsp;            Class&lt;? extends Collection&gt; DEFAULT_LIST = ArrayList.class;</b>
+&nbsp;            Class&lt;? extends Collection&gt; DEFAULT_SET = HashSet.class;
+&nbsp;            fallbacks.put(Collection.class.getName(), DEFAULT_LIST);
+<b class="nc">&nbsp;            fallbacks.put(List.class.getName(), DEFAULT_LIST);</b>
+<b class="nc">&nbsp;            fallbacks.put(Set.class.getName(), DEFAULT_SET);</b>
+<b class="nc">&nbsp;            fallbacks.put(SortedSet.class.getName(), TreeSet.class);</b>
+<b class="nc">&nbsp;            fallbacks.put(Queue.class.getName(), LinkedList.class);</b>
+&nbsp;            fallbacks.put(AbstractList.class.getName(), DEFAULT_LIST);
+&nbsp;            fallbacks.put(AbstractSet.class.getName(), DEFAULT_SET);
+<b class="nc">&nbsp;            fallbacks.put(Deque.class.getName(), LinkedList.class);</b>
+<b class="nc">&nbsp;            fallbacks.put(NavigableSet.class.getName(), TreeSet.class);</b>
+<b class="nc">&nbsp;            fallbacks.put(&quot;java.util.SequencedCollection&quot;, DEFAULT_LIST);</b>
+<b class="nc">&nbsp;            fallbacks.put(&quot;java.util.SequencedSet&quot;, LinkedHashSet.class);</b>
+<b class="nc">&nbsp;            _collectionFallbacks = fallbacks;</b>
+&nbsp;            fallbacks = new HashMap();
+<b class="nc">&nbsp;            DEFAULT_LIST = LinkedHashMap.class;</b>
+&nbsp;            fallbacks.put(Map.class.getName(), DEFAULT_LIST);
+<b class="nc">&nbsp;            fallbacks.put(AbstractMap.class.getName(), DEFAULT_LIST);</b>
+&nbsp;            fallbacks.put(ConcurrentMap.class.getName(), ConcurrentHashMap.class);
+&nbsp;            fallbacks.put(SortedMap.class.getName(), TreeMap.class);
+&nbsp;            fallbacks.put(NavigableMap.class.getName(), TreeMap.class);
+&nbsp;            fallbacks.put(ConcurrentNavigableMap.class.getName(), ConcurrentSkipListMap.class);
+&nbsp;            fallbacks.put(&quot;java.util.SequencedMap&quot;, LinkedHashMap.class);
+&nbsp;            _mapFallbacks = fallbacks;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:57</div>
+</div>
+</body>
+</html>

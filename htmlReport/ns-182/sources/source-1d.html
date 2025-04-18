@@ -1,0 +1,269 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > PrimaryKey</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.mapping</a>
+</div>
+
+<h1>Coverage Summary for Class: PrimaryKey (org.hibernate.mapping)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PrimaryKey</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    23.1%
+  </span>
+  <span class="absValue">
+    (3/13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    11.9%
+  </span>
+  <span class="absValue">
+    (5/42)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    15.6%
+  </span>
+  <span class="absValue">
+    (10/64)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.mapping;
+&nbsp;
+&nbsp;import java.util.Arrays;
+&nbsp;import java.util.List;
+&nbsp;import org.hibernate.Internal;
+&nbsp;import org.hibernate.boot.model.relational.SqlStringGenerationContext;
+&nbsp;import org.hibernate.dialect.Dialect;
+&nbsp;import org.hibernate.internal.util.StringHelper;
+&nbsp;import org.jboss.logging.Logger;
+&nbsp;
+&nbsp;public class PrimaryKey extends Constraint {
+&nbsp;    private static final Logger log = Logger.getLogger(PrimaryKey.class);
+&nbsp;    private UniqueKey orderingUniqueKey = null;
+&nbsp;    private int[] originalOrder;
+&nbsp;
+&nbsp;    public PrimaryKey(Table table) {
+&nbsp;        this.setTable(table);
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public void addColumn(Column column) {</b>
+<b class="fc">&nbsp;        for(Column next : this.getTable().getColumns()) {</b>
+&nbsp;            if (next.getCanonicalName().equals(column.getCanonicalName())) {
+<b class="fc">&nbsp;                next.setNullable(false);</b>
+&nbsp;                if (log.isDebugEnabled()) {
+&nbsp;                    log.debugf(&quot;Forcing column [%s] to be non-null as it is part of the primary key for table [%s]&quot;, column.getCanonicalName(), this.getTableNameForLogging(column));
+<b class="fc">&nbsp;                }</b>
+<b class="fc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        super.addColumn(column);
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    protected String getTableNameForLogging(Column column) {</b>
+<b class="fc">&nbsp;        if (this.getTable() != null) {</b>
+<b class="pc">&nbsp;            return this.getTable().getNameIdentifier() != null ? this.getTable().getNameIdentifier().getCanonicalName() : &quot;&lt;unknown&gt;&quot;;</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            return column.getValue() != null &amp;&amp; column.getValue().getTable() != null ? column.getValue().getTable().getNameIdentifier().getCanonicalName() : &quot;&lt;unknown&gt;&quot;;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public String sqlConstraintString(Dialect dialect) {
+&nbsp;        StringBuilder buf = new StringBuilder();
+&nbsp;        if (this.orderingUniqueKey != null &amp;&amp; this.orderingUniqueKey.isNameExplicit()) {
+<b class="fc">&nbsp;            buf.append(&quot;constraint &quot;).append(this.orderingUniqueKey.getName()).append(&#39; &#39;);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        buf.append(&quot;primary key (&quot;);
+<b class="nc">&nbsp;        boolean first = true;</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        for(Column column : this.getColumns()) {</b>
+&nbsp;            if (first) {
+&nbsp;                first = false;
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                buf.append(&quot;, &quot;);
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            buf.append(column.getQuotedName(dialect));</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        return buf.append(&#39;)&#39;).toString();
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    /** @deprecated */</b>
+<b class="nc">&nbsp;    @Deprecated(</b>
+<b class="nc">&nbsp;        since = &quot;6.2&quot;,</b>
+&nbsp;        forRemoval = true
+<b class="nc">&nbsp;    )</b>
+<b class="nc">&nbsp;    public String sqlConstraintString(SqlStringGenerationContext context, String constraintName, String defaultCatalog, String defaultSchema) {</b>
+<b class="nc">&nbsp;        Dialect dialect = context.getDialect();</b>
+<b class="nc">&nbsp;        StringBuilder buf = new StringBuilder();</b>
+<b class="nc">&nbsp;        buf.append(dialect.getAddPrimaryKeyConstraintString(constraintName)).append(&#39;(&#39;);</b>
+&nbsp;        boolean first = true;
+&nbsp;
+<b class="nc">&nbsp;        for(Column column : this.getColumns()) {</b>
+&nbsp;            if (first) {
+<b class="nc">&nbsp;                first = false;</b>
+&nbsp;            } else {
+<b class="nc">&nbsp;                buf.append(&quot;, &quot;);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            buf.append(column.getQuotedName(dialect));
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return buf.append(&#39;)&#39;).toString();</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    /** @deprecated */</b>
+<b class="nc">&nbsp;    @Deprecated(</b>
+<b class="nc">&nbsp;        forRemoval = true</b>
+&nbsp;    )
+&nbsp;    public String generatedConstraintNamePrefix() {
+<b class="nc">&nbsp;        return &quot;PK_&quot;;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public String getExportIdentifier() {
+<b class="nc">&nbsp;        return StringHelper.qualify(this.getTable().getExportIdentifier(), &quot;PK-&quot; + this.getName());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public List&lt;Column&gt; getColumnsInOriginalOrder() {
+&nbsp;        if (this.originalOrder == null) {
+<b class="nc">&nbsp;            return this.getColumns();</b>
+&nbsp;        } else {
+&nbsp;            List&lt;Column&gt; columns = this.getColumns();
+&nbsp;            Column[] columnsInOriginalOrder = new Column[columns.size()];
+&nbsp;
+<b class="nc">&nbsp;            for(int i = 0; i &lt; columnsInOriginalOrder.length; ++i) {</b>
+&nbsp;                columnsInOriginalOrder[this.originalOrder[i]] = (Column)columns.get(i);
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            return Arrays.asList(columnsInOriginalOrder);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void setOrderingUniqueKey(UniqueKey uniqueKey) {</b>
+<b class="nc">&nbsp;        this.orderingUniqueKey = uniqueKey;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public UniqueKey getOrderingUniqueKey() {</b>
+&nbsp;        return this.orderingUniqueKey;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    @Internal</b>
+&nbsp;    public void reorderColumns(List&lt;Column&gt; reorderedColumns) {
+&nbsp;        if (this.originalOrder != null) {
+&nbsp;            assert this.getColumns().equals(reorderedColumns);
+<b class="nc">&nbsp;</b>
+&nbsp;        } else {
+&nbsp;            assert this.getColumns().size() == reorderedColumns.size() &amp;&amp; this.getColumns().containsAll(reorderedColumns);
+&nbsp;
+&nbsp;            List&lt;Column&gt; columns = this.getColumns();
+<b class="nc">&nbsp;            this.originalOrder = new int[columns.size()];</b>
+<b class="nc">&nbsp;            List&lt;Column&gt; newColumns = this.getOrderingUniqueKey() != null ? this.getOrderingUniqueKey().getColumns() : reorderedColumns;</b>
+&nbsp;
+&nbsp;            for(int i = 0; i &lt; newColumns.size(); ++i) {
+<b class="nc">&nbsp;                Column reorderedColumn = (Column)newColumns.get(i);</b>
+<b class="nc">&nbsp;                this.originalOrder[i] = columns.indexOf(reorderedColumn);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            columns.clear();</b>
+<b class="nc">&nbsp;            columns.addAll(newColumns);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    @Internal</b>
+&nbsp;    public int[] getOriginalOrder() {
+&nbsp;        return this.originalOrder;
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:54</div>
+</div>
+</body>
+</html>

@@ -1,4 +1,2 @@
 package com.pragma.hogar360.serviceshome.application.dto.response;
-
-public class SaveLocationResponse {
-}
+public record SaveLocationResponse(String message) {}

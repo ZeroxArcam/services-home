@@ -1,0 +1,519 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > CrosscuttingMembersSet</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.aspectj.weaver</a>
+</div>
+
+<h1>Coverage Summary for Class: CrosscuttingMembersSet (org.aspectj.weaver)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">CrosscuttingMembersSet</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    3.6%
+  </span>
+  <span class="absValue">
+    (1/28)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/128)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    8.3%
+  </span>
+  <span class="absValue">
+    (16/193)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.aspectj.weaver;
+&nbsp;
+&nbsp;import java.io.IOException;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.HashSet;
+&nbsp;import java.util.LinkedHashSet;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Set;
+&nbsp;import org.aspectj.bridge.IMessage;
+&nbsp;import org.aspectj.bridge.MessageUtil;
+&nbsp;import org.aspectj.weaver.patterns.Declare;
+&nbsp;import org.aspectj.weaver.patterns.DeclareAnnotation;
+&nbsp;import org.aspectj.weaver.patterns.DeclareParents;
+&nbsp;import org.aspectj.weaver.patterns.DeclareSoft;
+&nbsp;import org.aspectj.weaver.patterns.DeclareTypeErrorOrWarning;
+&nbsp;import org.aspectj.weaver.patterns.IVerificationRequired;
+&nbsp;
+&nbsp;public class CrosscuttingMembersSet {
+&nbsp;    private transient World world;
+&nbsp;    private final Map&lt;ResolvedType, CrosscuttingMembers&gt; members = new HashMap();
+&nbsp;    private transient List&lt;IVerificationRequired&gt; verificationList = null;
+&nbsp;    private List&lt;ShadowMunger&gt; shadowMungers = null;
+&nbsp;    private List&lt;ConcreteTypeMunger&gt; typeMungers = null;
+&nbsp;    private List&lt;ConcreteTypeMunger&gt; lateTypeMungers = null;
+&nbsp;    private List&lt;DeclareSoft&gt; declareSofts = null;
+&nbsp;    private List&lt;DeclareParents&gt; declareParents = null;
+&nbsp;    private List&lt;DeclareAnnotation&gt; declareAnnotationOnTypes = null;
+&nbsp;    private List&lt;DeclareAnnotation&gt; declareAnnotationOnFields = null;
+&nbsp;    private List&lt;DeclareAnnotation&gt; declareAnnotationOnMethods = null;
+&nbsp;    private List&lt;DeclareTypeErrorOrWarning&gt; declareTypeEows = null;
+&nbsp;    private List&lt;Declare&gt; declareDominates = null;
+&nbsp;    private boolean changedSinceLastReset = false;
+&nbsp;    public int serializationVersion = 1;
+&nbsp;
+&nbsp;    public CrosscuttingMembersSet(World world) {
+&nbsp;        this.world = world;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public boolean addOrReplaceAspect(ResolvedType aspectType) {
+<b class="fc">&nbsp;        return this.addOrReplaceAspect(aspectType, true);</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private boolean excludeDueToParentAspectHavingUnresolvedDependency(ResolvedType aspectType) {</b>
+<b class="fc">&nbsp;        ResolvedType parent = aspectType.getSuperclass();</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;        boolean excludeDueToParent;</b>
+<b class="fc">&nbsp;        for(excludeDueToParent = false; parent != null; parent = parent.getSuperclass()) {</b>
+<b class="fc">&nbsp;            if (parent.isAspect() &amp;&amp; parent.isAbstract() &amp;&amp; this.world.hasUnsatisfiedDependency(parent)) {</b>
+<b class="fc">&nbsp;                if (!this.world.getMessageHandler().isIgnoring(IMessage.INFO)) {</b>
+<b class="fc">&nbsp;                    this.world.getMessageHandler().handleMessage(MessageUtil.info(&quot;deactivating aspect &#39;&quot; + aspectType.getName() + &quot;&#39; as the parent aspect &#39;&quot; + parent.getName() + &quot;&#39; has unsatisfied dependencies&quot;));</b>
+<b class="fc">&nbsp;                }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;                excludeDueToParent = true;
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return excludeDueToParent;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public boolean addOrReplaceAspect(ResolvedType aspectType, boolean inWeavingPhase) {
+&nbsp;        if (!this.world.isAspectIncluded(aspectType)) {
+&nbsp;            return false;
+&nbsp;        } else if (this.world.hasUnsatisfiedDependency(aspectType)) {
+&nbsp;            return false;
+&nbsp;        } else if (this.excludeDueToParentAspectHavingUnresolvedDependency(aspectType)) {
+&nbsp;            return false;
+&nbsp;        } else {
+&nbsp;            boolean change = false;
+<b class="nc">&nbsp;            CrosscuttingMembers xcut = (CrosscuttingMembers)this.members.get(aspectType);</b>
+<b class="nc">&nbsp;            if (xcut == null) {</b>
+<b class="nc">&nbsp;                this.members.put(aspectType, aspectType.collectCrosscuttingMembers(inWeavingPhase));</b>
+<b class="nc">&nbsp;                this.clearCaches();</b>
+<b class="nc">&nbsp;                change = true;</b>
+<b class="nc">&nbsp;            } else if (xcut.replaceWith(aspectType.collectCrosscuttingMembers(inWeavingPhase), inWeavingPhase)) {</b>
+<b class="nc">&nbsp;                this.clearCaches();</b>
+&nbsp;                change = true;
+&nbsp;            } else {
+<b class="nc">&nbsp;                if (inWeavingPhase) {</b>
+&nbsp;                    this.shadowMungers = null;
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="nc">&nbsp;                change = false;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            if (aspectType.isAbstract()) {
+&nbsp;                boolean ancestorChange = this.addOrReplaceDescendantsOf(aspectType, inWeavingPhase);
+&nbsp;                change = change || ancestorChange;
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            this.changedSinceLastReset = this.changedSinceLastReset || change;</b>
+<b class="nc">&nbsp;            return change;</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private boolean addOrReplaceDescendantsOf(ResolvedType aspectType, boolean inWeavePhase) {
+&nbsp;        Set&lt;ResolvedType&gt; knownAspects = this.members.keySet();
+<b class="nc">&nbsp;        Set&lt;ResolvedType&gt; toBeReplaced = new HashSet();</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        for(ResolvedType candidateDescendant : knownAspects) {
+&nbsp;            if (candidateDescendant != aspectType &amp;&amp; aspectType.isAssignableFrom(candidateDescendant, true)) {
+<b class="nc">&nbsp;                toBeReplaced.add(candidateDescendant);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        boolean change = false;</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        for(ResolvedType next : toBeReplaced) {
+<b class="nc">&nbsp;            boolean thisChange = this.addOrReplaceAspect(next, inWeavePhase);</b>
+<b class="nc">&nbsp;            change = change || thisChange;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        return change;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void addAdviceLikeDeclares(ResolvedType aspectType) {</b>
+&nbsp;        if (this.members.containsKey(aspectType)) {
+<b class="nc">&nbsp;            CrosscuttingMembers xcut = (CrosscuttingMembers)this.members.get(aspectType);</b>
+&nbsp;            xcut.addDeclares(aspectType.collectDeclares(true));
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public boolean deleteAspect(UnresolvedType aspectType) {</b>
+<b class="nc">&nbsp;        boolean isAspect = this.members.remove(aspectType) != null;</b>
+&nbsp;        this.clearCaches();
+<b class="nc">&nbsp;        return isAspect;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public boolean containsAspect(UnresolvedType aspectType) {
+&nbsp;        return this.members.containsKey(aspectType);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void addFixedCrosscuttingMembers(ResolvedType aspectType) {</b>
+<b class="nc">&nbsp;        this.members.put(aspectType, aspectType.crosscuttingMembers);</b>
+<b class="nc">&nbsp;        this.clearCaches();</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private void clearCaches() {</b>
+&nbsp;        this.shadowMungers = null;
+&nbsp;        this.typeMungers = null;
+<b class="nc">&nbsp;        this.lateTypeMungers = null;</b>
+<b class="nc">&nbsp;        this.declareSofts = null;</b>
+<b class="nc">&nbsp;        this.declareParents = null;</b>
+<b class="nc">&nbsp;        this.declareAnnotationOnFields = null;</b>
+&nbsp;        this.declareAnnotationOnMethods = null;
+<b class="nc">&nbsp;        this.declareAnnotationOnTypes = null;</b>
+&nbsp;        this.declareDominates = null;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public List&lt;ShadowMunger&gt; getShadowMungers() {</b>
+&nbsp;        if (this.shadowMungers == null) {
+&nbsp;            List&lt;ShadowMunger&gt; ret = new ArrayList();
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            for(CrosscuttingMembers crosscuttingMembers : this.members.values()) {</b>
+&nbsp;                ret.addAll(crosscuttingMembers.getShadowMungers());
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            this.shadowMungers = ret;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return this.shadowMungers;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public List&lt;ConcreteTypeMunger&gt; getTypeMungers() {</b>
+&nbsp;        if (this.typeMungers == null) {
+&nbsp;            List&lt;ConcreteTypeMunger&gt; ret = new ArrayList();
+&nbsp;
+&nbsp;            for(CrosscuttingMembers xmembers : this.members.values()) {
+<b class="nc">&nbsp;                for(ConcreteTypeMunger mungerToAdd : xmembers.getTypeMungers()) {</b>
+<b class="nc">&nbsp;                    ResolvedTypeMunger resolvedMungerToAdd = mungerToAdd.getMunger();</b>
+&nbsp;                    if (this.isNewStylePrivilegedAccessMunger(resolvedMungerToAdd)) {
+&nbsp;                        String newFieldName = resolvedMungerToAdd.getSignature().getName();
+&nbsp;                        boolean alreadyExists = false;
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                        for(ConcreteTypeMunger existingMunger : ret) {</b>
+<b class="nc">&nbsp;                            ResolvedTypeMunger existing = existingMunger.getMunger();</b>
+<b class="nc">&nbsp;                            if (this.isNewStylePrivilegedAccessMunger(existing)) {</b>
+<b class="nc">&nbsp;                                String existingFieldName = existing.getSignature().getName();</b>
+<b class="nc">&nbsp;                                if (existingFieldName.equals(newFieldName) &amp;&amp; existing.getSignature().getDeclaringType().equals(resolvedMungerToAdd.getSignature().getDeclaringType())) {</b>
+<b class="nc">&nbsp;                                    alreadyExists = true;</b>
+<b class="nc">&nbsp;                                    break;</b>
+<b class="nc">&nbsp;                                }</b>
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;
+<b class="nc">&nbsp;                        if (!alreadyExists) {</b>
+<b class="nc">&nbsp;                            ret.add(mungerToAdd);</b>
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;                    } else {</b>
+&nbsp;                        ret.add(mungerToAdd);
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            this.typeMungers = ret;
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return this.typeMungers;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public List&lt;ConcreteTypeMunger&gt; getTypeMungersOfKind(ResolvedTypeMunger.Kind kind) {
+&nbsp;        List&lt;ConcreteTypeMunger&gt; collected = null;
+&nbsp;
+&nbsp;        for(ConcreteTypeMunger typeMunger : this.typeMungers) {
+&nbsp;            if (typeMunger.getMunger() != null &amp;&amp; typeMunger.getMunger().getKind() == kind) {
+<b class="nc">&nbsp;                if (collected == null) {</b>
+<b class="nc">&nbsp;                    collected = new ArrayList();</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                collected.add(typeMunger);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if (collected == null) {</b>
+<b class="nc">&nbsp;            return Collections.emptyList();</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            return collected;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean isNewStylePrivilegedAccessMunger(ResolvedTypeMunger typeMunger) {
+&nbsp;        boolean b = typeMunger != null &amp;&amp; typeMunger.getKind() == ResolvedTypeMunger.PrivilegedAccess &amp;&amp; typeMunger.getSignature().getKind() == Member.FIELD;
+<b class="nc">&nbsp;        if (!b) {</b>
+<b class="nc">&nbsp;            return b;</b>
+&nbsp;        } else {
+&nbsp;            PrivilegedAccessMunger privAccessMunger = (PrivilegedAccessMunger)typeMunger;
+<b class="nc">&nbsp;            return privAccessMunger.shortSyntax;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public List&lt;ConcreteTypeMunger&gt; getLateTypeMungers() {</b>
+&nbsp;        if (this.lateTypeMungers == null) {
+<b class="nc">&nbsp;            List&lt;ConcreteTypeMunger&gt; ret = new ArrayList();</b>
+&nbsp;
+&nbsp;            for(CrosscuttingMembers crosscuttingMembers : this.members.values()) {
+&nbsp;                ret.addAll(crosscuttingMembers.getLateTypeMungers());
+&nbsp;            }
+&nbsp;
+&nbsp;            this.lateTypeMungers = ret;
+&nbsp;        }
+&nbsp;
+&nbsp;        return this.lateTypeMungers;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public List&lt;DeclareSoft&gt; getDeclareSofts() {</b>
+<b class="nc">&nbsp;        if (this.declareSofts == null) {</b>
+<b class="nc">&nbsp;            Set&lt;DeclareSoft&gt; ret = new HashSet();</b>
+&nbsp;
+<b class="nc">&nbsp;            for(CrosscuttingMembers crosscuttingMembers : this.members.values()) {</b>
+&nbsp;                ret.addAll(crosscuttingMembers.getDeclareSofts());
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            this.declareSofts = new ArrayList();</b>
+&nbsp;            this.declareSofts.addAll(ret);
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return this.declareSofts;
+&nbsp;    }
+&nbsp;
+&nbsp;    public List&lt;DeclareParents&gt; getDeclareParents() {
+&nbsp;        if (this.declareParents == null) {
+&nbsp;            Set&lt;DeclareParents&gt; ret = new HashSet();
+&nbsp;
+<b class="nc">&nbsp;            for(CrosscuttingMembers crosscuttingMembers : this.members.values()) {</b>
+<b class="nc">&nbsp;                ret.addAll(crosscuttingMembers.getDeclareParents());</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            this.declareParents = new ArrayList();
+<b class="nc">&nbsp;            this.declareParents.addAll(ret);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return this.declareParents;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public List&lt;DeclareAnnotation&gt; getDeclareAnnotationOnTypes() {</b>
+<b class="nc">&nbsp;        if (this.declareAnnotationOnTypes == null) {</b>
+<b class="nc">&nbsp;            Set&lt;DeclareAnnotation&gt; ret = new LinkedHashSet();</b>
+&nbsp;
+<b class="nc">&nbsp;            for(CrosscuttingMembers crosscuttingMembers : this.members.values()) {</b>
+&nbsp;                ret.addAll(crosscuttingMembers.getDeclareAnnotationOnTypes());
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            this.declareAnnotationOnTypes = new ArrayList();
+&nbsp;            this.declareAnnotationOnTypes.addAll(ret);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return this.declareAnnotationOnTypes;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public List&lt;DeclareAnnotation&gt; getDeclareAnnotationOnFields() {</b>
+<b class="nc">&nbsp;        if (this.declareAnnotationOnFields == null) {</b>
+&nbsp;            Set&lt;DeclareAnnotation&gt; ret = new LinkedHashSet();
+<b class="nc">&nbsp;</b>
+&nbsp;            for(CrosscuttingMembers crosscuttingMembers : this.members.values()) {
+&nbsp;                ret.addAll(crosscuttingMembers.getDeclareAnnotationOnFields());
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            this.declareAnnotationOnFields = new ArrayList();</b>
+<b class="nc">&nbsp;            this.declareAnnotationOnFields.addAll(ret);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        return this.declareAnnotationOnFields;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public List&lt;DeclareAnnotation&gt; getDeclareAnnotationOnMethods() {</b>
+&nbsp;        if (this.declareAnnotationOnMethods == null) {
+&nbsp;            Set&lt;DeclareAnnotation&gt; ret = new LinkedHashSet();
+&nbsp;
+&nbsp;            for(CrosscuttingMembers crosscuttingMembers : this.members.values()) {
+&nbsp;                ret.addAll(crosscuttingMembers.getDeclareAnnotationOnMethods());
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            this.declareAnnotationOnMethods = new ArrayList();</b>
+<b class="nc">&nbsp;            this.declareAnnotationOnMethods.addAll(ret);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        return this.declareAnnotationOnMethods;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public List&lt;DeclareTypeErrorOrWarning&gt; getDeclareTypeEows() {</b>
+&nbsp;        if (this.declareTypeEows == null) {
+&nbsp;            Set&lt;DeclareTypeErrorOrWarning&gt; ret = new HashSet();
+&nbsp;
+&nbsp;            for(CrosscuttingMembers crosscuttingMembers : this.members.values()) {
+&nbsp;                ret.addAll(crosscuttingMembers.getDeclareTypeErrorOrWarning());
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            this.declareTypeEows = new ArrayList();</b>
+<b class="nc">&nbsp;            this.declareTypeEows.addAll(ret);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        return this.declareTypeEows;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public List&lt;Declare&gt; getDeclareDominates() {</b>
+&nbsp;        if (this.declareDominates == null) {
+&nbsp;            List&lt;Declare&gt; ret = new ArrayList();
+&nbsp;
+&nbsp;            for(CrosscuttingMembers crosscuttingMembers : this.members.values()) {
+&nbsp;                ret.addAll(crosscuttingMembers.getDeclareDominates());
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            this.declareDominates = ret;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return this.declareDominates;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public ResolvedType findAspectDeclaringParents(DeclareParents p) {
+&nbsp;        for(ResolvedType element : this.members.keySet()) {
+<b class="nc">&nbsp;            for(DeclareParents dp : ((CrosscuttingMembers)this.members.get(element)).getDeclareParents()) {</b>
+&nbsp;                if (dp.equals(p)) {
+&nbsp;                    return element;
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return null;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void reset() {</b>
+&nbsp;        this.verificationList = null;
+<b class="nc">&nbsp;        this.changedSinceLastReset = false;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public boolean hasChangedSinceLastReset() {</b>
+&nbsp;        return this.changedSinceLastReset;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void recordNecessaryCheck(IVerificationRequired verification) {</b>
+<b class="nc">&nbsp;        if (this.verificationList == null) {</b>
+<b class="nc">&nbsp;            this.verificationList = new ArrayList();</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        this.verificationList.add(verification);</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void verify() {
+&nbsp;        if (this.verificationList != null) {
+&nbsp;            for(IVerificationRequired element : this.verificationList) {
+<b class="nc">&nbsp;                element.verify();</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            this.verificationList = null;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void write(CompressingDataOutputStream stream) throws IOException {
+<b class="nc">&nbsp;        stream.writeInt(this.shadowMungers.size());</b>
+&nbsp;
+&nbsp;        for(ShadowMunger shadowMunger : this.shadowMungers) {
+&nbsp;            shadowMunger.write(stream);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

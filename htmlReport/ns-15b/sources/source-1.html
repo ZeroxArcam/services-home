@@ -1,0 +1,392 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > AbstractFlushingEventListener</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.event.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: AbstractFlushingEventListener (org.hibernate.event.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AbstractFlushingEventListener</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    13.6%
+  </span>
+  <span class="absValue">
+    (3/22)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/64)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    2.1%
+  </span>
+  <span class="absValue">
+    (3/146)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.event.internal;
+&nbsp;
+&nbsp;import java.util.Map;
+&nbsp;import org.hibernate.HibernateException;
+&nbsp;import org.hibernate.Interceptor;
+&nbsp;import org.hibernate.action.internal.CollectionRecreateAction;
+&nbsp;import org.hibernate.action.internal.CollectionRemoveAction;
+&nbsp;import org.hibernate.action.internal.CollectionUpdateAction;
+&nbsp;import org.hibernate.action.internal.QueuedOperationCollectionAction;
+&nbsp;import org.hibernate.collection.spi.PersistentCollection;
+&nbsp;import org.hibernate.engine.internal.Cascade;
+&nbsp;import org.hibernate.engine.internal.CascadePoint;
+&nbsp;import org.hibernate.engine.internal.Collections;
+&nbsp;import org.hibernate.engine.jdbc.spi.JdbcCoordinator;
+&nbsp;import org.hibernate.engine.spi.ActionQueue;
+&nbsp;import org.hibernate.engine.spi.CascadingAction;
+&nbsp;import org.hibernate.engine.spi.CascadingActions;
+&nbsp;import org.hibernate.engine.spi.CollectionEntry;
+&nbsp;import org.hibernate.engine.spi.CollectionKey;
+&nbsp;import org.hibernate.engine.spi.EntityEntry;
+&nbsp;import org.hibernate.engine.spi.PersistenceContext;
+&nbsp;import org.hibernate.engine.spi.SessionImplementor;
+&nbsp;import org.hibernate.engine.spi.Status;
+&nbsp;import org.hibernate.event.service.spi.EventListenerGroup;
+&nbsp;import org.hibernate.event.service.spi.JpaBootstrapSensitive;
+&nbsp;import org.hibernate.event.spi.EventSource;
+&nbsp;import org.hibernate.event.spi.FlushEntityEvent;
+&nbsp;import org.hibernate.event.spi.FlushEntityEventListener;
+&nbsp;import org.hibernate.event.spi.FlushEvent;
+&nbsp;import org.hibernate.event.spi.PersistContext;
+&nbsp;import org.hibernate.internal.CoreMessageLogger;
+&nbsp;import org.hibernate.internal.util.EntityPrinter;
+&nbsp;import org.hibernate.internal.util.collections.IdentityMap;
+&nbsp;import org.hibernate.persister.entity.EntityPersister;
+&nbsp;import org.jboss.logging.Logger;
+&nbsp;
+&nbsp;public abstract class AbstractFlushingEventListener implements JpaBootstrapSensitive {
+&nbsp;    private static final CoreMessageLogger LOG = (CoreMessageLogger)Logger.getMessageLogger(CoreMessageLogger.class, AbstractFlushingEventListener.class.getName());
+&nbsp;    private boolean jpaBootstrap;
+&nbsp;
+&nbsp;    public AbstractFlushingEventListener() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public void wasJpaBootstrap(boolean wasJpaBootstrap) {
+&nbsp;        this.jpaBootstrap = wasJpaBootstrap;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    protected void flushEverythingToExecutions(FlushEvent event) throws HibernateException {
+<b class="fc">&nbsp;        LOG.trace(&quot;Flushing session&quot;);</b>
+&nbsp;        EventSource session = event.getSession();
+&nbsp;        PersistenceContext persistenceContext = session.getPersistenceContextInternal();
+&nbsp;        this.preFlush(session, persistenceContext);
+&nbsp;        this.flushEverythingToExecutions(event, persistenceContext, session);
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    protected void flushEverythingToExecutions(FlushEvent event, PersistenceContext persistenceContext, EventSource session) {
+&nbsp;        persistenceContext.setFlushing(true);
+&nbsp;
+&nbsp;        try {
+&nbsp;            int entityCount = this.flushEntities(event, persistenceContext);
+&nbsp;            int collectionCount = this.flushCollections(session, persistenceContext);
+&nbsp;            event.setNumberOfEntitiesProcessed(entityCount);
+&nbsp;            event.setNumberOfCollectionsProcessed(collectionCount);
+&nbsp;        } finally {
+&nbsp;            persistenceContext.setFlushing(false);
+&nbsp;        }
+&nbsp;
+&nbsp;        this.logFlushResults(event);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void preFlush(EventSource session, PersistenceContext persistenceContext) {
+<b class="nc">&nbsp;        session.getInterceptor().preFlush(persistenceContext.managedEntitiesIterator());</b>
+&nbsp;        this.prepareEntityFlushes(session, persistenceContext);
+<b class="nc">&nbsp;        this.prepareCollectionFlushes(persistenceContext);</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected void logFlushResults(FlushEvent event) {</b>
+&nbsp;        if (LOG.isDebugEnabled()) {
+<b class="nc">&nbsp;            EventSource session = event.getSession();</b>
+&nbsp;            PersistenceContext persistenceContext = session.getPersistenceContextInternal();
+&nbsp;            ActionQueue actionQueue = session.getActionQueue();
+&nbsp;            LOG.debugf(&quot;Flushed: %s insertions, %s updates, %s deletions to %s objects&quot;, new Object[]{actionQueue.numberOfInsertions(), actionQueue.numberOfUpdates(), actionQueue.numberOfDeletions(), persistenceContext.getNumberOfManagedEntities()});
+<b class="nc">&nbsp;            LOG.debugf(&quot;Flushed: %s (re)creations, %s updates, %s removals to %s collections&quot;, new Object[]{actionQueue.numberOfCollectionCreations(), actionQueue.numberOfCollectionUpdates(), actionQueue.numberOfCollectionRemovals(), persistenceContext.getCollectionEntriesSize()});</b>
+&nbsp;            (new EntityPrinter(session.getFactory())).toString(persistenceContext.getEntityHoldersByKey().entrySet());
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private void prepareEntityFlushes(EventSource session, PersistenceContext persistenceContext) throws HibernateException {</b>
+<b class="nc">&nbsp;        LOG.debug(&quot;Processing flush-time cascades&quot;);</b>
+&nbsp;        PersistContext context = this.getContext(session);
+&nbsp;
+<b class="nc">&nbsp;        for(Map.Entry&lt;Object, EntityEntry&gt; me : persistenceContext.reentrantSafeEntityEntries()) {</b>
+&nbsp;            EntityEntry entry = (EntityEntry)me.getValue();
+&nbsp;            if (flushable(entry)) {
+&nbsp;                this.cascadeOnFlush(session, entry.getPersister(), me.getKey(), context);
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        for(Map.Entry&lt;Object, EntityEntry&gt; me : persistenceContext.reentrantSafeEntityEntries()) {
+<b class="nc">&nbsp;            EntityEntry entry = (EntityEntry)me.getValue();</b>
+&nbsp;            if (flushable(entry)) {
+<b class="nc">&nbsp;                Cascade.cascade(CascadingActions.CHECK_ON_FLUSH, CascadePoint.BEFORE_FLUSH, session, entry.getPersister(), me.getKey(), (Object)null);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private static boolean flushable(EntityEntry entry) {
+&nbsp;        Status status = entry.getStatus();
+&nbsp;        return status == Status.MANAGED || status == Status.SAVING || status == Status.READ_ONLY;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private void cascadeOnFlush(EventSource session, EntityPersister persister, Object object, PersistContext anything) throws HibernateException {</b>
+&nbsp;        PersistenceContext persistenceContext = session.getPersistenceContextInternal();
+&nbsp;        persistenceContext.incrementCascadeLevel();
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        try {</b>
+<b class="nc">&nbsp;            Cascade.cascade(this.getCascadingAction(session), CascadePoint.BEFORE_FLUSH, session, persister, object, anything);</b>
+<b class="nc">&nbsp;        } finally {</b>
+&nbsp;            persistenceContext.decrementCascadeLevel();
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    protected PersistContext getContext(EventSource session) {
+<b class="nc">&nbsp;        return !this.jpaBootstrap &amp;&amp; !isJpaCascadeComplianceEnabled(session) ? null : PersistContext.create();</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected CascadingAction&lt;PersistContext&gt; getCascadingAction(EventSource session) {</b>
+<b class="nc">&nbsp;        return !this.jpaBootstrap &amp;&amp; !isJpaCascadeComplianceEnabled(session) ? CascadingActions.SAVE_UPDATE : CascadingActions.PERSIST_ON_FLUSH;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private static boolean isJpaCascadeComplianceEnabled(EventSource session) {</b>
+<b class="nc">&nbsp;        return session.getSessionFactory().getSessionFactoryOptions().getJpaCompliance().isJpaCascadeComplianceEnabled();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void prepareCollectionFlushes(PersistenceContext persistenceContext) throws HibernateException {
+&nbsp;        LOG.debug(&quot;Dirty checking collections&quot;);
+&nbsp;        Map&lt;PersistentCollection&lt;?&gt;, CollectionEntry&gt; collectionEntries = persistenceContext.getCollectionEntries();
+&nbsp;        if (collectionEntries != null) {
+&nbsp;            for(Map.Entry&lt;PersistentCollection&lt;?&gt;, CollectionEntry&gt; entry : ((IdentityMap)collectionEntries).entryArray()) {
+&nbsp;                ((CollectionEntry)entry.getValue()).preFlush((PersistentCollection)entry.getKey());
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private int flushEntities(FlushEvent event, PersistenceContext persistenceContext) throws HibernateException {
+<b class="nc">&nbsp;        LOG.trace(&quot;Flushing entities and processing referenced collections&quot;);</b>
+&nbsp;        EventSource source = event.getSession();
+<b class="nc">&nbsp;        EventListenerGroup&lt;FlushEntityEventListener&gt; flushListeners = event.getFactory().getFastSessionServices().eventListenerGroup_FLUSH_ENTITY;</b>
+<b class="nc">&nbsp;        Map.Entry&lt;Object, EntityEntry&gt;[] entityEntries = persistenceContext.reentrantSafeEntityEntries();</b>
+<b class="nc">&nbsp;        int count = entityEntries.length;</b>
+&nbsp;        FlushEntityEvent entityEvent = null;
+&nbsp;        int eventGenerationId = 0;
+&nbsp;
+&nbsp;        for(Map.Entry&lt;Object, EntityEntry&gt; me : entityEntries) {
+&nbsp;            EntityEntry entry = (EntityEntry)me.getValue();
+&nbsp;            Status status = entry.getStatus();
+&nbsp;            if (status != Status.LOADING &amp;&amp; status != Status.GONE) {
+<b class="nc">&nbsp;                entityEvent = this.createOrReuseEventInstance(entityEvent, source, me.getKey(), entry);</b>
+<b class="nc">&nbsp;                ++eventGenerationId;</b>
+<b class="nc">&nbsp;                entityEvent.setInstanceGenerationId(eventGenerationId);</b>
+<b class="nc">&nbsp;                flushListeners.fireEventOnEachListener(entityEvent, FlushEntityEventListener::onFlushEntity);</b>
+&nbsp;                entityEvent.setAllowedToReuse(true);
+&nbsp;
+&nbsp;                assert entityEvent.getInstanceGenerationId() == eventGenerationId;
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        source.getActionQueue().sortActions();
+&nbsp;        return count;
+&nbsp;    }
+&nbsp;
+&nbsp;    private FlushEntityEvent createOrReuseEventInstance(FlushEntityEvent possiblyValidExistingInstance, EventSource source, Object key, EntityEntry entry) {
+&nbsp;        if (possiblyValidExistingInstance != null &amp;&amp; possiblyValidExistingInstance.isAllowedToReuse()) {
+<b class="nc">&nbsp;            possiblyValidExistingInstance.resetAndReuseEventInstance(key, entry);</b>
+<b class="nc">&nbsp;            return possiblyValidExistingInstance;</b>
+&nbsp;        } else {
+&nbsp;            return new FlushEntityEvent(source, key, entry);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private int flushCollections(EventSource session, PersistenceContext persistenceContext) throws HibernateException {
+<b class="nc">&nbsp;        LOG.trace(&quot;Processing unreferenced collections&quot;);</b>
+<b class="nc">&nbsp;        Map&lt;PersistentCollection&lt;?&gt;, CollectionEntry&gt; collectionEntries = persistenceContext.getCollectionEntries();</b>
+&nbsp;        int count;
+<b class="nc">&nbsp;        if (collectionEntries == null) {</b>
+&nbsp;            count = 0;
+&nbsp;        } else {
+<b class="nc">&nbsp;            count = collectionEntries.size();</b>
+&nbsp;
+&nbsp;            for(Map.Entry&lt;PersistentCollection&lt;?&gt;, CollectionEntry&gt; me : ((IdentityMap)collectionEntries).entryArray()) {
+&nbsp;                CollectionEntry ce = (CollectionEntry)me.getValue();
+&nbsp;                if (!ce.isReached() &amp;&amp; !ce.isIgnore()) {
+<b class="nc">&nbsp;                    Collections.processUnreachableCollection((PersistentCollection)me.getKey(), session);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        LOG.trace(&quot;Scheduling collection removes/(re)creates/updates&quot;);</b>
+<b class="nc">&nbsp;        ActionQueue actionQueue = session.getActionQueue();</b>
+&nbsp;        Interceptor interceptor = session.getInterceptor();
+&nbsp;        persistenceContext.forEachCollectionEntry((coll, cex) -&gt; {
+&nbsp;            if (cex.isDorecreate()) {
+<b class="nc">&nbsp;                interceptor.onCollectionRecreate(coll, cex.getCurrentKey());</b>
+&nbsp;                actionQueue.addAction(new CollectionRecreateAction(coll, cex.getCurrentPersister(), cex.getCurrentKey(), session));
+&nbsp;            }
+&nbsp;
+&nbsp;            if (cex.isDoremove()) {
+&nbsp;                interceptor.onCollectionRemove(coll, cex.getLoadedKey());
+&nbsp;                if (!Collections.skipRemoval(session, cex.getLoadedPersister(), cex.getLoadedKey())) {
+&nbsp;                    actionQueue.addAction(new CollectionRemoveAction(coll, cex.getLoadedPersister(), cex.getLoadedKey(), cex.isSnapshotEmpty(coll), session));
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            if (cex.isDoupdate()) {
+<b class="nc">&nbsp;                interceptor.onCollectionUpdate(coll, cex.getLoadedKey());</b>
+<b class="nc">&nbsp;                actionQueue.addAction(new CollectionUpdateAction(coll, cex.getLoadedPersister(), cex.getLoadedKey(), cex.isSnapshotEmpty(coll), session));</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            if (!coll.wasInitialized() &amp;&amp; coll.hasQueuedOperations()) {</b>
+&nbsp;                actionQueue.addAction(new QueuedOperationCollectionAction(coll, cex.getLoadedPersister(), cex.getLoadedKey(), session));
+&nbsp;            }
+&nbsp;
+&nbsp;        }, true);
+&nbsp;        actionQueue.sortCollectionActions();
+&nbsp;        return count;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void performExecutions(EventSource session) {
+&nbsp;        LOG.trace(&quot;Executing flush&quot;);
+&nbsp;        PersistenceContext persistenceContext = session.getPersistenceContextInternal();
+&nbsp;        JdbcCoordinator jdbcCoordinator = session.getJdbcCoordinator();
+<b class="nc">&nbsp;</b>
+&nbsp;        try {
+<b class="nc">&nbsp;            jdbcCoordinator.flushBeginning();</b>
+<b class="nc">&nbsp;            persistenceContext.setFlushing(true);</b>
+<b class="nc">&nbsp;            ActionQueue actionQueue = session.getActionQueue();</b>
+&nbsp;            actionQueue.prepareActions();
+&nbsp;            actionQueue.executeActions();
+&nbsp;        } finally {
+&nbsp;            persistenceContext.setFlushing(false);
+&nbsp;            jdbcCoordinator.flushEnding();
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    protected void postFlush(SessionImplementor session) throws HibernateException {
+<b class="nc">&nbsp;        LOG.trace(&quot;Post flush&quot;);</b>
+<b class="nc">&nbsp;        PersistenceContext persistenceContext = session.getPersistenceContextInternal();</b>
+&nbsp;        persistenceContext.clearCollectionsByKey();
+<b class="nc">&nbsp;        persistenceContext.getBatchFetchQueue().clear();</b>
+&nbsp;        persistenceContext.forEachCollectionEntry((persistentCollection, collectionEntry) -&gt; {
+&nbsp;            collectionEntry.postFlush(persistentCollection);
+<b class="nc">&nbsp;            Object key;</b>
+<b class="nc">&nbsp;            if (collectionEntry.getLoadedPersister() != null &amp;&amp; (key = collectionEntry.getLoadedKey()) != null) {</b>
+&nbsp;                CollectionKey collectionKey = new CollectionKey(collectionEntry.getLoadedPersister(), key);
+<b class="nc">&nbsp;                persistenceContext.addCollectionByKey(collectionKey, persistentCollection);</b>
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                persistentCollection.unsetSession(session);
+<b class="nc">&nbsp;                persistenceContext.removeCollectionEntry(persistentCollection);</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        }, true);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected void postPostFlush(SessionImplementor session) {
+&nbsp;        session.getInterceptor().postFlush(session.getPersistenceContextInternal().managedEntitiesIterator());
+<b class="nc">&nbsp;    }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:57</div>
+</div>
+</body>
+</html>

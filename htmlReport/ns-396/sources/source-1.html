@@ -1,0 +1,681 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > AbstractMappingContext</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.data.mapping.context</a>
+</div>
+
+<h1>Coverage Summary for Class: AbstractMappingContext (org.springframework.data.mapping.context)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AbstractMappingContext</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/29)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/54)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/132)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.data.mapping.context;
+&nbsp;
+&nbsp;import java.beans.PropertyDescriptor;
+&nbsp;import java.lang.reflect.Field;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;import java.lang.reflect.Modifier;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.HashSet;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Objects;
+&nbsp;import java.util.Optional;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.concurrent.locks.Lock;
+&nbsp;import java.util.concurrent.locks.ReentrantReadWriteLock;
+&nbsp;import java.util.function.Predicate;
+&nbsp;import java.util.stream.Collectors;
+&nbsp;import java.util.stream.Stream;
+&nbsp;import org.apache.commons.logging.Log;
+&nbsp;import org.apache.commons.logging.LogFactory;
+&nbsp;import org.springframework.beans.BeanUtils;
+&nbsp;import org.springframework.beans.BeansException;
+&nbsp;import org.springframework.beans.factory.BeanFactory;
+&nbsp;import org.springframework.beans.factory.BeanFactoryAware;
+&nbsp;import org.springframework.beans.factory.InitializingBean;
+&nbsp;import org.springframework.beans.factory.ListableBeanFactory;
+&nbsp;import org.springframework.context.ApplicationContext;
+&nbsp;import org.springframework.context.ApplicationContextAware;
+&nbsp;import org.springframework.context.ApplicationEventPublisher;
+&nbsp;import org.springframework.context.ApplicationEventPublisherAware;
+&nbsp;import org.springframework.context.EnvironmentAware;
+&nbsp;import org.springframework.core.KotlinDetector;
+&nbsp;import org.springframework.core.NativeDetector;
+&nbsp;import org.springframework.core.env.Environment;
+&nbsp;import org.springframework.data.domain.ManagedTypes;
+&nbsp;import org.springframework.data.mapping.MappingException;
+&nbsp;import org.springframework.data.mapping.PersistentProperty;
+&nbsp;import org.springframework.data.mapping.PersistentPropertyPath;
+&nbsp;import org.springframework.data.mapping.PersistentPropertyPaths;
+&nbsp;import org.springframework.data.mapping.PropertyPath;
+&nbsp;import org.springframework.data.mapping.model.BeanWrapperPropertyAccessorFactory;
+&nbsp;import org.springframework.data.mapping.model.ClassGeneratingPropertyAccessorFactory;
+&nbsp;import org.springframework.data.mapping.model.EntityInstantiators;
+&nbsp;import org.springframework.data.mapping.model.InstantiationAwarePropertyAccessorFactory;
+&nbsp;import org.springframework.data.mapping.model.MutablePersistentEntity;
+&nbsp;import org.springframework.data.mapping.model.PersistentPropertyAccessorFactory;
+&nbsp;import org.springframework.data.mapping.model.Property;
+&nbsp;import org.springframework.data.mapping.model.SimpleTypeHolder;
+&nbsp;import org.springframework.data.spel.EvaluationContextProvider;
+&nbsp;import org.springframework.data.spel.ExtensionAwareEvaluationContextProvider;
+&nbsp;import org.springframework.data.util.CustomCollections;
+&nbsp;import org.springframework.data.util.KotlinReflectionUtils;
+&nbsp;import org.springframework.data.util.NullableWrapperConverters;
+&nbsp;import org.springframework.data.util.Optionals;
+&nbsp;import org.springframework.data.util.Streamable;
+&nbsp;import org.springframework.data.util.TypeInformation;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.ReflectionUtils;
+&nbsp;
+&nbsp;public abstract class AbstractMappingContext&lt;E extends MutablePersistentEntity&lt;?, P&gt;, P extends PersistentProperty&lt;P&gt;&gt; implements MappingContext&lt;E, P&gt;, ApplicationEventPublisherAware, ApplicationContextAware, BeanFactoryAware, EnvironmentAware, InitializingBean {
+&nbsp;    private static final Log LOGGER = LogFactory.getLog(MappingContext.class);
+&nbsp;    private final Optional&lt;E&gt; NONE = Optional.empty();
+&nbsp;    private final Map&lt;TypeInformation&lt;?&gt;, Optional&lt;E&gt;&gt; persistentEntities = new HashMap();
+&nbsp;    private final PersistentPropertyAccessorFactory persistentPropertyAccessorFactory;
+&nbsp;    private final PersistentPropertyPathFactory&lt;E, P&gt; persistentPropertyPathFactory;
+&nbsp;    @Nullable
+&nbsp;    private ApplicationEventPublisher applicationEventPublisher;
+&nbsp;    private EvaluationContextProvider evaluationContextProvider;
+&nbsp;    @Nullable
+&nbsp;    private Environment environment;
+&nbsp;    private ManagedTypes managedTypes;
+&nbsp;    private boolean strict;
+&nbsp;    private SimpleTypeHolder simpleTypeHolder;
+&nbsp;    private final ReentrantReadWriteLock lock;
+&nbsp;    private final Lock read;
+&nbsp;    private final Lock write;
+&nbsp;
+&nbsp;    protected AbstractMappingContext() {
+&nbsp;        this.evaluationContextProvider = EvaluationContextProvider.DEFAULT;
+&nbsp;        this.managedTypes = ManagedTypes.empty();
+&nbsp;        this.strict = false;
+&nbsp;        this.simpleTypeHolder = SimpleTypeHolder.DEFAULT;
+&nbsp;        this.lock = new ReentrantReadWriteLock();
+&nbsp;        this.read = this.lock.readLock();
+&nbsp;        this.write = this.lock.writeLock();
+&nbsp;        this.persistentPropertyPathFactory = new PersistentPropertyPathFactory(this);
+&nbsp;        EntityInstantiators instantiators = new EntityInstantiators();
+&nbsp;        PersistentPropertyAccessorFactory accessorFactory = (PersistentPropertyAccessorFactory)(NativeDetector.inNativeImage() ? BeanWrapperPropertyAccessorFactory.INSTANCE : new ClassGeneratingPropertyAccessorFactory());
+&nbsp;        this.persistentPropertyAccessorFactory = new InstantiationAwarePropertyAccessorFactory(accessorFactory, instantiators);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+&nbsp;        this.applicationEventPublisher = applicationEventPublisher;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {</b>
+<b class="nc">&nbsp;        this.setBeanFactory(applicationContext);</b>
+&nbsp;        if (this.applicationEventPublisher == null) {
+&nbsp;            this.applicationEventPublisher = applicationContext;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if (this.environment == null) {</b>
+&nbsp;            this.environment = applicationContext.getEnvironment();
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {</b>
+&nbsp;        if (beanFactory instanceof ListableBeanFactory lbf) {
+<b class="nc">&nbsp;            this.evaluationContextProvider = new ExtensionAwareEvaluationContextProvider(lbf);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void setEnvironment(Environment environment) {
+<b class="nc">&nbsp;        this.environment = environment;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void setInitialEntitySet(Set&lt;? extends Class&lt;?&gt;&gt; initialEntitySet) {</b>
+<b class="nc">&nbsp;        this.setManagedTypes(ManagedTypes.fromIterable(initialEntitySet));</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public void setManagedTypes(ManagedTypes managedTypes) {</b>
+&nbsp;        this.managedTypes = managedTypes;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setStrict(boolean strict) {
+&nbsp;        this.strict = strict;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void setSimpleTypeHolder(SimpleTypeHolder simpleTypes) {
+&nbsp;        Assert.notNull(simpleTypes, &quot;SimpleTypeHolder must not be null&quot;);
+&nbsp;        this.simpleTypeHolder = simpleTypes;
+&nbsp;    }
+&nbsp;
+&nbsp;    public Collection&lt;E&gt; getPersistentEntities() {
+&nbsp;        Collection var1;
+&nbsp;        try {
+&nbsp;            this.read.lock();
+&nbsp;            var1 = (Collection)this.persistentEntities.values().stream().flatMap((xva$0) -&gt; Optionals.toStream(new Optional[]{xva$0})).collect(Collectors.toSet());
+&nbsp;        } finally {
+<b class="nc">&nbsp;            this.read.unlock();</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return var1;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    @Nullable</b>
+<b class="nc">&nbsp;    public E getPersistentEntity(Class&lt;?&gt; type) {</b>
+&nbsp;        return (E)this.getPersistentEntity(TypeInformation.of(type));
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean hasPersistentEntityFor(Class&lt;?&gt; type) {
+&nbsp;        Assert.notNull(type, &quot;Type must not be null&quot;);
+&nbsp;        TypeInformation&lt;?&gt; typeInformation = TypeInformation.of(type);
+&nbsp;
+&nbsp;        boolean userTypeInformation;
+&nbsp;        try {
+&nbsp;            this.read.lock();
+&nbsp;            Optional&lt;E&gt; entity = (Optional)this.persistentEntities.get(typeInformation);
+<b class="nc">&nbsp;            if (entity == null) {</b>
+<b class="nc">&nbsp;                TypeInformation&lt;?&gt; userTypeInformation = typeInformation.getUserTypeInformation();</b>
+&nbsp;                if (userTypeInformation.equals(typeInformation)) {
+&nbsp;                    boolean var11 = false;
+&nbsp;                    return var11;
+&nbsp;                }
+&nbsp;
+&nbsp;                entity = (Optional)this.persistentEntities.get(typeInformation.getUserTypeInformation());
+&nbsp;                boolean var5 = entity == null ? false : entity.isPresent();
+&nbsp;                return var5;
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            userTypeInformation = entity.isPresent();
+&nbsp;        } finally {
+&nbsp;            this.read.unlock();
+&nbsp;        }
+&nbsp;
+&nbsp;        return userTypeInformation;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+<b class="nc">&nbsp;    public E getPersistentEntity(TypeInformation&lt;?&gt; type) {</b>
+&nbsp;        Assert.notNull(type, &quot;Type must not be null&quot;);
+&nbsp;
+&nbsp;        try {
+&nbsp;            this.read.lock();
+&nbsp;            Optional&lt;E&gt; entity = (Optional)this.persistentEntities.get(type);
+&nbsp;            if (entity != null) {
+&nbsp;                MutablePersistentEntity var3 = (MutablePersistentEntity)entity.orElse((Object)null);
+&nbsp;                return (E)var3;
+&nbsp;            }
+<b class="nc">&nbsp;        } finally {</b>
+&nbsp;            this.read.unlock();
+&nbsp;        }
+&nbsp;
+&nbsp;        if (!this.shouldCreatePersistentEntityFor(type)) {
+&nbsp;            try {
+&nbsp;                this.write.lock();
+&nbsp;                this.persistentEntities.put(type, this.NONE);
+&nbsp;            } finally {
+&nbsp;                this.write.unlock();
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        } else if (this.strict) {
+&nbsp;            throw new MappingException(&quot;Unknown persistent entity &quot; + type);
+&nbsp;        } else {
+&nbsp;            return (E)(this.addPersistentEntity(type).orElse((Object)null));
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public E getPersistentEntity(P persistentProperty) {
+&nbsp;        Assert.notNull(persistentProperty, &quot;PersistentProperty must not be null&quot;);
+<b class="nc">&nbsp;        if (!persistentProperty.isEntity()) {</b>
+&nbsp;            return null;
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            TypeInformation&lt;?&gt; typeInfo = persistentProperty.getTypeInformation();
+&nbsp;            return (E)this.getPersistentEntity(typeInfo.getRequiredActualType());
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public PersistentPropertyPath&lt;P&gt; getPersistentPropertyPath(PropertyPath propertyPath) {
+&nbsp;        return this.persistentPropertyPathFactory.from(propertyPath);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public PersistentPropertyPath&lt;P&gt; getPersistentPropertyPath(String propertyPath, Class&lt;?&gt; type) {</b>
+<b class="nc">&nbsp;        return this.persistentPropertyPathFactory.from(type, propertyPath);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public PersistentPropertyPath&lt;P&gt; getPersistentPropertyPath(String propertyPath, TypeInformation&lt;?&gt; type) {
+<b class="nc">&nbsp;        return this.persistentPropertyPathFactory.from(type, propertyPath);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;T&gt; PersistentPropertyPaths&lt;T, P&gt; findPersistentPropertyPaths(Class&lt;T&gt; type, Predicate&lt;? super P&gt; predicate) {
+&nbsp;        Assert.notNull(type, &quot;Type must not be null&quot;);
+&nbsp;        Assert.notNull(predicate, &quot;Selection predicate must not be null&quot;);
+&nbsp;        return this.doFindPersistentPropertyPaths(type, predicate, (it) -&gt; !it.isAssociation());
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected final &lt;T&gt; PersistentPropertyPaths&lt;T, P&gt; doFindPersistentPropertyPaths(Class&lt;T&gt; type, Predicate&lt;? super P&gt; predicate, Predicate&lt;P&gt; traversalGuard) {
+&nbsp;        return this.persistentPropertyPathFactory.from(TypeInformation.of(type), predicate, traversalGuard);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected Optional&lt;E&gt; addPersistentEntity(Class&lt;?&gt; type) {</b>
+&nbsp;        return this.addPersistentEntity(TypeInformation.of(type));
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected Optional&lt;E&gt; addPersistentEntity(TypeInformation&lt;?&gt; typeInformation) {
+&nbsp;        Assert.notNull(typeInformation, &quot;TypeInformation must not be null&quot;);
+<b class="nc">&nbsp;</b>
+&nbsp;        try {
+&nbsp;            this.read.lock();
+<b class="nc">&nbsp;            Optional&lt;E&gt; persistentEntity = (Optional)this.persistentEntities.get(typeInformation);</b>
+&nbsp;            if (persistentEntity != null) {
+<b class="nc">&nbsp;                Optional e = persistentEntity;</b>
+<b class="nc">&nbsp;                return e;</b>
+&nbsp;            }
+&nbsp;        } finally {
+&nbsp;            this.read.unlock();
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        E entity;</b>
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            this.write.lock();
+&nbsp;            Optional&lt;E&gt; userTypeEntity = (Optional)this.persistentEntities.get(typeInformation.getUserTypeInformation());
+&nbsp;            if (userTypeEntity != null) {
+<b class="nc">&nbsp;                this.persistentEntities.put(typeInformation, userTypeEntity);</b>
+&nbsp;                Optional var4 = userTypeEntity;
+<b class="nc">&nbsp;                return var4;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            entity = this.doAddPersistentEntity(typeInformation);</b>
+&nbsp;        } catch (BeansException e) {
+&nbsp;            throw new MappingException(e.getMessage(), e);
+&nbsp;        } finally {
+&nbsp;            this.write.unlock();
+&nbsp;        }
+&nbsp;
+&nbsp;        if (this.applicationEventPublisher != null) {
+<b class="nc">&nbsp;            this.applicationEventPublisher.publishEvent(new MappingContextEvent(this, entity));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        return Optional.of(entity);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private E doAddPersistentEntity(TypeInformation&lt;?&gt; typeInformation) {</b>
+&nbsp;        TypeInformation&lt;?&gt; userTypeInformation = typeInformation.getUserTypeInformation();
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            Class&lt;?&gt; type = userTypeInformation.getType();
+&nbsp;            E entity = this.createPersistentEntity(userTypeInformation);
+&nbsp;            entity.setEvaluationContextProvider(this.evaluationContextProvider);
+<b class="nc">&nbsp;            if (this.environment != null) {</b>
+&nbsp;                entity.setEnvironment(this.environment);
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            this.persistentEntities.put(userTypeInformation, Optional.of(entity));
+&nbsp;            if (!userTypeInformation.equals(typeInformation)) {
+<b class="nc">&nbsp;                this.persistentEntities.put(typeInformation, Optional.of(entity));</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            if (this.shouldCreateProperties(userTypeInformation)) {</b>
+&nbsp;                PropertyDescriptor[] pds = BeanUtils.getPropertyDescriptors(type);
+&nbsp;                Map&lt;String, PropertyDescriptor&gt; descriptors = new HashMap(pds.length);
+<b class="nc">&nbsp;</b>
+&nbsp;                for(PropertyDescriptor descriptor : pds) {
+&nbsp;                    descriptors.put(descriptor.getName(), descriptor);
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                AbstractMappingContext&lt;E, P&gt;.PersistentPropertyCreator persistentPropertyCreator = new PersistentPropertyCreator(entity, descriptors);
+&nbsp;                ReflectionUtils.doWithFields(type, persistentPropertyCreator, AbstractMappingContext.PersistentPropertyFilter.INSTANCE);
+<b class="nc">&nbsp;                persistentPropertyCreator.addPropertiesForRemainingDescriptors();</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            entity.verify();
+&nbsp;            if (this.persistentPropertyAccessorFactory.isSupported(entity)) {
+&nbsp;                entity.setPersistentPropertyAccessorFactory(this.persistentPropertyAccessorFactory);
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            return entity;
+<b class="nc">&nbsp;        } catch (RuntimeException e) {</b>
+<b class="nc">&nbsp;            this.persistentEntities.remove(userTypeInformation);</b>
+&nbsp;            this.persistentEntities.remove(typeInformation);
+&nbsp;            throw e;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public Collection&lt;TypeInformation&lt;?&gt;&gt; getManagedTypes() {
+&nbsp;        Set var1;
+&nbsp;        try {
+<b class="nc">&nbsp;            this.read.lock();</b>
+&nbsp;            var1 = Collections.unmodifiableSet(new HashSet(this.persistentEntities.keySet()));
+&nbsp;        } finally {
+&nbsp;            this.read.unlock();
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        return var1;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected abstract &lt;T&gt; E createPersistentEntity(TypeInformation&lt;T&gt; typeInformation);
+<b class="nc">&nbsp;</b>
+&nbsp;    protected abstract P createPersistentProperty(Property property, E owner, SimpleTypeHolder simpleTypeHolder);
+&nbsp;
+&nbsp;    protected boolean shouldCreateProperties(TypeInformation&lt;?&gt; typeInformation) {
+&nbsp;        Class&lt;?&gt; type = typeInformation.getType();
+&nbsp;        return !typeInformation.isMap() &amp;&amp; !isCollectionLike(type);
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private static boolean isCollectionLike(Class&lt;?&gt; type) {
+<b class="nc">&nbsp;        return type.isArray() || Iterable.class.equals(type) || Streamable.class.equals(type) || Collection.class.isAssignableFrom(type) || CustomCollections.isCollection(type);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void afterPropertiesSet() {
+&nbsp;        this.initialize();
+&nbsp;    }
+&nbsp;
+&nbsp;    public void initialize() {
+&nbsp;        this.managedTypes.forEach(this::addPersistentEntity);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected boolean shouldCreatePersistentEntityFor(TypeInformation&lt;?&gt; type) {
+&nbsp;        if (this.simpleTypeHolder.isSimpleType(type.getType())) {
+&nbsp;            return false;
+&nbsp;        } else if (NullableWrapperConverters.supports(type.getType())) {
+&nbsp;            return false;
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            return !KotlinDetector.isKotlinType(type.getType()) || KotlinReflectionUtils.isSupportedKotlinClass(type.getType());
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private final class PersistentPropertyCreator implements ReflectionUtils.FieldCallback {
+&nbsp;        private final E entity;
+&nbsp;        private final Map&lt;String, PropertyDescriptor&gt; descriptors;
+&nbsp;        private final Map&lt;String, PropertyDescriptor&gt; remainingDescriptors;
+&nbsp;
+<b class="nc">&nbsp;        public PersistentPropertyCreator(E entity, Map&lt;String, PropertyDescriptor&gt; descriptors) {</b>
+&nbsp;            this(entity, descriptors, descriptors);
+&nbsp;        }
+&nbsp;
+&nbsp;        private PersistentPropertyCreator(E entity, Map&lt;String, PropertyDescriptor&gt; descriptors, Map&lt;String, PropertyDescriptor&gt; remainingDescriptors) {
+&nbsp;            this.entity = entity;
+&nbsp;            this.descriptors = descriptors;
+&nbsp;            this.remainingDescriptors = remainingDescriptors;
+&nbsp;        }
+&nbsp;
+&nbsp;        public void doWith(Field field) {
+<b class="nc">&nbsp;            String fieldName = field.getName();</b>
+&nbsp;            TypeInformation&lt;?&gt; type = this.entity.getTypeInformation();
+&nbsp;            ReflectionUtils.makeAccessible(field);
+&nbsp;            Property property = (Property)Optional.ofNullable((PropertyDescriptor)this.descriptors.get(fieldName)).map((it) -&gt; Property.of(type, field, it)).orElseGet(() -&gt; Property.of(type, field));
+<b class="nc">&nbsp;            this.createAndRegisterProperty(property);</b>
+&nbsp;            this.remainingDescriptors.remove(fieldName);
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        public void addPropertiesForRemainingDescriptors() {</b>
+<b class="nc">&nbsp;            Stream var10000 = this.remainingDescriptors.values().stream().filter(Property::supportsStandalone).map((it) -&gt; Property.of(this.entity.getTypeInformation(), it));</b>
+&nbsp;            PersistentPropertyFilter var10001 = AbstractMappingContext.PersistentPropertyFilter.INSTANCE;
+&nbsp;            Objects.requireNonNull(var10001);
+&nbsp;            var10000.filter(var10001::matches).forEach(this::createAndRegisterProperty);
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        private void createAndRegisterProperty(Property input) {
+&nbsp;            P property = (P)AbstractMappingContext.this.createPersistentProperty(input, this.entity, AbstractMappingContext.this.simpleTypeHolder);
+&nbsp;            if (!property.isTransient()) {
+&nbsp;                if (input.isFieldBacked() || property.usePropertyAccess()) {
+&nbsp;                    if (!this.shouldSkipOverrideProperty(property)) {
+<b class="nc">&nbsp;                        this.entity.addPersistentProperty(property);</b>
+&nbsp;                        if (property.isAssociation()) {
+<b class="nc">&nbsp;                            this.entity.addAssociation(property.getRequiredAssociation());</b>
+&nbsp;                        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                        if (!this.entity.getType().equals(property.getRawType())) {</b>
+<b class="nc">&nbsp;                            property.getPersistentEntityTypeInformation().forEach((it) -&gt; {</b>
+&nbsp;                                if (AbstractMappingContext.this.shouldCreatePersistentEntityFor(it)) {
+&nbsp;                                    AbstractMappingContext.this.addPersistentEntity(it);
+<b class="nc">&nbsp;                                }</b>
+&nbsp;
+&nbsp;                            });
+<b class="nc">&nbsp;                        }</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        protected boolean shouldSkipOverrideProperty(P property) {</b>
+<b class="nc">&nbsp;            P existingProperty = (P)this.entity.getPersistentProperty(property.getName());</b>
+&nbsp;            if (existingProperty == null) {
+&nbsp;                return false;
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                Class&lt;?&gt; declaringClass = this.getDeclaringClass(property);
+&nbsp;                Class&lt;?&gt; existingDeclaringClass = this.getDeclaringClass(existingProperty);
+&nbsp;                Class&lt;?&gt; propertyType = this.getPropertyType(property);
+&nbsp;                Class&lt;?&gt; existingPropertyType = this.getPropertyType(existingProperty);
+<b class="nc">&nbsp;                if (!propertyType.isAssignableFrom(existingPropertyType)) {</b>
+&nbsp;                    if (AbstractMappingContext.LOGGER.isDebugEnabled()) {
+&nbsp;                        AbstractMappingContext.LOGGER.warn(String.format(&quot;Offending property declaration in &#39;%s %s.%s&#39; shadowing &#39;%s %s.%s&#39; in &#39;%s&#39;. &quot;, propertyType.getSimpleName(), declaringClass.getName(), property.getName(), existingPropertyType.getSimpleName(), existingDeclaringClass.getName(), existingProperty.getName(), this.entity.getType().getSimpleName()));
+&nbsp;                    }
+<b class="nc">&nbsp;</b>
+&nbsp;                    return true;
+<b class="nc">&nbsp;                } else {</b>
+<b class="nc">&nbsp;                    return false;</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        private Class&lt;?&gt; getDeclaringClass(PersistentProperty&lt;?&gt; persistentProperty) {
+<b class="nc">&nbsp;            Field field = persistentProperty.getField();</b>
+&nbsp;            if (field != null) {
+&nbsp;                return field.getDeclaringClass();
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                Method accessor = persistentProperty.getGetter();</b>
+&nbsp;                if (accessor == null) {
+&nbsp;                    accessor = persistentProperty.getSetter();
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                if (accessor == null) {</b>
+&nbsp;                    accessor = persistentProperty.getWither();
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                return accessor != null ? accessor.getDeclaringClass() : persistentProperty.getOwner().getType();
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        private Class&lt;?&gt; getPropertyType(PersistentProperty&lt;?&gt; persistentProperty) {</b>
+&nbsp;            Field field = persistentProperty.getField();
+&nbsp;            if (field != null) {
+<b class="nc">&nbsp;                return field.getType();</b>
+&nbsp;            } else {
+<b class="nc">&nbsp;                Method getter = persistentProperty.getGetter();</b>
+<b class="nc">&nbsp;                if (getter != null) {</b>
+&nbsp;                    return getter.getReturnType();
+&nbsp;                } else {
+<b class="nc">&nbsp;                    Method setter = persistentProperty.getSetter();</b>
+&nbsp;                    if (setter != null) {
+&nbsp;                        return setter.getParameterTypes()[0];
+&nbsp;                    } else {
+<b class="nc">&nbsp;                        Method wither = persistentProperty.getWither();</b>
+<b class="nc">&nbsp;                        return wither != null ? wither.getParameterTypes()[0] : persistentProperty.getType();</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    static enum PersistentPropertyFilter implements ReflectionUtils.FieldFilter {
+&nbsp;        INSTANCE;
+&nbsp;
+&nbsp;        private static final Streamable&lt;PropertyMatch&gt; UNMAPPED_PROPERTIES;
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        private PersistentPropertyFilter() {</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        public boolean matches(Field field) {</b>
+&nbsp;            return Modifier.isStatic(field.getModifiers()) ? false : UNMAPPED_PROPERTIES.stream().noneMatch((it) -&gt; it.matches(field));
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean matches(Property property) {
+&nbsp;            Assert.notNull(property, &quot;Property must not be null&quot;);
+&nbsp;            return !property.hasAccessor() ? false : UNMAPPED_PROPERTIES.stream().noneMatch((it) -&gt; it.matches(property));
+&nbsp;        }
+&nbsp;
+&nbsp;        static {
+&nbsp;            Set&lt;PropertyMatch&gt; matches = new HashSet();
+&nbsp;            matches.add(new PropertyMatch(&quot;class&quot;, (String)null));
+&nbsp;            matches.add(new PropertyMatch(&quot;this\\$.*&quot;, (String)null));
+&nbsp;            matches.add(new PropertyMatch(&quot;metaClass&quot;, &quot;groovy.lang.MetaClass&quot;));
+&nbsp;            matches.add(new KotlinDataClassPropertyMatch(&quot;.*\\$delegate&quot;, (String)null));
+&nbsp;            UNMAPPED_PROPERTIES = Streamable.of(matches);
+&nbsp;        }
+&nbsp;
+&nbsp;        static class PropertyMatch {
+&nbsp;            @Nullable
+&nbsp;            private final String namePattern;
+&nbsp;            @Nullable
+&nbsp;            private final String typeName;
+&nbsp;
+&nbsp;            public PropertyMatch(@Nullable String namePattern, @Nullable String typeName) {
+&nbsp;                Assert.isTrue(namePattern != null || typeName != null, &quot;Either name pattern or type name must be given&quot;);
+&nbsp;                this.namePattern = namePattern;
+&nbsp;                this.typeName = typeName;
+&nbsp;            }
+&nbsp;
+&nbsp;            public boolean matches(Field field) {
+<b class="nc">&nbsp;                return this.matches(field.getName(), field.getType());</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            public boolean matches(Property property) {
+&nbsp;                return this.matches(property.getName(), property.getType());
+&nbsp;            }
+&nbsp;
+&nbsp;            public boolean matches(String name, Class&lt;?&gt; type) {
+&nbsp;                Assert.notNull(name, &quot;Name must not be null&quot;);
+&nbsp;                Assert.notNull(type, &quot;Type must not be null&quot;);
+&nbsp;                if (this.namePattern != null &amp;&amp; !name.matches(this.namePattern)) {
+&nbsp;                    return false;
+&nbsp;                } else {
+&nbsp;                    return this.typeName == null || type.getName().equals(this.typeName);
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        static class KotlinDataClassPropertyMatch extends PropertyMatch {</b>
+&nbsp;            public KotlinDataClassPropertyMatch(@Nullable String namePattern, @Nullable String typeName) {
+&nbsp;                super(namePattern, typeName);
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            public boolean matches(Field field) {</b>
+&nbsp;                return !KotlinReflectionUtils.isDataClass(field.getDeclaringClass()) ? false : super.matches(field);
+&nbsp;            }
+&nbsp;
+&nbsp;            public boolean matches(Property property) {
+&nbsp;                Field field = (Field)property.getField().orElse((Object)null);
+&nbsp;                return field != null &amp;&amp; KotlinReflectionUtils.isDataClass(field.getDeclaringClass()) ? super.matches(property) : false;
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

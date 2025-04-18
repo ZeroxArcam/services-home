@@ -1,0 +1,223 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ManagedBeanRegistryInitiator</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.resource.beans.spi</a>
+</div>
+
+<h1>Coverage Summary for Class: ManagedBeanRegistryInitiator (org.hibernate.resource.beans.spi)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ManagedBeanRegistryInitiator</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    75%
+  </span>
+  <span class="absValue">
+    (6/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    16.7%
+  </span>
+  <span class="absValue">
+    (3/18)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    30.8%
+  </span>
+  <span class="absValue">
+    (12/39)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.resource.beans.spi;
+&nbsp;
+&nbsp;import java.util.Map;
+&nbsp;import org.hibernate.InstantiationException;
+&nbsp;import org.hibernate.boot.registry.StandardServiceInitiator;
+&nbsp;import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
+&nbsp;import org.hibernate.boot.registry.classloading.spi.ClassLoadingException;
+&nbsp;import org.hibernate.boot.registry.selector.spi.StrategySelector;
+&nbsp;import org.hibernate.engine.config.spi.ConfigurationService;
+&nbsp;import org.hibernate.resource.beans.container.internal.CdiBeanContainerBuilder;
+&nbsp;import org.hibernate.resource.beans.container.spi.BeanContainer;
+&nbsp;import org.hibernate.resource.beans.internal.BeansMessageLogger;
+&nbsp;import org.hibernate.resource.beans.internal.ManagedBeanRegistryImpl;
+&nbsp;import org.hibernate.service.spi.ServiceRegistryImplementor;
+&nbsp;
+&nbsp;public class ManagedBeanRegistryInitiator implements StandardServiceInitiator&lt;ManagedBeanRegistry&gt; {
+&nbsp;    public static final ManagedBeanRegistryInitiator INSTANCE = new ManagedBeanRegistryInitiator();
+&nbsp;
+&nbsp;    public ManagedBeanRegistryInitiator() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public Class&lt;ManagedBeanRegistry&gt; getServiceInitiated() {
+&nbsp;        return ManagedBeanRegistry.class;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public ManagedBeanRegistry initiateService(Map&lt;String, Object&gt; configurationValues, ServiceRegistryImplementor serviceRegistry) {</b>
+&nbsp;        return new ManagedBeanRegistryImpl(this.resolveBeanContainer(configurationValues, serviceRegistry));
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    private BeanContainer resolveBeanContainer(Map&lt;?, ?&gt; configurationValues, ServiceRegistryImplementor serviceRegistry) {</b>
+&nbsp;        ClassLoaderService classLoaderService = (ClassLoaderService)serviceRegistry.requireService(ClassLoaderService.class);
+&nbsp;        ConfigurationService cfgSvc = (ConfigurationService)serviceRegistry.requireService(ConfigurationService.class);
+&nbsp;        Object explicitBeanContainer = configurationValues.get(&quot;hibernate.resource.beans.container&quot;);
+<b class="fc">&nbsp;        if (explicitBeanContainer != null) {</b>
+&nbsp;            return this.interpretExplicitBeanContainer(explicitBeanContainer, classLoaderService, serviceRegistry);
+&nbsp;        } else {
+&nbsp;            boolean isCdiAvailable = isCdiAvailable(classLoaderService);
+&nbsp;            Object beanManagerRef = cfgSvc.getSettings().get(&quot;javax.persistence.bean.manager&quot;);
+&nbsp;            if (beanManagerRef == null) {
+&nbsp;                beanManagerRef = cfgSvc.getSettings().get(&quot;jakarta.persistence.bean.manager&quot;);
+<b class="fc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            if (beanManagerRef != null) {
+&nbsp;                if (!isCdiAvailable) {
+<b class="fc">&nbsp;                    BeansMessageLogger.BEANS_MSG_LOGGER.beanManagerButCdiNotAvailable(beanManagerRef);</b>
+<b class="fc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                return CdiBeanContainerBuilder.fromBeanManagerReference(beanManagerRef, serviceRegistry);
+<b class="fc">&nbsp;            } else {</b>
+<b class="pc">&nbsp;                if (isCdiAvailable) {</b>
+<b class="fc">&nbsp;                    BeansMessageLogger.BEANS_MSG_LOGGER.noBeanManagerButCdiAvailable();</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                return null;
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private BeanContainer interpretExplicitBeanContainer(Object explicitSetting, ClassLoaderService classLoaderService, ServiceRegistryImplementor serviceRegistry) {</b>
+<b class="nc">&nbsp;        if (explicitSetting == null) {</b>
+&nbsp;            return null;
+<b class="nc">&nbsp;        } else if (explicitSetting instanceof BeanContainer) {</b>
+<b class="nc">&nbsp;            return (BeanContainer)explicitSetting;</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            Class&lt;?&gt; containerClass;
+&nbsp;            if (explicitSetting instanceof Class) {
+<b class="nc">&nbsp;                containerClass = (Class)explicitSetting;</b>
+&nbsp;            } else {
+&nbsp;                String name = explicitSetting.toString();
+<b class="nc">&nbsp;                Class&lt;?&gt; selected = ((StrategySelector)serviceRegistry.requireService(StrategySelector.class)).selectStrategyImplementor(BeanContainer.class, name);</b>
+<b class="nc">&nbsp;                if (selected != null) {</b>
+&nbsp;                    containerClass = selected;
+&nbsp;                } else {
+&nbsp;                    containerClass = classLoaderService.classForName(name);
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            try {
+&nbsp;                return (BeanContainer)containerClass.newInstance();
+&nbsp;            } catch (Exception e) {
+<b class="pc">&nbsp;                throw new InstantiationException(&quot;Unable to instantiate specified BeanContainer&quot;, containerClass, e);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;    }
+<b class="pc">&nbsp;</b>
+<b class="fc">&nbsp;    private static boolean isCdiAvailable(ClassLoaderService classLoaderService) {</b>
+&nbsp;        try {
+&nbsp;            cdiBeanManagerClass(classLoaderService);
+&nbsp;            return true;
+&nbsp;        } catch (ClassLoadingException var2) {
+<b class="nc">&nbsp;            return false;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public static Class&lt;?&gt; cdiBeanManagerClass(ClassLoaderService classLoaderService) throws ClassLoadingException {</b>
+&nbsp;        try {
+<b class="nc">&nbsp;            return classLoaderService.classForName(&quot;jakarta.enterprise.inject.spi.BeanManager&quot;);</b>
+<b class="nc">&nbsp;        } catch (ClassLoadingException var2) {</b>
+<b class="nc">&nbsp;            return classLoaderService.classForName(&quot;jakarta.enterprise.inject.spi.BeanManager&quot;);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:58</div>
+</div>
+</body>
+</html>

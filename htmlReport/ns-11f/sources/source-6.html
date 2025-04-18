@@ -1,0 +1,286 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > QualifiedNameParser</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.boot.model.relational</a>
+</div>
+
+<h1>Coverage Summary for Class: QualifiedNameParser (org.hibernate.boot.model.relational)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+  <tr>
+    <td class="name">QualifiedNameParser$NameParts</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (4/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    15%
+  </span>
+  <span class="absValue">
+    (3/20)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    43.3%
+  </span>
+  <span class="absValue">
+    (13/30)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (4/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    15%
+  </span>
+  <span class="absValue">
+    (3/20)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    43.3%
+  </span>
+  <span class="absValue">
+    (13/30)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.boot.model.relational;
+&nbsp;
+&nbsp;import java.util.Objects;
+&nbsp;import org.hibernate.HibernateException;
+&nbsp;import org.hibernate.boot.model.naming.Identifier;
+&nbsp;import org.hibernate.boot.model.naming.IllegalIdentifierException;
+&nbsp;import org.hibernate.internal.util.StringHelper;
+&nbsp;
+&nbsp;public class QualifiedNameParser {
+&nbsp;    public static final QualifiedNameParser INSTANCE = new QualifiedNameParser();
+&nbsp;
+&nbsp;    public QualifiedNameParser() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public NameParts parse(String text, Identifier defaultCatalog, Identifier defaultSchema) {
+&nbsp;        if (text == null) {
+&nbsp;            throw new IllegalIdentifierException(&quot;Object name to parse must be specified, but found null&quot;);
+&nbsp;        } else {
+&nbsp;            int quoteCharCount = StringHelper.count(text, &quot;`&quot;);
+&nbsp;            boolean wasQuotedInEntirety = quoteCharCount == 2 &amp;&amp; text.startsWith(&quot;`&quot;) &amp;&amp; text.endsWith(&quot;`&quot;);
+&nbsp;            if (wasQuotedInEntirety) {
+&nbsp;                return new NameParts(defaultCatalog, defaultSchema, Identifier.toIdentifier(unquote(text), true));
+&nbsp;            } else {
+&nbsp;                String catalogName = null;
+&nbsp;                String schemaName = null;
+&nbsp;                boolean catalogWasQuoted = false;
+&nbsp;                boolean schemaWasQuoted = false;
+&nbsp;                String[] tokens = text.split(&quot;\\.&quot;);
+<b class="fc">&nbsp;                String name;</b>
+<b class="pc">&nbsp;                if (tokens.length != 0 &amp;&amp; tokens.length != 1) {</b>
+<b class="nc">&nbsp;                    if (tokens.length == 2) {</b>
+&nbsp;                        schemaName = tokens[0];
+&nbsp;                        name = tokens[1];
+<b class="fc">&nbsp;                    } else {</b>
+<b class="fc">&nbsp;                        if (tokens.length != 3) {</b>
+<b class="fc">&nbsp;                            throw new HibernateException(&quot;Unable to parse object name: &quot; + text);</b>
+&nbsp;                        }
+<b class="fc">&nbsp;</b>
+<b class="pc">&nbsp;                        schemaName = tokens[0];</b>
+<b class="nc">&nbsp;                        catalogName = tokens[1];</b>
+&nbsp;                        name = tokens[2];
+<b class="pc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                } else {</b>
+&nbsp;                    name = text;
+<b class="fc">&nbsp;                }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;                boolean nameWasQuoted = Identifier.isQuoted(name);
+&nbsp;                if (nameWasQuoted) {
+&nbsp;                    name = unquote(name);
+&nbsp;                }
+<b class="fc">&nbsp;</b>
+&nbsp;                if (schemaName != null) {
+&nbsp;                    schemaWasQuoted = Identifier.isQuoted(schemaName);
+&nbsp;                    if (schemaWasQuoted) {
+&nbsp;                        schemaName = unquote(schemaName);
+<b class="fc">&nbsp;                    }</b>
+&nbsp;                } else if (defaultSchema != null) {
+&nbsp;                    schemaName = defaultSchema.getText();
+&nbsp;                    schemaWasQuoted = defaultSchema.isQuoted();
+&nbsp;                }
+<b class="fc">&nbsp;</b>
+&nbsp;                if (catalogName != null) {
+&nbsp;                    catalogWasQuoted = Identifier.isQuoted(catalogName);
+&nbsp;                    if (catalogWasQuoted) {
+&nbsp;                        catalogName = unquote(catalogName);
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                } else if (defaultCatalog != null) {
+&nbsp;                    catalogName = defaultCatalog.getText();
+&nbsp;                    catalogWasQuoted = defaultCatalog.isQuoted();
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+&nbsp;                return new NameParts(Identifier.toIdentifier(catalogName, wasQuotedInEntirety || catalogWasQuoted), Identifier.toIdentifier(schemaName, wasQuotedInEntirety || schemaWasQuoted), Identifier.toIdentifier(name, wasQuotedInEntirety || nameWasQuoted));
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private static String unquote(String text) {</b>
+<b class="nc">&nbsp;        return text.substring(1, text.length() - 1);</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public NameParts parse(String text) {</b>
+&nbsp;        return this.parse(text, (Identifier)null, (Identifier)null);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public static class NameParts implements QualifiedName {
+<b class="nc">&nbsp;        private final Identifier catalogName;</b>
+<b class="nc">&nbsp;        private final Identifier schemaName;</b>
+<b class="nc">&nbsp;        private final Identifier objectName;</b>
+&nbsp;        private final String qualifiedText;
+&nbsp;
+&nbsp;        public NameParts(Identifier catalogName, Identifier schemaName, Identifier objectName) {
+&nbsp;            if (objectName == null) {
+<b class="nc">&nbsp;                throw new IllegalArgumentException(&quot;Name cannot be null&quot;);</b>
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                this.catalogName = catalogName;</b>
+<b class="nc">&nbsp;                this.schemaName = schemaName;</b>
+&nbsp;                this.objectName = objectName;
+&nbsp;                StringBuilder buff = new StringBuilder();
+&nbsp;                if (catalogName != null) {
+&nbsp;                    buff.append(catalogName).append(&#39;.&#39;);
+&nbsp;                }
+&nbsp;
+&nbsp;                if (schemaName != null) {
+&nbsp;                    buff.append(schemaName).append(&#39;.&#39;);
+&nbsp;                }
+&nbsp;
+&nbsp;                buff.append(objectName);
+&nbsp;                this.qualifiedText = buff.toString();
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        public Identifier getCatalogName() {
+&nbsp;            return this.catalogName;
+&nbsp;        }
+&nbsp;
+&nbsp;        public Identifier getSchemaName() {
+&nbsp;            return this.schemaName;
+&nbsp;        }
+&nbsp;
+&nbsp;        public Identifier getObjectName() {
+&nbsp;            return this.objectName;
+&nbsp;        }
+&nbsp;
+&nbsp;        public String render() {
+&nbsp;            return this.qualifiedText;
+&nbsp;        }
+&nbsp;
+&nbsp;        public String toString() {
+&nbsp;            return this.qualifiedText;
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean equals(Object o) {
+&nbsp;            if (this == o) {
+&nbsp;                return true;
+&nbsp;            } else if (o != null &amp;&amp; this.getClass() == o.getClass()) {
+&nbsp;                NameParts that = (NameParts)o;
+&nbsp;                return Objects.equals(this.getCatalogName(), that.getCatalogName()) &amp;&amp; Objects.equals(this.getSchemaName(), that.getSchemaName()) &amp;&amp; Objects.equals(this.getObjectName(), that.getObjectName());
+&nbsp;            } else {
+&nbsp;                return false;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        public int hashCode() {
+&nbsp;            int result = this.getCatalogName() != null ? this.getCatalogName().hashCode() : 0;
+&nbsp;            result = 31 * result + (this.getSchemaName() != null ? this.getSchemaName().hashCode() : 0);
+&nbsp;            result = 31 * result + this.getObjectName().hashCode();
+&nbsp;            return result;
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
+</div>
+</body>
+</html>

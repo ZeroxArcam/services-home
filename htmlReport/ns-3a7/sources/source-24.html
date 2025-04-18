@@ -1,0 +1,417 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > PropertyOrFieldReference</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.expression.spel.ast</a>
+</div>
+
+<h1>Coverage Summary for Class: PropertyOrFieldReference (org.springframework.expression.spel.ast)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PropertyOrFieldReference</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/15)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/68)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/116)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.expression.spel.ast;
+&nbsp;
+&nbsp;import java.lang.reflect.InvocationTargetException;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.function.Supplier;
+&nbsp;import org.springframework.asm.Label;
+&nbsp;import org.springframework.asm.MethodVisitor;
+&nbsp;import org.springframework.core.convert.TypeDescriptor;
+&nbsp;import org.springframework.expression.AccessException;
+&nbsp;import org.springframework.expression.EvaluationContext;
+&nbsp;import org.springframework.expression.EvaluationException;
+&nbsp;import org.springframework.expression.PropertyAccessor;
+&nbsp;import org.springframework.expression.TypedValue;
+&nbsp;import org.springframework.expression.spel.CodeFlow;
+&nbsp;import org.springframework.expression.spel.CompilablePropertyAccessor;
+&nbsp;import org.springframework.expression.spel.ExpressionState;
+&nbsp;import org.springframework.expression.spel.SpelEvaluationException;
+&nbsp;import org.springframework.expression.spel.SpelMessage;
+&nbsp;import org.springframework.expression.spel.support.ReflectivePropertyAccessor;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.ReflectionUtils;
+&nbsp;
+&nbsp;public class PropertyOrFieldReference extends SpelNodeImpl {
+&nbsp;    private final boolean nullSafe;
+&nbsp;    private final String name;
+&nbsp;    @Nullable
+&nbsp;    private String originalPrimitiveExitTypeDescriptor;
+&nbsp;    @Nullable
+&nbsp;    private volatile PropertyAccessor cachedReadAccessor;
+&nbsp;    @Nullable
+&nbsp;    private volatile PropertyAccessor cachedWriteAccessor;
+&nbsp;
+&nbsp;    public PropertyOrFieldReference(boolean nullSafe, String propertyOrFieldName, int startPos, int endPos) {
+&nbsp;        super(startPos, endPos, new SpelNodeImpl[0]);
+&nbsp;        this.nullSafe = nullSafe;
+&nbsp;        this.name = propertyOrFieldName;
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isNullSafe() {
+&nbsp;        return this.nullSafe;
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getName() {
+&nbsp;        return this.name;
+&nbsp;    }
+&nbsp;
+&nbsp;    public ValueRef getValueRef(ExpressionState state) throws EvaluationException {
+&nbsp;        return new AccessorValueRef(this, state.getActiveContextObject(), state.getEvaluationContext(), state.getConfiguration().isAutoGrowNullReferences());
+&nbsp;    }
+&nbsp;
+&nbsp;    public TypedValue getValueInternal(ExpressionState state) throws EvaluationException {
+&nbsp;        TypedValue tv = this.getValueInternal(state.getActiveContextObject(), state.getEvaluationContext(), state.getConfiguration().isAutoGrowNullReferences());
+&nbsp;        PropertyAccessor accessorToUse = this.cachedReadAccessor;
+&nbsp;        if (accessorToUse instanceof CompilablePropertyAccessor compilablePropertyAccessor) {
+&nbsp;            this.setExitTypeDescriptor(CodeFlow.toDescriptor(compilablePropertyAccessor.getPropertyType()));
+&nbsp;        }
+&nbsp;
+&nbsp;        return tv;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private TypedValue getValueInternal(TypedValue contextObject, EvaluationContext evalContext, boolean isAutoGrowNullReferences) throws EvaluationException {</b>
+<b class="nc">&nbsp;        TypedValue result = this.readProperty(contextObject, evalContext, this.name);</b>
+<b class="nc">&nbsp;        if (result.getValue() == null &amp;&amp; isAutoGrowNullReferences &amp;&amp; this.nextChildIs(new Class[]{Indexer.class, PropertyOrFieldReference.class})) {</b>
+&nbsp;            TypeDescriptor resultDescriptor = result.getTypeDescriptor();
+&nbsp;            Assert.state(resultDescriptor != null, &quot;No result type&quot;);
+&nbsp;            if (List.class == resultDescriptor.getType()) {
+&nbsp;                if (this.isWritableProperty(this.name, contextObject, evalContext)) {
+&nbsp;                    List&lt;?&gt; newList = new ArrayList();
+&nbsp;                    this.writeProperty(contextObject, evalContext, this.name, newList);
+&nbsp;                    result = this.readProperty(contextObject, evalContext, this.name);
+&nbsp;                }
+<b class="nc">&nbsp;            } else if (Map.class == resultDescriptor.getType()) {</b>
+&nbsp;                if (this.isWritableProperty(this.name, contextObject, evalContext)) {
+&nbsp;                    Map&lt;?, ?&gt; newMap = new HashMap();
+&nbsp;                    this.writeProperty(contextObject, evalContext, this.name, newMap);
+&nbsp;                    result = this.readProperty(contextObject, evalContext, this.name);
+&nbsp;                }
+&nbsp;            } else {
+<b class="nc">&nbsp;                try {</b>
+&nbsp;                    if (this.isWritableProperty(this.name, contextObject, evalContext)) {
+&nbsp;                        Class&lt;?&gt; clazz = resultDescriptor.getType();
+&nbsp;                        Object newObject = ReflectionUtils.accessibleConstructor(clazz, new Class[0]).newInstance();
+&nbsp;                        this.writeProperty(contextObject, evalContext, this.name, newObject);
+&nbsp;                        result = this.readProperty(contextObject, evalContext, this.name);
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                } catch (InvocationTargetException ex) {</b>
+&nbsp;                    throw new SpelEvaluationException(this.getStartPosition(), ex.getTargetException(), SpelMessage.UNABLE_TO_DYNAMICALLY_CREATE_OBJECT, new Object[]{resultDescriptor.getType()});
+&nbsp;                } catch (Throwable ex) {
+&nbsp;                    throw new SpelEvaluationException(this.getStartPosition(), ex, SpelMessage.UNABLE_TO_DYNAMICALLY_CREATE_OBJECT, new Object[]{resultDescriptor.getType()});
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return result;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public TypedValue setValueInternal(ExpressionState state, Supplier&lt;TypedValue&gt; valueSupplier) throws EvaluationException {</b>
+&nbsp;        TypedValue typedValue = (TypedValue)valueSupplier.get();
+&nbsp;        this.writeProperty(state.getActiveContextObject(), state.getEvaluationContext(), this.name, typedValue.getValue());
+&nbsp;        return typedValue;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public boolean isWritable(ExpressionState state) throws EvaluationException {</b>
+&nbsp;        return this.isWritableProperty(this.name, state.getActiveContextObject(), state.getEvaluationContext());
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public String toStringAST() {</b>
+<b class="nc">&nbsp;        return this.name;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private TypedValue readProperty(TypedValue contextObject, EvaluationContext evalContext, String name) throws EvaluationException {</b>
+<b class="nc">&nbsp;        Object targetObject = contextObject.getValue();</b>
+<b class="nc">&nbsp;        if (targetObject == null &amp;&amp; this.isNullSafe()) {</b>
+<b class="nc">&nbsp;            return TypedValue.NULL;</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            PropertyAccessor accessorToUse = this.cachedReadAccessor;
+&nbsp;            if (accessorToUse != null) {
+<b class="nc">&nbsp;                if (evalContext.getPropertyAccessors().contains(accessorToUse)) {</b>
+<b class="nc">&nbsp;                    try {</b>
+<b class="nc">&nbsp;                        return accessorToUse.read(evalContext, targetObject, name);</b>
+<b class="nc">&nbsp;                    } catch (Exception var11) {</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                this.cachedReadAccessor = null;
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            List&lt;PropertyAccessor&gt; accessorsToTry = AccessorUtils.getAccessorsToTry(targetObject, evalContext.getPropertyAccessors());</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            try {</b>
+<b class="nc">&nbsp;                for(PropertyAccessor accessor : accessorsToTry) {</b>
+<b class="nc">&nbsp;                    if (accessor.canRead(evalContext, targetObject, name)) {</b>
+&nbsp;                        if (accessor instanceof ReflectivePropertyAccessor) {
+&nbsp;                            ReflectivePropertyAccessor reflectivePropertyAccessor = (ReflectivePropertyAccessor)accessor;
+&nbsp;                            accessor = reflectivePropertyAccessor.createOptimalAccessor(evalContext, targetObject, name);
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                        this.cachedReadAccessor = accessor;
+&nbsp;                        return accessor.read(evalContext, targetObject, name);
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            } catch (Exception ex) {
+&nbsp;                throw new SpelEvaluationException(ex, SpelMessage.EXCEPTION_DURING_PROPERTY_READ, new Object[]{name, ex.getMessage()});
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            if (contextObject.getValue() == null) {
+&nbsp;                throw new SpelEvaluationException(SpelMessage.PROPERTY_OR_FIELD_NOT_READABLE_ON_NULL, new Object[]{name});
+&nbsp;            } else {
+&nbsp;                throw new SpelEvaluationException(this.getStartPosition(), SpelMessage.PROPERTY_OR_FIELD_NOT_READABLE, new Object[]{name, FormatHelper.formatClassNameForMessage(this.getObjectClass(contextObject.getValue()))});
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private void writeProperty(TypedValue contextObject, EvaluationContext evalContext, String name, @Nullable Object newValue) throws EvaluationException {</b>
+&nbsp;        Object targetObject = contextObject.getValue();
+&nbsp;        if (targetObject == null) {
+&nbsp;            if (!this.isNullSafe()) {
+&nbsp;                throw new SpelEvaluationException(this.getStartPosition(), SpelMessage.PROPERTY_OR_FIELD_NOT_WRITABLE_ON_NULL, new Object[]{name});
+<b class="nc">&nbsp;            }</b>
+&nbsp;        } else {
+&nbsp;            PropertyAccessor accessorToUse = this.cachedWriteAccessor;
+&nbsp;            if (accessorToUse != null) {
+&nbsp;                if (evalContext.getPropertyAccessors().contains(accessorToUse)) {
+<b class="nc">&nbsp;                    try {</b>
+&nbsp;                        accessorToUse.write(evalContext, targetObject, name, newValue);
+&nbsp;                        return;
+&nbsp;                    } catch (Exception var11) {
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                this.cachedWriteAccessor = null;
+&nbsp;            }
+&nbsp;
+&nbsp;            List&lt;PropertyAccessor&gt; accessorsToTry = AccessorUtils.getAccessorsToTry(targetObject, evalContext.getPropertyAccessors());
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            try {</b>
+<b class="nc">&nbsp;                for(PropertyAccessor accessor : accessorsToTry) {</b>
+&nbsp;                    if (accessor.canWrite(evalContext, targetObject, name)) {
+&nbsp;                        this.cachedWriteAccessor = accessor;
+<b class="nc">&nbsp;                        accessor.write(evalContext, targetObject, name, newValue);</b>
+<b class="nc">&nbsp;                        return;</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+<b class="nc">&nbsp;            } catch (AccessException ex) {</b>
+&nbsp;                throw new SpelEvaluationException(this.getStartPosition(), ex, SpelMessage.EXCEPTION_DURING_PROPERTY_WRITE, new Object[]{name, ex.getMessage()});
+&nbsp;            }
+&nbsp;
+&nbsp;            throw new SpelEvaluationException(this.getStartPosition(), SpelMessage.PROPERTY_OR_FIELD_NOT_WRITABLE, new Object[]{name, FormatHelper.formatClassNameForMessage(this.getObjectClass(targetObject))});
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public boolean isWritableProperty(String name, TypedValue contextObject, EvaluationContext evalContext) throws EvaluationException {
+&nbsp;        Object targetObject = contextObject.getValue();
+<b class="nc">&nbsp;        if (targetObject != null) {</b>
+<b class="nc">&nbsp;            for(PropertyAccessor accessor : AccessorUtils.getAccessorsToTry(targetObject, evalContext.getPropertyAccessors())) {</b>
+&nbsp;                try {
+&nbsp;                    if (accessor.canWrite(evalContext, targetObject, name)) {
+&nbsp;                        return true;
+&nbsp;                    }
+<b class="nc">&nbsp;                } catch (AccessException var9) {</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return false;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public boolean isCompilable() {
+&nbsp;        PropertyAccessor var2 = this.cachedReadAccessor;
+&nbsp;        boolean var10000;
+&nbsp;        if (var2 instanceof CompilablePropertyAccessor compilablePropertyAccessor) {
+<b class="nc">&nbsp;            if (compilablePropertyAccessor.isCompilable()) {</b>
+&nbsp;                var10000 = true;
+&nbsp;                return var10000;
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        var10000 = false;
+<b class="nc">&nbsp;        return var10000;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void generateCode(MethodVisitor mv, CodeFlow cf) {
+&nbsp;        PropertyAccessor accessorToUse = this.cachedReadAccessor;
+&nbsp;        if (accessorToUse instanceof CompilablePropertyAccessor compilablePropertyAccessor) {
+&nbsp;            Label skipIfNull = null;
+&nbsp;            if (this.isNullSafe()) {
+&nbsp;                mv.visitInsn(89);
+<b class="nc">&nbsp;                skipIfNull = new Label();</b>
+<b class="nc">&nbsp;                Label continueLabel = new Label();</b>
+<b class="nc">&nbsp;                mv.visitJumpInsn(199, continueLabel);</b>
+&nbsp;                CodeFlow.insertCheckCast(mv, this.exitTypeDescriptor);
+&nbsp;                mv.visitJumpInsn(167, skipIfNull);
+<b class="nc">&nbsp;                mv.visitLabel(continueLabel);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            compilablePropertyAccessor.generateCode(this.name, mv, cf);
+<b class="nc">&nbsp;            cf.pushDescriptor(this.exitTypeDescriptor);</b>
+<b class="nc">&nbsp;            if (this.originalPrimitiveExitTypeDescriptor != null) {</b>
+<b class="nc">&nbsp;                CodeFlow.insertBoxIfNecessary(mv, this.originalPrimitiveExitTypeDescriptor);</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            if (skipIfNull != null) {
+&nbsp;                mv.visitLabel(skipIfNull);
+&nbsp;            }
+&nbsp;
+&nbsp;        } else {
+&nbsp;            throw new IllegalStateException(&quot;Property accessor is not compilable: &quot; + String.valueOf(accessorToUse));
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    void setExitTypeDescriptor(String descriptor) {
+<b class="nc">&nbsp;        if (this.isNullSafe() &amp;&amp; CodeFlow.isPrimitive(descriptor)) {</b>
+<b class="nc">&nbsp;            this.originalPrimitiveExitTypeDescriptor = descriptor;</b>
+&nbsp;            this.exitTypeDescriptor = CodeFlow.toBoxedDescriptor(descriptor);
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            this.exitTypeDescriptor = descriptor;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static class AccessorValueRef implements ValueRef {
+&nbsp;        private final PropertyOrFieldReference ref;
+&nbsp;        private final TypedValue contextObject;
+<b class="nc">&nbsp;        private final EvaluationContext evalContext;</b>
+<b class="nc">&nbsp;        private final boolean autoGrowNullReferences;</b>
+&nbsp;
+&nbsp;        public AccessorValueRef(PropertyOrFieldReference propertyOrFieldReference, TypedValue activeContextObject, EvaluationContext evalContext, boolean autoGrowNullReferences) {
+<b class="nc">&nbsp;            this.ref = propertyOrFieldReference;</b>
+<b class="nc">&nbsp;            this.contextObject = activeContextObject;</b>
+&nbsp;            this.evalContext = evalContext;
+&nbsp;            this.autoGrowNullReferences = autoGrowNullReferences;
+&nbsp;        }
+&nbsp;
+&nbsp;        public TypedValue getValue() {
+<b class="nc">&nbsp;            TypedValue value = this.ref.getValueInternal(this.contextObject, this.evalContext, this.autoGrowNullReferences);</b>
+<b class="nc">&nbsp;            PropertyAccessor var3 = this.ref.cachedReadAccessor;</b>
+<b class="nc">&nbsp;            if (var3 instanceof CompilablePropertyAccessor compilablePropertyAccessor) {</b>
+<b class="nc">&nbsp;                this.ref.setExitTypeDescriptor(CodeFlow.toDescriptor(compilablePropertyAccessor.getPropertyType()));</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            return value;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        public void setValue(@Nullable Object newValue) {
+&nbsp;            this.ref.writeProperty(this.contextObject, this.evalContext, this.ref.name, newValue);
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean isWritable() {
+&nbsp;            return this.ref.isWritableProperty(this.ref.name, this.contextObject, this.evalContext);
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

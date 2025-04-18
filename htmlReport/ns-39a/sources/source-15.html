@@ -1,0 +1,250 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > RepositoryRegistrationAotProcessor</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.data.repository.config</a>
+</div>
+
+<h1>Coverage Summary for Class: RepositoryRegistrationAotProcessor (org.springframework.data.repository.config)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">RepositoryRegistrationAotProcessor</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/21)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/42)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.data.repository.config;
+&nbsp;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.function.BiConsumer;
+&nbsp;import java.util.function.Predicate;
+&nbsp;import java.util.stream.Stream;
+&nbsp;import org.apache.commons.logging.Log;
+&nbsp;import org.apache.commons.logging.LogFactory;
+&nbsp;import org.springframework.aot.generate.GenerationContext;
+&nbsp;import org.springframework.aot.hint.RuntimeHints;
+&nbsp;import org.springframework.aot.hint.annotation.ReflectiveRuntimeHintsRegistrar;
+&nbsp;import org.springframework.beans.BeansException;
+&nbsp;import org.springframework.beans.factory.BeanFactory;
+&nbsp;import org.springframework.beans.factory.BeanFactoryAware;
+&nbsp;import org.springframework.beans.factory.aot.BeanRegistrationAotContribution;
+&nbsp;import org.springframework.beans.factory.aot.BeanRegistrationAotProcessor;
+&nbsp;import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+&nbsp;import org.springframework.beans.factory.support.RegisteredBean;
+&nbsp;import org.springframework.core.annotation.MergedAnnotation;
+&nbsp;import org.springframework.data.repository.core.RepositoryInformation;
+&nbsp;import org.springframework.data.util.TypeContributor;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.StringUtils;
+&nbsp;
+&nbsp;public class RepositoryRegistrationAotProcessor implements BeanRegistrationAotProcessor, BeanFactoryAware {
+&nbsp;    private ConfigurableListableBeanFactory beanFactory;
+&nbsp;    private final Log logger = LogFactory.getLog(this.getClass());
+&nbsp;    private Map&lt;String, RepositoryConfiguration&lt;?&gt;&gt; configMap;
+&nbsp;
+&nbsp;    public RepositoryRegistrationAotProcessor() {
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public BeanRegistrationAotContribution processAheadOfTime(RegisteredBean bean) {
+&nbsp;        return this.isRepositoryBean(bean) ? this.newRepositoryRegistrationAotContribution(bean) : null;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void contribute(AotRepositoryContext repositoryContext, GenerationContext generationContext) {
+&nbsp;        repositoryContext.getResolvedTypes().stream().filter((it) -&gt; !RepositoryRegistrationAotContribution.isJavaOrPrimitiveType(it)).forEach((it) -&gt; this.contributeType(it, generationContext));
+&nbsp;        repositoryContext.getResolvedAnnotations().stream().filter(RepositoryRegistrationAotProcessor::isSpringDataManagedAnnotation).map(MergedAnnotation::getType).forEach((it) -&gt; this.contributeType(it, generationContext));
+&nbsp;    }
+&nbsp;
+&nbsp;    private void registerReflectiveForAggregateRoot(AotRepositoryContext repositoryContext, GenerationContext generationContext) {
+&nbsp;        RepositoryInformation information = repositoryContext.getRepositoryInformation();
+&nbsp;        ReflectiveRuntimeHintsRegistrar registrar = new ReflectiveRuntimeHintsRegistrar();
+&nbsp;        RuntimeHints hints = generationContext.getRuntimeHints();
+&nbsp;        List&lt;Class&lt;?&gt;&gt; aggregateRootTypes = new ArrayList();
+&nbsp;        aggregateRootTypes.add(information.getDomainType());
+&nbsp;        aggregateRootTypes.addAll(information.getAlternativeDomainTypes());
+&nbsp;        Stream.concat(Stream.of(information.getDomainType()), information.getAlternativeDomainTypes().stream()).forEach((it) -&gt; registrar.registerRuntimeHints(hints, new Class[]{it}));
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean isRepositoryBean(RegisteredBean bean) {
+&nbsp;        return this.getConfigMap().containsKey(bean.getBeanName());
+&nbsp;    }
+&nbsp;
+&nbsp;    protected RepositoryRegistrationAotContribution newRepositoryRegistrationAotContribution(RegisteredBean repositoryBean) {
+&nbsp;        RepositoryRegistrationAotContribution contribution = RepositoryRegistrationAotContribution.fromProcessor(this).forBean(repositoryBean);
+&nbsp;        BiConsumer&lt;AotRepositoryContext, GenerationContext&gt; moduleContribution = this::registerReflectiveForAggregateRoot;
+&nbsp;        return contribution.withModuleContribution(moduleContribution.andThen(this::contribute));
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+&nbsp;        Assert.isInstanceOf(ConfigurableListableBeanFactory.class, beanFactory, () -&gt; &quot;AutowiredAnnotationBeanPostProcessor requires a ConfigurableListableBeanFactory: &quot; + beanFactory);
+&nbsp;        this.beanFactory = (ConfigurableListableBeanFactory)beanFactory;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected ConfigurableListableBeanFactory getBeanFactory() {
+&nbsp;        return this.beanFactory;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setConfigMap(@Nullable Map&lt;String, RepositoryConfiguration&lt;?&gt;&gt; configMap) {
+<b class="nc">&nbsp;        this.configMap = configMap;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Map&lt;String, RepositoryConfiguration&lt;?&gt;&gt; getConfigMap() {
+&nbsp;        return this.&lt;String, RepositoryConfiguration&lt;?&gt;&gt;nullSafeMap(this.configMap);
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private &lt;K, V&gt; Map&lt;K, V&gt; nullSafeMap(@Nullable Map&lt;K, V&gt; map) {</b>
+&nbsp;        return map != null ? map : Collections.emptyMap();
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    @Nullable</b>
+&nbsp;    protected RepositoryConfiguration&lt;?&gt; getRepositoryMetadata(RegisteredBean bean) {
+&nbsp;        return (RepositoryConfiguration)this.getConfigMap().get(this.nullSafeBeanName(bean));
+&nbsp;    }
+&nbsp;
+&nbsp;    private String nullSafeBeanName(RegisteredBean bean) {
+&nbsp;        String beanName = bean.getBeanName();
+&nbsp;        return StringUtils.hasText(beanName) ? beanName : &quot;&quot;;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Log getLogger() {
+&nbsp;        return this.logger;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private void logAt(Predicate&lt;Log&gt; logLevelPredicate, BiConsumer&lt;Log, String&gt; logOperation, String message, Object... arguments) {</b>
+<b class="nc">&nbsp;        Log logger = this.getLogger();</b>
+&nbsp;        if (logLevelPredicate.test(logger)) {
+<b class="nc">&nbsp;            logOperation.accept(logger, String.format(message, arguments));</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected void logDebug(String message, Object... arguments) {</b>
+&nbsp;        this.logAt(Log::isDebugEnabled, Log::debug, message, arguments);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected void logTrace(String message, Object... arguments) {</b>
+&nbsp;        this.logAt(Log::isTraceEnabled, Log::trace, message, arguments);
+&nbsp;    }
+&nbsp;
+&nbsp;    private static boolean isSpringDataManagedAnnotation(@Nullable MergedAnnotation&lt;?&gt; annotation) {
+&nbsp;        return annotation != null &amp;&amp; (isInSpringDataNamespace(annotation.getType()) || annotation.getMetaTypes().stream().anyMatch(RepositoryRegistrationAotProcessor::isInSpringDataNamespace));
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    protected void contributeType(Class&lt;?&gt; type, GenerationContext generationContext) {
+<b class="nc">&nbsp;        TypeContributor.contribute(type, (it) -&gt; true, generationContext);</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private static boolean isInSpringDataNamespace(Class&lt;?&gt; type) {
+&nbsp;        return type.getPackage().getName().startsWith(&quot;org.springframework.data&quot;);
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 21:00</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,262 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ClassParser</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.aspectj.apache.bcel.classfile</a>
+</div>
+
+<h1>Coverage Summary for Class: ClassParser (org.aspectj.apache.bcel.classfile)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ClassParser</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    84.6%
+  </span>
+  <span class="absValue">
+    (11/13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    75%
+  </span>
+  <span class="absValue">
+    (15/20)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    78.6%
+  </span>
+  <span class="absValue">
+    (44/56)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.aspectj.apache.bcel.classfile;
+&nbsp;
+&nbsp;import java.io.BufferedInputStream;
+&nbsp;import java.io.ByteArrayInputStream;
+&nbsp;import java.io.DataInputStream;
+&nbsp;import java.io.FileInputStream;
+&nbsp;import java.io.IOException;
+&nbsp;import java.io.InputStream;
+&nbsp;
+&nbsp;public final class ClassParser {
+&nbsp;    private DataInputStream file;
+&nbsp;    private String filename;
+&nbsp;    private int classnameIndex;
+&nbsp;    private int superclassnameIndex;
+&nbsp;    private int major;
+&nbsp;    private int minor;
+&nbsp;    private int accessflags;
+&nbsp;    private int[] interfaceIndices;
+&nbsp;    private ConstantPool cpool;
+&nbsp;    private Field[] fields;
+&nbsp;    private Method[] methods;
+&nbsp;    private Attribute[] attributes;
+&nbsp;    private static final int BUFSIZE = 8192;
+&nbsp;    private static final int[] NO_INTERFACES = new int[0];
+&nbsp;
+&nbsp;    public ClassParser(InputStream file, String filename) {
+&nbsp;        this.filename = filename;
+&nbsp;        if (file instanceof DataInputStream) {
+&nbsp;            this.file = (DataInputStream)file;
+&nbsp;        } else {
+&nbsp;            this.file = new DataInputStream(new BufferedInputStream(file, 8192));
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public ClassParser(ByteArrayInputStream baos, String filename) {
+&nbsp;        this.filename = filename;
+&nbsp;        this.file = new DataInputStream(baos);
+&nbsp;    }
+&nbsp;
+&nbsp;    public ClassParser(String file_name) throws IOException {
+&nbsp;        this.filename = file_name;
+&nbsp;        this.file = new DataInputStream(new BufferedInputStream(new FileInputStream(file_name), 8192));
+&nbsp;    }
+&nbsp;
+&nbsp;    public JavaClass parse() throws IOException, ClassFormatException {
+&nbsp;        this.readID();
+&nbsp;        this.readVersion();
+&nbsp;        this.readConstantPool();
+&nbsp;        this.readClassInfo();
+&nbsp;        this.readInterfaces();
+&nbsp;        this.readFields();
+&nbsp;        this.readMethods();
+&nbsp;        this.readAttributes();
+&nbsp;        this.file.close();
+&nbsp;        JavaClass jc = new JavaClass(this.classnameIndex, this.superclassnameIndex, this.filename, this.major, this.minor, this.accessflags, this.cpool, this.interfaceIndices, this.fields, this.methods, this.attributes);
+&nbsp;        return jc;
+&nbsp;    }
+&nbsp;
+&nbsp;    private final void readAttributes() {
+&nbsp;        this.attributes = AttributeUtils.readAttributes(this.file, this.cpool);
+&nbsp;    }
+&nbsp;
+&nbsp;    private final void readClassInfo() throws IOException {
+&nbsp;        this.accessflags = this.file.readUnsignedShort();
+&nbsp;        if ((this.accessflags &amp; 512) != 0) {
+&nbsp;            this.accessflags |= 1024;
+&nbsp;        }
+&nbsp;
+&nbsp;        this.classnameIndex = this.file.readUnsignedShort();
+&nbsp;        this.superclassnameIndex = this.file.readUnsignedShort();
+&nbsp;    }
+&nbsp;
+&nbsp;    private final void readConstantPool() throws IOException {
+&nbsp;        try {
+&nbsp;            this.cpool = new ConstantPool(this.file);
+&nbsp;        } catch (ClassFormatException cfe) {
+&nbsp;            cfe.printStackTrace();
+&nbsp;            if (this.filename != null) {
+&nbsp;                String newmessage = &quot;File: &#39;&quot; + this.filename + &quot;&#39;: &quot; + cfe.getMessage();
+&nbsp;                throw new ClassFormatException(newmessage);
+&nbsp;            } else {
+&nbsp;                throw cfe;
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private final void readFields() throws IOException, ClassFormatException {
+&nbsp;        int fieldCount = this.file.readUnsignedShort();
+&nbsp;        if (fieldCount == 0) {
+&nbsp;            this.fields = Field.NoFields;
+<b class="fc">&nbsp;        } else {</b>
+<b class="fc">&nbsp;            this.fields = new Field[fieldCount];</b>
+<b class="pc">&nbsp;</b>
+<b class="fc">&nbsp;            for(int i = 0; i &lt; fieldCount; ++i) {</b>
+&nbsp;                this.fields[i] = new Field(this.file, this.cpool);
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private final void readID() throws IOException {
+&nbsp;        int magic = -889275714;
+<b class="nc">&nbsp;        if (this.file.readInt() != magic) {</b>
+<b class="nc">&nbsp;            throw new ClassFormatException(this.filename + &quot; is not a Java .class file&quot;);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private final void readInterfaces() throws IOException {
+&nbsp;        int interfacesCount = this.file.readUnsignedShort();
+&nbsp;        if (interfacesCount == 0) {
+&nbsp;            this.interfaceIndices = NO_INTERFACES;
+&nbsp;        } else {
+&nbsp;            this.interfaceIndices = new int[interfacesCount];
+&nbsp;
+&nbsp;            for(int i = 0; i &lt; interfacesCount; ++i) {
+&nbsp;                this.interfaceIndices[i] = this.file.readUnsignedShort();
+&nbsp;            }
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    private final void readMethods() throws IOException {
+&nbsp;        int methodsCount = this.file.readUnsignedShort();
+&nbsp;        if (methodsCount == 0) {
+<b class="fc">&nbsp;            this.methods = Method.NoMethods;</b>
+&nbsp;        } else {
+&nbsp;            this.methods = new Method[methodsCount];
+<b class="fc">&nbsp;</b>
+&nbsp;            for(int i = 0; i &lt; methodsCount; ++i) {
+&nbsp;                this.methods[i] = new Method(this.file, this.cpool);
+<b class="fc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    private final void readVersion() throws IOException {
+&nbsp;        this.minor = this.file.readUnsignedShort();
+<b class="fc">&nbsp;        this.major = this.file.readUnsignedShort();</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
+</div>
+</body>
+</html>

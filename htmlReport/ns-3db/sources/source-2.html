@@ -1,0 +1,203 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ApplicationEventsTestExecutionListener</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.test.context.event</a>
+</div>
+
+<h1>Coverage Summary for Class: ApplicationEventsTestExecutionListener (org.springframework.test.context.event)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ApplicationEventsTestExecutionListener</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (3/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    16.7%
+  </span>
+  <span class="absValue">
+    (4/24)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.test.context.event;
+&nbsp;
+&nbsp;import java.io.Serializable;
+&nbsp;import java.util.Objects;
+&nbsp;import java.util.stream.Stream;
+&nbsp;import org.springframework.beans.factory.ObjectFactory;
+&nbsp;import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+&nbsp;import org.springframework.context.ApplicationContext;
+&nbsp;import org.springframework.context.support.AbstractApplicationContext;
+&nbsp;import org.springframework.core.Conventions;
+&nbsp;import org.springframework.test.context.TestContext;
+&nbsp;import org.springframework.test.context.TestContextAnnotationUtils;
+&nbsp;import org.springframework.test.context.support.AbstractTestExecutionListener;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;
+&nbsp;public class ApplicationEventsTestExecutionListener extends AbstractTestExecutionListener {
+&nbsp;    public static final int ORDER = 1800;
+&nbsp;    private static final String RECORD_APPLICATION_EVENTS = Conventions.getQualifiedAttributeName(ApplicationEventsTestExecutionListener.class, &quot;recordApplicationEvents&quot;);
+&nbsp;    private static final Object applicationEventsMonitor = new Object();
+&nbsp;
+&nbsp;    public ApplicationEventsTestExecutionListener() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public final int getOrder() {
+&nbsp;        return 1800;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void prepareTestInstance(TestContext testContext) throws Exception {
+&nbsp;        if (this.recordApplicationEvents(testContext)) {
+&nbsp;            this.registerListenerAndResolvableDependencyIfNecessary(testContext.getApplicationContext());
+&nbsp;            ApplicationEventsHolder.registerApplicationEvents();
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void beforeTestMethod(TestContext testContext) throws Exception {
+&nbsp;        if (this.recordApplicationEvents(testContext)) {
+&nbsp;            ApplicationEventsHolder.registerApplicationEventsIfNecessary();
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void afterTestMethod(TestContext testContext) throws Exception {
+<b class="fc">&nbsp;        if (this.recordApplicationEvents(testContext)) {</b>
+&nbsp;            ApplicationEventsHolder.unregisterApplicationEvents();
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean recordApplicationEvents(TestContext testContext) {
+&nbsp;        return (Boolean)testContext.computeAttribute(RECORD_APPLICATION_EVENTS, (name) -&gt; TestContextAnnotationUtils.hasAnnotation(testContext.getTestClass(), RecordApplicationEvents.class));
+&nbsp;    }
+&nbsp;
+&nbsp;    private void registerListenerAndResolvableDependencyIfNecessary(ApplicationContext applicationContext) {
+&nbsp;        Assert.isInstanceOf(AbstractApplicationContext.class, applicationContext, &quot;The ApplicationContext for the test must be an AbstractApplicationContext&quot;);
+&nbsp;        AbstractApplicationContext aac = (AbstractApplicationContext)applicationContext;
+&nbsp;        synchronized(applicationEventsMonitor) {
+<b class="fc">&nbsp;            Stream var10000 = aac.getApplicationListeners().stream().map(Object::getClass);</b>
+&nbsp;            Objects.requireNonNull(ApplicationEventsApplicationListener.class);
+&nbsp;            boolean notAlreadyRegistered = var10000.noneMatch(ApplicationEventsApplicationListener.class::equals);
+<b class="fc">&nbsp;            if (notAlreadyRegistered) {</b>
+&nbsp;                aac.addApplicationListener(new ApplicationEventsApplicationListener());
+&nbsp;                ConfigurableListableBeanFactory beanFactory = aac.getBeanFactory();
+&nbsp;                beanFactory.registerResolvableDependency(ApplicationEvents.class, new ApplicationEventsObjectFactory());
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static class ApplicationEventsObjectFactory implements ObjectFactory&lt;ApplicationEvents&gt;, Serializable {
+&nbsp;        private ApplicationEventsObjectFactory() {
+&nbsp;        }
+&nbsp;
+&nbsp;        public ApplicationEvents getObject() {
+&nbsp;            return ApplicationEventsHolder.getRequiredApplicationEvents();
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        public String toString() {
+&nbsp;            return &quot;Current ApplicationEvents&quot;;
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 21:00</div>
+</div>
+</body>
+</html>

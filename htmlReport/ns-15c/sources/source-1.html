@@ -1,0 +1,462 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > EventListenerGroupImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.event.service.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: EventListenerGroupImpl (org.hibernate.event.service.internal)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">EventListenerGroupImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    44.4%
+  </span>
+  <span class="absValue">
+    (12/27)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    16%
+  </span>
+  <span class="absValue">
+    (12/75)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    31.4%
+  </span>
+  <span class="absValue">
+    (38/121)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">EventListenerGroupImpl$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (1/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (1/3)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    43.3%
+  </span>
+  <span class="absValue">
+    (13/30)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    16%
+  </span>
+  <span class="absValue">
+    (12/75)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    31.5%
+  </span>
+  <span class="absValue">
+    (39/124)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.event.service.internal;
+&nbsp;
+&nbsp;import java.lang.reflect.Array;
+&nbsp;import java.util.Arrays;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.LinkedHashSet;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.concurrent.CompletableFuture;
+&nbsp;import java.util.concurrent.CompletionStage;
+&nbsp;import java.util.function.BiConsumer;
+&nbsp;import java.util.function.BiFunction;
+&nbsp;import java.util.function.Consumer;
+&nbsp;import java.util.function.Function;
+&nbsp;import java.util.function.Supplier;
+&nbsp;import org.hibernate.event.service.spi.DuplicationStrategy;
+&nbsp;import org.hibernate.event.service.spi.EventActionWithParameter;
+&nbsp;import org.hibernate.event.service.spi.EventListenerGroup;
+&nbsp;import org.hibernate.event.service.spi.EventListenerRegistrationException;
+&nbsp;import org.hibernate.event.service.spi.JpaBootstrapSensitive;
+&nbsp;import org.hibernate.event.service.spi.DuplicationStrategy.Action;
+&nbsp;import org.hibernate.event.spi.EventType;
+&nbsp;import org.hibernate.jpa.event.spi.CallbackRegistry;
+&nbsp;import org.hibernate.jpa.event.spi.CallbackRegistryConsumer;
+&nbsp;import org.jboss.logging.Logger;
+&nbsp;
+&nbsp;class EventListenerGroupImpl&lt;T&gt; implements EventListenerGroup&lt;T&gt; {
+&nbsp;    private static final Logger log = Logger.getLogger(EventListenerGroupImpl.class);
+&nbsp;    private static final Set&lt;DuplicationStrategy&gt; DEFAULT_DUPLICATION_STRATEGIES = Collections.unmodifiableSet(makeDefaultDuplicationStrategy());
+&nbsp;    private static final CompletableFuture COMPLETED = CompletableFuture.completedFuture((Object)null);
+&nbsp;    private final EventType&lt;T&gt; eventType;
+&nbsp;    private final CallbackRegistry callbackRegistry;
+&nbsp;    private final boolean isJpaBootstrap;
+&nbsp;    private volatile Set&lt;DuplicationStrategy&gt; duplicationStrategies;
+&nbsp;    private volatile T[] listeners;
+&nbsp;    private volatile List&lt;T&gt; listenersAsList;
+&nbsp;
+&nbsp;    public EventListenerGroupImpl(EventType&lt;T&gt; eventType, CallbackRegistry callbackRegistry, boolean isJpaBootstrap) {
+<b class="fc">&nbsp;        this.duplicationStrategies = DEFAULT_DUPLICATION_STRATEGIES;</b>
+<b class="fc">&nbsp;        this.listeners = null;</b>
+<b class="fc">&nbsp;        this.listenersAsList = Collections.emptyList();</b>
+&nbsp;        this.eventType = eventType;
+&nbsp;        this.callbackRegistry = callbackRegistry;
+&nbsp;        this.isJpaBootstrap = isJpaBootstrap;
+&nbsp;    }
+&nbsp;
+&nbsp;    public EventType&lt;T&gt; getEventType() {
+&nbsp;        return this.eventType;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public boolean isEmpty() {</b>
+<b class="fc">&nbsp;        return this.count() &lt;= 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int count() {
+&nbsp;        T[] ls = this.listeners;
+<b class="fc">&nbsp;        return ls == null ? 0 : ls.length;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public void clear() {</b>
+&nbsp;        this.duplicationStrategies = new LinkedHashSet();
+&nbsp;        this.setListeners((Object[])null);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private synchronized void setListeners(T[] newListeners) {</b>
+&nbsp;        this.listeners = newListeners;
+&nbsp;        if (newListeners != null &amp;&amp; newListeners.length != 0) {
+&nbsp;            this.listenersAsList = Arrays.asList(newListeners);
+&nbsp;        } else {
+<b class="nc">&nbsp;            this.listenersAsList = Collections.emptyList();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void clearListeners() {</b>
+<b class="nc">&nbsp;        this.setListeners((Object[])null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public final &lt;U&gt; void fireLazyEventOnEachListener(Supplier&lt;U&gt; eventSupplier, BiConsumer&lt;T, U&gt; actionOnEvent) {
+&nbsp;        T[] ls = this.listeners;
+&nbsp;        if (ls != null &amp;&amp; ls.length != 0) {
+<b class="nc">&nbsp;            U event = (U)eventSupplier.get();</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            for(int i = 0; i &lt; ls.length; ++i) {
+&nbsp;                actionOnEvent.accept(ls[i], event);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="pc">&nbsp;    public final &lt;U&gt; void fireEventOnEachListener(U event, BiConsumer&lt;T, U&gt; actionOnEvent) {</b>
+<b class="nc">&nbsp;        T[] ls = this.listeners;</b>
+&nbsp;        if (ls != null) {
+&nbsp;            for(int i = 0; i &lt; ls.length; ++i) {
+<b class="fc">&nbsp;                actionOnEvent.accept(ls[i], event);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public &lt;U, X&gt; void fireEventOnEachListener(U event, X parameter, EventActionWithParameter&lt;T, U, X&gt; actionOnEvent) {</b>
+&nbsp;        T[] ls = this.listeners;
+&nbsp;        if (ls != null) {
+&nbsp;            for(int i = 0; i &lt; ls.length; ++i) {
+&nbsp;                actionOnEvent.applyEventToListener(ls[i], event, parameter);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public &lt;R, U, RL&gt; CompletionStage&lt;R&gt; fireEventOnEachListener(U event, Function&lt;RL, Function&lt;U, CompletionStage&lt;R&gt;&gt;&gt; fun) {</b>
+&nbsp;        CompletionStage&lt;R&gt; ret = COMPLETED;
+&nbsp;        T[] ls = this.listeners;
+&nbsp;        if (ls != null &amp;&amp; ls.length != 0) {
+&nbsp;            for(T listener : ls) {
+&nbsp;                ret = ret.thenCompose((v) -&gt; (CompletionStage)((Function)fun.apply(listener)).apply(event));
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return ret;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public &lt;R, U, RL, X&gt; CompletionStage&lt;R&gt; fireEventOnEachListener(U event, X param, Function&lt;RL, BiFunction&lt;U, X, CompletionStage&lt;R&gt;&gt;&gt; fun) {
+&nbsp;        CompletionStage&lt;R&gt; ret = COMPLETED;
+&nbsp;        T[] ls = this.listeners;
+&nbsp;        if (ls != null &amp;&amp; ls.length != 0) {
+&nbsp;            for(T listener : ls) {
+&nbsp;                ret = ret.thenCompose((v) -&gt; (CompletionStage)((BiFunction)fun.apply(listener)).apply(event, param));
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        return ret;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public &lt;R, U, RL&gt; CompletionStage&lt;R&gt; fireLazyEventOnEachListener(Supplier&lt;U&gt; eventSupplier, Function&lt;RL, Function&lt;U, CompletionStage&lt;R&gt;&gt;&gt; fun) {
+&nbsp;        CompletionStage&lt;R&gt; ret = COMPLETED;
+&nbsp;        T[] ls = this.listeners;
+&nbsp;        if (ls != null &amp;&amp; ls.length != 0) {
+&nbsp;            U event = (U)eventSupplier.get();
+&nbsp;
+&nbsp;            for(T listener : ls) {
+<b class="nc">&nbsp;                ret = ret.thenCompose((v) -&gt; (CompletionStage)((Function)fun.apply(listener)).apply(event));</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return ret;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void addDuplicationStrategy(DuplicationStrategy strategy) {
+&nbsp;        if (this.duplicationStrategies == DEFAULT_DUPLICATION_STRATEGIES) {
+<b class="nc">&nbsp;            this.duplicationStrategies = makeDefaultDuplicationStrategy();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        this.duplicationStrategies.add(strategy);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void appendListener(T listener) {</b>
+<b class="nc">&nbsp;        this.handleListenerAddition(listener, this::internalAppend);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    @SafeVarargs
+&nbsp;    public final void appendListeners(T... listeners) {
+<b class="nc">&nbsp;        for(int i = 0; i &lt; listeners.length; ++i) {</b>
+&nbsp;            this.handleListenerAddition(listeners[i], this::internalAppend);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void internalAppend(T listener) {
+&nbsp;        this.prepareListener(listener);
+&nbsp;        T[] listenersRead = this.listeners;
+&nbsp;        T[] listenersWrite;
+<b class="nc">&nbsp;        if (listenersRead == null) {</b>
+<b class="nc">&nbsp;            listenersWrite = (T[])((Object[])Array.newInstance(this.eventType.baseListenerInterface(), 1));</b>
+<b class="nc">&nbsp;            listenersWrite[0] = listener;</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            int size = listenersRead.length;</b>
+&nbsp;            listenersWrite = (T[])((Object[])Array.newInstance(this.eventType.baseListenerInterface(), size + 1));
+&nbsp;            System.arraycopy(listenersRead, 0, listenersWrite, 0, size);
+<b class="nc">&nbsp;            listenersWrite[size] = listener;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        this.setListeners(listenersWrite);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void prependListener(T listener) {
+&nbsp;        this.handleListenerAddition(listener, this::internalPrepend);
+<b class="pc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    @SafeVarargs
+<b class="fc">&nbsp;    public final void prependListeners(T... listeners) {</b>
+&nbsp;        for(int i = 0; i &lt; listeners.length; ++i) {
+&nbsp;            this.handleListenerAddition(listeners[i], this::internalPrepend);
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private void internalPrepend(T listener) {
+&nbsp;        this.prepareListener(listener);
+&nbsp;        T[] listenersRead = this.listeners;
+&nbsp;        T[] listenersWrite;
+&nbsp;        if (listenersRead == null) {
+<b class="fc">&nbsp;            listenersWrite = (T[])((Object[])Array.newInstance(this.eventType.baseListenerInterface(), 1));</b>
+<b class="fc">&nbsp;            listenersWrite[0] = listener;</b>
+&nbsp;        } else {
+&nbsp;            int size = listenersRead.length;
+&nbsp;            listenersWrite = (T[])((Object[])Array.newInstance(this.eventType.baseListenerInterface(), size + 1));
+&nbsp;            listenersWrite[0] = listener;
+<b class="fc">&nbsp;            System.arraycopy(listenersRead, 0, listenersWrite, 1, size);</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        this.setListeners(listenersWrite);
+<b class="pc">&nbsp;    }</b>
+&nbsp;
+<b class="fc">&nbsp;    private void handleListenerAddition(T listener, Consumer&lt;T&gt; additionHandler) {</b>
+<b class="fc">&nbsp;        T[] listenersRead = this.listeners;</b>
+&nbsp;        if (listenersRead == null) {
+&nbsp;            additionHandler.accept(listener);
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            T[] listenersWrite = (T[])((Object[])Array.newInstance(this.eventType.baseListenerInterface(), listenersRead.length));
+&nbsp;            System.arraycopy(listenersRead, 0, listenersWrite, 0, listenersRead.length);
+<b class="nc">&nbsp;            boolean debugEnabled = log.isDebugEnabled();</b>
+&nbsp;
+&nbsp;            for(DuplicationStrategy strategy : this.duplicationStrategies) {
+<b class="nc">&nbsp;                for(int i = 0; i &lt; listenersRead.length; ++i) {</b>
+&nbsp;                    T existingListener = (T)listenersRead[i];
+&nbsp;                    if (debugEnabled) {
+<b class="nc">&nbsp;                        log.debugf(&quot;Checking incoming listener [`%s`] for match against existing listener [`%s`]&quot;, listener, existingListener);</b>
+&nbsp;                    }
+<b class="fc">&nbsp;</b>
+&nbsp;                    if (strategy.areMatch(listener, existingListener)) {
+&nbsp;                        if (debugEnabled) {
+&nbsp;                            log.debugf(&quot;Found listener match between `%s` and `%s`&quot;, listener, existingListener);
+&nbsp;                        }
+<b class="nc">&nbsp;</b>
+&nbsp;                        switch (strategy.getAction()) {
+&nbsp;                            case ERROR:
+&nbsp;                                throw new EventListenerRegistrationException(&quot;Duplicate event listener found&quot;);
+&nbsp;                            case KEEP_ORIGINAL:
+&nbsp;                                if (debugEnabled) {
+&nbsp;                                    log.debugf(&quot;Skipping listener registration (%s) : `%s`&quot;, strategy.getAction(), listener);
+<b class="nc">&nbsp;                                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                                return;
+&nbsp;                            case REPLACE_ORIGINAL:
+&nbsp;                                if (debugEnabled) {
+&nbsp;                                    log.debugf(&quot;Replacing listener registration (%s) : `%s` -&gt; `%s`&quot;, strategy.getAction(), existingListener, listener);
+<b class="nc">&nbsp;                                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                                this.prepareListener(listener);
+&nbsp;                                listenersWrite[i] = listener;
+<b class="nc">&nbsp;                            default:</b>
+&nbsp;                                this.setListeners(listenersWrite);
+<b class="nc">&nbsp;                                return;</b>
+<b class="nc">&nbsp;                        }</b>
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            this.checkAgainstBaseInterface(listener);
+<b class="nc">&nbsp;            this.performInjections(listener);</b>
+&nbsp;            additionHandler.accept(listener);
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private void prepareListener(T listener) {
+<b class="nc">&nbsp;        this.checkAgainstBaseInterface(listener);</b>
+&nbsp;        this.performInjections(listener);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private void performInjections(T listener) {
+&nbsp;        if (listener instanceof CallbackRegistryConsumer) {
+<b class="fc">&nbsp;            ((CallbackRegistryConsumer)listener).injectCallbackRegistry(this.callbackRegistry);</b>
+<b class="pc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;        if (listener instanceof JpaBootstrapSensitive) {
+&nbsp;            ((JpaBootstrapSensitive)listener).wasJpaBootstrap(this.isJpaBootstrap);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private void checkAgainstBaseInterface(T listener) {
+<b class="nc">&nbsp;        if (!this.eventType.baseListenerInterface().isInstance(listener)) {</b>
+&nbsp;            throw new EventListenerRegistrationException(&quot;Listener did not implement expected interface [&quot; + this.eventType.baseListenerInterface().getName() + &quot;]&quot;);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @deprecated */
+&nbsp;    @Deprecated
+<b class="nc">&nbsp;    public final Iterable&lt;T&gt; listeners() {</b>
+<b class="nc">&nbsp;        return this.listenersAsList;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private static Set&lt;DuplicationStrategy&gt; makeDefaultDuplicationStrategy() {
+&nbsp;        Set&lt;DuplicationStrategy&gt; duplicationStrategies = new LinkedHashSet();
+&nbsp;        duplicationStrategies.add(new DuplicationStrategy() {
+&nbsp;            public boolean areMatch(Object listener, Object original) {
+&nbsp;                return listener.getClass().equals(original.getClass());
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            public DuplicationStrategy.Action getAction() {</b>
+<b class="nc">&nbsp;                return Action.ERROR;</b>
+&nbsp;            }
+&nbsp;        });
+<b class="nc">&nbsp;        return duplicationStrategies;</b>
+&nbsp;    }
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
+</div>
+</body>
+</html>

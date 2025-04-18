@@ -1,0 +1,961 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > Observation</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">io.micrometer.observation</a>
+</div>
+
+<h1>Coverage Summary for Class: Observation (io.micrometer.observation)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Observation</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/35)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/36)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/104)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Observation$Scope</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/38)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/38)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/107)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package io.micrometer.observation;
+&nbsp;
+&nbsp;import io.micrometer.common.KeyValue;
+&nbsp;import io.micrometer.common.KeyValues;
+&nbsp;import io.micrometer.common.lang.NonNull;
+&nbsp;import io.micrometer.common.lang.Nullable;
+&nbsp;import io.micrometer.common.util.internal.logging.InternalLoggerFactory;
+&nbsp;import io.micrometer.observation.NoopObservation.NoopScope;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import java.util.function.Function;
+&nbsp;import java.util.function.Supplier;
+&nbsp;import java.util.stream.Collectors;
+&nbsp;
+&nbsp;public interface Observation extends ObservationView {
+&nbsp;    Observation NOOP = new NoopObservation();
+&nbsp;
+&nbsp;    static Observation start(String name, @Nullable ObservationRegistry registry) {
+&nbsp;        return start(name, Context::new, registry);
+&nbsp;    }
+&nbsp;
+&nbsp;    static &lt;T extends Context&gt; Observation start(String name, Supplier&lt;T&gt; contextSupplier, @Nullable ObservationRegistry registry) {
+&nbsp;        return createNotStarted(name, contextSupplier, registry).start();
+&nbsp;    }
+&nbsp;
+&nbsp;    static Observation createNotStarted(String name, @Nullable ObservationRegistry registry) {
+&nbsp;        return createNotStarted(name, Context::new, registry);
+&nbsp;    }
+&nbsp;
+&nbsp;    static &lt;T extends Context&gt; Observation createNotStarted(String name, Supplier&lt;T&gt; contextSupplier, @Nullable ObservationRegistry registry) {
+&nbsp;        if (registry != null &amp;&amp; !registry.isNoop()) {
+&nbsp;            Context context = (Context)contextSupplier.get();
+&nbsp;            context.setParentFromCurrentObservation(registry);
+&nbsp;            return (Observation)(!registry.observationConfig().isObservationEnabled(name, context) ? NOOP : new SimpleObservation(name, registry, context));
+&nbsp;        } else {
+&nbsp;            return NOOP;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    static &lt;T extends Context&gt; Observation createNotStarted(@Nullable ObservationConvention&lt;T&gt; customConvention, ObservationConvention&lt;T&gt; defaultConvention, Supplier&lt;T&gt; contextSupplier, @Nullable ObservationRegistry registry) {
+&nbsp;        if (registry != null &amp;&amp; !registry.isNoop()) {
+&nbsp;            T context = (T)(contextSupplier.get());
+&nbsp;            context.setParentFromCurrentObservation(registry);
+&nbsp;            ObservationConvention&lt;T&gt; convention;
+&nbsp;            if (customConvention != null) {
+&nbsp;                convention = customConvention;
+&nbsp;            } else {
+&nbsp;                convention = registry.observationConfig().getObservationConvention(context, defaultConvention);
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            return (Observation)(!registry.observationConfig().isObservationEnabled(convention.getName(), context) ? NOOP : new SimpleObservation(convention, registry, context));
+&nbsp;        } else {
+&nbsp;            return NOOP;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    static Observation start(ObservationConvention&lt;Context&gt; observationConvention, ObservationRegistry registry) {
+&nbsp;        return start(observationConvention, Context::new, registry);
+&nbsp;    }
+&nbsp;
+&nbsp;    static &lt;T extends Context&gt; Observation start(ObservationConvention&lt;T&gt; observationConvention, Supplier&lt;T&gt; contextSupplier, ObservationRegistry registry) {
+&nbsp;        return createNotStarted(observationConvention, contextSupplier, registry).start();
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    static &lt;T extends Context&gt; Observation start(@Nullable ObservationConvention&lt;T&gt; customConvention, ObservationConvention&lt;T&gt; defaultConvention, Supplier&lt;T&gt; contextSupplier, ObservationRegistry registry) {
+&nbsp;        return createNotStarted(customConvention, defaultConvention, contextSupplier, registry).start();
+&nbsp;    }
+&nbsp;
+&nbsp;    static Observation createNotStarted(ObservationConvention&lt;Context&gt; observationConvention, ObservationRegistry registry) {
+&nbsp;        return createNotStarted(observationConvention, Context::new, registry);
+&nbsp;    }
+&nbsp;
+&nbsp;    static &lt;T extends Context&gt; Observation createNotStarted(ObservationConvention&lt;T&gt; observationConvention, Supplier&lt;T&gt; contextSupplier, ObservationRegistry registry) {
+&nbsp;        if (registry != null &amp;&amp; !registry.isNoop() &amp;&amp; observationConvention != NoopObservationConvention.INSTANCE) {
+&nbsp;            T context = (T)(contextSupplier.get());
+&nbsp;            context.setParentFromCurrentObservation(registry);
+&nbsp;            return (Observation)(!registry.observationConfig().isObservationEnabled(observationConvention.getName(), context) ? NOOP : new SimpleObservation(observationConvention, registry, context));
+&nbsp;        } else {
+&nbsp;            return NOOP;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    Observation contextualName(@Nullable String var1);
+<b class="nc">&nbsp;</b>
+&nbsp;    Observation parentObservation(@Nullable Observation var1);
+&nbsp;
+&nbsp;    Observation lowCardinalityKeyValue(KeyValue var1);
+&nbsp;
+&nbsp;    default Observation lowCardinalityKeyValue(String key, String value) {
+&nbsp;        return this.lowCardinalityKeyValue(KeyValue.of(key, value));
+&nbsp;    }
+&nbsp;
+&nbsp;    default Observation lowCardinalityKeyValues(KeyValues keyValues) {
+&nbsp;        for(KeyValue keyValue : keyValues) {
+&nbsp;            this.lowCardinalityKeyValue(keyValue);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        return this;
+&nbsp;    }
+&nbsp;
+&nbsp;    Observation highCardinalityKeyValue(KeyValue var1);
+&nbsp;
+&nbsp;    default Observation highCardinalityKeyValue(String key, String value) {
+&nbsp;        return this.highCardinalityKeyValue(KeyValue.of(key, value));
+&nbsp;    }
+&nbsp;
+&nbsp;    default Observation highCardinalityKeyValues(KeyValues keyValues) {
+&nbsp;        for(KeyValue keyValue : keyValues) {
+&nbsp;            this.highCardinalityKeyValue(keyValue);
+&nbsp;        }
+&nbsp;
+&nbsp;        return this;
+&nbsp;    }
+&nbsp;
+&nbsp;    default boolean isNoop() {
+&nbsp;        return this == NOOP;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    Observation observationConvention(ObservationConvention&lt;?&gt; var1);</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    Observation error(Throwable var1);
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    Observation event(Event var1);</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    Observation start();</b>
+&nbsp;
+<b class="nc">&nbsp;    Context getContext();</b>
+&nbsp;
+&nbsp;    default ContextView getContextView() {
+&nbsp;        return this.getContext();
+&nbsp;    }
+&nbsp;
+&nbsp;    void stop();
+&nbsp;
+&nbsp;    Scope openScope();
+&nbsp;
+&nbsp;    default void observe(Runnable runnable) {
+&nbsp;        this.start();
+&nbsp;
+&nbsp;        try {
+&nbsp;            Scope scope = this.openScope();
+&nbsp;
+&nbsp;            try {
+&nbsp;                runnable.run();
+&nbsp;            } catch (Throwable var11) {
+&nbsp;                if (scope != null) {
+&nbsp;                    try {
+&nbsp;                        scope.close();
+&nbsp;                    } catch (Throwable var10) {
+&nbsp;                        var11.addSuppressed(var10);
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                throw var11;
+&nbsp;            }
+&nbsp;
+&nbsp;            if (scope != null) {
+&nbsp;                scope.close();
+&nbsp;            }
+&nbsp;        } catch (Throwable error) {
+&nbsp;            this.error(error);
+<b class="nc">&nbsp;            throw error;</b>
+<b class="nc">&nbsp;        } finally {</b>
+&nbsp;            this.stop();
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    default Runnable wrap(Runnable runnable) {</b>
+&nbsp;        return () -&gt; this.observe(runnable);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    default &lt;E extends Throwable&gt; void observeChecked(CheckedRunnable&lt;E&gt; checkedRunnable) throws E {
+<b class="nc">&nbsp;        this.start();</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        try {
+<b class="nc">&nbsp;            Scope scope = this.openScope();</b>
+&nbsp;
+&nbsp;            try {
+&nbsp;                checkedRunnable.run();
+&nbsp;            } catch (Throwable var11) {
+&nbsp;                if (scope != null) {
+&nbsp;                    try {
+&nbsp;                        scope.close();
+&nbsp;                    } catch (Throwable var10) {
+&nbsp;                        var11.addSuppressed(var10);
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                throw var11;
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if (scope != null) {</b>
+&nbsp;                scope.close();
+&nbsp;            }
+&nbsp;        } catch (Throwable error) {
+&nbsp;            this.error(error);
+&nbsp;            throw error;
+&nbsp;        } finally {
+&nbsp;            this.stop();
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    default &lt;E extends Throwable&gt; CheckedRunnable&lt;E&gt; wrapChecked(CheckedRunnable&lt;E&gt; checkedRunnable) throws E {
+&nbsp;        return () -&gt; this.observeChecked(checkedRunnable);
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    default &lt;T&gt; T observe(Supplier&lt;T&gt; supplier) {
+&nbsp;        this.start();
+&nbsp;
+&nbsp;        Object var3;
+&nbsp;        try {
+&nbsp;            Scope scope = this.openScope();
+&nbsp;
+&nbsp;            try {
+&nbsp;                var3 = supplier.get();
+<b class="nc">&nbsp;            } catch (Throwable var11) {</b>
+&nbsp;                if (scope != null) {
+&nbsp;                    try {
+&nbsp;                        scope.close();
+&nbsp;                    } catch (Throwable var10) {
+&nbsp;                        var11.addSuppressed(var10);
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                throw var11;
+&nbsp;            }
+&nbsp;
+&nbsp;            if (scope != null) {
+&nbsp;                scope.close();
+&nbsp;            }
+&nbsp;        } catch (Throwable error) {
+&nbsp;            this.error(error);
+&nbsp;            throw error;
+&nbsp;        } finally {
+&nbsp;            this.stop();
+&nbsp;        }
+&nbsp;
+&nbsp;        return (T)var3;
+&nbsp;    }
+&nbsp;
+&nbsp;    default &lt;T&gt; Supplier&lt;T&gt; wrap(Supplier&lt;T&gt; supplier) {
+&nbsp;        return () -&gt; this.observe(supplier);
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    default &lt;T, E extends Throwable&gt; T observeChecked(CheckedCallable&lt;T, E&gt; checkedCallable) throws E {
+&nbsp;        this.start();
+<b class="nc">&nbsp;</b>
+&nbsp;        Object var3;
+&nbsp;        try {
+&nbsp;            Scope scope = this.openScope();
+&nbsp;
+&nbsp;            try {
+&nbsp;                var3 = checkedCallable.call();
+&nbsp;            } catch (Throwable var11) {
+&nbsp;                if (scope != null) {
+&nbsp;                    try {
+&nbsp;                        scope.close();
+&nbsp;                    } catch (Throwable var10) {
+&nbsp;                        var11.addSuppressed(var10);
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                throw var11;
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if (scope != null) {</b>
+&nbsp;                scope.close();
+&nbsp;            }
+&nbsp;        } catch (Throwable error) {
+&nbsp;            this.error(error);
+&nbsp;            throw error;
+&nbsp;        } finally {
+&nbsp;            this.stop();
+&nbsp;        }
+&nbsp;
+&nbsp;        return (T)var3;
+&nbsp;    }
+&nbsp;
+&nbsp;    default &lt;T, E extends Throwable&gt; CheckedCallable&lt;T, E&gt; wrapChecked(CheckedCallable&lt;T, E&gt; checkedCallable) throws E {
+&nbsp;        return () -&gt; this.observeChecked(checkedCallable);
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @deprecated */
+&nbsp;    @Nullable
+&nbsp;    @Deprecated
+&nbsp;    default &lt;C extends Context, T&gt; T observeWithContext(Function&lt;C, T&gt; function) {
+&nbsp;        InternalLoggerFactory.getInstance(Observation.class).warn(&quot;This method is deprecated. Please migrate to observation.observe(...)&quot;);
+&nbsp;        this.start();
+&nbsp;
+&nbsp;        Object var3;
+&nbsp;        try {
+&nbsp;            Scope scope = this.openScope();
+&nbsp;
+&nbsp;            try {
+&nbsp;                var3 = function.apply(this.getContext());
+&nbsp;            } catch (Throwable var11) {
+&nbsp;                if (scope != null) {
+&nbsp;                    try {
+&nbsp;                        scope.close();
+&nbsp;                    } catch (Throwable var10) {
+&nbsp;                        var11.addSuppressed(var10);
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                throw var11;
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            if (scope != null) {</b>
+<b class="nc">&nbsp;                scope.close();</b>
+&nbsp;            }
+<b class="nc">&nbsp;        } catch (Throwable error) {</b>
+&nbsp;            this.error(error);
+&nbsp;            throw error;
+&nbsp;        } finally {
+&nbsp;            this.stop();
+&nbsp;        }
+&nbsp;
+&nbsp;        return (T)var3;
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @deprecated */
+&nbsp;    @Nullable
+&nbsp;    @Deprecated
+&nbsp;    default &lt;C extends Context, T, E extends Throwable&gt; T observeCheckedWithContext(CheckedFunction&lt;C, T, E&gt; function) throws E {
+&nbsp;        InternalLoggerFactory.getInstance(Observation.class).warn(&quot;This method is deprecated. Please migrate to observation.observeChecked(...)&quot;);
+&nbsp;        this.start();
+&nbsp;
+&nbsp;        Object var3;
+&nbsp;        try {
+&nbsp;            Scope scope = this.openScope();
+&nbsp;
+&nbsp;            try {
+&nbsp;                var3 = function.apply(this.getContext());
+&nbsp;            } catch (Throwable var11) {
+&nbsp;                if (scope != null) {
+&nbsp;                    try {
+&nbsp;                        scope.close();
+&nbsp;                    } catch (Throwable var10) {
+&nbsp;                        var11.addSuppressed(var10);
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                throw var11;
+&nbsp;            }
+&nbsp;
+&nbsp;            if (scope != null) {
+&nbsp;                scope.close();
+&nbsp;            }
+&nbsp;        } catch (Throwable error) {
+&nbsp;            this.error(error);
+&nbsp;            throw error;
+&nbsp;        } finally {
+<b class="nc">&nbsp;            this.stop();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        return (T)var3;
+&nbsp;    }
+&nbsp;
+&nbsp;    default void scoped(Runnable runnable) {
+&nbsp;        try {
+&nbsp;            Scope scope = this.openScope();
+&nbsp;
+&nbsp;            try {
+<b class="nc">&nbsp;                runnable.run();</b>
+<b class="nc">&nbsp;            } catch (Throwable var6) {</b>
+&nbsp;                if (scope != null) {
+<b class="nc">&nbsp;                    try {</b>
+&nbsp;                        scope.close();
+&nbsp;                    } catch (Throwable var5) {
+&nbsp;                        var6.addSuppressed(var5);
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                throw var6;
+&nbsp;            }
+&nbsp;
+&nbsp;            if (scope != null) {
+&nbsp;                scope.close();
+&nbsp;            }
+&nbsp;
+&nbsp;        } catch (Exception exception) {
+&nbsp;            this.error(exception);
+&nbsp;            throw exception;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    default &lt;E extends Throwable&gt; void scopedChecked(CheckedRunnable&lt;E&gt; checkedRunnable) throws E {
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            Scope scope = this.openScope();
+&nbsp;
+&nbsp;            try {
+&nbsp;                checkedRunnable.run();
+&nbsp;            } catch (Throwable var6) {
+&nbsp;                if (scope != null) {
+&nbsp;                    try {
+&nbsp;                        scope.close();
+&nbsp;                    } catch (Throwable var5) {
+&nbsp;                        var6.addSuppressed(var5);
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="nc">&nbsp;                throw var6;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            if (scope != null) {
+&nbsp;                scope.close();
+&nbsp;            }
+&nbsp;
+&nbsp;        } catch (Throwable throwable) {
+<b class="nc">&nbsp;            this.error(throwable);</b>
+&nbsp;            throw throwable;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    default &lt;T&gt; T scoped(Supplier&lt;T&gt; supplier) {
+&nbsp;        try {
+&nbsp;            Scope scope = this.openScope();
+&nbsp;
+&nbsp;            Object var3;
+&nbsp;            try {
+&nbsp;                var3 = supplier.get();
+&nbsp;            } catch (Throwable var6) {
+&nbsp;                if (scope != null) {
+&nbsp;                    try {
+&nbsp;                        scope.close();
+&nbsp;                    } catch (Throwable var5) {
+&nbsp;                        var6.addSuppressed(var5);
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                throw var6;
+&nbsp;            }
+&nbsp;
+&nbsp;            if (scope != null) {
+&nbsp;                scope.close();
+&nbsp;            }
+&nbsp;
+&nbsp;            return (T)var3;
+&nbsp;        } catch (Exception exception) {
+&nbsp;            this.error(exception);
+&nbsp;            throw exception;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    default &lt;T, E extends Throwable&gt; T scopedChecked(CheckedCallable&lt;T, E&gt; checkedCallable) throws E {
+&nbsp;        try {
+&nbsp;            Scope scope = this.openScope();
+&nbsp;
+&nbsp;            Object var3;
+&nbsp;            try {
+&nbsp;                var3 = checkedCallable.call();
+&nbsp;            } catch (Throwable var6) {
+&nbsp;                if (scope != null) {
+&nbsp;                    try {
+&nbsp;                        scope.close();
+&nbsp;                    } catch (Throwable var5) {
+<b class="nc">&nbsp;                        var6.addSuppressed(var5);</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                throw var6;
+&nbsp;            }
+&nbsp;
+&nbsp;            if (scope != null) {
+&nbsp;                scope.close();
+&nbsp;            }
+&nbsp;
+&nbsp;            return (T)var3;
+&nbsp;        } catch (Throwable error) {
+&nbsp;            this.error(error);
+&nbsp;            throw error;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    static void tryScoped(@Nullable Observation parent, Runnable action) {
+&nbsp;        if (parent != null) {
+&nbsp;            parent.scoped(action);
+&nbsp;        } else {
+&nbsp;            action.run();
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    static &lt;E extends Throwable&gt; void tryScopedChecked(@Nullable Observation parent, CheckedRunnable&lt;E&gt; checkedRunnable) throws E {
+&nbsp;        if (parent != null) {
+&nbsp;            parent.scopedChecked(checkedRunnable);
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            checkedRunnable.run();</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    static &lt;T&gt; T tryScoped(@Nullable Observation parent, Supplier&lt;T&gt; action) {
+&nbsp;        return (T)(parent != null ? parent.scoped(action) : action.get());
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    static &lt;T, E extends Throwable&gt; T tryScopedChecked(@Nullable Observation parent, CheckedCallable&lt;T, E&gt; checkedCallable) throws E {
+&nbsp;        return (T)(parent != null ? parent.scopedChecked(checkedCallable) : checkedCallable.call());
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public interface Scope extends AutoCloseable {</b>
+&nbsp;        Scope NOOP = NoopScope.INSTANCE;
+&nbsp;
+&nbsp;        Observation getCurrentObservation();
+&nbsp;
+&nbsp;        @Nullable
+&nbsp;        default Scope getPreviousObservationScope() {
+&nbsp;            return null;
+&nbsp;        }
+&nbsp;
+&nbsp;        void close();
+&nbsp;
+&nbsp;        void reset();
+&nbsp;
+&nbsp;        void makeCurrent();
+&nbsp;
+&nbsp;        default boolean isNoop() {
+&nbsp;            return this == NOOP;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public static class Context implements ContextView {
+&nbsp;        private final Map&lt;Object, Object&gt; map = new ConcurrentHashMap();
+<b class="nc">&nbsp;        private String name;</b>
+&nbsp;        @Nullable
+&nbsp;        private String contextualName;
+&nbsp;        @Nullable
+<b class="nc">&nbsp;        private Throwable error;</b>
+&nbsp;        @Nullable
+&nbsp;        private ObservationView parentObservation;
+&nbsp;        private final Map&lt;String, KeyValue&gt; lowCardinalityKeyValues = new ConcurrentHashMap();
+&nbsp;        private final Map&lt;String, KeyValue&gt; highCardinalityKeyValues = new ConcurrentHashMap();
+<b class="nc">&nbsp;</b>
+&nbsp;        public Context() {
+&nbsp;        }
+&nbsp;
+&nbsp;        public String getName() {
+&nbsp;            return this.name;
+&nbsp;        }
+&nbsp;
+&nbsp;        public void setName(String name) {
+&nbsp;            this.name = name;
+&nbsp;        }
+&nbsp;
+&nbsp;        public String getContextualName() {
+&nbsp;            return this.contextualName;
+&nbsp;        }
+&nbsp;
+&nbsp;        public void setContextualName(@Nullable String contextualName) {
+&nbsp;            this.contextualName = contextualName;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        @Nullable</b>
+<b class="nc">&nbsp;        public ObservationView getParentObservation() {</b>
+<b class="nc">&nbsp;            return this.parentObservation;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        public void setParentObservation(@Nullable ObservationView parentObservation) {</b>
+&nbsp;            this.parentObservation = parentObservation;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        void setParentFromCurrentObservation(ObservationRegistry registry) {</b>
+&nbsp;            if (this.parentObservation == null) {
+&nbsp;                Observation currentObservation = registry.getCurrentObservation();
+&nbsp;                if (currentObservation != null) {
+&nbsp;                    this.setParentObservation(currentObservation);
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;
+&nbsp;        @Nullable
+&nbsp;        public Throwable getError() {
+&nbsp;            return this.error;
+&nbsp;        }
+&nbsp;
+&nbsp;        public void setError(Throwable error) {
+&nbsp;            this.error = error;
+&nbsp;        }
+&nbsp;
+&nbsp;        public &lt;T&gt; Context put(Object key, T object) {
+&nbsp;            this.map.put(key, object);
+&nbsp;            return this;
+&nbsp;        }
+&nbsp;
+&nbsp;        @Nullable
+&nbsp;        public &lt;T&gt; T get(Object key) {
+<b class="nc">&nbsp;            return (T)this.map.get(key);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        public Object remove(Object key) {
+&nbsp;            return this.map.remove(key);
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        @NonNull
+&nbsp;        public &lt;T&gt; T getRequired(Object key) {
+<b class="nc">&nbsp;            T object = (T)this.map.get(key);</b>
+&nbsp;            if (object == null) {
+&nbsp;                throw new IllegalArgumentException(&quot;Context does not have an entry for key [&quot; + key + &quot;]&quot;);
+&nbsp;            } else {
+&nbsp;                return object;
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean containsKey(Object key) {
+&nbsp;            return this.map.containsKey(key);
+&nbsp;        }
+&nbsp;
+&nbsp;        public &lt;T&gt; T getOrDefault(Object key, T defaultObject) {
+&nbsp;            return (T)this.map.getOrDefault(key, defaultObject);
+&nbsp;        }
+&nbsp;
+&nbsp;        public &lt;T&gt; T computeIfAbsent(Object key, Function&lt;Object, ? extends T&gt; mappingFunction) {
+&nbsp;            return (T)this.map.computeIfAbsent(key, mappingFunction);
+&nbsp;        }
+&nbsp;
+&nbsp;        public void clear() {
+&nbsp;            this.map.clear();
+&nbsp;        }
+&nbsp;
+&nbsp;        public Context addLowCardinalityKeyValue(KeyValue keyValue) {
+&nbsp;            this.lowCardinalityKeyValues.put(keyValue.getKey(), keyValue);
+&nbsp;            return this;
+&nbsp;        }
+&nbsp;
+&nbsp;        public Context addHighCardinalityKeyValue(KeyValue keyValue) {
+&nbsp;            this.highCardinalityKeyValues.put(keyValue.getKey(), keyValue);
+&nbsp;            return this;
+&nbsp;        }
+&nbsp;
+&nbsp;        public Context removeLowCardinalityKeyValue(String keyName) {
+<b class="nc">&nbsp;            this.lowCardinalityKeyValues.remove(keyName);</b>
+<b class="nc">&nbsp;            return this;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        public Context removeHighCardinalityKeyValue(String keyName) {</b>
+&nbsp;            this.highCardinalityKeyValues.remove(keyName);
+&nbsp;            return this;
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        public Context addLowCardinalityKeyValues(KeyValues keyValues) {
+&nbsp;            for(KeyValue keyValue : keyValues) {
+<b class="nc">&nbsp;                this.addLowCardinalityKeyValue(keyValue);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            return this;
+&nbsp;        }
+&nbsp;
+&nbsp;        public Context addHighCardinalityKeyValues(KeyValues keyValues) {
+&nbsp;            for(KeyValue keyValue : keyValues) {
+&nbsp;                this.addHighCardinalityKeyValue(keyValue);
+&nbsp;            }
+&nbsp;
+&nbsp;            return this;
+&nbsp;        }
+&nbsp;
+&nbsp;        public Context removeLowCardinalityKeyValues(String... keyNames) {
+&nbsp;            for(String keyName : keyNames) {
+&nbsp;                this.removeLowCardinalityKeyValue(keyName);
+&nbsp;            }
+&nbsp;
+&nbsp;            return this;
+&nbsp;        }
+&nbsp;
+&nbsp;        public Context removeHighCardinalityKeyValues(String... keyNames) {
+&nbsp;            for(String keyName : keyNames) {
+&nbsp;                this.removeHighCardinalityKeyValue(keyName);
+&nbsp;            }
+&nbsp;
+&nbsp;            return this;
+&nbsp;        }
+&nbsp;
+&nbsp;        @NonNull
+&nbsp;        public KeyValues getLowCardinalityKeyValues() {
+&nbsp;            return KeyValues.of(this.lowCardinalityKeyValues.values());
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        @NonNull</b>
+<b class="nc">&nbsp;        public KeyValues getHighCardinalityKeyValues() {</b>
+<b class="nc">&nbsp;            return KeyValues.of(this.highCardinalityKeyValues.values());</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        public KeyValue getLowCardinalityKeyValue(String key) {
+<b class="nc">&nbsp;            return (KeyValue)this.lowCardinalityKeyValues.get(key);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public KeyValue getHighCardinalityKeyValue(String key) {
+<b class="nc">&nbsp;            return (KeyValue)this.highCardinalityKeyValues.get(key);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @NonNull
+&nbsp;        public KeyValues getAllKeyValues() {
+&nbsp;            return this.getLowCardinalityKeyValues().and(this.getHighCardinalityKeyValues());
+&nbsp;        }
+&nbsp;
+&nbsp;        public String toString() {
+&nbsp;            return &quot;name=&#39;&quot; + this.name + &#39;\&#39;&#39; + &quot;, contextualName=&#39;&quot; + this.contextualName + &#39;\&#39;&#39; + &quot;, error=&#39;&quot; + this.error + &#39;\&#39;&#39; + &quot;, lowCardinalityKeyValues=&quot; + this.toString(this.getLowCardinalityKeyValues()) + &quot;, highCardinalityKeyValues=&quot; + this.toString(this.getHighCardinalityKeyValues()) + &quot;, map=&quot; + this.toString(this.map) + &quot;, parentObservation=&quot; + this.parentObservation;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        private String toString(KeyValues keyValues) {
+&nbsp;            return (String)keyValues.stream().map((keyValue) -&gt; String.format(&quot;%s=&#39;%s&#39;&quot;, keyValue.getKey(), keyValue.getValue())).collect(Collectors.joining(&quot;, &quot;, &quot;[&quot;, &quot;]&quot;));
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        private String toString(Map&lt;Object, Object&gt; map) {
+&nbsp;            return (String)map.entrySet().stream().map((entry) -&gt; String.format(&quot;%s=&#39;%s&#39;&quot;, entry.getKey(), entry.getValue())).collect(Collectors.joining(&quot;, &quot;, &quot;[&quot;, &quot;]&quot;));
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public interface Event {
+&nbsp;        static Event of(String name, String contextualName) {
+&nbsp;            return new SimpleEvent(name, contextualName);
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        static Event of(String name, String contextualName, long wallTime) {</b>
+<b class="nc">&nbsp;            return new SimpleEvent(name, contextualName, wallTime);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        static Event of(String name) {</b>
+&nbsp;            return of(name, name);
+&nbsp;        }
+&nbsp;
+&nbsp;        String getName();
+&nbsp;
+&nbsp;        default long getWallTime() {
+&nbsp;            return 0L;
+&nbsp;        }
+&nbsp;
+&nbsp;        default String getContextualName() {
+&nbsp;            return this.getName();
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        default Event format(Object... dynamicEntriesForContextualName) {</b>
+&nbsp;            return of(this.getName(), String.format(this.getContextualName(), dynamicEntriesForContextualName));
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public interface ContextView {
+&nbsp;        String getName();
+&nbsp;
+&nbsp;        @Nullable
+&nbsp;        String getContextualName();
+&nbsp;
+&nbsp;        @Nullable
+&nbsp;        ObservationView getParentObservation();
+&nbsp;
+&nbsp;        @Nullable
+&nbsp;        Throwable getError();
+&nbsp;
+<b class="nc">&nbsp;        @Nullable</b>
+<b class="nc">&nbsp;        &lt;T&gt; T get(Object var1);</b>
+&nbsp;
+&nbsp;        @NonNull
+<b class="nc">&nbsp;        &lt;T&gt; T getRequired(Object var1);</b>
+&nbsp;
+&nbsp;        boolean containsKey(Object var1);
+&nbsp;
+&nbsp;        &lt;T&gt; T getOrDefault(Object var1, T var2);
+&nbsp;
+&nbsp;        default &lt;T&gt; T getOrDefault(Object key, Supplier&lt;T&gt; defaultObjectSupplier) {
+&nbsp;            T value = (T)this.get(key);
+&nbsp;            return (T)(value != null ? value : defaultObjectSupplier.get());
+&nbsp;        }
+&nbsp;
+&nbsp;        KeyValues getLowCardinalityKeyValues();
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        @NonNull</b>
+&nbsp;        KeyValues getHighCardinalityKeyValues();
+&nbsp;
+<b class="nc">&nbsp;        @Nullable</b>
+&nbsp;        KeyValue getLowCardinalityKeyValue(String var1);
+&nbsp;
+&nbsp;        @Nullable
+&nbsp;        KeyValue getHighCardinalityKeyValue(String var1);
+&nbsp;
+&nbsp;        @NonNull
+&nbsp;        KeyValues getAllKeyValues();
+&nbsp;    }
+&nbsp;
+&nbsp;    @FunctionalInterface
+&nbsp;    public interface CheckedCallable&lt;T, E extends Throwable&gt; {
+&nbsp;        T call() throws E;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    @FunctionalInterface
+&nbsp;    public interface CheckedFunction&lt;T, R, E extends Throwable&gt; {
+<b class="nc">&nbsp;        @Nullable</b>
+&nbsp;        R apply(T var1) throws E;
+&nbsp;    }
+&nbsp;
+&nbsp;    @FunctionalInterface
+&nbsp;    public interface CheckedRunnable&lt;E extends Throwable&gt; {
+&nbsp;        void run() throws E;
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,270 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > Value</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.mapping</a>
+</div>
+
+<h1>Coverage Summary for Class: Value (org.hibernate.mapping)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Value</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    62.5%
+  </span>
+  <span class="absValue">
+    (5/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    37.5%
+  </span>
+  <span class="absValue">
+    (9/24)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    48.7%
+  </span>
+  <span class="absValue">
+    (19/39)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.mapping;
+&nbsp;
+&nbsp;import java.io.Serializable;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Set;
+&nbsp;import org.hibernate.FetchMode;
+&nbsp;import org.hibernate.Incubating;
+&nbsp;import org.hibernate.Internal;
+&nbsp;import org.hibernate.MappingException;
+&nbsp;import org.hibernate.boot.spi.MetadataBuildingContext;
+&nbsp;import org.hibernate.engine.spi.Mapping;
+&nbsp;import org.hibernate.metamodel.mapping.JdbcMapping;
+&nbsp;import org.hibernate.service.ServiceRegistry;
+&nbsp;import org.hibernate.type.CompositeType;
+&nbsp;import org.hibernate.type.EntityType;
+&nbsp;import org.hibernate.type.MetaType;
+&nbsp;import org.hibernate.type.Type;
+&nbsp;
+&nbsp;public interface Value extends Serializable {
+&nbsp;    int getColumnSpan();
+&nbsp;
+&nbsp;    List&lt;Selectable&gt; getSelectables();
+&nbsp;
+&nbsp;    List&lt;Column&gt; getColumns();
+&nbsp;
+&nbsp;    default List&lt;Selectable&gt; getVirtualSelectables() {
+&nbsp;        return this.getSelectables();
+&nbsp;    }
+&nbsp;
+&nbsp;    default List&lt;Column&gt; getConstraintColumns() {
+&nbsp;        return this.getColumns();
+&nbsp;    }
+&nbsp;
+&nbsp;    Type getType() throws MappingException;
+&nbsp;
+&nbsp;    @Incubating
+&nbsp;    default JdbcMapping getSelectableType(Mapping factory, int index) throws MappingException {
+&nbsp;        return this.getType(factory, this.getType(), index);
+&nbsp;    }
+&nbsp;
+&nbsp;    private JdbcMapping getType(Mapping factory, Type elementType, int index) {
+&nbsp;        if (elementType instanceof CompositeType) {
+&nbsp;            Type[] subtypes = ((CompositeType)elementType).getSubtypes();
+&nbsp;
+&nbsp;            for(int i = 0; i &lt; subtypes.length; ++i) {
+&nbsp;                Type subtype = subtypes[i];
+&nbsp;                int columnSpan;
+&nbsp;                if (subtype instanceof EntityType) {
+&nbsp;                    EntityType entityType = (EntityType)subtype;
+&nbsp;                    Type idType = this.getIdType(entityType);
+&nbsp;                    columnSpan = idType.getColumnSpan(factory);
+&nbsp;                } else {
+&nbsp;                    columnSpan = subtype.getColumnSpan(factory);
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if (columnSpan &lt; index) {</b>
+&nbsp;                    index -= columnSpan;
+&nbsp;                } else if (columnSpan != 0) {
+&nbsp;                    return this.getType(factory, subtype, index);
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            throw new IllegalStateException(&quot;Type index is past the types column span!&quot;);
+&nbsp;        } else if (elementType instanceof EntityType) {
+&nbsp;            EntityType entityType = (EntityType)elementType;
+<b class="fc">&nbsp;            Type idType = this.getIdType(entityType);</b>
+&nbsp;            return this.getType(factory, idType, index);
+&nbsp;        } else {
+&nbsp;            return elementType instanceof MetaType ? (JdbcMapping)((MetaType)elementType).getBaseType() : (JdbcMapping)elementType;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    private Type getIdType(EntityType entityType) {</b>
+&nbsp;        PersistentClass entityBinding = this.getBuildingContext().getMetadataCollector().getEntityBinding(entityType.getAssociatedEntityName());
+&nbsp;        Type idType;
+&nbsp;        if (entityType.isReferenceToPrimaryKey()) {
+<b class="pc">&nbsp;            idType = entityBinding.getIdentifier().getType();</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            idType = entityBinding.getProperty(entityType.getRHSUniqueKeyPropertyName()).getType();</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        return idType;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    FetchMode getFetchMode();</b>
+&nbsp;
+&nbsp;    Table getTable();
+<b class="nc">&nbsp;</b>
+&nbsp;    boolean hasFormula();
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    boolean isAlternateUniqueKey();</b>
+&nbsp;
+<b class="nc">&nbsp;    boolean isNullable();</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    void createForeignKey();
+&nbsp;
+&nbsp;    void createUniqueKey(MetadataBuildingContext var1);
+<b class="nc">&nbsp;</b>
+&nbsp;    boolean isSimpleValue();
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    boolean isValid(Mapping var1) throws MappingException;</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    void setTypeUsingReflection(String var1, String var2) throws MappingException;</b>
+&nbsp;
+<b class="pc">&nbsp;    Object accept(ValueVisitor var1);</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    boolean isSame(Value var1);
+<b class="fc">&nbsp;</b>
+&nbsp;    boolean[] getColumnInsertability();
+&nbsp;
+&nbsp;    boolean hasAnyInsertableColumns();
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    boolean[] getColumnUpdateability();</b>
+&nbsp;
+<b class="pc">&nbsp;    boolean hasAnyUpdatableColumns();</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    @Incubating
+&nbsp;    default MetadataBuildingContext getBuildingContext() {
+<b class="nc">&nbsp;        throw new UnsupportedOperationException(&quot;Value#getBuildingContext is not implemented by: &quot; + this.getClass().getName());</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    ServiceRegistry getServiceRegistry();
+&nbsp;
+&nbsp;    Value copy();
+&nbsp;
+&nbsp;    boolean isColumnInsertable(int var1);
+&nbsp;
+&nbsp;    boolean isColumnUpdateable(int var1);
+&nbsp;
+&nbsp;    @Incubating
+&nbsp;    default String getExtraCreateTableInfo() {
+&nbsp;        return &quot;&quot;;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Internal
+&nbsp;    default void checkColumnDuplication(Set&lt;String&gt; distinctColumns, String owner) {
+&nbsp;        for(int i = 0; i &lt; this.getSelectables().size(); ++i) {
+&nbsp;            Selectable selectable = (Selectable)this.getSelectables().get(i);
+&nbsp;            if (this.isColumnInsertable(i) || this.isColumnUpdateable(i)) {
+&nbsp;                Column col = (Column)selectable;
+&nbsp;                if (!distinctColumns.add(col.getName())) {
+&nbsp;                    String var10002 = col.getName();
+&nbsp;                    throw new MappingException(&quot;Column &#39;&quot; + var10002 + &quot;&#39; is duplicated in mapping for &quot; + owner + &quot; (use &#39;@Column(insertable=false, updatable=false)&#39; when mapping multiple properties to the same column)&quot;);
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:54</div>
+</div>
+</body>
+</html>

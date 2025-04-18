@@ -1,0 +1,309 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ConcurrentBag</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.zaxxer.hikari.util</a>
+</div>
+
+<h1>Coverage Summary for Class: ConcurrentBag (com.zaxxer.hikari.util)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+</tr>
+  <tr>
+    <td class="name">ConcurrentBag$IBagStateListener</td>
+  </tr>
+  <tr>
+    <td class="name">ConcurrentBag$IConcurrentBagEntry</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package com.zaxxer.hikari.util;
+&nbsp;
+&nbsp;import java.lang.ref.WeakReference;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.List;
+&nbsp;import java.util.concurrent.CopyOnWriteArrayList;
+&nbsp;import java.util.concurrent.SynchronousQueue;
+&nbsp;import java.util.concurrent.TimeUnit;
+&nbsp;import java.util.concurrent.atomic.AtomicInteger;
+&nbsp;import java.util.concurrent.locks.LockSupport;
+&nbsp;import java.util.stream.Collectors;
+&nbsp;import org.slf4j.Logger;
+&nbsp;import org.slf4j.LoggerFactory;
+&nbsp;
+&nbsp;public class ConcurrentBag&lt;T extends ConcurrentBag.IConcurrentBagEntry&gt; implements AutoCloseable {
+&nbsp;    private static final Logger LOGGER = LoggerFactory.getLogger(ConcurrentBag.class);
+&nbsp;    private final CopyOnWriteArrayList&lt;T&gt; sharedList;
+&nbsp;    private final boolean weakThreadLocals;
+&nbsp;    private final ThreadLocal&lt;List&lt;Object&gt;&gt; threadList;
+&nbsp;    private final IBagStateListener listener;
+&nbsp;    private final AtomicInteger waiters;
+&nbsp;    private volatile boolean closed;
+&nbsp;    private final SynchronousQueue&lt;T&gt; handoffQueue;
+&nbsp;
+&nbsp;    public ConcurrentBag(IBagStateListener listener) {
+&nbsp;        this.listener = listener;
+&nbsp;        this.weakThreadLocals = this.useWeakThreadLocals();
+&nbsp;        this.handoffQueue = new SynchronousQueue(true);
+&nbsp;        this.waiters = new AtomicInteger();
+&nbsp;        this.sharedList = new CopyOnWriteArrayList();
+&nbsp;        if (this.weakThreadLocals) {
+&nbsp;            this.threadList = ThreadLocal.withInitial(() -&gt; new ArrayList(16));
+&nbsp;        } else {
+&nbsp;            this.threadList = ThreadLocal.withInitial(() -&gt; new FastList(IConcurrentBagEntry.class, 16));
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public T borrow(long timeout, TimeUnit timeUnit) throws InterruptedException {
+&nbsp;        List&lt;Object&gt; list = (List)this.threadList.get();
+&nbsp;
+&nbsp;        for(int i = list.size() - 1; i &gt;= 0; --i) {
+&nbsp;            Object entry = list.remove(i);
+&nbsp;            T bagEntry = this.weakThreadLocals ? (IConcurrentBagEntry)((WeakReference)entry).get() : (IConcurrentBagEntry)entry;
+&nbsp;            if (bagEntry != null &amp;&amp; bagEntry.compareAndSet(0, 1)) {
+&nbsp;                return bagEntry;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        int waiting = this.waiters.incrementAndGet();
+&nbsp;
+&nbsp;        try {
+&nbsp;            for(T bagEntry : this.sharedList) {
+&nbsp;                if (bagEntry.compareAndSet(0, 1)) {
+&nbsp;                    if (waiting &gt; 1) {
+&nbsp;                        this.listener.addBagItem(waiting - 1);
+&nbsp;                    }
+&nbsp;
+&nbsp;                    IConcurrentBagEntry bagEntry = bagEntry;
+&nbsp;                    return (T)bagEntry;
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            this.listener.addBagItem(waiting);
+&nbsp;            timeout = timeUnit.toNanos(timeout);
+&nbsp;
+&nbsp;            do {
+&nbsp;                long start = ClockSource.currentTime();
+&nbsp;                T bagEntry = (T)(this.handoffQueue.poll(timeout, TimeUnit.NANOSECONDS));
+&nbsp;                if (bagEntry == null || bagEntry.compareAndSet(0, 1)) {
+&nbsp;                    IConcurrentBagEntry var9 = bagEntry;
+&nbsp;                    return (T)var9;
+&nbsp;                }
+&nbsp;
+&nbsp;                timeout -= ClockSource.elapsedNanos(start);
+&nbsp;            } while(timeout &gt; 10000L);
+&nbsp;
+&nbsp;            Object var17 = null;
+&nbsp;            return (T)var17;
+&nbsp;        } finally {
+&nbsp;            this.waiters.decrementAndGet();
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void requite(T bagEntry) {
+&nbsp;        bagEntry.setState(0);
+&nbsp;
+&nbsp;        for(int i = 0; this.waiters.get() &gt; 0; ++i) {
+&nbsp;            if (bagEntry.getState() != 0 || this.handoffQueue.offer(bagEntry)) {
+&nbsp;                return;
+&nbsp;            }
+&nbsp;
+&nbsp;            if ((i &amp; 255) == 255) {
+&nbsp;                LockSupport.parkNanos(TimeUnit.MICROSECONDS.toNanos(10L));
+&nbsp;            } else {
+&nbsp;                Thread.yield();
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        List&lt;Object&gt; threadLocalList = (List)this.threadList.get();
+&nbsp;        if (threadLocalList.size() &lt; 50) {
+&nbsp;            threadLocalList.add(this.weakThreadLocals ? new WeakReference(bagEntry) : bagEntry);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void add(T bagEntry) {
+&nbsp;        if (this.closed) {
+&nbsp;            LOGGER.info(&quot;ConcurrentBag has been closed, ignoring add()&quot;);
+&nbsp;            throw new IllegalStateException(&quot;ConcurrentBag has been closed, ignoring add()&quot;);
+&nbsp;        } else {
+&nbsp;            this.sharedList.add(bagEntry);
+&nbsp;
+&nbsp;            while(this.waiters.get() &gt; 0 &amp;&amp; bagEntry.getState() == 0 &amp;&amp; !this.handoffQueue.offer(bagEntry)) {
+&nbsp;                Thread.yield();
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean remove(T bagEntry) {
+&nbsp;        if (!bagEntry.compareAndSet(1, -1) &amp;&amp; !bagEntry.compareAndSet(-2, -1) &amp;&amp; !this.closed) {
+&nbsp;            LOGGER.warn(&quot;Attempt to remove an object from the bag that was not borrowed or reserved: {}&quot;, bagEntry);
+&nbsp;            return false;
+&nbsp;        } else {
+&nbsp;            boolean removed = this.sharedList.remove(bagEntry);
+&nbsp;            if (!removed &amp;&amp; !this.closed) {
+&nbsp;                LOGGER.warn(&quot;Attempt to remove an object from the bag that does not exist: {}&quot;, bagEntry);
+&nbsp;            }
+&nbsp;
+&nbsp;            ((List)this.threadList.get()).remove(bagEntry);
+&nbsp;            return removed;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void close() {
+&nbsp;        this.closed = true;
+&nbsp;    }
+&nbsp;
+&nbsp;    public List&lt;T&gt; values(int state) {
+&nbsp;        List&lt;T&gt; list = (List)this.sharedList.stream().filter((e) -&gt; e.getState() == state).collect(Collectors.toList());
+&nbsp;        Collections.reverse(list);
+&nbsp;        return list;
+&nbsp;    }
+&nbsp;
+&nbsp;    public List&lt;T&gt; values() {
+&nbsp;        return (List)this.sharedList.clone();
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean reserve(T bagEntry) {
+&nbsp;        return bagEntry.compareAndSet(0, -2);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void unreserve(T bagEntry) {
+&nbsp;        if (bagEntry.compareAndSet(-2, 0)) {
+&nbsp;            while(this.waiters.get() &gt; 0 &amp;&amp; !this.handoffQueue.offer(bagEntry)) {
+&nbsp;                Thread.yield();
+&nbsp;            }
+&nbsp;        } else {
+&nbsp;            LOGGER.warn(&quot;Attempt to relinquish an object to the bag that was not reserved: {}&quot;, bagEntry);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getWaitingThreadCount() {
+&nbsp;        return this.waiters.get();
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getCount(int state) {
+&nbsp;        int count = 0;
+&nbsp;
+&nbsp;        for(T e : this.sharedList) {
+&nbsp;            if (e.getState() == state) {
+&nbsp;                ++count;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return count;
+&nbsp;    }
+&nbsp;
+&nbsp;    public int[] getStateCounts() {
+&nbsp;        int[] states = new int[6];
+&nbsp;
+&nbsp;        for(T e : this.sharedList) {
+&nbsp;            ++states[e.getState()];
+&nbsp;        }
+&nbsp;
+&nbsp;        states[4] = this.sharedList.size();
+&nbsp;        states[5] = this.waiters.get();
+&nbsp;        return states;
+&nbsp;    }
+&nbsp;
+&nbsp;    public int size() {
+&nbsp;        return this.sharedList.size();
+&nbsp;    }
+&nbsp;
+&nbsp;    public void dumpState() {
+&nbsp;        this.sharedList.forEach((entry) -&gt; LOGGER.info(entry.toString()));
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean useWeakThreadLocals() {
+&nbsp;        try {
+&nbsp;            if (System.getProperty(&quot;com.zaxxer.hikari.useWeakReferences&quot;) != null) {
+&nbsp;                return Boolean.getBoolean(&quot;com.zaxxer.hikari.useWeakReferences&quot;);
+&nbsp;            } else {
+&nbsp;                return this.getClass().getClassLoader() != ClassLoader.getSystemClassLoader();
+&nbsp;            }
+&nbsp;        } catch (SecurityException var2) {
+&nbsp;            return true;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public interface IBagStateListener {
+&nbsp;        void addBagItem(int var1);
+&nbsp;    }
+&nbsp;
+&nbsp;    public interface IConcurrentBagEntry {
+&nbsp;        int STATE_NOT_IN_USE = 0;
+&nbsp;        int STATE_IN_USE = 1;
+&nbsp;        int STATE_REMOVED = -1;
+&nbsp;        int STATE_RESERVED = -2;
+&nbsp;
+&nbsp;        boolean compareAndSet(int var1, int var2);
+&nbsp;
+&nbsp;        void setState(int var1);
+&nbsp;
+&nbsp;        int getState();
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:57</div>
+</div>
+</body>
+</html>

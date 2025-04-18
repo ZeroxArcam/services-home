@@ -1,0 +1,380 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > MappingBinder</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.boot.jaxb.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: MappingBinder (org.hibernate.boot.jaxb.internal)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MappingBinder</td>
+<td class="coverageStat">
+  <span class="percent">
+    46.2%
+  </span>
+  <span class="absValue">
+    (6/13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    10%
+  </span>
+  <span class="absValue">
+    (2/20)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    29.6%
+  </span>
+  <span class="absValue">
+    (16/54)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">MappingBinder$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (1/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (1/3)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">MappingBinder$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (1/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (1/3)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">MappingBinder$Options</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    42.1%
+  </span>
+  <span class="absValue">
+    (8/19)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    10%
+  </span>
+  <span class="absValue">
+    (2/20)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    30%
+  </span>
+  <span class="absValue">
+    (18/60)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.boot.jaxb.internal;
+&nbsp;
+&nbsp;import jakarta.xml.bind.JAXBContext;
+&nbsp;import jakarta.xml.bind.JAXBException;
+&nbsp;import java.util.Objects;
+&nbsp;import java.util.function.Function;
+&nbsp;import java.util.function.Supplier;
+&nbsp;import javax.xml.stream.XMLEventFactory;
+&nbsp;import javax.xml.stream.XMLEventReader;
+&nbsp;import javax.xml.stream.events.StartElement;
+&nbsp;import org.hibernate.Internal;
+&nbsp;import org.hibernate.boot.ResourceStreamLocator;
+&nbsp;import org.hibernate.boot.UnsupportedOrmXsdVersionException;
+&nbsp;import org.hibernate.boot.jaxb.JaxbLogger;
+&nbsp;import org.hibernate.boot.jaxb.Origin;
+&nbsp;import org.hibernate.boot.jaxb.hbm.spi.JaxbHbmHibernateMapping;
+&nbsp;import org.hibernate.boot.jaxb.hbm.transform.HbmXmlTransformer;
+&nbsp;import org.hibernate.boot.jaxb.hbm.transform.UnsupportedFeatureHandling;
+&nbsp;import org.hibernate.boot.jaxb.internal.stax.HbmEventReader;
+&nbsp;import org.hibernate.boot.jaxb.internal.stax.JpaOrmXmlEventReader;
+&nbsp;import org.hibernate.boot.jaxb.internal.stax.MappingEventReader;
+&nbsp;import org.hibernate.boot.jaxb.mapping.JaxbEntityMappings;
+&nbsp;import org.hibernate.boot.jaxb.spi.BindableMappingDescriptor;
+&nbsp;import org.hibernate.boot.jaxb.spi.Binding;
+&nbsp;import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
+&nbsp;import org.hibernate.boot.xsd.MappingXsdSupport;
+&nbsp;import org.hibernate.engine.config.spi.ConfigurationService;
+&nbsp;import org.hibernate.engine.config.spi.StandardConverters;
+&nbsp;import org.hibernate.internal.log.DeprecationLogger;
+&nbsp;import org.hibernate.internal.util.config.ConfigurationException;
+&nbsp;import org.hibernate.service.ServiceRegistry;
+&nbsp;import org.hibernate.service.spi.ServiceRegistryImplementor;
+&nbsp;import org.jboss.logging.Logger;
+&nbsp;
+&nbsp;public class MappingBinder extends AbstractBinder&lt;BindableMappingDescriptor&gt; {
+&nbsp;    private static final Logger log = Logger.getLogger(MappingBinder.class);
+&nbsp;    private final XMLEventFactory xmlEventFactory;
+&nbsp;    private final Supplier&lt;Options&gt; optionsAccess;
+&nbsp;    private final Supplier&lt;UnsupportedFeatureHandling&gt; unsupportedHandlingAccess;
+&nbsp;    private JAXBContext hbmJaxbContext;
+&nbsp;    private JAXBContext entityMappingsJaxbContext;
+&nbsp;    public static final Options VALIDATING = new Options() {
+&nbsp;        public boolean validateMappings() {
+&nbsp;            return true;
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;        public boolean transformHbmMappings() {</b>
+&nbsp;            return false;
+<b class="fc">&nbsp;        }</b>
+&nbsp;    };
+&nbsp;    public static final Options NON_VALIDATING = new Options() {
+&nbsp;        public boolean validateMappings() {
+&nbsp;            return true;
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean transformHbmMappings() {
+&nbsp;            return false;
+&nbsp;        }
+&nbsp;    };
+&nbsp;
+&nbsp;    public MappingBinder(ResourceStreamLocator resourceStreamLocator, Supplier&lt;Options&gt; optionsAccess, Supplier&lt;UnsupportedFeatureHandling&gt; unsupportedHandlingAccess) {
+&nbsp;        super(resourceStreamLocator);
+<b class="fc">&nbsp;        this.xmlEventFactory = XMLEventFactory.newInstance();</b>
+&nbsp;        this.optionsAccess = optionsAccess;
+&nbsp;        this.unsupportedHandlingAccess = unsupportedHandlingAccess;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private MappingBinder(ResourceStreamLocator resourceStreamLocator, Options options, UnsupportedFeatureHandling unsupportedHandling) {
+&nbsp;        this(resourceStreamLocator, (Supplier)(() -&gt; options), (Supplier)(() -&gt; unsupportedHandling));
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public MappingBinder(ResourceStreamLocator resourceStreamLocator, Function&lt;String, Object&gt; settingsAccess) {
+&nbsp;        ResourceStreamLocator var3;
+&nbsp;        if (resourceStreamLocator == null) {
+<b class="fc">&nbsp;            ClassLoader var10001 = MappingBinder.class.getClassLoader();</b>
+&nbsp;            Objects.requireNonNull(var10001);
+&nbsp;            var3 = var10001::getResourceAsStream;
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            var3 = resourceStreamLocator;
+&nbsp;        }
+&nbsp;
+&nbsp;        super(var3);
+<b class="nc">&nbsp;        this.xmlEventFactory = XMLEventFactory.newInstance();</b>
+&nbsp;        if (settingsAccess == null) {
+&nbsp;            this.optionsAccess = () -&gt; VALIDATING;
+&nbsp;            this.unsupportedHandlingAccess = () -&gt; UnsupportedFeatureHandling.ERROR;
+&nbsp;        } else {
+&nbsp;            this.optionsAccess = () -&gt; new Options() {
+&nbsp;                    public boolean validateMappings() {
+&nbsp;                        Object setting = settingsAccess.apply(&quot;hibernate.validate_xml&quot;);
+&nbsp;                        return setting == null ? false : (Boolean)StandardConverters.BOOLEAN.convert(setting);
+&nbsp;                    }
+&nbsp;
+<b class="fc">&nbsp;                    public boolean transformHbmMappings() {</b>
+<b class="fc">&nbsp;                        Object setting = settingsAccess.apply(&quot;hibernate.transform_hbm_xml.enabled&quot;);</b>
+<b class="fc">&nbsp;                        return setting == null ? false : (Boolean)StandardConverters.BOOLEAN.convert(setting);</b>
+&nbsp;                    }
+&nbsp;                };
+&nbsp;            this.unsupportedHandlingAccess = () -&gt; {
+&nbsp;                Object setting = settingsAccess.apply(&quot;hibernate.transform_hbm_xml.unsupported_feature_handling&quot;);
+&nbsp;                return UnsupportedFeatureHandling.fromSetting(setting, UnsupportedFeatureHandling.ERROR);
+&nbsp;            };
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public MappingBinder(ServiceRegistry serviceRegistry) {
+&nbsp;        this((ResourceStreamLocator)serviceRegistry.getService(ClassLoaderService.class), (Function)((settingName) -&gt; {
+&nbsp;            ConfigurationService configurationService;
+&nbsp;            if (serviceRegistry instanceof ServiceRegistryImplementor) {
+&nbsp;                ServiceRegistryImplementor serviceRegistryImplementor = (ServiceRegistryImplementor)serviceRegistry;
+<b class="pc">&nbsp;                configurationService = (ConfigurationService)serviceRegistryImplementor.fromRegistryOrChildren(ConfigurationService.class);</b>
+&nbsp;            } else {
+<b class="pc">&nbsp;                configurationService = (ConfigurationService)serviceRegistry.getService(ConfigurationService.class);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            return configurationService == null ? null : configurationService.getSettings().get(settingName);
+&nbsp;        }));
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public MappingBinder(ResourceStreamLocator resourceStreamLocator, UnsupportedFeatureHandling unsupportedHandling) {
+&nbsp;        this(resourceStreamLocator, new Options() {
+&nbsp;            public boolean validateMappings() {
+&nbsp;                return false;
+&nbsp;            }
+&nbsp;
+&nbsp;            public boolean transformHbmMappings() {
+&nbsp;                return false;
+&nbsp;            }
+&nbsp;        }, unsupportedHandling);
+&nbsp;    }
+&nbsp;
+&nbsp;    public MappingBinder(ResourceStreamLocator resourceStreamLocator, Options options) {
+&nbsp;        this(resourceStreamLocator, options, UnsupportedFeatureHandling.ERROR);
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isValidationEnabled() {
+&nbsp;        return ((Options)this.optionsAccess.get()).validateMappings();
+<b class="fc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected &lt;X extends BindableMappingDescriptor&gt; Binding&lt;X&gt; doBind(XMLEventReader staxEventReader, StartElement rootElementStartEvent, Origin origin) {</b>
+&nbsp;        String rootElementLocalName = rootElementStartEvent.getName().getLocalPart();
+&nbsp;        if (&quot;hibernate-mapping&quot;.equals(rootElementLocalName)) {
+&nbsp;            if (log.isDebugEnabled()) {
+&nbsp;                log.debugf(&quot;Performing JAXB binding of hbm.xml document : %s&quot;, origin.toString());
+&nbsp;            }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;            XMLEventReader hbmReader = new HbmEventReader(staxEventReader, this.xmlEventFactory);</b>
+&nbsp;            JaxbHbmHibernateMapping hbmBindings = (JaxbHbmHibernateMapping)this.jaxb(hbmReader, MappingXsdSupport.INSTANCE.hbmXsd().getSchema(), this.hbmJaxbContext(), origin);
+&nbsp;            if (((Options)this.optionsAccess.get()).transformHbmMappings()) {
+<b class="nc">&nbsp;                JaxbLogger.JAXB_LOGGER.tracef(&quot;Performing on-the-fly hbm.xml -&gt; mapping.xml transformation - %s &quot;, origin);</b>
+<b class="nc">&nbsp;                Supplier var10004 = this.unsupportedHandlingAccess;</b>
+<b class="nc">&nbsp;                Objects.requireNonNull(var10004);</b>
+&nbsp;                return new Binding(HbmXmlTransformer.transform(hbmBindings, origin, var10004::get), origin);
+&nbsp;            } else {
+<b class="nc">&nbsp;                DeprecationLogger.DEPRECATION_LOGGER.logDeprecatedHbmXmlProcessing(origin.getType(), origin.getName());</b>
+&nbsp;                return new Binding(hbmBindings, origin);
+&nbsp;            }
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            assert &quot;entity-mappings&quot;.equals(rootElementLocalName);
+&nbsp;
+&nbsp;            try {
+&nbsp;                log.debugf(&quot;Performing JAXB binding of orm.xml document : %s&quot;, origin.toString());
+&nbsp;                XMLEventReader reader = new MappingEventReader(staxEventReader, this.xmlEventFactory);
+&nbsp;                JaxbEntityMappings bindingRoot = (JaxbEntityMappings)this.jaxb(reader, MappingXsdSupport.latestDescriptor().getSchema(), this.mappingJaxbContext(), origin);
+&nbsp;                return new Binding(bindingRoot, origin);
+&nbsp;            } catch (JpaOrmXmlEventReader.BadVersionException e) {
+<b class="nc">&nbsp;                throw new UnsupportedOrmXsdVersionException(e.getRequestedVersion(), origin);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private JAXBContext hbmJaxbContext() {
+&nbsp;        if (this.hbmJaxbContext == null) {
+&nbsp;            try {
+&nbsp;                this.hbmJaxbContext = JAXBContext.newInstance(new Class[]{JaxbHbmHibernateMapping.class});
+&nbsp;            } catch (JAXBException e) {
+&nbsp;                throw new ConfigurationException(&quot;Unable to build hbm.xml JAXBContext&quot;, e);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return this.hbmJaxbContext;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Internal
+&nbsp;    public JAXBContext mappingJaxbContext() {
+&nbsp;        if (this.entityMappingsJaxbContext == null) {
+&nbsp;            try {
+<b class="fc">&nbsp;                this.entityMappingsJaxbContext = JAXBContext.newInstance(new Class[]{JaxbEntityMappings.class});</b>
+&nbsp;            } catch (JAXBException e) {
+&nbsp;                throw new ConfigurationException(&quot;Unable to build orm.xml JAXBContext&quot;, e);
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        return this.entityMappingsJaxbContext;
+&nbsp;    }
+&nbsp;
+&nbsp;    public interface Options {
+&nbsp;        boolean validateMappings();
+&nbsp;
+&nbsp;        boolean transformHbmMappings();
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 21:00</div>
+</div>
+</body>
+</html>

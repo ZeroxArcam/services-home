@@ -1,0 +1,270 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > MemberResolver</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.fasterxml.classmate</a>
+</div>
+
+<h1>Coverage Summary for Class: MemberResolver (com.fasterxml.classmate)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MemberResolver</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    44.4%
+  </span>
+  <span class="absValue">
+    (4/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    26.2%
+  </span>
+  <span class="absValue">
+    (11/42)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    37.5%
+  </span>
+  <span class="absValue">
+    (24/64)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package com.fasterxml.classmate;
+&nbsp;
+&nbsp;import com.fasterxml.classmate.members.HierarchicType;
+&nbsp;import com.fasterxml.classmate.members.RawConstructor;
+&nbsp;import com.fasterxml.classmate.members.RawField;
+&nbsp;import com.fasterxml.classmate.members.RawMethod;
+&nbsp;import com.fasterxml.classmate.util.ClassKey;
+&nbsp;import java.io.Serializable;
+&nbsp;import java.lang.reflect.Type;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.HashSet;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Set;
+&nbsp;
+&nbsp;public class MemberResolver implements Serializable {
+&nbsp;    protected final TypeResolver _typeResolver;
+&nbsp;    protected boolean _cfgIncludeLangObject;
+&nbsp;    protected Filter&lt;RawField&gt; _fieldFilter;
+&nbsp;    protected Filter&lt;RawMethod&gt; _methodFilter;
+&nbsp;    protected Filter&lt;RawConstructor&gt; _constructorFilter;
+&nbsp;
+&nbsp;    public MemberResolver(TypeResolver typeResolver) {
+&nbsp;        this._typeResolver = typeResolver;
+&nbsp;    }
+&nbsp;
+&nbsp;    public MemberResolver setIncludeLangObject(boolean state) {
+&nbsp;        this._cfgIncludeLangObject = state;
+&nbsp;        return this;
+&nbsp;    }
+&nbsp;
+&nbsp;    public MemberResolver setFieldFilter(Filter&lt;RawField&gt; f) {
+&nbsp;        this._fieldFilter = f;
+&nbsp;        return this;
+&nbsp;    }
+&nbsp;
+&nbsp;    public MemberResolver setMethodFilter(Filter&lt;RawMethod&gt; f) {
+&nbsp;        this._methodFilter = f;
+&nbsp;        return this;
+&nbsp;    }
+&nbsp;
+&nbsp;    public MemberResolver setConstructorFilter(Filter&lt;RawConstructor&gt; f) {
+&nbsp;        this._constructorFilter = f;
+&nbsp;        return this;
+&nbsp;    }
+&nbsp;
+&nbsp;    public ResolvedTypeWithMembers resolve(ResolvedType mainType, AnnotationConfiguration annotationConfig, AnnotationOverrides annotationOverrides) {
+&nbsp;        HashSet&lt;ClassKey&gt; seenTypes = new HashSet();
+&nbsp;        List&lt;ResolvedType&gt; types;
+&nbsp;        if (!this._cfgIncludeLangObject &amp;&amp; mainType.getErasedType() == Object.class) {
+&nbsp;            types = new ArrayList(1);
+&nbsp;            types.add(mainType);
+&nbsp;            seenTypes.add(new ClassKey(Object.class));
+&nbsp;        } else {
+&nbsp;            types = new ArrayList();
+&nbsp;            this._gatherTypes(mainType, seenTypes, types);
+&nbsp;        }
+&nbsp;
+&nbsp;        HierarchicType mainHierarchicType = null;
+&nbsp;        HierarchicType[] htypes;
+&nbsp;        if (annotationOverrides == null) {
+&nbsp;            int len = types.size();
+&nbsp;            htypes = new HierarchicType[len];
+&nbsp;
+&nbsp;            for(int i = 0; i &lt; len; ++i) {
+&nbsp;                htypes[i] = new HierarchicType((ResolvedType)types.get(i), false, i);
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;            mainHierarchicType = htypes[0];
+&nbsp;        } else {
+&nbsp;            ArrayList&lt;HierarchicType&gt; typesWithMixins = new ArrayList();
+&nbsp;
+&nbsp;            for(ResolvedType type : types) {
+&nbsp;                List&lt;Class&lt;?&gt;&gt; m = annotationOverrides.mixInsFor(type.getErasedType());
+&nbsp;                if (m != null) {
+&nbsp;                    for(Class&lt;?&gt; mixinClass : m) {
+<b class="nc">&nbsp;                        this._addOverrides(typesWithMixins, seenTypes, mixinClass);</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                HierarchicType ht = new HierarchicType(type, false, typesWithMixins.size());
+<b class="nc">&nbsp;                if (mainHierarchicType == null) {</b>
+<b class="nc">&nbsp;                    mainHierarchicType = ht;</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                typesWithMixins.add(ht);
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;            htypes = (HierarchicType[])typesWithMixins.toArray(new HierarchicType[0]);
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return new ResolvedTypeWithMembers(this._typeResolver, annotationConfig, mainHierarchicType, htypes, this._constructorFilter, this._fieldFilter, this._methodFilter);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private void _addOverrides(List&lt;HierarchicType&gt; typesWithOverrides, Set&lt;ClassKey&gt; seenTypes, Class&lt;?&gt; override) {
+&nbsp;        ClassKey key = new ClassKey(override);
+&nbsp;        if (seenTypes.add(key)) {
+&nbsp;            ResolvedType resolvedOverride = this._typeResolver.resolve(override, new Type[0]);
+&nbsp;            typesWithOverrides.add(new HierarchicType(resolvedOverride, true, typesWithOverrides.size()));
+&nbsp;
+&nbsp;            for(ResolvedType r : resolvedOverride.getImplementedInterfaces()) {
+&nbsp;                this._addOverrides(typesWithOverrides, seenTypes, r);
+&nbsp;            }
+&nbsp;
+&nbsp;            ResolvedType superClass = resolvedOverride.getParentClass();
+&nbsp;            this._addOverrides(typesWithOverrides, seenTypes, superClass);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private void _addOverrides(List&lt;HierarchicType&gt; typesWithOverrides, Set&lt;ClassKey&gt; seenTypes, ResolvedType override) {
+&nbsp;        if (override != null) {
+&nbsp;            Class&lt;?&gt; raw = override.getErasedType();
+&nbsp;            if (this._cfgIncludeLangObject || Object.class != raw) {
+&nbsp;                ClassKey key = new ClassKey(raw);
+&nbsp;                if (seenTypes.add(key)) {
+<b class="fc">&nbsp;                    typesWithOverrides.add(new HierarchicType(override, true, typesWithOverrides.size()));</b>
+&nbsp;
+&nbsp;                    for(ResolvedType r : override.getImplementedInterfaces()) {
+&nbsp;                        this._addOverrides(typesWithOverrides, seenTypes, r);
+&nbsp;                    }
+&nbsp;
+&nbsp;                    ResolvedType superClass = override.getParentClass();
+<b class="pc">&nbsp;                    if (superClass != null) {</b>
+<b class="nc">&nbsp;                        this._addOverrides(typesWithOverrides, seenTypes, superClass);</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void _gatherTypes(ResolvedType currentType, Set&lt;ClassKey&gt; seenTypes, List&lt;ResolvedType&gt; types) {
+&nbsp;        if (currentType != null) {
+<b class="fc">&nbsp;            Class&lt;?&gt; raw = currentType.getErasedType();</b>
+&nbsp;            if (this._cfgIncludeLangObject || raw != Object.class) {
+&nbsp;                ClassKey key = new ClassKey(currentType.getErasedType());
+<b class="pc">&nbsp;                if (seenTypes.add(key)) {</b>
+<b class="fc">&nbsp;                    types.add(currentType);</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;                    for(ResolvedType t : currentType.getImplementedInterfaces()) {</b>
+&nbsp;                        this._gatherTypes(t, seenTypes, types);
+<b class="fc">&nbsp;                    }</b>
+&nbsp;
+<b class="fc">&nbsp;                    this._gatherTypes(currentType.getParentClass(), seenTypes, types);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
+</div>
+</body>
+</html>

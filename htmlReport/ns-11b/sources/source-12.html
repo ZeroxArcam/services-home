@@ -1,0 +1,307 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > FilterDefBinder</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.boot.model.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: FilterDefBinder (org.hibernate.boot.model.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">FilterDefBinder</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    27.3%
+  </span>
+  <span class="absValue">
+    (3/11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    6.2%
+  </span>
+  <span class="absValue">
+    (2/32)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    6.5%
+  </span>
+  <span class="absValue">
+    (6/92)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.boot.model.internal;
+&nbsp;
+&nbsp;import jakarta.persistence.AttributeConverter;
+&nbsp;import java.lang.reflect.ParameterizedType;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.Locale;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.function.Supplier;
+&nbsp;import org.hibernate.AnnotationException;
+&nbsp;import org.hibernate.MappingException;
+&nbsp;import org.hibernate.annotations.FilterDef;
+&nbsp;import org.hibernate.annotations.FilterDefs;
+&nbsp;import org.hibernate.annotations.ParamDef;
+&nbsp;import org.hibernate.annotations.common.reflection.XAnnotatedElement;
+&nbsp;import org.hibernate.boot.spi.BootstrapContext;
+&nbsp;import org.hibernate.boot.spi.MetadataBuildingContext;
+&nbsp;import org.hibernate.dialect.Dialect;
+&nbsp;import org.hibernate.engine.spi.FilterDefinition;
+&nbsp;import org.hibernate.internal.CoreLogging;
+&nbsp;import org.hibernate.internal.CoreMessageLogger;
+&nbsp;import org.hibernate.internal.util.GenericsHelper;
+&nbsp;import org.hibernate.metamodel.mapping.JdbcMapping;
+&nbsp;import org.hibernate.resource.beans.internal.FallbackBeanInstanceProducer;
+&nbsp;import org.hibernate.resource.beans.spi.ManagedBean;
+&nbsp;import org.hibernate.resource.beans.spi.ManagedBeanRegistry;
+&nbsp;import org.hibernate.type.BasicType;
+&nbsp;import org.hibernate.type.CustomType;
+&nbsp;import org.hibernate.type.descriptor.converter.internal.JpaAttributeConverterImpl;
+&nbsp;import org.hibernate.type.descriptor.java.JavaType;
+&nbsp;import org.hibernate.type.descriptor.java.spi.JavaTypeRegistry;
+&nbsp;import org.hibernate.type.descriptor.jdbc.JdbcType;
+&nbsp;import org.hibernate.type.descriptor.jdbc.JdbcTypeIndicators;
+&nbsp;import org.hibernate.type.internal.ConvertedBasicTypeImpl;
+&nbsp;import org.hibernate.type.spi.TypeConfiguration;
+&nbsp;import org.hibernate.usertype.UserType;
+&nbsp;
+&nbsp;class FilterDefBinder {
+&nbsp;    private static final CoreMessageLogger LOG = CoreLogging.messageLogger(FilterDefBinder.class);
+&nbsp;
+&nbsp;    FilterDefBinder() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void bindFilterDef(FilterDef filterDef, MetadataBuildingContext context) {
+&nbsp;        String name = filterDef.name();
+&nbsp;        if (context.getMetadataCollector().getFilterDefinition(name) != null) {
+<b class="fc">&nbsp;            throw new AnnotationException(&quot;Multiple &#39;@FilterDef&#39; annotations define a filter named &#39;&quot; + name + &quot;&#39;&quot;);</b>
+&nbsp;        } else {
+<b class="fc">&nbsp;            Map&lt;String, JdbcMapping&gt; explicitParamJaMappings;</b>
+&nbsp;            Map&lt;String, ManagedBean&lt;? extends Supplier&lt;?&gt;&gt;&gt; parameterResolvers;
+&nbsp;            if (filterDef.parameters().length == 0) {
+<b class="nc">&nbsp;                explicitParamJaMappings = Collections.emptyMap();</b>
+<b class="nc">&nbsp;                parameterResolvers = Collections.emptyMap();</b>
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                explicitParamJaMappings = new HashMap();
+&nbsp;                parameterResolvers = new HashMap();
+&nbsp;
+&nbsp;                for(ParamDef paramDef : filterDef.parameters()) {
+<b class="nc">&nbsp;                    JdbcMapping jdbcMapping = resolveFilterParamType(paramDef.type(), context);</b>
+<b class="nc">&nbsp;                    if (jdbcMapping == null) {</b>
+<b class="nc">&nbsp;                        throw new MappingException(String.format(Locale.ROOT, &quot;Unable to resolve type specified for parameter (%s) defined for @FilterDef (%s)&quot;, paramDef.name(), name));</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    explicitParamJaMappings.put(paramDef.name(), jdbcMapping);</b>
+<b class="nc">&nbsp;                    if (paramDef.resolver() != Supplier.class) {</b>
+<b class="nc">&nbsp;                        parameterResolvers.put(paramDef.name(), resolveParamResolver(paramDef, context));</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            FilterDefinition filterDefinition = new FilterDefinition(name, filterDef.defaultCondition(), explicitParamJaMappings, parameterResolvers, filterDef.autoEnabled(), filterDef.applyToLoadByKey());
+&nbsp;            LOG.debugf(&quot;Binding filter definition: %s&quot;, filterDefinition.getFilterName());
+<b class="nc">&nbsp;            context.getMetadataCollector().addFilterDefinition(filterDefinition);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static ManagedBean&lt;? extends Supplier&lt;?&gt;&gt; resolveParamResolver(ParamDef paramDef, MetadataBuildingContext context) {
+<b class="nc">&nbsp;        Class&lt;? extends Supplier&gt; clazz = paramDef.resolver();</b>
+&nbsp;
+<b class="nc">&nbsp;        assert clazz != Supplier.class;</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        BootstrapContext bootstrapContext = context.getBootstrapContext();
+&nbsp;        return ((ManagedBeanRegistry)bootstrapContext.getServiceRegistry().requireService(ManagedBeanRegistry.class)).getBean(clazz, bootstrapContext.getCustomTypeProducer());
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private static JdbcMapping resolveFilterParamType(Class&lt;?&gt; type, MetadataBuildingContext context) {
+<b class="nc">&nbsp;        if (UserType.class.isAssignableFrom(type)) {</b>
+&nbsp;            return resolveUserType(type, context);
+&nbsp;        } else if (AttributeConverter.class.isAssignableFrom(type)) {
+<b class="nc">&nbsp;            return resolveAttributeConverter(type, context);</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            return (JdbcMapping)(JavaType.class.isAssignableFrom(type) ? resolveJavaType(type, context) : resolveBasicType(type, context));
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private static BasicType&lt;Object&gt; resolveBasicType(Class&lt;?&gt; type, final MetadataBuildingContext context) {
+&nbsp;        final TypeConfiguration typeConfiguration = context.getBootstrapContext().getTypeConfiguration();
+&nbsp;        JavaType&lt;Object&gt; jtd = typeConfiguration.getJavaTypeRegistry().findDescriptor(type);
+<b class="nc">&nbsp;        if (jtd != null) {</b>
+<b class="nc">&nbsp;            JdbcType jdbcType = jtd.getRecommendedJdbcType(new JdbcTypeIndicators() {</b>
+<b class="nc">&nbsp;                public TypeConfiguration getTypeConfiguration() {</b>
+<b class="nc">&nbsp;                    return typeConfiguration;</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                public int getPreferredSqlTypeCodeForBoolean() {</b>
+&nbsp;                    return context.getPreferredSqlTypeCodeForBoolean();
+&nbsp;                }
+&nbsp;
+&nbsp;                public int getPreferredSqlTypeCodeForDuration() {
+<b class="nc">&nbsp;                    return context.getPreferredSqlTypeCodeForDuration();</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="nc">&nbsp;                public int getPreferredSqlTypeCodeForUuid() {</b>
+<b class="nc">&nbsp;                    return context.getPreferredSqlTypeCodeForUuid();</b>
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                public int getPreferredSqlTypeCodeForInstant() {</b>
+&nbsp;                    return context.getPreferredSqlTypeCodeForInstant();
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+&nbsp;                public int getPreferredSqlTypeCodeForArray() {
+&nbsp;                    return context.getPreferredSqlTypeCodeForArray();
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                public Dialect getDialect() {</b>
+<b class="nc">&nbsp;                    return context.getMetadataCollector().getDatabase().getDialect();</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            });</b>
+&nbsp;            return typeConfiguration.getBasicTypeRegistry().resolve(jtd, jdbcType);
+&nbsp;        } else {
+&nbsp;            return null;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static JdbcMapping resolveUserType(Class&lt;UserType&lt;?&gt;&gt; userTypeClass, MetadataBuildingContext context) {
+&nbsp;        BootstrapContext bootstrapContext = context.getBootstrapContext();
+&nbsp;        UserType&lt;?&gt; userType = !context.getBuildingOptions().isAllowExtensionsInCdi() ? (UserType)FallbackBeanInstanceProducer.INSTANCE.produceBeanInstance(userTypeClass) : (UserType)((ManagedBeanRegistry)bootstrapContext.getServiceRegistry().requireService(ManagedBeanRegistry.class)).getBean(userTypeClass).getBeanInstance();
+&nbsp;        return new CustomType(userType, bootstrapContext.getTypeConfiguration());
+&nbsp;    }
+&nbsp;
+&nbsp;    private static JdbcMapping resolveAttributeConverter(Class&lt;AttributeConverter&lt;?, ?&gt;&gt; type, MetadataBuildingContext context) {
+&nbsp;        BootstrapContext bootstrapContext = context.getBootstrapContext();
+&nbsp;        ManagedBean&lt;AttributeConverter&lt;?, ?&gt;&gt; bean = ((ManagedBeanRegistry)bootstrapContext.getServiceRegistry().requireService(ManagedBeanRegistry.class)).getBean(type);
+&nbsp;        TypeConfiguration typeConfiguration = bootstrapContext.getTypeConfiguration();
+&nbsp;        JavaTypeRegistry jtdRegistry = typeConfiguration.getJavaTypeRegistry();
+&nbsp;        ParameterizedType converterParameterizedType = GenericsHelper.extractParameterizedType(bean.getBeanClass());
+&nbsp;        Class&lt;?&gt; domainJavaClass = GenericsHelper.extractClass(converterParameterizedType.getActualTypeArguments()[0]);
+&nbsp;        Class&lt;?&gt; relationalJavaClass = GenericsHelper.extractClass(converterParameterizedType.getActualTypeArguments()[1]);
+&nbsp;        JavaType&lt;?&gt; domainJtd = jtdRegistry.resolveDescriptor(domainJavaClass);
+&nbsp;        JavaType&lt;?&gt; relationalJtd = jtdRegistry.resolveDescriptor(relationalJavaClass);
+&nbsp;        JavaType&lt;? extends AttributeConverter&lt;?, ?&gt;&gt; converterJtd = jtdRegistry.resolveDescriptor(bean.getBeanClass());
+&nbsp;        JpaAttributeConverterImpl&lt;?, ?&gt; valueConverter = new JpaAttributeConverterImpl(bean, converterJtd, domainJtd, relationalJtd);
+&nbsp;        return new ConvertedBasicTypeImpl(&quot;converted::&quot; + valueConverter.getConverterJavaType().getTypeName(), String.format(&quot;BasicType adapter for AttributeConverter&lt;%s,%s&gt;&quot;, domainJtd.getTypeName(), relationalJtd.getTypeName()), relationalJtd.getRecommendedJdbcType(typeConfiguration.getCurrentBaseSqlTypeIndicators()), valueConverter);
+&nbsp;    }
+&nbsp;
+&nbsp;    private static JdbcMapping resolveJavaType(Class&lt;JavaType&lt;?&gt;&gt; type, MetadataBuildingContext context) {
+&nbsp;        TypeConfiguration typeConfiguration = context.getBootstrapContext().getTypeConfiguration();
+&nbsp;        JavaType&lt;?&gt; jtd = getJavaType(type, context, typeConfiguration);
+&nbsp;        JdbcType jdbcType = jtd.getRecommendedJdbcType(typeConfiguration.getCurrentBaseSqlTypeIndicators());
+&nbsp;        return typeConfiguration.getBasicTypeRegistry().resolve(jtd, jdbcType);
+&nbsp;    }
+&nbsp;
+&nbsp;    private static JavaType&lt;?&gt; getJavaType(Class&lt;JavaType&lt;?&gt;&gt; javaTypeClass, MetadataBuildingContext context, TypeConfiguration typeConfiguration) {
+&nbsp;        JavaType&lt;?&gt; registeredJtd = typeConfiguration.getJavaTypeRegistry().findDescriptor(javaTypeClass);
+&nbsp;        if (registeredJtd != null) {
+<b class="nc">&nbsp;            return registeredJtd;</b>
+&nbsp;        } else {
+&nbsp;            return !context.getBuildingOptions().isAllowExtensionsInCdi() ? (JavaType)FallbackBeanInstanceProducer.INSTANCE.produceBeanInstance(javaTypeClass) : (JavaType)((ManagedBeanRegistry)context.getBootstrapContext().getServiceRegistry().requireService(ManagedBeanRegistry.class)).getBean(javaTypeClass).getBeanInstance();
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void bindFilterDefs(XAnnotatedElement annotatedElement, MetadataBuildingContext context) {
+&nbsp;        FilterDef filterDef = (FilterDef)annotatedElement.getAnnotation(FilterDef.class);
+<b class="nc">&nbsp;        FilterDefs filterDefs = (FilterDefs)BinderHelper.getOverridableAnnotation(annotatedElement, FilterDefs.class, context);</b>
+&nbsp;        if (filterDef != null) {
+<b class="nc">&nbsp;            bindFilterDef(filterDef, context);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if (filterDefs != null) {</b>
+<b class="nc">&nbsp;            for(FilterDef def : filterDefs.value()) {</b>
+&nbsp;                bindFilterDef(def, context);
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:57</div>
+</div>
+</body>
+</html>

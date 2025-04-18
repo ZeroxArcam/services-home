@@ -1,0 +1,195 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > DefaultResolveNaturalIdEventListener</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.event.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: DefaultResolveNaturalIdEventListener (org.hibernate.event.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DefaultResolveNaturalIdEventListener</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    28.6%
+  </span>
+  <span class="absValue">
+    (2/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    5.1%
+  </span>
+  <span class="absValue">
+    (2/39)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.event.internal;
+&nbsp;
+&nbsp;import java.util.concurrent.TimeUnit;
+&nbsp;import org.hibernate.HibernateException;
+&nbsp;import org.hibernate.engine.spi.NaturalIdResolutions;
+&nbsp;import org.hibernate.event.spi.EventSource;
+&nbsp;import org.hibernate.event.spi.ResolveNaturalIdEvent;
+&nbsp;import org.hibernate.event.spi.ResolveNaturalIdEventListener;
+&nbsp;import org.hibernate.internal.CoreLogging;
+&nbsp;import org.hibernate.internal.CoreMessageLogger;
+&nbsp;import org.hibernate.persister.entity.EntityPersister;
+&nbsp;import org.hibernate.pretty.MessageHelper;
+&nbsp;import org.hibernate.stat.spi.StatisticsImplementor;
+&nbsp;
+&nbsp;public class DefaultResolveNaturalIdEventListener extends AbstractLockUpgradeEventListener implements ResolveNaturalIdEventListener {
+&nbsp;    private static final CoreMessageLogger LOG = CoreLogging.messageLogger(DefaultResolveNaturalIdEventListener.class);
+&nbsp;
+&nbsp;    public DefaultResolveNaturalIdEventListener() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public void onResolveNaturalId(ResolveNaturalIdEvent event) throws HibernateException {
+&nbsp;        event.setEntityId(this.resolveNaturalId(event));
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    protected Object resolveNaturalId(ResolveNaturalIdEvent event) {</b>
+&nbsp;        EntityPersister persister = event.getEntityPersister();
+&nbsp;        if (LOG.isTraceEnabled()) {
+&nbsp;            LOG.tracev(&quot;Attempting to resolve: {0}#{1}&quot;, MessageHelper.infoString(persister), event.getNaturalIdValues());
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        Object entityId = this.resolveFromCache(event);
+&nbsp;        if (entityId != null) {
+<b class="nc">&nbsp;            if (LOG.isTraceEnabled()) {</b>
+&nbsp;                LOG.tracev(&quot;Resolved object in cache: {0}#{1}&quot;, MessageHelper.infoString(persister), event.getNaturalIdValues());
+&nbsp;            }
+&nbsp;
+&nbsp;            return entityId;
+&nbsp;        } else {
+&nbsp;            if (LOG.isTraceEnabled()) {
+&nbsp;                LOG.tracev(&quot;Object not resolved in any cache: {0}#{1}&quot;, MessageHelper.infoString(persister), event.getNaturalIdValues());
+&nbsp;            }
+&nbsp;
+&nbsp;            return this.loadFromDatasource(event);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected Object resolveFromCache(ResolveNaturalIdEvent event) {</b>
+&nbsp;        return getNaturalIdResolutions(event).findCachedIdByNaturalId(event.getOrderedNaturalIdValues(), event.getEntityPersister());
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    protected Object loadFromDatasource(ResolveNaturalIdEvent event) {
+<b class="nc">&nbsp;        EventSource session = event.getSession();</b>
+<b class="nc">&nbsp;        EntityPersister entityPersister = event.getEntityPersister();</b>
+&nbsp;        StatisticsImplementor statistics = event.getFactory().getStatistics();
+&nbsp;        boolean statisticsEnabled = statistics.isStatisticsEnabled();
+&nbsp;        long startTime = statisticsEnabled ? System.nanoTime() : 0L;
+<b class="nc">&nbsp;        Object pk = entityPersister.loadEntityIdByNaturalId(event.getOrderedNaturalIdValues(), event.getLockOptions(), session);</b>
+<b class="nc">&nbsp;        if (statisticsEnabled) {</b>
+<b class="nc">&nbsp;            long endTime = System.nanoTime();</b>
+<b class="nc">&nbsp;            long milliseconds = TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);</b>
+&nbsp;            statistics.naturalIdQueryExecuted(entityPersister.getRootEntityName(), milliseconds);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        if (pk != null) {
+&nbsp;            getNaturalIdResolutions(event).cacheResolutionFromLoad(pk, event.getOrderedNaturalIdValues(), entityPersister);
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return pk;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private static NaturalIdResolutions getNaturalIdResolutions(ResolveNaturalIdEvent event) {
+<b class="nc">&nbsp;        return event.getSession().getPersistenceContextInternal().getNaturalIdResolutions();</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:57</div>
+</div>
+</body>
+</html>

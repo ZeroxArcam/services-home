@@ -1,0 +1,222 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > JvmHeapPressureMetrics</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">io.micrometer.core.instrument.binder.jvm</a>
+</div>
+
+<h1>Coverage Summary for Class: JvmHeapPressureMetrics (io.micrometer.core.instrument.binder.jvm)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">JvmHeapPressureMetrics</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/48)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package io.micrometer.core.instrument.binder.jvm;
+&nbsp;
+&nbsp;import com.sun.management.GarbageCollectionNotificationInfo;
+&nbsp;import com.sun.management.GcInfo;
+&nbsp;import io.micrometer.common.lang.NonNull;
+&nbsp;import io.micrometer.core.instrument.Gauge;
+&nbsp;import io.micrometer.core.instrument.MeterRegistry;
+&nbsp;import io.micrometer.core.instrument.Tag;
+&nbsp;import io.micrometer.core.instrument.binder.MeterBinder;
+&nbsp;import io.micrometer.core.instrument.distribution.TimeWindowSum;
+&nbsp;import java.lang.management.GarbageCollectorMXBean;
+&nbsp;import java.lang.management.ManagementFactory;
+&nbsp;import java.lang.management.MemoryPoolMXBean;
+&nbsp;import java.lang.management.MemoryUsage;
+&nbsp;import java.time.Duration;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.concurrent.CopyOnWriteArrayList;
+&nbsp;import java.util.concurrent.atomic.AtomicReference;
+&nbsp;import java.util.stream.Collectors;
+&nbsp;import javax.management.ListenerNotFoundException;
+&nbsp;import javax.management.NotificationEmitter;
+&nbsp;import javax.management.NotificationListener;
+&nbsp;import javax.management.openmbean.CompositeData;
+&nbsp;
+&nbsp;public class JvmHeapPressureMetrics implements MeterBinder, AutoCloseable {
+&nbsp;    private final Iterable&lt;Tag&gt; tags;
+&nbsp;    private final List&lt;Runnable&gt; notificationListenerCleanUpRunnables;
+&nbsp;    private final long startOfMonitoring;
+&nbsp;    private final Duration lookback;
+&nbsp;    private final TimeWindowSum gcPauseSum;
+&nbsp;    private final AtomicReference&lt;Double&gt; lastLongLivedPoolUsageAfterGc;
+&nbsp;    private final Set&lt;String&gt; longLivedPoolNames;
+&nbsp;
+&nbsp;    public JvmHeapPressureMetrics() {
+&nbsp;        this(Collections.emptyList(), Duration.ofMinutes(5L), Duration.ofMinutes(1L));
+&nbsp;    }
+&nbsp;
+&nbsp;    public JvmHeapPressureMetrics(Iterable&lt;Tag&gt; tags, Duration lookback, Duration testEvery) {
+&nbsp;        this.notificationListenerCleanUpRunnables = new CopyOnWriteArrayList();
+&nbsp;        this.startOfMonitoring = System.nanoTime();
+&nbsp;        this.lastLongLivedPoolUsageAfterGc = new AtomicReference((double)0.0F);
+&nbsp;        this.tags = tags;
+&nbsp;        this.lookback = lookback;
+&nbsp;        this.gcPauseSum = new TimeWindowSum((int)lookback.dividedBy(testEvery.toMillis()).toMillis(), testEvery);
+&nbsp;        this.longLivedPoolNames = (Set)JvmMemory.getLongLivedHeapPools().map(MemoryPoolMXBean::getName).collect(Collectors.toSet());
+&nbsp;        this.monitor();
+&nbsp;    }
+&nbsp;
+&nbsp;    public void bindTo(@NonNull MeterRegistry registry) {
+<b class="nc">&nbsp;        if (!this.longLivedPoolNames.isEmpty()) {</b>
+&nbsp;            Gauge.builder(&quot;jvm.memory.usage.after.gc&quot;, this.lastLongLivedPoolUsageAfterGc, AtomicReference::get).tags(this.tags).tag(&quot;area&quot;, &quot;heap&quot;).tag(&quot;pool&quot;, &quot;long-lived&quot;).description(&quot;The percentage of long-lived heap pool used after the last GC event, in the range [0..1]&quot;).register(registry);
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        Gauge.builder(&quot;jvm.gc.overhead&quot;, this.gcPauseSum, (pauseSum) -&gt; {
+&nbsp;            double overIntervalMillis = (double)Math.min(System.nanoTime() - this.startOfMonitoring, this.lookback.toNanos()) / (double)1000000.0F;
+&nbsp;            return this.gcPauseSum.poll() / overIntervalMillis;
+&nbsp;        }).tags(this.tags).description(&quot;An approximation of the percent of CPU time used by GC activities over the last lookback period or since monitoring began, whichever is shorter, in the range [0..1]&quot;).register(registry);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private void monitor() {
+&nbsp;        for(GarbageCollectorMXBean mbean : ManagementFactory.getGarbageCollectorMXBeans()) {
+&nbsp;            if (mbean instanceof NotificationEmitter) {
+<b class="nc">&nbsp;                NotificationListener notificationListener = (notification, ref) -&gt; {</b>
+&nbsp;                    CompositeData cd = (CompositeData)notification.getUserData();
+&nbsp;                    GarbageCollectionNotificationInfo notificationInfo = GarbageCollectionNotificationInfo.from(cd);
+<b class="nc">&nbsp;                    String gcCause = notificationInfo.getGcCause();</b>
+<b class="nc">&nbsp;                    GcInfo gcInfo = notificationInfo.getGcInfo();</b>
+<b class="nc">&nbsp;                    long duration = gcInfo.getDuration();</b>
+<b class="nc">&nbsp;                    if (!JvmMemory.isConcurrentPhase(gcCause, notificationInfo.getGcName())) {</b>
+&nbsp;                        this.gcPauseSum.record(duration);
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                    Map&lt;String, MemoryUsage&gt; after = gcInfo.getMemoryUsageAfterGc();</b>
+&nbsp;                    if (!this.longLivedPoolNames.isEmpty()) {
+<b class="nc">&nbsp;                        long usedAfter = this.longLivedPoolNames.stream().mapToLong((pool) -&gt; ((MemoryUsage)after.get(pool)).getUsed()).sum();</b>
+&nbsp;                        double maxAfter = (double)this.longLivedPoolNames.stream().mapToLong((pool) -&gt; ((MemoryUsage)after.get(pool)).getMax()).sum();
+&nbsp;                        this.lastLongLivedPoolUsageAfterGc.set((double)usedAfter / maxAfter);
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                };</b>
+<b class="nc">&nbsp;                NotificationEmitter notificationEmitter = (NotificationEmitter)mbean;</b>
+<b class="nc">&nbsp;                notificationEmitter.addNotificationListener(notificationListener, (notification) -&gt; notification.getType().equals(&quot;com.sun.management.gc.notification&quot;), (Object)null);</b>
+<b class="nc">&nbsp;                this.notificationListenerCleanUpRunnables.add((Runnable)() -&gt; {</b>
+<b class="nc">&nbsp;                    try {</b>
+<b class="nc">&nbsp;                        notificationEmitter.removeNotificationListener(notificationListener);</b>
+<b class="nc">&nbsp;                    } catch (ListenerNotFoundException var3) {</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                });</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public void close() {
+<b class="nc">&nbsp;        this.notificationListenerCleanUpRunnables.forEach(Runnable::run);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
+</div>
+</body>
+</html>

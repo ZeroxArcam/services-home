@@ -1,0 +1,1242 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > MySQLDialect</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.dialect</a>
+</div>
+
+<h1>Coverage Summary for Class: MySQLDialect (org.hibernate.dialect)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MySQLDialect</td>
+<td class="coverageStat">
+  <span class="percent">
+    25.2%
+  </span>
+  <span class="absValue">
+    (34/135)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    19.9%
+  </span>
+  <span class="absValue">
+    (34/171)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    43.2%
+  </span>
+  <span class="absValue">
+    (214/495)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">MySQLDialect$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    30%
+  </span>
+  <span class="absValue">
+    (3/10)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">MySQLDialect$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/2)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    27.3%
+  </span>
+  <span class="absValue">
+    (38/139)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    18.7%
+  </span>
+  <span class="absValue">
+    (34/182)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    43.2%
+  </span>
+  <span class="absValue">
+    (219/507)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.dialect;
+&nbsp;
+&nbsp;import jakarta.persistence.TemporalType;
+&nbsp;import java.sql.CallableStatement;
+&nbsp;import java.sql.DatabaseMetaData;
+&nbsp;import java.sql.ResultSet;
+&nbsp;import java.sql.SQLException;
+&nbsp;import java.sql.Statement;
+&nbsp;import java.time.ZonedDateTime;
+&nbsp;import java.time.temporal.TemporalAccessor;
+&nbsp;import java.util.Calendar;
+&nbsp;import java.util.Date;
+&nbsp;import java.util.TimeZone;
+&nbsp;import org.hibernate.JDBCException;
+&nbsp;import org.hibernate.PessimisticLockException;
+&nbsp;import org.hibernate.boot.model.FunctionContributions;
+&nbsp;import org.hibernate.boot.model.TypeContributions;
+&nbsp;import org.hibernate.cfg.Environment;
+&nbsp;import org.hibernate.dialect.function.CommonFunctionFactory;
+&nbsp;import org.hibernate.dialect.hint.IndexQueryHintHandler;
+&nbsp;import org.hibernate.dialect.identity.IdentityColumnSupport;
+&nbsp;import org.hibernate.dialect.identity.MySQLIdentityColumnSupport;
+&nbsp;import org.hibernate.dialect.pagination.LimitHandler;
+&nbsp;import org.hibernate.dialect.pagination.LimitLimitHandler;
+&nbsp;import org.hibernate.dialect.sequence.NoSequenceSupport;
+&nbsp;import org.hibernate.dialect.sequence.SequenceSupport;
+&nbsp;import org.hibernate.dialect.temptable.TemporaryTable;
+&nbsp;import org.hibernate.dialect.temptable.TemporaryTableKind;
+&nbsp;import org.hibernate.engine.jdbc.Size;
+&nbsp;import org.hibernate.engine.jdbc.dialect.spi.DialectResolutionInfo;
+&nbsp;import org.hibernate.engine.jdbc.env.spi.IdentifierCaseStrategy;
+&nbsp;import org.hibernate.engine.jdbc.env.spi.IdentifierHelper;
+&nbsp;import org.hibernate.engine.jdbc.env.spi.IdentifierHelperBuilder;
+&nbsp;import org.hibernate.engine.jdbc.env.spi.NameQualifierSupport;
+&nbsp;import org.hibernate.engine.spi.SessionFactoryImplementor;
+&nbsp;import org.hibernate.exception.ConstraintViolationException;
+&nbsp;import org.hibernate.exception.LockAcquisitionException;
+&nbsp;import org.hibernate.exception.LockTimeoutException;
+&nbsp;import org.hibernate.exception.ConstraintViolationException.ConstraintKind;
+&nbsp;import org.hibernate.exception.spi.SQLExceptionConversionDelegate;
+&nbsp;import org.hibernate.exception.spi.TemplatedViolatedConstraintNameExtractor;
+&nbsp;import org.hibernate.exception.spi.ViolatedConstraintNameExtractor;
+&nbsp;import org.hibernate.internal.util.JdbcExceptionHelper;
+&nbsp;import org.hibernate.internal.util.StringHelper;
+&nbsp;import org.hibernate.metamodel.mapping.EntityMappingType;
+&nbsp;import org.hibernate.metamodel.spi.RuntimeModelCreationContext;
+&nbsp;import org.hibernate.query.sqm.CastType;
+&nbsp;import org.hibernate.query.sqm.IntervalType;
+&nbsp;import org.hibernate.query.sqm.TemporalUnit;
+&nbsp;import org.hibernate.query.sqm.function.SqmFunctionRegistry;
+&nbsp;import org.hibernate.query.sqm.mutation.internal.temptable.AfterUseAction;
+&nbsp;import org.hibernate.query.sqm.mutation.internal.temptable.BeforeUseAction;
+&nbsp;import org.hibernate.query.sqm.mutation.internal.temptable.LocalTemporaryTableInsertStrategy;
+&nbsp;import org.hibernate.query.sqm.mutation.internal.temptable.LocalTemporaryTableMutationStrategy;
+&nbsp;import org.hibernate.query.sqm.mutation.spi.SqmMultiTableInsertStrategy;
+&nbsp;import org.hibernate.query.sqm.mutation.spi.SqmMultiTableMutationStrategy;
+&nbsp;import org.hibernate.query.sqm.produce.function.FunctionParameterType;
+&nbsp;import org.hibernate.service.ServiceRegistry;
+&nbsp;import org.hibernate.sql.ast.SqlAstTranslator;
+&nbsp;import org.hibernate.sql.ast.SqlAstTranslatorFactory;
+&nbsp;import org.hibernate.sql.ast.spi.SqlAppender;
+&nbsp;import org.hibernate.sql.ast.spi.StandardSqlAstTranslatorFactory;
+&nbsp;import org.hibernate.sql.exec.spi.JdbcOperation;
+&nbsp;import org.hibernate.type.BasicTypeRegistry;
+&nbsp;import org.hibernate.type.NullType;
+&nbsp;import org.hibernate.type.StandardBasicTypes;
+&nbsp;import org.hibernate.type.descriptor.DateTimeUtils;
+&nbsp;import org.hibernate.type.descriptor.java.JavaType;
+&nbsp;import org.hibernate.type.descriptor.jdbc.EnumJdbcType;
+&nbsp;import org.hibernate.type.descriptor.jdbc.JdbcType;
+&nbsp;import org.hibernate.type.descriptor.jdbc.NullJdbcType;
+&nbsp;import org.hibernate.type.descriptor.jdbc.OrdinalEnumJdbcType;
+&nbsp;import org.hibernate.type.descriptor.jdbc.spi.JdbcTypeRegistry;
+&nbsp;import org.hibernate.type.descriptor.sql.internal.CapacityDependentDdlType;
+&nbsp;import org.hibernate.type.descriptor.sql.internal.DdlTypeImpl;
+&nbsp;import org.hibernate.type.descriptor.sql.internal.NativeEnumDdlTypeImpl;
+&nbsp;import org.hibernate.type.descriptor.sql.internal.NativeOrdinalEnumDdlTypeImpl;
+&nbsp;import org.hibernate.type.descriptor.sql.internal.CapacityDependentDdlType.LobKind;
+&nbsp;import org.hibernate.type.descriptor.sql.spi.DdlTypeRegistry;
+&nbsp;
+&nbsp;public class MySQLDialect extends Dialect {
+&nbsp;    private static final DatabaseVersion MINIMUM_VERSION = DatabaseVersion.make(8);
+&nbsp;    private final MySQLStorageEngine storageEngine;
+&nbsp;    private final Dialect.SizeStrategy sizeStrategy;
+&nbsp;    private final int maxVarcharLength;
+&nbsp;    private final int maxVarbinaryLength;
+&nbsp;    private final boolean noBackslashEscapesEnabled;
+&nbsp;    private static final ViolatedConstraintNameExtractor EXTRACTOR = new TemplatedViolatedConstraintNameExtractor((sqle) -&gt; {
+&nbsp;        String sqlState = JdbcExceptionHelper.extractSqlState(sqle);
+&nbsp;        if (sqlState != null) {
+&nbsp;            switch (Integer.parseInt(sqlState)) {
+&nbsp;                case 23000:
+&nbsp;                    return TemplatedViolatedConstraintNameExtractor.extractUsingTemplate(&quot; for key &#39;&quot;, &quot;&#39;&quot;, sqle.getMessage());
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return null;
+&nbsp;    });
+&nbsp;
+&nbsp;    public MySQLDialect() {
+&nbsp;        this(MINIMUM_VERSION);
+&nbsp;    }
+&nbsp;
+&nbsp;    public MySQLDialect(DatabaseVersion version) {
+&nbsp;        this(version, 4);
+&nbsp;    }
+&nbsp;
+&nbsp;    public MySQLDialect(DatabaseVersion version, int bytesPerCharacter) {
+&nbsp;        this(version, bytesPerCharacter, false);
+&nbsp;    }
+&nbsp;
+&nbsp;    public MySQLDialect(DatabaseVersion version, MySQLServerConfiguration serverConfiguration) {
+&nbsp;        this(version, serverConfiguration.getBytesPerCharacter(), serverConfiguration.isNoBackslashEscapesEnabled());
+&nbsp;    }
+&nbsp;
+&nbsp;    public MySQLDialect(DatabaseVersion version, int bytesPerCharacter, boolean noBackslashEscapes) {
+&nbsp;        super(version);
+&nbsp;        this.storageEngine = this.createStorageEngine();
+&nbsp;        this.sizeStrategy = new Dialect.SizeStrategyImpl() {
+&nbsp;            public Size resolveSize(JdbcType jdbcType, JavaType&lt;?&gt; javaType, Integer precision, Integer scale, Long length) {
+&nbsp;                switch (jdbcType.getDdlTypeCode()) {
+&nbsp;                    case -7:
+&nbsp;                        if (length != null) {
+<b class="fc">&nbsp;                            return Size.length(Math.min(Math.max(length, 1L), 64L));</b>
+&nbsp;                        }
+<b class="fc">&nbsp;                    case 6:</b>
+<b class="fc">&nbsp;                    case 7:</b>
+&nbsp;                    case 8:
+&nbsp;                        Size size = super.resolveSize(jdbcType, javaType, precision, scale, length);
+&nbsp;                        size.setScale(Math.min(size.getPrecision(), 20));
+&nbsp;                        return size;
+&nbsp;                    case 2004:
+&nbsp;                    case 2005:
+&nbsp;                    case 2011:
+<b class="pc">&nbsp;                        return super.resolveSize(jdbcType, javaType, precision, scale, length == null ? MySQLDialect.this.getDefaultLobLength() : length);</b>
+&nbsp;                    default:
+&nbsp;                        return super.resolveSize(jdbcType, javaType, precision, scale, length);
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        };
+&nbsp;        this.maxVarcharLength = maxVarcharLength(this.getMySQLVersion(), bytesPerCharacter);
+&nbsp;        this.maxVarbinaryLength = maxVarbinaryLength(this.getMySQLVersion());
+&nbsp;        this.noBackslashEscapesEnabled = noBackslashEscapes;
+&nbsp;    }
+&nbsp;
+&nbsp;    public MySQLDialect(DialectResolutionInfo info) {
+<b class="nc">&nbsp;        this(createVersion(info), MySQLServerConfiguration.fromDialectResolutionInfo(info));</b>
+&nbsp;        this.registerKeywords(info);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    /** @deprecated */</b>
+&nbsp;    @Deprecated
+&nbsp;    protected static DatabaseVersion createVersion(DialectResolutionInfo info) {
+&nbsp;        return createVersion(info, MINIMUM_VERSION);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected static DatabaseVersion createVersion(DialectResolutionInfo info, DatabaseVersion defaultVersion) {
+&nbsp;        String versionString = info.getDatabaseVersion();
+&nbsp;        if (versionString != null) {
+<b class="nc">&nbsp;            String[] components = StringHelper.split(&quot;.-&quot;, versionString);</b>
+&nbsp;            if (components.length &gt;= 3) {
+&nbsp;                try {
+<b class="fc">&nbsp;                    int majorVersion = Integer.parseInt(components[0]);</b>
+&nbsp;                    int minorVersion = Integer.parseInt(components[1]);
+&nbsp;                    int patchLevel = Integer.parseInt(components[2]);
+&nbsp;                    return DatabaseVersion.make(majorVersion, minorVersion, patchLevel);
+&nbsp;                } catch (NumberFormatException var7) {
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return info.makeCopyOrDefault(defaultVersion);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected DatabaseVersion getMinimumSupportedVersion() {
+&nbsp;        return MINIMUM_VERSION;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    protected void initDefaultProperties() {
+&nbsp;        super.initDefaultProperties();
+&nbsp;        this.getDefaultProperties().setProperty(&quot;hibernate.max_fetch_depth&quot;, &quot;2&quot;);
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private MySQLStorageEngine createStorageEngine() {
+&nbsp;        String storageEngine = Environment.getProperties().getProperty(&quot;hibernate.dialect.storage_engine&quot;);
+<b class="nc">&nbsp;        if (storageEngine == null) {</b>
+&nbsp;            storageEngine = System.getProperty(&quot;hibernate.dialect.storage_engine&quot;);
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if (storageEngine == null) {</b>
+<b class="fc">&nbsp;            return this.getDefaultMySQLStorageEngine();</b>
+<b class="fc">&nbsp;        } else if (&quot;innodb&quot;.equalsIgnoreCase(storageEngine)) {</b>
+<b class="fc">&nbsp;            return InnoDBStorageEngine.INSTANCE;</b>
+&nbsp;        } else if (&quot;myisam&quot;.equalsIgnoreCase(storageEngine)) {
+&nbsp;            return MyISAMStorageEngine.INSTANCE;
+&nbsp;        } else {
+<b class="nc">&nbsp;            throw new UnsupportedOperationException(&quot;The &quot; + storageEngine + &quot; storage engine is not supported&quot;);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected String columnType(int sqlTypeCode) {
+&nbsp;        switch (sqlTypeCode) {
+<b class="nc">&nbsp;            case -15:</b>
+&nbsp;                return &quot;char($l) character set utf8&quot;;
+&nbsp;            case -9:
+&nbsp;                return &quot;varchar($l) character set utf8&quot;;
+<b class="nc">&nbsp;            case 2:</b>
+<b class="nc">&nbsp;                return this.columnType(3);</b>
+<b class="nc">&nbsp;            case 16:</b>
+<b class="nc">&nbsp;                return &quot;bit&quot;;</b>
+&nbsp;            case 93:
+<b class="nc">&nbsp;                return &quot;datetime($p)&quot;;</b>
+<b class="nc">&nbsp;            case 2004:</b>
+<b class="nc">&nbsp;                return &quot;longblob&quot;;</b>
+<b class="nc">&nbsp;            case 2005:</b>
+&nbsp;                return &quot;longtext&quot;;
+&nbsp;            case 2011:
+&nbsp;                return &quot;longtext character set utf8&quot;;
+&nbsp;            case 2014:
+&nbsp;                return &quot;timestamp($p)&quot;;
+&nbsp;            default:
+<b class="nc">&nbsp;                return super.columnType(sqlTypeCode);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean useMaterializedLobWhenCapacityExceeded() {
+<b class="fc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected String castType(int sqlTypeCode) {
+&nbsp;        switch (sqlTypeCode) {
+<b class="fc">&nbsp;            case -15:</b>
+<b class="fc">&nbsp;            case -9:</b>
+&nbsp;            case 4002:
+&nbsp;                return &quot;char character set utf8&quot;;
+&nbsp;            case -7:
+<b class="fc">&nbsp;            case 16:</b>
+<b class="pc">&nbsp;                return &quot;unsigned&quot;;</b>
+<b class="fc">&nbsp;            case -6:</b>
+&nbsp;            case -5:
+<b class="pc">&nbsp;            case 4:</b>
+<b class="fc">&nbsp;            case 5:</b>
+&nbsp;                return &quot;signed&quot;;
+<b class="nc">&nbsp;            case -3:</b>
+<b class="nc">&nbsp;            case -2:</b>
+&nbsp;            case 4003:
+<b class="nc">&nbsp;                return &quot;binary&quot;;</b>
+<b class="nc">&nbsp;            case 1:</b>
+&nbsp;            case 12:
+&nbsp;            case 4001:
+<b class="nc">&nbsp;                return &quot;char&quot;;</b>
+&nbsp;            case 6:
+&nbsp;            case 7:
+&nbsp;            case 8:
+&nbsp;                return &quot;decimal($p,$s)&quot;;
+&nbsp;            default:
+<b class="fc">&nbsp;                return super.castType(sqlTypeCode);</b>
+&nbsp;        }
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    protected void registerColumnTypes(TypeContributions typeContributions, ServiceRegistry serviceRegistry) {
+&nbsp;        super.registerColumnTypes(typeContributions, serviceRegistry);
+<b class="fc">&nbsp;        DdlTypeRegistry ddlTypeRegistry = typeContributions.getTypeConfiguration().getDdlTypeRegistry();</b>
+&nbsp;        ddlTypeRegistry.addDescriptor(new DdlTypeImpl(3001, &quot;json&quot;, this));
+<b class="fc">&nbsp;        ddlTypeRegistry.addDescriptor(new DdlTypeImpl(3200, &quot;geometry&quot;, this));</b>
+&nbsp;        int maxTinyLobLen = 255;
+&nbsp;        int maxLobLen = 65535;
+<b class="fc">&nbsp;        int maxMediumLobLen = 16777215;</b>
+&nbsp;        CapacityDependentDdlType.Builder varcharBuilder = CapacityDependentDdlType.builder(12, LobKind.BIGGEST_LOB, this.columnType(2005), this.columnType(1), this.castType(1), this).withTypeCapacity((long)this.getMaxVarcharLength(), &quot;varchar($l)&quot;).withTypeCapacity(16777215L, &quot;mediumtext&quot;);
+&nbsp;        if (this.getMaxVarcharLength() &lt; 65535) {
+&nbsp;            varcharBuilder.withTypeCapacity(65535L, &quot;text&quot;);
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+<b class="fc">&nbsp;        ddlTypeRegistry.addDescriptor(varcharBuilder.build());</b>
+&nbsp;        CapacityDependentDdlType.Builder nvarcharBuilder = CapacityDependentDdlType.builder(-9, LobKind.BIGGEST_LOB, this.columnType(2011), this.columnType(-15), this.castType(-15), this).withTypeCapacity((long)this.getMaxVarcharLength(), &quot;varchar($l) character set utf8&quot;).withTypeCapacity(16777215L, &quot;mediumtext character set utf8&quot;);
+&nbsp;        if (this.getMaxVarcharLength() &lt; 65535) {
+&nbsp;            nvarcharBuilder.withTypeCapacity(65535L, &quot;text character set utf8&quot;);
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+<b class="fc">&nbsp;        ddlTypeRegistry.addDescriptor(nvarcharBuilder.build());</b>
+&nbsp;        CapacityDependentDdlType.Builder varbinaryBuilder = CapacityDependentDdlType.builder(-3, LobKind.BIGGEST_LOB, this.columnType(2004), this.columnType(-2), this.castType(-2), this).withTypeCapacity((long)this.getMaxVarbinaryLength(), &quot;varbinary($l)&quot;).withTypeCapacity(16777215L, &quot;mediumblob&quot;);
+<b class="fc">&nbsp;        if (this.getMaxVarbinaryLength() &lt; 65535) {</b>
+&nbsp;            varbinaryBuilder.withTypeCapacity(65535L, &quot;blob&quot;);
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+&nbsp;        ddlTypeRegistry.addDescriptor(varbinaryBuilder.build());
+&nbsp;        ddlTypeRegistry.addDescriptor(new DdlTypeImpl(4003, this.columnType(2004), this.castType(-2), this));
+&nbsp;        ddlTypeRegistry.addDescriptor(new DdlTypeImpl(4001, this.columnType(2005), this.castType(1), this));
+&nbsp;        ddlTypeRegistry.addDescriptor(new DdlTypeImpl(4002, this.columnType(2005), this.castType(1), this));
+&nbsp;        ddlTypeRegistry.addDescriptor(CapacityDependentDdlType.builder(2004, this.columnType(2004), this.castType(-2), this).withTypeCapacity(255L, &quot;tinyblob&quot;).withTypeCapacity(16777215L, &quot;mediumblob&quot;).withTypeCapacity(65535L, &quot;blob&quot;).build());
+&nbsp;        ddlTypeRegistry.addDescriptor(CapacityDependentDdlType.builder(2005, this.columnType(2005), this.castType(1), this).withTypeCapacity(255L, &quot;tinytext&quot;).withTypeCapacity(16777215L, &quot;mediumtext&quot;).withTypeCapacity(65535L, &quot;text&quot;).build());
+<b class="nc">&nbsp;        ddlTypeRegistry.addDescriptor(CapacityDependentDdlType.builder(2011, this.columnType(2011), this.castType(-15), this).withTypeCapacity(255L, &quot;tinytext character set utf8&quot;).withTypeCapacity(16777215L, &quot;mediumtext character set utf8&quot;).withTypeCapacity(65535L, &quot;text character set utf8&quot;).build());</b>
+&nbsp;        ddlTypeRegistry.addDescriptor(new NativeEnumDdlTypeImpl(this));
+&nbsp;        ddlTypeRegistry.addDescriptor(new NativeOrdinalEnumDdlTypeImpl(this));
+&nbsp;    }
+&nbsp;
+<b class="pc">&nbsp;    /** @deprecated */</b>
+&nbsp;    @Deprecated
+&nbsp;    protected static int getCharacterSetBytesPerCharacter(DatabaseMetaData databaseMetaData) {
+&nbsp;        if (databaseMetaData != null) {
+<b class="fc">&nbsp;            try (Statement s = databaseMetaData.getConnection().createStatement()) {</b>
+&nbsp;                ResultSet rs = s.executeQuery(&quot;SELECT @@character_set_database&quot;);
+&nbsp;                if (rs.next()) {
+&nbsp;                    String characterSet = rs.getString(1);
+&nbsp;                    int collationIndex = characterSet.indexOf(95);
+&nbsp;                    switch (collationIndex == -1 ? characterSet : characterSet.substring(0, collationIndex)) {
+<b class="fc">&nbsp;                        case &quot;utf16&quot;:</b>
+&nbsp;                        case &quot;utf16le&quot;:
+&nbsp;                        case &quot;utf32&quot;:
+&nbsp;                        case &quot;utf8mb4&quot;:
+&nbsp;                        case &quot;gb18030&quot;:
+&nbsp;                            return 4;
+&nbsp;                        case &quot;utf8&quot;:
+<b class="fc">&nbsp;                        case &quot;utf8mb3&quot;:</b>
+&nbsp;                        case &quot;eucjpms&quot;:
+&nbsp;                        case &quot;ujis&quot;:
+&nbsp;                            return 3;
+&nbsp;                        case &quot;ucs2&quot;:
+<b class="fc">&nbsp;                        case &quot;cp932&quot;:</b>
+&nbsp;                        case &quot;big5&quot;:
+&nbsp;                        case &quot;euckr&quot;:
+&nbsp;                        case &quot;gb2312&quot;:
+<b class="fc">&nbsp;                        case &quot;gbk&quot;:</b>
+&nbsp;                        case &quot;sjis&quot;:
+&nbsp;                            return 2;
+&nbsp;                        default:
+&nbsp;                            return 1;
+<b class="fc">&nbsp;                    }</b>
+&nbsp;                }
+<b class="fc">&nbsp;            } catch (SQLException var10) {</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return 4;
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    private static int maxVarbinaryLength(DatabaseVersion version) {
+&nbsp;        return 65535;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    private static int maxVarcharLength(DatabaseVersion version, int bytesPerCharacter) {
+<b class="fc">&nbsp;        switch (bytesPerCharacter) {</b>
+&nbsp;            case 1:
+&nbsp;                return 65535;
+&nbsp;            case 2:
+&nbsp;                return 32767;
+&nbsp;            case 3:
+<b class="fc">&nbsp;                return 21844;</b>
+<b class="fc">&nbsp;            case 4:</b>
+<b class="fc">&nbsp;            default:</b>
+&nbsp;                return 16383;
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public int getMaxVarcharLength() {
+<b class="fc">&nbsp;        return this.maxVarcharLength;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    public int getMaxVarbinaryLength() {
+&nbsp;        return this.maxVarbinaryLength;
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="pc">&nbsp;    public boolean isNoBackslashEscapesEnabled() {</b>
+<b class="fc">&nbsp;        return this.noBackslashEscapesEnabled;</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public String getNullColumnString(String columnType) {
+&nbsp;        return columnType.regionMatches(true, 0, &quot;timestamp&quot;, 0, &quot;timestamp&quot;.length()) ? &quot; null&quot; : super.getNullColumnString(columnType);
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public DatabaseVersion getMySQLVersion() {</b>
+&nbsp;        return super.getVersion();
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public Dialect.SizeStrategy getSizeStrategy() {</b>
+<b class="fc">&nbsp;        return this.sizeStrategy;</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public long getDefaultLobLength() {</b>
+<b class="fc">&nbsp;        return 2147483647L;</b>
+<b class="pc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    public JdbcType resolveSqlTypeDescriptor(String columnTypeName, int jdbcTypeCode, int precision, int scale, JdbcTypeRegistry jdbcTypeRegistry) {
+<b class="fc">&nbsp;        switch (jdbcTypeCode) {</b>
+&nbsp;            case -7:
+<b class="fc">&nbsp;                return jdbcTypeRegistry.getDescriptor(16);</b>
+<b class="fc">&nbsp;            case -2:</b>
+&nbsp;                if (&quot;GEOMETRY&quot;.equals(columnTypeName)) {
+&nbsp;                    jdbcTypeCode = 3200;
+<b class="fc">&nbsp;                }</b>
+<b class="fc">&nbsp;            default:</b>
+<b class="fc">&nbsp;                return super.resolveSqlTypeDescriptor(columnTypeName, jdbcTypeCode, precision, scale, jdbcTypeRegistry);</b>
+&nbsp;        }
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public int resolveSqlTypeLength(String columnTypeName, int jdbcTypeCode, int precision, int scale, int displaySize) {</b>
+<b class="pc">&nbsp;        return jdbcTypeCode == 1 &amp;&amp; precision &lt;= 4 ? displaySize : precision;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="fc">&nbsp;    public int getPreferredSqlTypeCodeForBoolean() {</b>
+&nbsp;        return -7;
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public void initializeFunctionRegistry(FunctionContributions functionContributions) {</b>
+<b class="fc">&nbsp;        super.initializeFunctionRegistry(functionContributions);</b>
+<b class="fc">&nbsp;        CommonFunctionFactory functionFactory = new CommonFunctionFactory(functionContributions);</b>
+<b class="fc">&nbsp;        functionFactory.soundex();</b>
+&nbsp;        functionFactory.radians();
+<b class="fc">&nbsp;        functionFactory.degrees();</b>
+<b class="fc">&nbsp;        functionFactory.cot();</b>
+<b class="fc">&nbsp;        functionFactory.log();</b>
+<b class="fc">&nbsp;        functionFactory.log2();</b>
+<b class="fc">&nbsp;        functionFactory.log10();</b>
+<b class="fc">&nbsp;        functionFactory.trim2();</b>
+<b class="fc">&nbsp;        functionFactory.octetLength();</b>
+&nbsp;        functionFactory.reverse();
+&nbsp;        functionFactory.space();
+<b class="fc">&nbsp;        functionFactory.repeat();</b>
+<b class="fc">&nbsp;        functionFactory.pad_space();</b>
+<b class="fc">&nbsp;        functionFactory.md5();</b>
+<b class="fc">&nbsp;        functionFactory.yearMonthDay();</b>
+<b class="fc">&nbsp;        functionFactory.hourMinuteSecond();</b>
+<b class="fc">&nbsp;        functionFactory.dayofweekmonthyear();</b>
+<b class="fc">&nbsp;        functionFactory.weekQuarter();</b>
+&nbsp;        functionFactory.daynameMonthname();
+&nbsp;        functionFactory.lastDay();
+<b class="fc">&nbsp;        functionFactory.date();</b>
+<b class="fc">&nbsp;        functionFactory.timestamp();</b>
+<b class="fc">&nbsp;        this.time(functionContributions);</b>
+<b class="fc">&nbsp;        functionFactory.utcDateTimeTimestamp();</b>
+<b class="fc">&nbsp;        functionFactory.rand();</b>
+<b class="fc">&nbsp;        functionFactory.crc32();</b>
+<b class="fc">&nbsp;        functionFactory.sha1();</b>
+&nbsp;        functionFactory.sha2();
+&nbsp;        functionFactory.sha();
+<b class="fc">&nbsp;        functionFactory.bitLength();</b>
+<b class="fc">&nbsp;        functionFactory.octetLength();</b>
+&nbsp;        functionFactory.ascii();
+&nbsp;        functionFactory.instr();
+&nbsp;        functionFactory.substr();
+&nbsp;        functionFactory.position();
+<b class="nc">&nbsp;        functionFactory.nowCurdateCurtime();</b>
+<b class="nc">&nbsp;        functionFactory.trunc_truncate();</b>
+<b class="nc">&nbsp;        functionFactory.insert();</b>
+<b class="nc">&nbsp;        functionFactory.bitandorxornot_operator();</b>
+<b class="nc">&nbsp;        functionFactory.bitAndOr();</b>
+<b class="nc">&nbsp;        functionFactory.stddev();</b>
+&nbsp;        functionFactory.stddevPopSamp();
+<b class="nc">&nbsp;        functionFactory.variance();</b>
+&nbsp;        functionFactory.varPopSamp();
+&nbsp;        functionFactory.datediff();
+&nbsp;        functionFactory.adddateSubdateAddtimeSubtime();
+&nbsp;        functionFactory.format_dateFormat();
+&nbsp;        functionFactory.makedateMaketime();
+<b class="nc">&nbsp;        functionFactory.localtimeLocaltimestamp();</b>
+&nbsp;        BasicTypeRegistry basicTypeRegistry = functionContributions.getTypeConfiguration().getBasicTypeRegistry();
+&nbsp;        SqmFunctionRegistry functionRegistry = functionContributions.getFunctionRegistry();
+&nbsp;        functionRegistry.noArgsBuilder(&quot;localtime&quot;).setInvariantType(basicTypeRegistry.resolve(StandardBasicTypes.TIMESTAMP)).setUseParenthesesWhenNoArgs(false).register();
+&nbsp;        functionRegistry.patternDescriptorBuilder(&quot;pi&quot;, &quot;cast(pi() as double)&quot;).setInvariantType(basicTypeRegistry.resolve(StandardBasicTypes.DOUBLE)).setExactArgumentCount(0).setArgumentListSignature(&quot;&quot;).register();
+<b class="nc">&nbsp;        functionRegistry.patternDescriptorBuilder(&quot;chr&quot;, &quot;char(?1 using ascii)&quot;).setInvariantType(basicTypeRegistry.resolve(StandardBasicTypes.CHARACTER)).setExactArgumentCount(1).setParameterTypes(new FunctionParameterType[]{FunctionParameterType.INTEGER}).register();</b>
+&nbsp;        functionRegistry.registerAlternateKey(&quot;char&quot;, &quot;chr&quot;);
+&nbsp;        functionFactory.sysdateExplicitMicros();
+&nbsp;        if (this.getMySQLVersion().isSameOrAfter(8, 0, 2)) {
+&nbsp;            functionFactory.windowFunctions();
+&nbsp;            if (this.getMySQLVersion().isSameOrAfter(8, 0, 11)) {
+&nbsp;                functionFactory.hypotheticalOrderedSetAggregates_windowEmulation();
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        functionFactory.listagg_groupConcat();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void contributeTypes(TypeContributions typeContributions, ServiceRegistry serviceRegistry) {
+&nbsp;        super.contributeTypes(typeContributions, serviceRegistry);
+&nbsp;        JdbcTypeRegistry jdbcTypeRegistry = typeContributions.getTypeConfiguration().getJdbcTypeRegistry();
+&nbsp;        jdbcTypeRegistry.addDescriptorIfAbsent(3001, MySQLCastingJsonJdbcType.INSTANCE);
+&nbsp;        typeContributions.contributeJdbcType(NullJdbcType.INSTANCE);
+<b class="nc">&nbsp;        typeContributions.contributeType(new NullType(NullJdbcType.INSTANCE, typeContributions.getTypeConfiguration().getJavaTypeRegistry().getDescriptor(Object.class)));</b>
+&nbsp;        jdbcTypeRegistry.addDescriptor(EnumJdbcType.INSTANCE);
+&nbsp;        jdbcTypeRegistry.addDescriptor(OrdinalEnumJdbcType.INSTANCE);
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public SqlAstTranslatorFactory getSqlAstTranslatorFactory() {
+&nbsp;        return new StandardSqlAstTranslatorFactory() {
+&nbsp;            protected &lt;T extends JdbcOperation&gt; SqlAstTranslator&lt;T&gt; buildTranslator(SessionFactoryImplementor sessionFactory, org.hibernate.sql.ast.tree.Statement statement) {
+<b class="pc">&nbsp;                return new MySQLSqlAstTranslator(sessionFactory, statement);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        };</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public String castPattern(CastType from, CastType to) {
+<b class="nc">&nbsp;        if (to == CastType.INTEGER_BOOLEAN) {</b>
+&nbsp;            switch (from) {
+&nbsp;                case STRING:
+<b class="fc">&nbsp;                case INTEGER:</b>
+&nbsp;                case LONG:
+&nbsp;                case YN_BOOLEAN:
+&nbsp;                case TF_BOOLEAN:
+&nbsp;                case BOOLEAN:
+&nbsp;                    break;
+<b class="fc">&nbsp;                default:</b>
+&nbsp;                    return &quot;abs(sign(?1))&quot;;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        return super.castPattern(from, to);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void time(FunctionContributions queryEngine) {
+<b class="nc">&nbsp;        queryEngine.getFunctionRegistry().namedDescriptorBuilder(&quot;time&quot;).setExactArgumentCount(1).setInvariantType(queryEngine.getTypeConfiguration().getBasicTypeRegistry().resolve(StandardBasicTypes.STRING)).register();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getFloatPrecision() {
+&nbsp;        return 23;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public String currentTimestamp() {</b>
+<b class="nc">&nbsp;        return &quot;current_timestamp(6)&quot;;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public long getFractionalSecondPrecisionInNanos() {
+&nbsp;        return 1000L;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public String extractPattern(TemporalUnit unit) {
+&nbsp;        switch (unit) {
+&nbsp;            case SECOND:
+&nbsp;                return &quot;(second(?2)+microsecond(?2)/1e6)&quot;;
+<b class="fc">&nbsp;            case WEEK:</b>
+&nbsp;                return &quot;weekofyear(?2)&quot;;
+&nbsp;            case DAY_OF_WEEK:
+&nbsp;                return &quot;dayofweek(?2)&quot;;
+&nbsp;            case DAY_OF_MONTH:
+<b class="nc">&nbsp;                return &quot;dayofmonth(?2)&quot;;</b>
+&nbsp;            case DAY_OF_YEAR:
+&nbsp;                return &quot;dayofyear(?2)&quot;;
+&nbsp;            case EPOCH:
+&nbsp;                return &quot;unix_timestamp(?2)&quot;;
+&nbsp;            default:
+&nbsp;                return &quot;?1(?2)&quot;;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public String timestampaddPattern(TemporalUnit unit, TemporalType temporalType, IntervalType intervalType) {</b>
+&nbsp;        switch (unit) {
+<b class="nc">&nbsp;            case NANOSECOND:</b>
+&nbsp;                return &quot;timestampadd(microsecond,(?2)/1e3,?3)&quot;;
+<b class="nc">&nbsp;            case NATIVE:</b>
+<b class="nc">&nbsp;                return &quot;timestampadd(microsecond,?2,?3)&quot;;</b>
+&nbsp;            default:
+&nbsp;                return &quot;timestampadd(?1,?2,?3)&quot;;
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public String timestampdiffPattern(TemporalUnit unit, TemporalType fromTemporalType, TemporalType toTemporalType) {
+&nbsp;        switch (unit) {
+&nbsp;            case NANOSECOND:
+&nbsp;                return &quot;timestampdiff(microsecond,?2,?3)*1e3&quot;;
+&nbsp;            case NATIVE:
+&nbsp;                return &quot;timestampdiff(microsecond,?2,?3)&quot;;
+&nbsp;            default:
+&nbsp;                return &quot;timestampdiff(?1,?2,?3)&quot;;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean supportsTemporalLiteralOffset() {
+&nbsp;        return this.getMySQLVersion().isSameOrAfter(8, 0, 19);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void appendDateTimeLiteral(SqlAppender appender, TemporalAccessor temporalAccessor, TemporalType precision, TimeZone jdbcTimeZone) {
+<b class="nc">&nbsp;        switch (precision) {</b>
+<b class="nc">&nbsp;            case DATE:</b>
+&nbsp;                appender.appendSql(&quot;date &#39;&quot;);
+&nbsp;                DateTimeUtils.appendAsDate(appender, temporalAccessor);
+<b class="nc">&nbsp;                appender.appendSql(&#39;\&#39;&#39;);</b>
+&nbsp;                break;
+&nbsp;            case TIME:
+&nbsp;                appender.appendSql(&quot;time &#39;&quot;);
+&nbsp;                DateTimeUtils.appendAsLocalTime(appender, temporalAccessor);
+&nbsp;                appender.appendSql(&#39;\&#39;&#39;);
+<b class="fc">&nbsp;                break;</b>
+&nbsp;            case TIMESTAMP:
+&nbsp;                if (temporalAccessor instanceof ZonedDateTime) {
+&nbsp;                    temporalAccessor = ((ZonedDateTime)temporalAccessor).toOffsetDateTime();
+&nbsp;                }
+&nbsp;
+&nbsp;                appender.appendSql(&quot;timestamp &#39;&quot;);
+&nbsp;                DateTimeUtils.appendAsTimestampWithMicros(appender, temporalAccessor, this.supportsTemporalLiteralOffset(), jdbcTimeZone, false);
+&nbsp;                appender.appendSql(&#39;\&#39;&#39;);
+&nbsp;                break;
+&nbsp;            default:
+<b class="fc">&nbsp;                throw new IllegalArgumentException();</b>
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public void appendDateTimeLiteral(SqlAppender appender, Date date, TemporalType precision, TimeZone jdbcTimeZone) {</b>
+<b class="fc">&nbsp;        switch (precision) {</b>
+<b class="fc">&nbsp;            case DATE:</b>
+<b class="fc">&nbsp;                appender.appendSql(&quot;date &#39;&quot;);</b>
+<b class="fc">&nbsp;                DateTimeUtils.appendAsDate(appender, date);</b>
+<b class="fc">&nbsp;                appender.appendSql(&#39;\&#39;&#39;);</b>
+<b class="fc">&nbsp;                break;</b>
+<b class="fc">&nbsp;            case TIME:</b>
+<b class="fc">&nbsp;                appender.appendSql(&quot;time &#39;&quot;);</b>
+<b class="fc">&nbsp;                DateTimeUtils.appendAsLocalTime(appender, date);</b>
+<b class="fc">&nbsp;                appender.appendSql(&#39;\&#39;&#39;);</b>
+<b class="fc">&nbsp;                break;</b>
+<b class="fc">&nbsp;            case TIMESTAMP:</b>
+<b class="fc">&nbsp;                appender.appendSql(&quot;timestamp &#39;&quot;);</b>
+<b class="fc">&nbsp;                DateTimeUtils.appendAsTimestampWithMicros(appender, date, jdbcTimeZone);</b>
+<b class="fc">&nbsp;                appender.appendSql(&#39;\&#39;&#39;);</b>
+<b class="fc">&nbsp;                break;</b>
+<b class="fc">&nbsp;            default:</b>
+<b class="fc">&nbsp;                throw new IllegalArgumentException();</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+<b class="fc">&nbsp;    public void appendDateTimeLiteral(SqlAppender appender, Calendar calendar, TemporalType precision, TimeZone jdbcTimeZone) {</b>
+<b class="fc">&nbsp;        switch (precision) {</b>
+<b class="fc">&nbsp;            case DATE:</b>
+<b class="fc">&nbsp;                appender.appendSql(&quot;date &#39;&quot;);</b>
+<b class="fc">&nbsp;                DateTimeUtils.appendAsDate(appender, calendar);</b>
+<b class="fc">&nbsp;                appender.appendSql(&#39;\&#39;&#39;);</b>
+<b class="fc">&nbsp;                break;</b>
+<b class="fc">&nbsp;            case TIME:</b>
+<b class="fc">&nbsp;                appender.appendSql(&quot;time &#39;&quot;);</b>
+<b class="fc">&nbsp;                DateTimeUtils.appendAsLocalTime(appender, calendar);</b>
+<b class="fc">&nbsp;                appender.appendSql(&#39;\&#39;&#39;);</b>
+&nbsp;                break;
+<b class="fc">&nbsp;            case TIMESTAMP:</b>
+<b class="fc">&nbsp;                appender.appendSql(&quot;timestamp &#39;&quot;);</b>
+<b class="fc">&nbsp;                DateTimeUtils.appendAsTimestampWithMillis(appender, calendar, jdbcTimeZone);</b>
+<b class="fc">&nbsp;                appender.appendSql(&#39;\&#39;&#39;);</b>
+<b class="fc">&nbsp;                break;</b>
+<b class="fc">&nbsp;            default:</b>
+<b class="fc">&nbsp;                throw new IllegalArgumentException();</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public SelectItemReferenceStrategy getGroupBySelectItemReferenceStrategy() {</b>
+<b class="fc">&nbsp;        return SelectItemReferenceStrategy.POSITION;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    public boolean supportsColumnCheck() {
+<b class="fc">&nbsp;        return this.getMySQLVersion().isSameOrAfter(8, 0, 16);</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public String getEnumTypeDeclaration(String name, String[] values) {
+<b class="fc">&nbsp;        StringBuilder type = new StringBuilder();</b>
+<b class="fc">&nbsp;        type.append(&quot;enum (&quot;);</b>
+<b class="fc">&nbsp;        String separator = &quot;&quot;;</b>
+<b class="fc">&nbsp;</b>
+&nbsp;        for(String value : values) {
+&nbsp;            type.append(separator).append(&#39;\&#39;&#39;).append(value).append(&#39;\&#39;&#39;);
+<b class="fc">&nbsp;            separator = &quot;,&quot;;</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;        return type.append(&#39;)&#39;).toString();</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public String getQueryHintString(String query, String hints) {
+&nbsp;        return IndexQueryHintHandler.INSTANCE.addQueryHints(query, hints);
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public SequenceSupport getSequenceSupport() {</b>
+<b class="fc">&nbsp;        return NoSequenceSupport.INSTANCE;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    public ViolatedConstraintNameExtractor getViolatedConstraintNameExtractor() {
+&nbsp;        return EXTRACTOR;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="pc">&nbsp;    public boolean qualifyIndexName() {</b>
+<b class="nc">&nbsp;        return false;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public String getAddForeignKeyConstraintString(String constraintName, String[] foreignKey, String referencedTable, String[] primaryKey, boolean referencesPrimaryKey) {
+&nbsp;        String cols = String.join(&quot;, &quot;, foreignKey);
+&nbsp;        String referencedCols = String.join(&quot;, &quot;, primaryKey);
+<b class="fc">&nbsp;        return String.format(&quot; add constraint %s foreign key (%s) references %s (%s)&quot;, constraintName, cols, referencedTable, referencedCols);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getDropForeignKeyString() {
+&nbsp;        return &quot;drop foreign key&quot;;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+<b class="fc">&nbsp;    public String getDropUniqueKeyString() {</b>
+&nbsp;        return &quot;drop index&quot;;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public String getAlterColumnTypeString(String columnName, String columnType, String columnDefinition) {
+<b class="fc">&nbsp;        return &quot;modify column &quot; + columnName + &quot; &quot; + columnDefinition.trim();</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public boolean supportsAlterColumnType() {</b>
+&nbsp;        return true;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public LimitHandler getLimitHandler() {</b>
+<b class="fc">&nbsp;        return LimitLimitHandler.INSTANCE;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public char closeQuote() {
+<b class="fc">&nbsp;        return &#39;`&#39;;</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public char openQuote() {
+&nbsp;        return &#39;`&#39;;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public boolean canCreateCatalog() {
+&nbsp;        return true;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public String[] getCreateCatalogCommand(String catalogName) {
+&nbsp;        return new String[]{&quot;create database &quot; + catalogName};
+&nbsp;    }
+&nbsp;
+&nbsp;    public String[] getDropCatalogCommand(String catalogName) {
+&nbsp;        return new String[]{&quot;drop database &quot; + catalogName};
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public boolean canCreateSchema() {
+&nbsp;        return false;
+&nbsp;    }
+&nbsp;
+&nbsp;    public String[] getCreateSchemaCommand(String schemaName) {
+&nbsp;        throw new UnsupportedOperationException(&quot;MySQL does not support dropping creating/dropping schemas in the JDBC sense&quot;);
+&nbsp;    }
+&nbsp;
+&nbsp;    public String[] getDropSchemaCommand(String schemaName) {
+<b class="nc">&nbsp;        throw new UnsupportedOperationException(&quot;MySQL does not support dropping creating/dropping schemas in the JDBC sense&quot;);</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public boolean supportsIfExistsBeforeTableName() {</b>
+&nbsp;        return true;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public String getSelectGUIDString() {</b>
+<b class="fc">&nbsp;        return &quot;select uuid()&quot;;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    public boolean supportsCommentOn() {
+<b class="fc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getTableComment(String comment) {
+&nbsp;        return &quot; comment=&#39;&quot; + comment + &quot;&#39;&quot;;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public String getColumnComment(String comment) {</b>
+&nbsp;        return &quot; comment &#39;&quot; + comment + &quot;&#39;&quot;;
+&nbsp;    }
+&nbsp;
+&nbsp;    public NullOrdering getNullOrdering() {
+&nbsp;        return NullOrdering.SMALLEST;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public SqmMultiTableMutationStrategy getFallbackSqmMutationStrategy(EntityMappingType rootEntityDescriptor, RuntimeModelCreationContext runtimeModelCreationContext) {</b>
+&nbsp;        return new LocalTemporaryTableMutationStrategy(TemporaryTable.createIdTable(rootEntityDescriptor, (basename) -&gt; &quot;HT_&quot; + basename, this, runtimeModelCreationContext), runtimeModelCreationContext.getSessionFactory());
+&nbsp;    }
+&nbsp;
+&nbsp;    public SqmMultiTableInsertStrategy getFallbackSqmInsertStrategy(EntityMappingType rootEntityDescriptor, RuntimeModelCreationContext runtimeModelCreationContext) {
+&nbsp;        return new LocalTemporaryTableInsertStrategy(TemporaryTable.createEntityTable(rootEntityDescriptor, (name) -&gt; &quot;HTE_&quot; + name, this, runtimeModelCreationContext), runtimeModelCreationContext.getSessionFactory());
+&nbsp;    }
+&nbsp;
+&nbsp;    public TemporaryTableKind getSupportedTemporaryTableKind() {
+&nbsp;        return TemporaryTableKind.LOCAL;
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getTemporaryTableCreateCommand() {
+&nbsp;        return &quot;create temporary table if not exists&quot;;
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getTemporaryTableDropCommand() {
+&nbsp;        return &quot;drop temporary table&quot;;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public AfterUseAction getTemporaryTableAfterUseAction() {
+&nbsp;        return AfterUseAction.DROP;
+&nbsp;    }
+&nbsp;
+&nbsp;    public BeforeUseAction getTemporaryTableBeforeUseAction() {
+&nbsp;        return BeforeUseAction.CREATE;
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getMaxAliasLength() {
+&nbsp;        return 246;
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getMaxIdentifierLength() {
+&nbsp;        return 64;
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean supportsIsTrue() {
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public boolean supportsCurrentTimestampSelection() {
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public boolean isCurrentTimestampSelectStringCallable() {
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public String getCurrentTimestampSelectString() {
+&nbsp;        return &quot;select now()&quot;;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public int registerResultSetOutParameter(CallableStatement statement, int col) throws SQLException {</b>
+&nbsp;        return col;
+&nbsp;    }
+&nbsp;
+&nbsp;    public ResultSet getResultSet(CallableStatement ps) throws SQLException {
+&nbsp;        for(boolean isResultSet = ps.execute(); !isResultSet &amp;&amp; ps.getUpdateCount() != -1; isResultSet = ps.getMoreResults()) {
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        return ps.getResultSet();</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public boolean supportsNullPrecedence() {
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean supportsLobValueChangePropagation() {
+&nbsp;        return false;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public boolean supportsSubqueryOnMutatingTable() {
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public boolean supportsLockTimeouts() {
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public SQLExceptionConversionDelegate buildSQLExceptionConversionDelegate() {
+&nbsp;        return (sqlException, message, sql) -&gt; {
+&nbsp;            switch (sqlException.getErrorCode()) {
+<b class="nc">&nbsp;                case 1062:</b>
+&nbsp;                    String constraintName = this.getViolatedConstraintNameExtractor().extractConstraintName(sqlException);
+&nbsp;                    return new ConstraintViolationException(message, sqlException, sql, ConstraintKind.UNIQUE, constraintName);
+&nbsp;                case 1205:
+&nbsp;                case 3572:
+&nbsp;                    return new PessimisticLockException(message, sqlException, sql);
+&nbsp;                case 1206:
+&nbsp;                case 1207:
+&nbsp;                    return new LockAcquisitionException(message, sqlException, sql);
+<b class="nc">&nbsp;                default:</b>
+&nbsp;                    String sqlState = JdbcExceptionHelper.extractSqlState(sqlException);
+<b class="nc">&nbsp;                    if (sqlState != null) {</b>
+<b class="nc">&nbsp;                        switch (sqlState) {</b>
+<b class="nc">&nbsp;                            case &quot;41000&quot;:</b>
+&nbsp;                                return new LockTimeoutException(message, sqlException, sql);
+&nbsp;                            case &quot;40001&quot;:
+<b class="nc">&nbsp;                                return new LockAcquisitionException(message, sqlException, sql);</b>
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;
+&nbsp;                    return null;
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        };</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public NameQualifierSupport getNameQualifierSupport() {</b>
+<b class="nc">&nbsp;        return NameQualifierSupport.CATALOG;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public IdentifierHelper buildIdentifierHelper(IdentifierHelperBuilder builder, DatabaseMetaData dbMetaData) throws SQLException {</b>
+&nbsp;        if (dbMetaData == null) {
+&nbsp;            builder.setUnquotedCaseStrategy(IdentifierCaseStrategy.MIXED);
+&nbsp;            builder.setQuotedCaseStrategy(IdentifierCaseStrategy.MIXED);
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return super.buildIdentifierHelper(builder, dbMetaData);</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public IdentityColumnSupport getIdentityColumnSupport() {</b>
+<b class="nc">&nbsp;        return MySQLIdentityColumnSupport.INSTANCE;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public boolean isJdbcLogWarningsEnabledByDefault() {</b>
+<b class="nc">&nbsp;        return false;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public boolean supportsCascadeDelete() {
+<b class="nc">&nbsp;        return this.storageEngine.supportsCascadeDelete();</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public String getTableTypeString() {
+&nbsp;        return this.storageEngine.getTableTypeString(&quot;engine&quot;);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public boolean hasSelfReferentialForeignKeyBug() {
+&nbsp;        return this.storageEngine.hasSelfReferentialForeignKeyBug();
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean dropConstraints() {
+&nbsp;        return this.storageEngine.dropConstraints();
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected MySQLStorageEngine getDefaultMySQLStorageEngine() {</b>
+&nbsp;        return InnoDBStorageEngine.INSTANCE;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void appendLiteral(SqlAppender appender, String literal) {</b>
+&nbsp;        appender.appendSql(&#39;\&#39;&#39;);
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; literal.length(); ++i) {</b>
+<b class="nc">&nbsp;            char c = literal.charAt(i);</b>
+<b class="nc">&nbsp;            switch (c) {</b>
+&nbsp;                case &#39;\&#39;&#39;:
+&nbsp;                    appender.appendSql(&#39;\&#39;&#39;);
+<b class="nc">&nbsp;                    break;</b>
+<b class="nc">&nbsp;                case &#39;\\&#39;:</b>
+<b class="nc">&nbsp;                    if (!this.noBackslashEscapesEnabled) {</b>
+&nbsp;                        appender.appendSql(&#39;\\&#39;);
+&nbsp;                    }
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            appender.appendSql(c);
+&nbsp;        }
+&nbsp;
+&nbsp;        appender.appendSql(&#39;\&#39;&#39;);
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void appendDatetimeFormat(SqlAppender appender, String format) {
+&nbsp;        appender.appendSql(datetimeFormat(format).result());
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public static Replacer datetimeFormat(String format) {
+&nbsp;        return (new Replacer(format, &quot;&#39;&quot;, &quot;&quot;)).replace(&quot;%&quot;, &quot;%%&quot;).replace(&quot;yyyy&quot;, &quot;%Y&quot;).replace(&quot;yyy&quot;, &quot;%Y&quot;).replace(&quot;yy&quot;, &quot;%y&quot;).replace(&quot;y&quot;, &quot;%Y&quot;).replace(&quot;MMMM&quot;, &quot;%M&quot;).replace(&quot;MMM&quot;, &quot;%b&quot;).replace(&quot;MM&quot;, &quot;%m&quot;).replace(&quot;M&quot;, &quot;%c&quot;).replace(&quot;ww&quot;, &quot;%v&quot;).replace(&quot;w&quot;, &quot;%v&quot;).replace(&quot;YYYY&quot;, &quot;%x&quot;).replace(&quot;YYY&quot;, &quot;%x&quot;).replace(&quot;YY&quot;, &quot;%x&quot;).replace(&quot;Y&quot;, &quot;%x&quot;).replace(&quot;EEEE&quot;, &quot;%W&quot;).replace(&quot;EEE&quot;, &quot;%a&quot;).replace(&quot;ee&quot;, &quot;%w&quot;).replace(&quot;e&quot;, &quot;%w&quot;).replace(&quot;dd&quot;, &quot;%d&quot;).replace(&quot;d&quot;, &quot;%e&quot;).replace(&quot;DDD&quot;, &quot;%j&quot;).replace(&quot;DD&quot;, &quot;%j&quot;).replace(&quot;D&quot;, &quot;%j&quot;).replace(&quot;a&quot;, &quot;%p&quot;).replace(&quot;hh&quot;, &quot;%I&quot;).replace(&quot;HH&quot;, &quot;%H&quot;).replace(&quot;h&quot;, &quot;%l&quot;).replace(&quot;H&quot;, &quot;%k&quot;).replace(&quot;mm&quot;, &quot;%i&quot;).replace(&quot;m&quot;, &quot;%i&quot;).replace(&quot;ss&quot;, &quot;%S&quot;).replace(&quot;s&quot;, &quot;%S&quot;).replace(&quot;SSSSSS&quot;, &quot;%f&quot;).replace(&quot;SSSSS&quot;, &quot;%f&quot;).replace(&quot;SSSS&quot;, &quot;%f&quot;).replace(&quot;SSS&quot;, &quot;%f&quot;).replace(&quot;SS&quot;, &quot;%f&quot;).replace(&quot;S&quot;, &quot;%f&quot;);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private String withTimeout(String lockString, int timeout) {</b>
+<b class="nc">&nbsp;        switch (timeout) {</b>
+<b class="nc">&nbsp;            case -2:</b>
+<b class="nc">&nbsp;                return this.supportsSkipLocked() ? lockString + &quot; skip locked&quot; : lockString;</b>
+<b class="nc">&nbsp;            case -1:</b>
+<b class="nc">&nbsp;                return lockString;</b>
+&nbsp;            case 0:
+<b class="nc">&nbsp;                return this.supportsNoWait() ? lockString + &quot; nowait&quot; : lockString;</b>
+&nbsp;            default:
+&nbsp;                return this.supportsWait() ? lockString + &quot; wait &quot; + this.getTimeoutInSeconds(timeout) : lockString;
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public String getWriteLockString(int timeout) {
+&nbsp;        return this.withTimeout(this.getForUpdateString(), timeout);
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getWriteLockString(String aliases, int timeout) {
+&nbsp;        return this.withTimeout(this.getForUpdateString(aliases), timeout);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public String getReadLockString(int timeout) {
+&nbsp;        return this.withTimeout(this.supportsForShare() ? &quot; for share&quot; : &quot; lock in share mode&quot;, timeout);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public String getReadLockString(String aliases, int timeout) {
+&nbsp;        return this.supportsAliasLocks() &amp;&amp; this.supportsForShare() ? this.withTimeout(&quot; for share of &quot; + aliases, timeout) : this.getReadLockString(timeout);
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public String getForUpdateSkipLockedString() {</b>
+<b class="nc">&nbsp;        return this.supportsSkipLocked() ? &quot; for update skip locked&quot; : this.getForUpdateString();</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public String getForUpdateSkipLockedString(String aliases) {</b>
+&nbsp;        return this.supportsSkipLocked() &amp;&amp; this.supportsAliasLocks() ? this.getForUpdateString(aliases) + &quot; skip locked&quot; : this.getForUpdateSkipLockedString();
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public String getForUpdateNowaitString() {
+&nbsp;        return this.supportsNoWait() ? &quot; for update nowait&quot; : this.getForUpdateString();
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public String getForUpdateNowaitString(String aliases) {</b>
+&nbsp;        return this.supportsNoWait() &amp;&amp; this.supportsAliasLocks() ? this.getForUpdateString(aliases) + &quot; nowait&quot; : this.getForUpdateNowaitString();
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getForUpdateString(String aliases) {
+&nbsp;        return this.supportsAliasLocks() ? &quot; for update of &quot; + aliases : this.getForUpdateString();
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean supportsOffsetInSubquery() {
+&nbsp;        return true;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public boolean supportsWindowFunctions() {</b>
+&nbsp;        return this.getMySQLVersion().isSameOrAfter(8, 0, 2);
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean supportsLateral() {
+&nbsp;        return this.getMySQLVersion().isSameOrAfter(8, 0, 14);
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean supportsRecursiveCTE() {
+&nbsp;        return this.getMySQLVersion().isSameOrAfter(8, 0, 14);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public boolean supportsSkipLocked() {
+&nbsp;        return true;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public boolean supportsNoWait() {</b>
+&nbsp;        return true;
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean supportsWait() {
+&nbsp;        return false;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public RowLockStrategy getWriteRowLockStrategy() {
+&nbsp;        return this.supportsAliasLocks() ? RowLockStrategy.TABLE : RowLockStrategy.NONE;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected void registerDefaultKeywords() {
+&nbsp;        super.registerDefaultKeywords();
+&nbsp;        this.registerKeyword(&quot;key&quot;);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    boolean supportsForShare() {</b>
+&nbsp;        return true;
+&nbsp;    }
+&nbsp;
+&nbsp;    boolean supportsAliasLocks() {
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public FunctionalDependencyAnalysisSupport getFunctionalDependencyAnalysisSupport() {
+&nbsp;        return FunctionalDependencyAnalysisSupportImpl.TABLE_GROUP;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public boolean canDisableConstraints() {
+&nbsp;        return true;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public String getDisableConstraintsStatement() {
+&nbsp;        return &quot;set foreign_key_checks = 0&quot;;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public String getEnableConstraintsStatement() {</b>
+&nbsp;        return &quot;set foreign_key_checks = 1&quot;;
+&nbsp;    }
+&nbsp;
+&nbsp;    public DmlTargetColumnQualifierSupport getDmlTargetColumnQualifierSupport() {
+<b class="nc">&nbsp;        return DmlTargetColumnQualifierSupport.TABLE_ALIAS;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean supportsFromClauseInUpdate() {
+&nbsp;        return true;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public String getDual() {
+&nbsp;        return &quot;dual&quot;;
+&nbsp;    }
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

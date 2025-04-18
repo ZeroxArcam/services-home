@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BeanConfiguration.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Tests in 'services-home.test' Coverage Results</a> &gt; <a href="index.source.html" class="el_package">com.pragma.hogar360.serviceshome.commons.configurations.beans</a> &gt; <span class="el_source">BeanConfiguration.java</span></div><h1>BeanConfiguration.java</h1><pre class="source lang-java linenums">package com.pragma.hogar360.serviceshome.commons.configurations.beans;
+
+import com.pragma.hogar360.serviceshome.domain.ports.in.*;
+import com.pragma.hogar360.serviceshome.domain.ports.out.*;
+import com.pragma.hogar360.serviceshome.domain.usecases.*;
+import com.pragma.hogar360.serviceshome.infrastructure.adapters.persistence.*;
+import com.pragma.hogar360.serviceshome.infrastructure.mappers.*;
+import com.pragma.hogar360.serviceshome.infrastructure.repositories.mysql.*;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+/**
+ * Configuration class for defining Spring beans.
+ * Provides beans for the domain and infrastructure layers.
+ */
+@Configuration
+@RequiredArgsConstructor
+public class BeanConfiguration {
+    private final CategoryRepository categoryRepository;
+    private final CategoryEntityMapper categoryEntityMapper;
+    private final CityRepository cityRepository; //Inyecta CityRepository
+    private final CityEntityMapper cityEntityMapper; //Inyecta CityEntityMapper
+    private final DepartmentRepository departmentRepository; //Inyecta DepartmentRepository
+    private final DepartmentEntityMapper departmentEntityMapper; //Inyecta DepartmentEntityMapper
+    private final LocationRepository locationRepository; // Añade LocationRepository
+    private final LocationEntityMapper locationEntityMapper; // Añade LocationEntityMapper
+    private final HomeRepository homeRepository;
+    private final HomeEntityMapper homeEntityMapper;
+
+    /**
+     * Defines the CategoryServicePort bean.
+     *
+     * @return An instance of CategoryServicePort.
+     */
+    @Bean
+    public CategoryServicePort categoryServicePort() {
+<span class="fc" id="L38">        return new CategoryUseCase(categoryPersistencePort());</span>
+    }
+
+    /**
+     * Defines the CategoryPersistencePort bean.
+     *
+     * @return An instance of CategoryPersistencePort.
+     */
+    @Bean
+    public CategoryPersistencePort categoryPersistencePort() {
+<span class="fc" id="L48">        return new CategoryPersistenceAdapter(categoryRepository, categoryEntityMapper);</span>
+    }
+
+    /**
+     * Defines the CityServicePort bean.
+     *
+     * @return An instance of CityServicePort.
+     */
+    @Bean
+    public CityServicePort cityServicePort() {
+<span class="fc" id="L58">        return new CityUseCase(cityPersistencePort(), departmentPersistencePort());</span>
+    }
+
+    /**
+     * Defines the CityPersistencePort bean.
+     *
+     * @return An instance of CityPersistencePort.
+     */
+    @Bean
+    public CityPersistencePort cityPersistencePort() {
+<span class="fc" id="L68">        return new CityPersistenceAdapter(cityRepository, cityEntityMapper);</span>
+    }
+
+    @Bean
+    public DepartmentPersistencePort departmentPersistencePort() {
+<span class="fc" id="L73">        return new DepartmentPersistenceAdapter(departmentRepository, departmentEntityMapper);</span>
+    }
+
+    @Bean
+    public DepartmentServicePort departmentServicePort() {
+<span class="fc" id="L78">        return new DepartmentUseCase(departmentPersistencePort());</span>
+    }
+
+    @Bean
+    public LocationServicePort locationServicePort(LocationPersistencePort locationPersistencePort, CityPersistencePort cityPersistencePort) {
+<span class="fc" id="L83">        return new LocationUseCase(locationPersistencePort, cityPersistencePort);</span>
+    }
+
+    @Bean
+    public LocationPersistencePort locationPersistencePort(LocationRepository locationRepository,
+                                                           LocationEntityMapper locationEntityMapper) {
+<span class="fc" id="L89">        return new LocationPersistenceAdapter(locationRepository, locationEntityMapper);</span>
+    }
+
+    @Bean
+    public HomeServicePort homeServicePort(HomePersistencePort homePersistencePort, CategoryPersistencePort categoryPersistencePort, LocationPersistencePort locationPersistencePort) {
+<span class="fc" id="L94">        return new HomeUseCase(homePersistencePort, categoryPersistencePort, locationPersistencePort);</span>
+    }
+
+    @Bean
+    public HomePersistencePort homePersistencePort() {
+<span class="fc" id="L99">        return new HomePersistenceAdapter(homeRepository, homeEntityMapper);</span>
+    }
+
+    @Bean
+    public HomeUseCase homeUseCase(HomePersistencePort homePersistencePort, CategoryPersistencePort categoryPersistencePort, LocationPersistencePort locationPersistencePort) {
+<span class="fc" id="L104">        return new HomeUseCase(homePersistencePort, categoryPersistencePort, locationPersistencePort);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

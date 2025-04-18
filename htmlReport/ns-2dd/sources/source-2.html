@@ -1,0 +1,346 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > MetricsEndpoint</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.boot.actuate.metrics</a>
+</div>
+
+<h1>Coverage Summary for Class: MetricsEndpoint (org.springframework.boot.actuate.metrics)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MetricsEndpoint</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/18)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/51)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.boot.actuate.metrics;
+&nbsp;
+&nbsp;import io.micrometer.core.instrument.Meter;
+&nbsp;import io.micrometer.core.instrument.MeterRegistry;
+&nbsp;import io.micrometer.core.instrument.Statistic;
+&nbsp;import io.micrometer.core.instrument.Tag;
+&nbsp;import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.HashSet;
+&nbsp;import java.util.LinkedHashMap;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Objects;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.TreeSet;
+&nbsp;import java.util.function.BiFunction;
+&nbsp;import java.util.stream.Stream;
+&nbsp;import org.springframework.boot.actuate.endpoint.InvalidEndpointRequestException;
+&nbsp;import org.springframework.boot.actuate.endpoint.OperationResponseBody;
+&nbsp;import org.springframework.boot.actuate.endpoint.annotation.Endpoint;
+&nbsp;import org.springframework.boot.actuate.endpoint.annotation.ReadOperation;
+&nbsp;import org.springframework.boot.actuate.endpoint.annotation.Selector;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;
+&nbsp;@Endpoint(
+&nbsp;    id = &quot;metrics&quot;
+&nbsp;)
+&nbsp;public class MetricsEndpoint {
+&nbsp;    private final MeterRegistry registry;
+&nbsp;
+&nbsp;    public MetricsEndpoint(MeterRegistry registry) {
+&nbsp;        this.registry = registry;
+&nbsp;    }
+&nbsp;
+&nbsp;    @ReadOperation
+&nbsp;    public MetricNamesDescriptor listNames() {
+&nbsp;        Set&lt;String&gt; names = new TreeSet();
+&nbsp;        this.collectNames(names, this.registry);
+&nbsp;        return new MetricNamesDescriptor(names);
+&nbsp;    }
+&nbsp;
+&nbsp;    private void collectNames(Set&lt;String&gt; names, MeterRegistry registry) {
+&nbsp;        if (registry instanceof CompositeMeterRegistry compositeMeterRegistry) {
+&nbsp;            compositeMeterRegistry.getRegistries().forEach((member) -&gt; this.collectNames(names, member));
+&nbsp;        } else {
+&nbsp;            Stream var10000 = registry.getMeters().stream().map(this::getName);
+&nbsp;            Objects.requireNonNull(names);
+<b class="nc">&nbsp;            var10000.forEach(names::add);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private String getName(Meter meter) {
+<b class="nc">&nbsp;        return meter.getId().getName();</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    @ReadOperation
+&nbsp;    public MetricDescriptor metric(@Selector String requiredMetricName, @Nullable List&lt;String&gt; tag) {
+&nbsp;        List&lt;Tag&gt; tags = this.parseTags(tag);
+<b class="nc">&nbsp;        Collection&lt;Meter&gt; meters = this.findFirstMatchingMeters((MeterRegistry)this.registry, requiredMetricName, tags);</b>
+<b class="nc">&nbsp;        if (meters.isEmpty()) {</b>
+&nbsp;            return null;
+&nbsp;        } else {
+<b class="nc">&nbsp;            Map&lt;Statistic, Double&gt; samples = this.getSamples(meters);</b>
+&nbsp;            Map&lt;String, Set&lt;String&gt;&gt; availableTags = this.getAvailableTags(meters);
+&nbsp;            tags.forEach((t) -&gt; availableTags.remove(t.getKey()));
+&nbsp;            Meter.Id meterId = ((Meter)meters.iterator().next()).getId();
+&nbsp;            return new MetricDescriptor(requiredMetricName, meterId.getDescription(), meterId.getBaseUnit(), this.asList(samples, Sample::new), this.asList(availableTags, AvailableTag::new));
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private List&lt;Tag&gt; parseTags(List&lt;String&gt; tags) {
+&nbsp;        return tags != null ? tags.stream().map(this::parseTag).toList() : Collections.emptyList();
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private Tag parseTag(String tag) {</b>
+<b class="nc">&nbsp;        String[] parts = tag.split(&quot;:&quot;, 2);</b>
+&nbsp;        if (parts.length != 2) {
+<b class="nc">&nbsp;            throw new InvalidEndpointRequestException(&quot;Each tag parameter must be in the form &#39;key:value&#39; but was: &quot; + tag, &quot;Each tag parameter must be in the form &#39;key:value&#39;&quot;);</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            return Tag.of(parts[0], parts[1]);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private Collection&lt;Meter&gt; findFirstMatchingMeters(MeterRegistry registry, String name, Iterable&lt;Tag&gt; tags) {
+&nbsp;        if (registry instanceof CompositeMeterRegistry compositeMeterRegistry) {
+&nbsp;            return this.findFirstMatchingMeters(compositeMeterRegistry, name, tags);
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            return registry.find(name).tags(tags).meters();
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private Collection&lt;Meter&gt; findFirstMatchingMeters(CompositeMeterRegistry composite, String name, Iterable&lt;Tag&gt; tags) {</b>
+<b class="nc">&nbsp;        return (Collection)composite.getRegistries().stream().map((registry) -&gt; this.findFirstMatchingMeters(registry, name, tags)).filter((matching) -&gt; !matching.isEmpty()).findFirst().orElse(Collections.emptyList());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private Map&lt;Statistic, Double&gt; getSamples(Collection&lt;Meter&gt; meters) {
+<b class="nc">&nbsp;        Map&lt;Statistic, Double&gt; samples = new LinkedHashMap();</b>
+&nbsp;        meters.forEach((meter) -&gt; this.mergeMeasurements(samples, meter));
+&nbsp;        return samples;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private void mergeMeasurements(Map&lt;Statistic, Double&gt; samples, Meter meter) {</b>
+&nbsp;        meter.measure().forEach((measurement) -&gt; samples.merge(measurement.getStatistic(), measurement.getValue(), this.mergeFunction(measurement.getStatistic())));
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private BiFunction&lt;Double, Double, Double&gt; mergeFunction(Statistic statistic) {
+&nbsp;        return Statistic.MAX.equals(statistic) ? Double::max : Double::sum;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private Map&lt;String, Set&lt;String&gt;&gt; getAvailableTags(Collection&lt;Meter&gt; meters) {</b>
+<b class="nc">&nbsp;        Map&lt;String, Set&lt;String&gt;&gt; availableTags = new HashMap();</b>
+<b class="nc">&nbsp;        meters.forEach((meter) -&gt; this.mergeAvailableTags(availableTags, meter));</b>
+<b class="nc">&nbsp;        return availableTags;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private void mergeAvailableTags(Map&lt;String, Set&lt;String&gt;&gt; availableTags, Meter meter) {
+&nbsp;        meter.getId().getTags().forEach((tag) -&gt; {
+<b class="nc">&nbsp;            Set&lt;String&gt; value = Collections.singleton(tag.getValue());</b>
+<b class="nc">&nbsp;            availableTags.merge(tag.getKey(), value, this::merge);</b>
+<b class="nc">&nbsp;        });</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private &lt;T&gt; Set&lt;T&gt; merge(Set&lt;T&gt; set1, Set&lt;T&gt; set2) {
+<b class="nc">&nbsp;        Set&lt;T&gt; result = new HashSet(set1.size() + set2.size());</b>
+<b class="nc">&nbsp;        result.addAll(set1);</b>
+<b class="nc">&nbsp;        result.addAll(set2);</b>
+&nbsp;        return result;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private &lt;K, V, T&gt; List&lt;T&gt; asList(Map&lt;K, V&gt; map, BiFunction&lt;K, V, T&gt; mapper) {</b>
+&nbsp;        return map.entrySet().stream().map((entry) -&gt; mapper.apply(entry.getKey(), entry.getValue())).toList();
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public static final class MetricNamesDescriptor implements OperationResponseBody {</b>
+<b class="nc">&nbsp;        private final Set&lt;String&gt; names;</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        MetricNamesDescriptor(Set&lt;String&gt; names) {
+&nbsp;            this.names = names;
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        public Set&lt;String&gt; getNames() {</b>
+<b class="nc">&nbsp;            return this.names;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static final class MetricDescriptor implements OperationResponseBody {
+<b class="nc">&nbsp;        private final String name;</b>
+<b class="nc">&nbsp;        private final String description;</b>
+<b class="nc">&nbsp;        private final String baseUnit;</b>
+<b class="nc">&nbsp;        private final List&lt;Sample&gt; measurements;</b>
+&nbsp;        private final List&lt;AvailableTag&gt; availableTags;
+&nbsp;
+&nbsp;        MetricDescriptor(String name, String description, String baseUnit, List&lt;Sample&gt; measurements, List&lt;AvailableTag&gt; availableTags) {
+<b class="nc">&nbsp;            this.name = name;</b>
+&nbsp;            this.description = description;
+&nbsp;            this.baseUnit = baseUnit;
+&nbsp;            this.measurements = measurements;
+&nbsp;            this.availableTags = availableTags;
+&nbsp;        }
+&nbsp;
+&nbsp;        public String getName() {
+&nbsp;            return this.name;
+&nbsp;        }
+&nbsp;
+&nbsp;        public String getDescription() {
+&nbsp;            return this.description;
+&nbsp;        }
+&nbsp;
+&nbsp;        public String getBaseUnit() {
+&nbsp;            return this.baseUnit;
+&nbsp;        }
+&nbsp;
+&nbsp;        public List&lt;Sample&gt; getMeasurements() {
+&nbsp;            return this.measurements;
+&nbsp;        }
+&nbsp;
+&nbsp;        public List&lt;AvailableTag&gt; getAvailableTags() {
+&nbsp;            return this.availableTags;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static final class AvailableTag {
+&nbsp;        private final String tag;
+&nbsp;        private final Set&lt;String&gt; values;
+&nbsp;
+&nbsp;        AvailableTag(String tag, Set&lt;String&gt; values) {
+&nbsp;            this.tag = tag;
+&nbsp;            this.values = values;
+&nbsp;        }
+&nbsp;
+&nbsp;        public String getTag() {
+&nbsp;            return this.tag;
+&nbsp;        }
+&nbsp;
+&nbsp;        public Set&lt;String&gt; getValues() {
+&nbsp;            return this.values;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static final class Sample {
+&nbsp;        private final Statistic statistic;
+&nbsp;        private final Double value;
+&nbsp;
+&nbsp;        Sample(Statistic statistic, Double value) {
+&nbsp;            this.statistic = statistic;
+&nbsp;            this.value = value;
+&nbsp;        }
+&nbsp;
+&nbsp;        public Statistic getStatistic() {
+&nbsp;            return this.statistic;
+&nbsp;        }
+&nbsp;
+&nbsp;        public Double getValue() {
+&nbsp;            return this.value;
+&nbsp;        }
+&nbsp;
+&nbsp;        public String toString() {
+&nbsp;            String var10000 = String.valueOf(this.statistic);
+&nbsp;            return &quot;MeasurementSample{statistic=&quot; + var10000 + &quot;, value=&quot; + this.value + &quot;}&quot;;
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 21:00</div>
+</div>
+</body>
+</html>

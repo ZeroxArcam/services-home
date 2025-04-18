@@ -1,0 +1,262 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > TypeParser</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.fasterxml.jackson.databind.type</a>
+</div>
+
+<h1>Coverage Summary for Class: TypeParser (com.fasterxml.jackson.databind.type)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TypeParser</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    25%
+  </span>
+  <span class="absValue">
+    (2/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    4.2%
+  </span>
+  <span class="absValue">
+    (1/24)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    6.7%
+  </span>
+  <span class="absValue">
+    (3/45)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package com.fasterxml.jackson.databind.type;
+&nbsp;
+&nbsp;import com.fasterxml.jackson.databind.JavaType;
+&nbsp;import com.fasterxml.jackson.databind.util.ClassUtil;
+&nbsp;import java.io.Serializable;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.List;
+&nbsp;import java.util.StringTokenizer;
+&nbsp;
+&nbsp;public class TypeParser implements Serializable {
+&nbsp;    private static final long serialVersionUID = 1L;
+&nbsp;    protected static final int MAX_TYPE_LENGTH = 64000;
+&nbsp;    protected static final int MAX_TYPE_NESTING = 1000;
+&nbsp;    protected final TypeFactory _factory;
+&nbsp;
+&nbsp;    public TypeParser(TypeFactory f) {
+&nbsp;        this._factory = f;
+&nbsp;    }
+&nbsp;
+&nbsp;    public TypeParser withFactory(TypeFactory f) {
+&nbsp;        return f == this._factory ? this : new TypeParser(f);
+&nbsp;    }
+&nbsp;
+&nbsp;    public JavaType parse(String canonical) throws IllegalArgumentException {
+&nbsp;        if (canonical.length() &gt; 64000) {
+&nbsp;            throw new IllegalArgumentException(String.format(&quot;Failed to parse type %s: too long (%d characters), maximum length allowed: %d&quot;, _quoteTruncated(canonical), canonical.length(), 64000));
+&nbsp;        } else {
+&nbsp;            MyTokenizer tokens = new MyTokenizer(canonical.trim());
+&nbsp;            JavaType type = this.parseType(tokens, 1000);
+<b class="fc">&nbsp;            if (tokens.hasMoreTokens()) {</b>
+<b class="fc">&nbsp;                throw this._problem(tokens, &quot;Unexpected tokens after complete type&quot;);</b>
+&nbsp;            } else {
+&nbsp;                return type;
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="pc">&nbsp;    protected JavaType parseType(MyTokenizer tokens, int nestingAllowed) throws IllegalArgumentException {</b>
+&nbsp;        if (!tokens.hasMoreTokens()) {
+&nbsp;            throw this._problem(tokens, &quot;Unexpected end-of-string&quot;);
+&nbsp;        } else {
+&nbsp;            Class&lt;?&gt; base = this.findClass(tokens.nextToken(), tokens);
+<b class="nc">&nbsp;            if (tokens.hasMoreTokens()) {</b>
+<b class="nc">&nbsp;                String token = tokens.nextToken();</b>
+&nbsp;                if (&quot;&lt;&quot;.equals(token)) {
+<b class="nc">&nbsp;                    List&lt;JavaType&gt; parameterTypes = this.parseTypes(tokens, nestingAllowed - 1);</b>
+<b class="nc">&nbsp;                    TypeBindings b = TypeBindings.create(base, parameterTypes);</b>
+<b class="nc">&nbsp;                    return this._factory._fromClass((ClassStack)null, base, b);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                tokens.pushBack(token);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            return this._factory._fromClass((ClassStack)null, base, TypeBindings.emptyBindings());</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected List&lt;JavaType&gt; parseTypes(MyTokenizer tokens, int nestingAllowed) throws IllegalArgumentException {
+&nbsp;        if (nestingAllowed &lt; 0) {
+&nbsp;            throw this._problem(tokens, &quot;too deeply nested; exceeds maximum of 1000 nesting levels&quot;);
+&nbsp;        } else {
+&nbsp;            ArrayList&lt;JavaType&gt; types = new ArrayList();
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            while(tokens.hasMoreTokens()) {</b>
+&nbsp;                types.add(this.parseType(tokens, nestingAllowed));
+<b class="nc">&nbsp;                if (!tokens.hasMoreTokens()) {</b>
+&nbsp;                    break;
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                String token = tokens.nextToken();</b>
+<b class="nc">&nbsp;                if (&quot;&gt;&quot;.equals(token)) {</b>
+<b class="nc">&nbsp;                    return types;</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                if (!&quot;,&quot;.equals(token)) {
+&nbsp;                    throw this._problem(tokens, &quot;Unexpected token &#39;&quot; + token + &quot;&#39;, expected &#39;,&#39; or &#39;&gt;&#39;)&quot;);
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            throw this._problem(tokens, &quot;Unexpected end-of-string&quot;);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Class&lt;?&gt; findClass(String className, MyTokenizer tokens) {
+<b class="nc">&nbsp;        try {</b>
+<b class="nc">&nbsp;            return this._factory.findClass(className);</b>
+&nbsp;        } catch (Exception e) {
+&nbsp;            ClassUtil.throwIfRTE(e);
+<b class="nc">&nbsp;            throw this._problem(tokens, &quot;Cannot locate class &#39;&quot; + className + &quot;&#39;, problem: &quot; + e.getMessage());</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected IllegalArgumentException _problem(MyTokenizer tokens, String msg) {</b>
+<b class="nc">&nbsp;        return new IllegalArgumentException(String.format(&quot;Failed to parse type %s (remaining: %s): %s&quot;, _quoteTruncated(tokens.getAllInput()), _quoteTruncated(tokens.getRemainingInput()), msg));</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private static String _quoteTruncated(String str) {
+&nbsp;        return str.length() &lt;= 1000 ? &quot;&#39;&quot; + str + &quot;&#39;&quot; : String.format(&quot;&#39;%s...&#39;[truncated %d charaters]&quot;, str.substring(0, 1000), str.length() - 1000);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected static final class MyTokenizer extends StringTokenizer {
+&nbsp;        protected final String _input;
+&nbsp;        protected int _index;
+&nbsp;        protected String _pushbackToken;
+<b class="nc">&nbsp;</b>
+&nbsp;        public MyTokenizer(String str) {
+<b class="nc">&nbsp;            super(str, &quot;&lt;,&gt;&quot;, true);</b>
+<b class="nc">&nbsp;            this._input = str;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean hasMoreTokens() {
+&nbsp;            return this._pushbackToken != null || super.hasMoreTokens();
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        public String nextToken() {</b>
+<b class="nc">&nbsp;            String token;</b>
+&nbsp;            if (this._pushbackToken != null) {
+&nbsp;                token = this._pushbackToken;
+&nbsp;                this._pushbackToken = null;
+&nbsp;            } else {
+<b class="nc">&nbsp;                token = super.nextToken();</b>
+<b class="nc">&nbsp;                this._index += token.length();</b>
+&nbsp;                token = token.trim();
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            return token;
+&nbsp;        }
+&nbsp;
+&nbsp;        public void pushBack(String token) {
+&nbsp;            this._pushbackToken = token;
+&nbsp;        }
+&nbsp;
+&nbsp;        public String getAllInput() {
+&nbsp;            return this._input;
+&nbsp;        }
+&nbsp;
+&nbsp;        public String getRemainingInput() {
+&nbsp;            return this._input.substring(this._index);
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 21:00</div>
+</div>
+</body>
+</html>

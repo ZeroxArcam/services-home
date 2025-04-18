@@ -1,0 +1,533 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > AbstractJackson2HttpMessageConverter</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.http.converter.json</a>
+</div>
+
+<h1>Coverage Summary for Class: AbstractJackson2HttpMessageConverter (org.springframework.http.converter.json)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AbstractJackson2HttpMessageConverter</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    15.2%
+  </span>
+  <span class="absValue">
+    (5/33)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    1.6%
+  </span>
+  <span class="absValue">
+    (2/124)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    8.1%
+  </span>
+  <span class="absValue">
+    (14/172)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.http.converter.json;
+&nbsp;
+&nbsp;import com.fasterxml.jackson.core.JsonEncoding;
+&nbsp;import com.fasterxml.jackson.core.JsonGenerator;
+&nbsp;import com.fasterxml.jackson.core.JsonProcessingException;
+&nbsp;import com.fasterxml.jackson.core.PrettyPrinter;
+&nbsp;import com.fasterxml.jackson.core.util.DefaultIndenter;
+&nbsp;import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
+&nbsp;import com.fasterxml.jackson.databind.JavaType;
+&nbsp;import com.fasterxml.jackson.databind.JsonMappingException;
+&nbsp;import com.fasterxml.jackson.databind.ObjectMapper;
+&nbsp;import com.fasterxml.jackson.databind.ObjectReader;
+&nbsp;import com.fasterxml.jackson.databind.ObjectWriter;
+&nbsp;import com.fasterxml.jackson.databind.SerializationConfig;
+&nbsp;import com.fasterxml.jackson.databind.SerializationFeature;
+&nbsp;import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
+&nbsp;import com.fasterxml.jackson.databind.ser.FilterProvider;
+&nbsp;import java.io.IOException;
+&nbsp;import java.io.InputStream;
+&nbsp;import java.io.InputStreamReader;
+&nbsp;import java.io.OutputStream;
+&nbsp;import java.io.Reader;
+&nbsp;import java.lang.reflect.Type;
+&nbsp;import java.nio.charset.Charset;
+&nbsp;import java.nio.charset.StandardCharsets;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Arrays;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.LinkedHashMap;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Optional;
+&nbsp;import java.util.concurrent.atomic.AtomicReference;
+&nbsp;import java.util.function.Consumer;
+&nbsp;import org.springframework.core.GenericTypeResolver;
+&nbsp;import org.springframework.http.HttpInputMessage;
+&nbsp;import org.springframework.http.HttpOutputMessage;
+&nbsp;import org.springframework.http.MediaType;
+&nbsp;import org.springframework.http.ProblemDetail;
+&nbsp;import org.springframework.http.converter.AbstractGenericHttpMessageConverter;
+&nbsp;import org.springframework.http.converter.HttpMessageConversionException;
+&nbsp;import org.springframework.http.converter.HttpMessageNotReadableException;
+&nbsp;import org.springframework.http.converter.HttpMessageNotWritableException;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.CollectionUtils;
+&nbsp;import org.springframework.util.StreamUtils;
+&nbsp;import org.springframework.util.TypeUtils;
+&nbsp;
+&nbsp;public abstract class AbstractJackson2HttpMessageConverter extends AbstractGenericHttpMessageConverter&lt;Object&gt; {
+&nbsp;    private static final Map&lt;String, JsonEncoding&gt; ENCODINGS = CollectionUtils.newHashMap(JsonEncoding.values().length);
+&nbsp;    protected ObjectMapper defaultObjectMapper;
+&nbsp;    @Nullable
+&nbsp;    private Map&lt;Class&lt;?&gt;, Map&lt;MediaType, ObjectMapper&gt;&gt; objectMapperRegistrations;
+&nbsp;    @Nullable
+&nbsp;    private Boolean prettyPrint;
+&nbsp;    @Nullable
+&nbsp;    private final PrettyPrinter ssePrettyPrinter;
+&nbsp;
+&nbsp;    protected AbstractJackson2HttpMessageConverter(ObjectMapper objectMapper) {
+&nbsp;        this.defaultObjectMapper = objectMapper;
+&nbsp;        DefaultPrettyPrinter prettyPrinter = new DefaultPrettyPrinter();
+&nbsp;        prettyPrinter.indentObjectsWith(new DefaultIndenter(&quot;  &quot;, &quot;\ndata:&quot;));
+&nbsp;        this.ssePrettyPrinter = prettyPrinter;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected AbstractJackson2HttpMessageConverter(ObjectMapper objectMapper, MediaType supportedMediaType) {
+&nbsp;        this(objectMapper);
+&nbsp;        this.setSupportedMediaTypes(Collections.singletonList(supportedMediaType));
+&nbsp;    }
+&nbsp;
+&nbsp;    protected AbstractJackson2HttpMessageConverter(ObjectMapper objectMapper, MediaType... supportedMediaTypes) {
+&nbsp;        this(objectMapper);
+&nbsp;        this.setSupportedMediaTypes(Arrays.asList(supportedMediaTypes));
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setSupportedMediaTypes(List&lt;MediaType&gt; supportedMediaTypes) {
+&nbsp;        super.setSupportedMediaTypes(supportedMediaTypes);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setObjectMapper(ObjectMapper objectMapper) {
+<b class="fc">&nbsp;        Assert.notNull(objectMapper, &quot;ObjectMapper must not be null&quot;);</b>
+<b class="fc">&nbsp;        this.defaultObjectMapper = objectMapper;</b>
+<b class="fc">&nbsp;        this.configurePrettyPrint();</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public ObjectMapper getObjectMapper() {
+&nbsp;        return this.defaultObjectMapper;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void registerObjectMappersForType(Class&lt;?&gt; clazz, Consumer&lt;Map&lt;MediaType, ObjectMapper&gt;&gt; registrar) {
+&nbsp;        if (this.objectMapperRegistrations == null) {
+&nbsp;            this.objectMapperRegistrations = new LinkedHashMap();
+&nbsp;        }
+&nbsp;
+&nbsp;        Map&lt;MediaType, ObjectMapper&gt; registrations = (Map)this.objectMapperRegistrations.computeIfAbsent(clazz, (c) -&gt; new LinkedHashMap());
+&nbsp;        registrar.accept(registrations);
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public Map&lt;MediaType, ObjectMapper&gt; getObjectMappersForType(Class&lt;?&gt; clazz) {
+<b class="fc">&nbsp;        for(Map.Entry&lt;Class&lt;?&gt;, Map&lt;MediaType, ObjectMapper&gt;&gt; entry : this.getObjectMapperRegistrations().entrySet()) {</b>
+<b class="fc">&nbsp;            if (((Class)entry.getKey()).isAssignableFrom(clazz)) {</b>
+<b class="fc">&nbsp;                return (Map)entry.getValue();</b>
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return Collections.emptyMap();
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public List&lt;MediaType&gt; getSupportedMediaTypes(Class&lt;?&gt; clazz) {</b>
+&nbsp;        List&lt;MediaType&gt; result = null;
+&nbsp;
+&nbsp;        for(Map.Entry&lt;Class&lt;?&gt;, Map&lt;MediaType, ObjectMapper&gt;&gt; entry : this.getObjectMapperRegistrations().entrySet()) {
+<b class="fc">&nbsp;            if (((Class)entry.getKey()).isAssignableFrom(clazz)) {</b>
+<b class="fc">&nbsp;                result = (List&lt;MediaType&gt;)(result != null ? result : new ArrayList(((Map)entry.getValue()).size()));</b>
+&nbsp;                result.addAll(((Map)entry.getValue()).keySet());
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        if (!CollectionUtils.isEmpty(result)) {
+<b class="fc">&nbsp;            return result;</b>
+&nbsp;        } else {
+&nbsp;            return ProblemDetail.class.isAssignableFrom(clazz) ? this.getMediaTypesForProblemDetail() : this.getSupportedMediaTypes();
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private Map&lt;Class&lt;?&gt;, Map&lt;MediaType, ObjectMapper&gt;&gt; getObjectMapperRegistrations() {
+&nbsp;        return this.objectMapperRegistrations != null ? this.objectMapperRegistrations : Collections.emptyMap();
+&nbsp;    }
+&nbsp;
+&nbsp;    protected List&lt;MediaType&gt; getMediaTypesForProblemDetail() {
+&nbsp;        return Collections.emptyList();
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setPrettyPrint(boolean prettyPrint) {
+&nbsp;        this.prettyPrint = prettyPrint;
+<b class="nc">&nbsp;        this.configurePrettyPrint();</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private void configurePrettyPrint() {
+&nbsp;        if (this.prettyPrint != null) {
+&nbsp;            this.defaultObjectMapper.configure(SerializationFeature.INDENT_OUTPUT, this.prettyPrint);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public boolean canRead(Class&lt;?&gt; clazz, @Nullable MediaType mediaType) {
+&nbsp;        return this.canRead(clazz, (Class)null, mediaType);
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean canRead(Type type, @Nullable Class&lt;?&gt; contextClass, @Nullable MediaType mediaType) {
+&nbsp;        if (!this.canRead(mediaType)) {
+&nbsp;            return false;
+&nbsp;        } else {
+&nbsp;            JavaType javaType = this.getJavaType(type, contextClass);
+&nbsp;            ObjectMapper objectMapper = this.selectObjectMapper(javaType.getRawClass(), mediaType);
+&nbsp;            if (objectMapper == null) {
+&nbsp;                return false;
+&nbsp;            } else {
+&nbsp;                AtomicReference&lt;Throwable&gt; causeRef = new AtomicReference();
+&nbsp;                if (objectMapper.canDeserialize(javaType, causeRef)) {
+&nbsp;                    return true;
+&nbsp;                } else {
+&nbsp;                    this.logWarningIfNecessary(javaType, (Throwable)causeRef.get());
+&nbsp;                    return false;
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public boolean canWrite(Class&lt;?&gt; clazz, @Nullable MediaType mediaType) {</b>
+&nbsp;        if (!this.canWrite(mediaType)) {
+&nbsp;            return false;
+&nbsp;        } else {
+&nbsp;            if (mediaType != null &amp;&amp; mediaType.getCharset() != null) {
+&nbsp;                Charset charset = mediaType.getCharset();
+&nbsp;                if (!ENCODINGS.containsKey(charset.name())) {
+&nbsp;                    return false;
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            ObjectMapper objectMapper = this.selectObjectMapper(clazz, mediaType);
+<b class="nc">&nbsp;            if (objectMapper == null) {</b>
+<b class="nc">&nbsp;                return false;</b>
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                AtomicReference&lt;Throwable&gt; causeRef = new AtomicReference();
+&nbsp;                if (objectMapper.canSerialize(clazz, causeRef)) {
+<b class="nc">&nbsp;                    return true;</b>
+&nbsp;                } else {
+&nbsp;                    this.logWarningIfNecessary(clazz, (Throwable)causeRef.get());
+&nbsp;                    return false;
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    @Nullable</b>
+&nbsp;    private ObjectMapper selectObjectMapper(Class&lt;?&gt; targetType, @Nullable MediaType targetMediaType) {
+&nbsp;        if (targetMediaType != null &amp;&amp; !CollectionUtils.isEmpty(this.objectMapperRegistrations)) {
+<b class="nc">&nbsp;            for(Map.Entry&lt;Class&lt;?&gt;, Map&lt;MediaType, ObjectMapper&gt;&gt; typeEntry : this.getObjectMapperRegistrations().entrySet()) {</b>
+<b class="nc">&nbsp;                if (((Class)typeEntry.getKey()).isAssignableFrom(targetType)) {</b>
+&nbsp;                    for(Map.Entry&lt;MediaType, ObjectMapper&gt; objectMapperEntry : ((Map)typeEntry.getValue()).entrySet()) {
+<b class="nc">&nbsp;                        if (((MediaType)objectMapperEntry.getKey()).includes(targetMediaType)) {</b>
+<b class="nc">&nbsp;                            return (ObjectMapper)objectMapperEntry.getValue();</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    return null;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            return this.defaultObjectMapper;
+&nbsp;        } else {
+&nbsp;            return this.defaultObjectMapper;
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected void logWarningIfNecessary(Type type, @Nullable Throwable cause) {
+&nbsp;        if (cause != null) {
+&nbsp;            boolean debugLevel = cause instanceof JsonMappingException &amp;&amp; cause.getMessage() != null &amp;&amp; cause.getMessage().startsWith(&quot;Cannot find&quot;);
+&nbsp;            if (debugLevel) {
+&nbsp;                if (!this.logger.isDebugEnabled()) {
+&nbsp;                    return;
+&nbsp;                }
+&nbsp;            } else if (!this.logger.isWarnEnabled()) {
+&nbsp;                return;
+&nbsp;            }
+&nbsp;
+&nbsp;            String msg = &quot;Failed to evaluate Jackson &quot; + (type instanceof JavaType ? &quot;de&quot; : &quot;&quot;) + &quot;serialization for type [&quot; + String.valueOf(type) + &quot;]&quot;;
+<b class="nc">&nbsp;            if (debugLevel) {</b>
+<b class="nc">&nbsp;                this.logger.debug(msg, cause);</b>
+&nbsp;            } else if (this.logger.isDebugEnabled()) {
+&nbsp;                this.logger.warn(msg, cause);
+&nbsp;            } else {
+<b class="nc">&nbsp;                this.logger.warn(msg + &quot;: &quot; + String.valueOf(cause));</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public Object read(Type type, @Nullable Class&lt;?&gt; contextClass, HttpInputMessage inputMessage) throws IOException, HttpMessageNotReadableException {
+&nbsp;        JavaType javaType = this.getJavaType(type, contextClass);
+<b class="nc">&nbsp;        return this.readJavaType(javaType, inputMessage);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Object readInternal(Class&lt;?&gt; clazz, HttpInputMessage inputMessage) throws IOException, HttpMessageNotReadableException {
+&nbsp;        JavaType javaType = this.getJavaType(clazz, (Class)null);
+&nbsp;        return this.readJavaType(javaType, inputMessage);
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private Object readJavaType(JavaType javaType, HttpInputMessage inputMessage) throws IOException {
+<b class="nc">&nbsp;        MediaType contentType = inputMessage.getHeaders().getContentType();</b>
+<b class="nc">&nbsp;        Charset charset = this.getCharset(contentType);</b>
+<b class="nc">&nbsp;        ObjectMapper objectMapper = this.selectObjectMapper(javaType.getRawClass(), contentType);</b>
+<b class="nc">&nbsp;        Assert.state(objectMapper != null, () -&gt; &quot;No ObjectMapper for &quot; + String.valueOf(javaType));</b>
+&nbsp;        boolean isUnicode = ENCODINGS.containsKey(charset.name()) || &quot;UTF-16&quot;.equals(charset.name()) || &quot;UTF-32&quot;.equals(charset.name());
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        try {</b>
+<b class="nc">&nbsp;            InputStream inputStream = StreamUtils.nonClosing(inputMessage.getBody());</b>
+&nbsp;            if (inputMessage instanceof MappingJacksonInputMessage mappingJacksonInputMessage) {
+<b class="nc">&nbsp;                Class&lt;?&gt; deserializationView = mappingJacksonInputMessage.getDeserializationView();</b>
+<b class="nc">&nbsp;                if (deserializationView != null) {</b>
+&nbsp;                    ObjectReader objectReader = objectMapper.readerWithView(deserializationView).forType(javaType);
+&nbsp;                    objectReader = this.customizeReader(objectReader, javaType);
+&nbsp;                    if (isUnicode) {
+&nbsp;                        return objectReader.readValue(inputStream);
+&nbsp;                    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                    Reader reader = new InputStreamReader(inputStream, charset);</b>
+&nbsp;                    return objectReader.readValue(reader);
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            ObjectReader objectReader = objectMapper.reader().forType(javaType);</b>
+&nbsp;            objectReader = this.customizeReader(objectReader, javaType);
+&nbsp;            if (isUnicode) {
+<b class="nc">&nbsp;                return objectReader.readValue(inputStream);</b>
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                Reader reader = new InputStreamReader(inputStream, charset);</b>
+&nbsp;                return objectReader.readValue(reader);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        } catch (InvalidDefinitionException ex) {</b>
+<b class="nc">&nbsp;            throw new HttpMessageConversionException(&quot;Type definition error: &quot; + String.valueOf(ex.getType()), ex);</b>
+&nbsp;        } catch (JsonProcessingException ex) {
+<b class="nc">&nbsp;            throw new HttpMessageNotReadableException(&quot;JSON parse error: &quot; + ex.getOriginalMessage(), ex, inputMessage);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected ObjectReader customizeReader(ObjectReader reader, JavaType javaType) {
+&nbsp;        return reader;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Charset getCharset(@Nullable MediaType contentType) {
+&nbsp;        return contentType != null &amp;&amp; contentType.getCharset() != null ? contentType.getCharset() : StandardCharsets.UTF_8;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected void writeInternal(Object object, @Nullable Type type, HttpOutputMessage outputMessage) throws IOException, HttpMessageNotWritableException {</b>
+&nbsp;        MediaType contentType = outputMessage.getHeaders().getContentType();
+<b class="nc">&nbsp;        JsonEncoding encoding = this.getJsonEncoding(contentType);</b>
+<b class="nc">&nbsp;        Class var10000;</b>
+<b class="nc">&nbsp;        if (object instanceof MappingJacksonValue mappingJacksonValue) {</b>
+<b class="nc">&nbsp;            var10000 = mappingJacksonValue.getValue().getClass();</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            var10000 = object.getClass();
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Class&lt;?&gt; clazz = var10000;</b>
+&nbsp;        ObjectMapper objectMapper = this.selectObjectMapper(clazz, contentType);
+&nbsp;        Assert.state(objectMapper != null, () -&gt; &quot;No ObjectMapper for &quot; + clazz.getName());
+&nbsp;        OutputStream outputStream = StreamUtils.nonClosing(outputMessage.getBody());
+<b class="nc">&nbsp;</b>
+&nbsp;        try {
+&nbsp;            try (JsonGenerator generator = objectMapper.getFactory().createGenerator(outputStream, encoding)) {
+&nbsp;                this.writePrefix(generator, object);
+&nbsp;                Object value = object;
+&nbsp;                Class&lt;?&gt; serializationView = null;
+&nbsp;                FilterProvider filters = null;
+&nbsp;                JavaType javaType = null;
+&nbsp;                if (object instanceof MappingJacksonValue mappingJacksonValue) {
+&nbsp;                    value = mappingJacksonValue.getValue();
+&nbsp;                    serializationView = mappingJacksonValue.getSerializationView();
+&nbsp;                    filters = mappingJacksonValue.getFilters();
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                if (type != null &amp;&amp; TypeUtils.isAssignable(type, value.getClass())) {
+&nbsp;                    javaType = this.getJavaType(type, (Class)null);
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                ObjectWriter objectWriter = serializationView != null ? objectMapper.writerWithView(serializationView) : objectMapper.writer();</b>
+&nbsp;                if (filters != null) {
+<b class="nc">&nbsp;                    objectWriter = objectWriter.with(filters);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="nc">&nbsp;                if (javaType != null &amp;&amp; (javaType.isContainerType() || javaType.isTypeOrSubTypeOf(Optional.class))) {</b>
+<b class="nc">&nbsp;                    objectWriter = objectWriter.forType(javaType);</b>
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                SerializationConfig config = objectWriter.getConfig();</b>
+&nbsp;                if (contentType != null &amp;&amp; contentType.isCompatibleWith(MediaType.TEXT_EVENT_STREAM) &amp;&amp; config.isEnabled(SerializationFeature.INDENT_OUTPUT)) {
+&nbsp;                    objectWriter = objectWriter.with(this.ssePrettyPrinter);
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                objectWriter = this.customizeWriter(objectWriter, javaType, contentType);
+&nbsp;                objectWriter.writeValue(generator, value);
+&nbsp;                this.writeSuffix(generator, object);
+&nbsp;                generator.flush();
+&nbsp;            }
+&nbsp;
+&nbsp;        } catch (InvalidDefinitionException ex) {
+<b class="nc">&nbsp;            throw new HttpMessageConversionException(&quot;Type definition error: &quot; + String.valueOf(ex.getType()), ex);</b>
+<b class="nc">&nbsp;        } catch (JsonProcessingException ex) {</b>
+&nbsp;            throw new HttpMessageNotWritableException(&quot;Could not write JSON: &quot; + ex.getOriginalMessage(), ex);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected ObjectWriter customizeWriter(ObjectWriter writer, @Nullable JavaType javaType, @Nullable MediaType contentType) {
+&nbsp;        return writer;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    protected void writePrefix(JsonGenerator generator, Object object) throws IOException {
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected void writeSuffix(JsonGenerator generator, Object object) throws IOException {</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    protected JavaType getJavaType(Type type, @Nullable Class&lt;?&gt; contextClass) {</b>
+<b class="nc">&nbsp;        return this.defaultObjectMapper.constructType(GenericTypeResolver.resolveType(type, contextClass));</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected JsonEncoding getJsonEncoding(@Nullable MediaType contentType) {</b>
+<b class="nc">&nbsp;        if (contentType != null &amp;&amp; contentType.getCharset() != null) {</b>
+&nbsp;            Charset charset = contentType.getCharset();
+<b class="nc">&nbsp;            JsonEncoding encoding = (JsonEncoding)ENCODINGS.get(charset.name());</b>
+<b class="nc">&nbsp;            if (encoding != null) {</b>
+<b class="nc">&nbsp;                return encoding;</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return JsonEncoding.UTF8;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    @Nullable
+<b class="nc">&nbsp;    protected MediaType getDefaultContentType(Object object) throws IOException {</b>
+<b class="nc">&nbsp;        if (object instanceof MappingJacksonValue mappingJacksonValue) {</b>
+&nbsp;            object = mappingJacksonValue.getValue();
+&nbsp;        }
+&nbsp;
+&nbsp;        return super.getDefaultContentType(object);
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    @Nullable</b>
+<b class="nc">&nbsp;    protected Long getContentLength(Object object, @Nullable MediaType contentType) throws IOException {</b>
+&nbsp;        if (object instanceof MappingJacksonValue mappingJacksonValue) {
+&nbsp;            object = mappingJacksonValue.getValue();
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return super.getContentLength(object, contentType);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected boolean supportsRepeatableWrites(Object o) {</b>
+&nbsp;        return true;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    static {
+&nbsp;        for(JsonEncoding encoding : JsonEncoding.values()) {
+&nbsp;            ENCODINGS.put(encoding.getJavaName(), encoding);
+&nbsp;        }
+&nbsp;
+&nbsp;        ENCODINGS.put(&quot;US-ASCII&quot;, JsonEncoding.UTF8);
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
+</div>
+</body>
+</html>

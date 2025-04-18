@@ -1,0 +1,973 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > AbstractInformationExtractorImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.tool.schema.extract.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: AbstractInformationExtractorImpl (org.hibernate.tool.schema.extract.internal)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AbstractInformationExtractorImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    7.8%
+  </span>
+  <span class="absValue">
+    (5/64)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    5.6%
+  </span>
+  <span class="absValue">
+    (10/180)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    9.2%
+  </span>
+  <span class="absValue">
+    (37/401)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">AbstractInformationExtractorImpl$ForeignKeyBuilder</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    7.8%
+  </span>
+  <span class="absValue">
+    (5/64)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    5.6%
+  </span>
+  <span class="absValue">
+    (10/180)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    9.2%
+  </span>
+  <span class="absValue">
+    (37/401)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.tool.schema.extract.internal;
+&nbsp;
+&nbsp;import java.sql.ResultSet;
+&nbsp;import java.sql.SQLException;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Locale;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Objects;
+&nbsp;import java.util.StringTokenizer;
+&nbsp;import org.hibernate.JDBCException;
+&nbsp;import org.hibernate.boot.model.TruthValue;
+&nbsp;import org.hibernate.boot.model.naming.DatabaseIdentifier;
+&nbsp;import org.hibernate.boot.model.naming.Identifier;
+&nbsp;import org.hibernate.boot.model.relational.QualifiedTableName;
+&nbsp;import org.hibernate.dialect.DB2Dialect;
+&nbsp;import org.hibernate.dialect.Dialect;
+&nbsp;import org.hibernate.engine.config.spi.ConfigurationService;
+&nbsp;import org.hibernate.engine.config.spi.StandardConverters;
+&nbsp;import org.hibernate.engine.jdbc.env.spi.IdentifierHelper;
+&nbsp;import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
+&nbsp;import org.hibernate.engine.jdbc.env.spi.NameQualifierSupport;
+&nbsp;import org.hibernate.internal.CoreLogging;
+&nbsp;import org.hibernate.internal.CoreMessageLogger;
+&nbsp;import org.hibernate.internal.util.StringHelper;
+&nbsp;import org.hibernate.internal.util.config.ConfigurationHelper;
+&nbsp;import org.hibernate.tool.schema.extract.spi.ColumnInformation;
+&nbsp;import org.hibernate.tool.schema.extract.spi.ExtractionContext;
+&nbsp;import org.hibernate.tool.schema.extract.spi.ForeignKeyInformation;
+&nbsp;import org.hibernate.tool.schema.extract.spi.IndexInformation;
+&nbsp;import org.hibernate.tool.schema.extract.spi.InformationExtractor;
+&nbsp;import org.hibernate.tool.schema.extract.spi.NameSpaceTablesInformation;
+&nbsp;import org.hibernate.tool.schema.extract.spi.PrimaryKeyInformation;
+&nbsp;import org.hibernate.tool.schema.extract.spi.SchemaExtractionException;
+&nbsp;import org.hibernate.tool.schema.extract.spi.TableInformation;
+&nbsp;import org.hibernate.tool.schema.spi.SchemaManagementException;
+&nbsp;
+&nbsp;public abstract class AbstractInformationExtractorImpl implements InformationExtractor {
+&nbsp;    private static final CoreMessageLogger LOG = CoreLogging.messageLogger(AbstractInformationExtractorImpl.class);
+&nbsp;    private final String[] tableTypes;
+&nbsp;    private String[] extraPhysicalTableTypes;
+&nbsp;    private final ExtractionContext extractionContext;
+&nbsp;    private final boolean useJdbcMetadataDefaultsSetting;
+<b class="fc">&nbsp;    private Identifier currentCatalog;</b>
+&nbsp;    private Identifier currentSchema;
+&nbsp;    private String currentCatalogFilter;
+&nbsp;    private String currentSchemaFilter;
+&nbsp;
+&nbsp;    public AbstractInformationExtractorImpl(ExtractionContext extractionContext) {
+&nbsp;        this.extractionContext = extractionContext;
+&nbsp;        ConfigurationService configService = (ConfigurationService)extractionContext.getServiceRegistry().requireService(ConfigurationService.class);
+&nbsp;        this.useJdbcMetadataDefaultsSetting = (Boolean)configService.getSetting(&quot;hibernate.temp.use_jdbc_metadata_defaults&quot;, StandardConverters.BOOLEAN, Boolean.TRUE);
+&nbsp;        String extraPhysicalTableTypesConfig = (String)configService.getSetting(&quot;hibernate.hbm2ddl.extra_physical_table_types&quot;, StandardConverters.STRING, (String)configService.getSetting(&quot;hibernate.hbm2ddl.extra_physical_table_types&quot;, StandardConverters.STRING, &quot;&quot;));
+&nbsp;        List&lt;String&gt; physicalTableTypesList = new ArrayList();
+&nbsp;        if (!StringHelper.isBlank(extraPhysicalTableTypesConfig)) {
+&nbsp;            Collections.addAll(physicalTableTypesList, StringHelper.splitTrimmingTokens(&quot;,;&quot;, extraPhysicalTableTypesConfig, false));
+&nbsp;        }
+&nbsp;
+&nbsp;        Dialect dialect = extractionContext.getJdbcEnvironment().getDialect();
+&nbsp;        dialect.augmentPhysicalTableTypes(physicalTableTypesList);
+<b class="fc">&nbsp;        this.extraPhysicalTableTypes = (String[])physicalTableTypesList.toArray(new String[0]);</b>
+<b class="fc">&nbsp;        List&lt;String&gt; tableTypesList = new ArrayList();</b>
+&nbsp;        tableTypesList.add(&quot;TABLE&quot;);
+<b class="fc">&nbsp;        tableTypesList.add(&quot;VIEW&quot;);</b>
+<b class="fc">&nbsp;        if (ConfigurationHelper.getBoolean(&quot;hibernate.synonyms&quot;, configService.getSettings())) {</b>
+&nbsp;            if (dialect instanceof DB2Dialect) {
+<b class="fc">&nbsp;                tableTypesList.add(&quot;ALIAS&quot;);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            tableTypesList.add(&quot;SYNONYM&quot;);
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        Collections.addAll(tableTypesList, this.extraPhysicalTableTypes);</b>
+&nbsp;        dialect.augmentRecognizedTableTypes(tableTypesList);
+&nbsp;        this.tableTypes = (String[])tableTypesList.toArray(new String[0]);
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected IdentifierHelper identifierHelper() {
+&nbsp;        return this.extractionContext.getJdbcEnvironment().getIdentifierHelper();
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    protected JDBCException convertSQLException(SQLException sqlException, String message) {</b>
+<b class="pc">&nbsp;        return this.extractionContext.getJdbcEnvironment().getSqlExceptionHelper().convert(sqlException, message);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    protected String toMetaDataObjectName(Identifier identifier) {</b>
+&nbsp;        return this.extractionContext.getJdbcEnvironment().getIdentifierHelper().toMetaDataObjectName(identifier);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected ExtractionContext getExtractionContext() {
+&nbsp;        return this.extractionContext;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    protected String getResultSetCatalogLabel() {</b>
+<b class="fc">&nbsp;        return &quot;TABLE_CAT&quot;;</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    protected String getResultSetSchemaLabel() {</b>
+<b class="fc">&nbsp;        return &quot;TABLE_SCHEM&quot;;</b>
+<b class="pc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected String getResultSetTableNameLabel() {</b>
+&nbsp;        return &quot;TABLE_NAME&quot;;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="fc">&nbsp;    protected String getResultSetTableTypeLabel() {</b>
+<b class="fc">&nbsp;        return &quot;TABLE_TYPE&quot;;</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    protected String getResultSetRemarksLabel() {
+&nbsp;        return &quot;REMARKS&quot;;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected String getResultSetPrimaryKeyCatalogLabel() {
+&nbsp;        return &quot;PKTABLE_CAT&quot;;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected String getResultSetPrimaryKeySchemaLabel() {
+&nbsp;        return &quot;PKTABLE_SCHEM&quot;;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected String getResultSetPrimaryKeyTableLabel() {
+&nbsp;        return &quot;PKTABLE_NAME&quot;;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    protected String getResultSetColumnNameLabel() {
+&nbsp;        return &quot;COLUMN_NAME&quot;;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected String getResultSetSqlTypeCodeLabel() {
+&nbsp;        return &quot;DATA_TYPE&quot;;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected String getResultSetTypeNameLabel() {
+&nbsp;        return &quot;TYPE_NAME&quot;;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected String getResultSetColumnSizeLabel() {
+<b class="nc">&nbsp;        return &quot;COLUMN_SIZE&quot;;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected String getResultSetDecimalDigitsLabel() {</b>
+&nbsp;        return &quot;DECIMAL_DIGITS&quot;;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected String getResultSetIsNullableLabel() {
+&nbsp;        return &quot;IS_NULLABLE&quot;;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected String getResultSetIndexTypeLabel() {
+<b class="nc">&nbsp;        return &quot;TYPE&quot;;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected String getResultSetIndexNameLabel() {</b>
+&nbsp;        return &quot;INDEX_NAME&quot;;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected String getResultSetForeignKeyLabel() {
+&nbsp;        return &quot;FK_NAME&quot;;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected String getResultSetPrimaryKeyNameLabel() {
+<b class="nc">&nbsp;        return &quot;PK_NAME&quot;;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected String getResultSetColumnPositionColumn() {</b>
+&nbsp;        return &quot;KEY_SEQ&quot;;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected String getResultSetPrimaryKeyColumnNameLabel() {
+&nbsp;        return &quot;PKCOLUMN_NAME&quot;;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected String getResultSetForeignKeyColumnNameLabel() {
+<b class="nc">&nbsp;        return &quot;FKCOLUMN_NAME&quot;;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected abstract &lt;T&gt; T processCatalogsResultSet(ExtractionContext.ResultSetProcessor&lt;T&gt; var1) throws SQLException;</b>
+&nbsp;
+&nbsp;    public boolean catalogExists(Identifier catalog) {
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            return (Boolean)this.processCatalogsResultSet((resultSet) -&gt; {
+&nbsp;                while(true) {
+<b class="nc">&nbsp;                    if (resultSet.next()) {</b>
+&nbsp;                        String existingCatalogName = resultSet.getString(this.getResultSetCatalogLabel());
+&nbsp;                        if (!catalog.getText().equalsIgnoreCase(existingCatalogName)) {
+<b class="nc">&nbsp;                            continue;</b>
+&nbsp;                        }
+&nbsp;
+<b class="nc">&nbsp;                        return true;</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    return false;</b>
+&nbsp;                }
+&nbsp;            });
+&nbsp;        } catch (SQLException sqlException) {
+&nbsp;            throw this.convertSQLException(sqlException, &quot;Unable to query ResultSet for existing catalogs&quot;);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected abstract &lt;T&gt; T processSchemaResultSet(String var1, String var2, ExtractionContext.ResultSetProcessor&lt;T&gt; var3) throws SQLException;
+&nbsp;
+&nbsp;    public boolean schemaExists(Identifier catalog, Identifier schema) {
+&nbsp;        String catalogFilter = this.determineCatalogFilter(catalog);
+&nbsp;        String schemaFilter = this.determineSchemaFilter(schema);
+&nbsp;
+&nbsp;        try {
+&nbsp;            return (Boolean)this.processSchemaResultSet(catalogFilter, schemaFilter, (resultSet) -&gt; {
+&nbsp;                if (!resultSet.next()) {
+&nbsp;                    return false;
+&nbsp;                } else {
+&nbsp;                    if (resultSet.next()) {
+&nbsp;                        String catalogName = catalog == null ? &quot;&quot; : catalog.getCanonicalName();
+&nbsp;                        String schemaName = schema == null ? &quot;&quot; : schema.getCanonicalName();
+&nbsp;                        LOG.debugf(&quot;Multiple schemas found with that name [%s.%s]&quot;, catalogName, schemaName);
+&nbsp;                    }
+&nbsp;
+&nbsp;                    return true;
+&nbsp;                }
+<b class="nc">&nbsp;            });</b>
+&nbsp;        } catch (SQLException sqlException) {
+<b class="nc">&nbsp;            throw this.convertSQLException(sqlException, &quot;Unable to query ResultSet for existing schemas&quot;);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected String determineCatalogFilter(Identifier catalog) {
+&nbsp;        Identifier identifierToUse = catalog;
+<b class="nc">&nbsp;        if (catalog == null) {</b>
+<b class="nc">&nbsp;            identifierToUse = this.extractionContext.getDefaultCatalog();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        return this.extractionContext.getJdbcEnvironment().getIdentifierHelper().toMetaDataCatalogName(identifierToUse);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected String determineSchemaFilter(Identifier schema) {
+&nbsp;        Identifier identifierToUse = schema;
+<b class="nc">&nbsp;        if (schema == null) {</b>
+&nbsp;            identifierToUse = this.extractionContext.getDefaultSchema();
+&nbsp;        }
+&nbsp;
+&nbsp;        return this.extractionContext.getJdbcEnvironment().getIdentifierHelper().toMetaDataSchemaName(identifierToUse);
+&nbsp;    }
+&nbsp;
+&nbsp;    private TableInformation extractTableInformation(ResultSet resultSet) throws SQLException {
+&nbsp;        QualifiedTableName tableName = this.extractTableName(resultSet);
+&nbsp;        return new TableInformationImpl(this, this.identifierHelper(), tableName, this.isPhysicalTableType(resultSet.getString(this.getResultSetTableTypeLabel())), resultSet.getString(this.getResultSetRemarksLabel()));
+&nbsp;    }
+&nbsp;
+&nbsp;    public TableInformation getTable(Identifier catalog, Identifier schema, Identifier tableName) {
+&nbsp;        if (catalog == null &amp;&amp; schema == null) {
+&nbsp;            JdbcEnvironment jdbcEnvironment = this.extractionContext.getJdbcEnvironment();
+&nbsp;            Identifier currentSchema = this.getCurrentSchema(jdbcEnvironment);
+&nbsp;            Identifier currentCatalog = this.getCurrentCatalog(jdbcEnvironment);
+&nbsp;            if (currentCatalog != null || currentSchema != null) {
+&nbsp;                TableInformation tableInfo = this.locateTableInNamespace(currentCatalog, currentSchema, tableName);
+&nbsp;                if (tableInfo != null) {
+&nbsp;                    return tableInfo;
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            if (this.extractionContext.getDefaultCatalog() != null || this.extractionContext.getDefaultSchema() != null) {
+&nbsp;                TableInformation tableInfo = this.locateTableInNamespace(this.extractionContext.getDefaultCatalog(), this.extractionContext.getDefaultSchema(), tableName);
+&nbsp;                if (tableInfo != null) {
+&nbsp;                    return tableInfo;
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            try {
+&nbsp;                String tableNameFilter = this.toMetaDataObjectName(tableName);
+&nbsp;                return (TableInformation)this.processTableResultSet((String)null, (String)null, tableNameFilter, this.tableTypes, (resultSet) -&gt; this.extractTableInformation((Identifier)null, (Identifier)null, tableName, resultSet));
+&nbsp;            } catch (SQLException sqlException) {
+&nbsp;                throw this.convertSQLException(sqlException, &quot;Error accessing table metadata&quot;);
+&nbsp;            }
+&nbsp;        } else {
+&nbsp;            return this.locateTableInNamespace(catalog, schema, tableName);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private Identifier getCurrentSchema(JdbcEnvironment jdbcEnvironment) {
+<b class="nc">&nbsp;        if (jdbcEnvironment.getNameQualifierSupport() == NameQualifierSupport.CATALOG) {</b>
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        } else if (this.currentSchema != null) {
+&nbsp;            return this.currentSchema;
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            Identifier schema = jdbcEnvironment.getCurrentSchema();
+&nbsp;            if (schema != null) {
+&nbsp;                this.currentSchema = schema;
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            if (!this.useJdbcMetadataDefaultsSetting) {</b>
+&nbsp;                try {
+&nbsp;                    this.currentSchema = this.extractionContext.getJdbcEnvironment().getIdentifierHelper().toIdentifier(this.extractionContext.getJdbcConnection().getSchema());
+<b class="nc">&nbsp;                } catch (SQLException ignore) {</b>
+<b class="nc">&nbsp;                    LOG.sqlWarning(ignore.getErrorCode(), ignore.getSQLState());</b>
+<b class="nc">&nbsp;                } catch (AbstractMethodError var5) {</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            return this.currentSchema;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private Identifier getCurrentCatalog(JdbcEnvironment jdbcEnvironment) {</b>
+&nbsp;        if (jdbcEnvironment.getNameQualifierSupport() == NameQualifierSupport.SCHEMA) {
+&nbsp;            return null;
+&nbsp;        } else if (this.currentCatalog != null) {
+&nbsp;            return this.currentCatalog;
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            Identifier catalog = jdbcEnvironment.getCurrentCatalog();
+&nbsp;            if (catalog != null) {
+&nbsp;                this.currentCatalog = catalog;
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            if (!this.useJdbcMetadataDefaultsSetting) {</b>
+<b class="nc">&nbsp;                try {</b>
+&nbsp;                    this.currentCatalog = this.extractionContext.getJdbcEnvironment().getIdentifierHelper().toIdentifier(this.extractionContext.getJdbcConnection().getCatalog());
+&nbsp;                } catch (SQLException ignore) {
+<b class="nc">&nbsp;                    LOG.sqlWarning(ignore.getErrorCode(), ignore.getSQLState());</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            return this.currentCatalog;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private String getCurrentCatalogFilter(JdbcEnvironment jdbcEnvironment) {
+<b class="nc">&nbsp;        if (this.currentCatalogFilter != null) {</b>
+&nbsp;            return this.currentCatalogFilter;
+&nbsp;        } else {
+&nbsp;            Identifier currentCatalog = jdbcEnvironment.getCurrentCatalog();
+<b class="nc">&nbsp;            if (currentCatalog != null) {</b>
+&nbsp;                this.currentCatalogFilter = this.toMetaDataObjectName(currentCatalog);
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            if (!this.useJdbcMetadataDefaultsSetting) {</b>
+&nbsp;                try {
+<b class="nc">&nbsp;                    this.currentCatalogFilter = this.extractionContext.getJdbcConnection().getCatalog();</b>
+<b class="nc">&nbsp;                } catch (SQLException ignore) {</b>
+&nbsp;                    LOG.sqlWarning(ignore.getErrorCode(), ignore.getSQLState());
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            return this.currentCatalogFilter;
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private String getCurrentSchemaFilter(JdbcEnvironment jdbcEnvironment) {
+<b class="nc">&nbsp;        if (this.currentSchemaFilter != null) {</b>
+&nbsp;            return this.currentSchemaFilter;
+&nbsp;        } else {
+&nbsp;            Identifier currentSchema = jdbcEnvironment.getCurrentSchema();
+&nbsp;            if (currentSchema != null) {
+&nbsp;                this.currentSchemaFilter = this.toMetaDataObjectName(currentSchema);
+&nbsp;            }
+&nbsp;
+&nbsp;            if (!this.useJdbcMetadataDefaultsSetting) {
+&nbsp;                try {
+&nbsp;                    this.currentSchemaFilter = this.extractionContext.getJdbcConnection().getSchema();
+<b class="nc">&nbsp;                } catch (SQLException ignore) {</b>
+<b class="nc">&nbsp;                    LOG.sqlWarning(ignore.getErrorCode(), ignore.getSQLState());</b>
+<b class="nc">&nbsp;                } catch (AbstractMethodError var5) {</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            return this.currentSchemaFilter;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public NameSpaceTablesInformation getTables(Identifier catalog, Identifier schema) {
+<b class="nc">&nbsp;        JdbcEnvironment jdbcEnvironment = this.extractionContext.getJdbcEnvironment();</b>
+<b class="nc">&nbsp;        NameQualifierSupport nameQualifierSupport = jdbcEnvironment.getNameQualifierSupport();</b>
+&nbsp;        String catalogFilter;
+&nbsp;        if (nameQualifierSupport.supportsCatalogs()) {
+&nbsp;            if (catalog == null) {
+&nbsp;                String currentCatalogFilter = this.getCurrentCatalogFilter(jdbcEnvironment);
+<b class="nc">&nbsp;                if (currentCatalogFilter != null) {</b>
+<b class="nc">&nbsp;                    catalogFilter = currentCatalogFilter;</b>
+<b class="nc">&nbsp;                } else if (this.extractionContext.getDefaultCatalog() != null) {</b>
+<b class="nc">&nbsp;                    catalogFilter = this.toMetaDataObjectName(this.extractionContext.getDefaultCatalog());</b>
+&nbsp;                } else {
+&nbsp;                    catalogFilter = null;
+&nbsp;                }
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                catalogFilter = this.toMetaDataObjectName(catalog);</b>
+&nbsp;            }
+&nbsp;        } else {
+&nbsp;            catalogFilter = null;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        String schemaFilter;</b>
+&nbsp;        if (nameQualifierSupport.supportsSchemas()) {
+<b class="nc">&nbsp;            if (schema == null) {</b>
+&nbsp;                String currentSchemaFilter = this.getCurrentSchemaFilter(jdbcEnvironment);
+&nbsp;                if (currentSchemaFilter != null) {
+&nbsp;                    schemaFilter = currentSchemaFilter;
+&nbsp;                } else if (this.extractionContext.getDefaultSchema() != null) {
+<b class="nc">&nbsp;                    schemaFilter = this.toMetaDataObjectName(this.extractionContext.getDefaultSchema());</b>
+&nbsp;                } else {
+&nbsp;                    schemaFilter = null;
+&nbsp;                }
+&nbsp;            } else {
+&nbsp;                schemaFilter = this.toMetaDataObjectName(schema);
+&nbsp;            }
+&nbsp;        } else {
+&nbsp;            schemaFilter = null;
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        try {
+&nbsp;            return (NameSpaceTablesInformation)this.processTableResultSet(catalogFilter, schemaFilter, &quot;%&quot;, this.tableTypes, (resultSet) -&gt; {
+&nbsp;                NameSpaceTablesInformation tablesInformation = this.extractNameSpaceTablesInformation(resultSet);
+&nbsp;                this.populateTablesWithColumns(catalogFilter, schemaFilter, tablesInformation);
+<b class="nc">&nbsp;                return tablesInformation;</b>
+<b class="nc">&nbsp;            });</b>
+&nbsp;        } catch (SQLException sqlException) {
+<b class="nc">&nbsp;            throw this.convertSQLException(sqlException, &quot;Error accessing table metadata&quot;);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected abstract &lt;T&gt; T processColumnsResultSet(String var1, String var2, String var3, String var4, ExtractionContext.ResultSetProcessor&lt;T&gt; var5) throws SQLException;</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private void populateTablesWithColumns(String catalogFilter, String schemaFilter, NameSpaceTablesInformation tables) {
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            this.processColumnsResultSet(catalogFilter, schemaFilter, (String)null, &quot;%&quot;, (resultSet) -&gt; {
+<b class="nc">&nbsp;                String currentTableName = &quot;&quot;;</b>
+<b class="nc">&nbsp;                TableInformation currentTable = null;</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                while(resultSet.next()) {
+&nbsp;                    if (!currentTableName.equals(resultSet.getString(this.getResultSetTableNameLabel()))) {
+<b class="nc">&nbsp;                        currentTableName = resultSet.getString(this.getResultSetTableNameLabel());</b>
+&nbsp;                        currentTable = tables.getTableInformation(currentTableName);
+&nbsp;                    }
+&nbsp;
+&nbsp;                    if (currentTable != null) {
+&nbsp;                        this.addExtractedColumnInformation(currentTable, resultSet);
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                return null;
+<b class="nc">&nbsp;            });</b>
+<b class="nc">&nbsp;        } catch (SQLException e) {</b>
+&nbsp;            throw this.convertSQLException(e, &quot;Error accessing tables metadata&quot;);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    protected void addExtractedColumnInformation(TableInformation tableInformation, ResultSet resultSet) throws SQLException {</b>
+<b class="nc">&nbsp;        ColumnInformation columnInformation = new ColumnInformationImpl(tableInformation, DatabaseIdentifier.toIdentifier(resultSet.getString(this.getResultSetColumnNameLabel())), resultSet.getInt(this.getResultSetSqlTypeCodeLabel()), (new StringTokenizer(resultSet.getString(this.getResultSetTypeNameLabel()), &quot;()&quot;)).nextToken(), resultSet.getInt(this.getResultSetColumnSizeLabel()), resultSet.getInt(this.getResultSetDecimalDigitsLabel()), this.interpretTruthValue(resultSet.getString(this.getResultSetIsNullableLabel())));</b>
+<b class="nc">&nbsp;        tableInformation.addColumn(columnInformation);</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private NameSpaceTablesInformation extractNameSpaceTablesInformation(ResultSet resultSet) throws SQLException {
+<b class="nc">&nbsp;        NameSpaceTablesInformation tables = new NameSpaceTablesInformation(this.identifierHelper());</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        while(resultSet.next()) {</b>
+&nbsp;            TableInformation tableInformation = this.extractTableInformation(resultSet);
+&nbsp;            tables.addTableInformation(tableInformation);
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return tables;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected abstract &lt;T&gt; T processTableResultSet(String var1, String var2, String var3, String[] var4, ExtractionContext.ResultSetProcessor&lt;T&gt; var5) throws SQLException;
+&nbsp;
+<b class="pc">&nbsp;    private TableInformation locateTableInNamespace(Identifier catalog, Identifier schema, Identifier tableName) {</b>
+<b class="nc">&nbsp;        Identifier catalogToUse;</b>
+&nbsp;        String catalogFilter;
+<b class="fc">&nbsp;        if (this.extractionContext.getJdbcEnvironment().getNameQualifierSupport().supportsCatalogs()) {</b>
+<b class="pc">&nbsp;            if (catalog == null) {</b>
+<b class="nc">&nbsp;                String defaultCatalog = &quot;&quot;;</b>
+&nbsp;                if (this.extractionContext.getJdbcEnvironment().getNameQualifierSupport().supportsCatalogs()) {
+<b class="pc">&nbsp;                    try {</b>
+&nbsp;                        defaultCatalog = this.extractionContext.getJdbcConnection().getCatalog();
+<b class="nc">&nbsp;                    } catch (SQLException var11) {</b>
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+&nbsp;                catalogToUse = null;
+&nbsp;                catalogFilter = defaultCatalog;
+<b class="fc">&nbsp;            } else {</b>
+&nbsp;                catalogToUse = catalog;
+&nbsp;                catalogFilter = this.toMetaDataObjectName(catalog);
+&nbsp;            }
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            catalogToUse = null;</b>
+&nbsp;            catalogFilter = null;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        Identifier schemaToUse;</b>
+&nbsp;        String schemaFilter;
+&nbsp;        if (this.extractionContext.getJdbcEnvironment().getNameQualifierSupport().supportsSchemas()) {
+<b class="nc">&nbsp;            if (schema == null) {</b>
+&nbsp;                schemaToUse = null;
+<b class="nc">&nbsp;                schemaFilter = &quot;&quot;;</b>
+&nbsp;            } else {
+&nbsp;                schemaToUse = schema;
+<b class="nc">&nbsp;                schemaFilter = this.toMetaDataObjectName(schema);</b>
+&nbsp;            }
+&nbsp;        } else {
+&nbsp;            schemaToUse = null;
+&nbsp;            schemaFilter = null;
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        String tableNameFilter = this.toMetaDataObjectName(tableName);
+&nbsp;
+&nbsp;        try {
+&nbsp;            return (TableInformation)this.processTableResultSet(catalogFilter, schemaFilter, tableNameFilter, this.tableTypes, (resultSet) -&gt; this.extractTableInformation(catalogToUse, schemaToUse, tableName, resultSet));
+&nbsp;        } catch (SQLException sqlException) {
+&nbsp;            throw this.convertSQLException(sqlException, &quot;Error accessing table metadata&quot;);
+&nbsp;        }
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private TableInformation extractTableInformation(Identifier catalog, Identifier schema, Identifier tableName, ResultSet resultSet) throws SQLException {</b>
+<b class="pc">&nbsp;        boolean found = false;</b>
+<b class="pc">&nbsp;        TableInformation tableInformation = null;</b>
+&nbsp;
+<b class="fc">&nbsp;        while(resultSet.next()) {</b>
+<b class="pc">&nbsp;            if (tableName.equals(Identifier.toIdentifier(resultSet.getString(this.getResultSetTableNameLabel()), tableName.isQuoted()))) {</b>
+<b class="nc">&nbsp;                if (found) {</b>
+&nbsp;                    LOG.multipleTablesFound(tableName.render());
+&nbsp;                    String catalogName = catalog == null ? &quot;&quot; : catalog.render();
+<b class="pc">&nbsp;                    String schemaName = schema == null ? &quot;&quot; : schema.render();</b>
+&nbsp;                    throw new SchemaExtractionException(String.format(Locale.ENGLISH, &quot;More than one table found in namespace (%s, %s) : %s&quot;, catalogName, schemaName, tableName.render()));
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                found = true;
+<b class="fc">&nbsp;                tableInformation = this.extractTableInformation(resultSet);</b>
+&nbsp;                this.addColumns(tableInformation);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if (!found) {</b>
+&nbsp;            LOG.tableNotFound(tableName.render());
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return tableInformation;</b>
+&nbsp;    }
+&nbsp;
+<b class="pc">&nbsp;    protected abstract String getResultSetTableTypesPhysicalTableConstant();</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    protected boolean isPhysicalTableType(String tableType) {
+<b class="nc">&nbsp;        if (this.extraPhysicalTableTypes == null) {</b>
+<b class="nc">&nbsp;            return this.getResultSetTableTypesPhysicalTableConstant().equalsIgnoreCase(tableType);</b>
+<b class="nc">&nbsp;        } else if (this.getResultSetTableTypesPhysicalTableConstant().equalsIgnoreCase(tableType)) {</b>
+&nbsp;            return true;
+&nbsp;        } else {
+<b class="nc">&nbsp;            for(String extraPhysicalTableType : this.extraPhysicalTableTypes) {</b>
+&nbsp;                if (extraPhysicalTableType.equalsIgnoreCase(tableType)) {
+<b class="nc">&nbsp;                    return true;</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            return false;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected void addColumns(TableInformation tableInformation) {</b>
+&nbsp;        QualifiedTableName tableName = tableInformation.getName();
+&nbsp;        Identifier catalog = tableName.getCatalogName();
+&nbsp;        Identifier schema = tableName.getSchemaName();
+<b class="fc">&nbsp;        String catalogFilter = catalog == null ? &quot;&quot; : catalog.getText();</b>
+&nbsp;        String schemaFilter = schema == null ? &quot;&quot; : schema.getText();
+&nbsp;
+&nbsp;        try {
+<b class="fc">&nbsp;            this.processColumnsResultSet(catalogFilter, schemaFilter, tableName.getTableName().getText(), &quot;%&quot;, (resultSet) -&gt; {</b>
+&nbsp;                while(resultSet.next()) {
+&nbsp;                    this.addExtractedColumnInformation(tableInformation, resultSet);
+&nbsp;                }
+&nbsp;
+&nbsp;                return null;
+<b class="nc">&nbsp;            });</b>
+<b class="nc">&nbsp;        } catch (SQLException e) {</b>
+<b class="nc">&nbsp;            throw this.convertSQLException(e, &quot;Error accessing tables metadata&quot;);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected TruthValue interpretNullable(int nullable) {</b>
+&nbsp;        switch (nullable) {
+&nbsp;            case 0:
+&nbsp;                return TruthValue.FALSE;
+&nbsp;            case 1:
+&nbsp;                return TruthValue.TRUE;
+&nbsp;            default:
+&nbsp;                return TruthValue.UNKNOWN;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private TruthValue interpretTruthValue(String nullable) {
+&nbsp;        if (&quot;yes&quot;.equalsIgnoreCase(nullable)) {
+&nbsp;            return TruthValue.TRUE;
+&nbsp;        } else {
+&nbsp;            return &quot;no&quot;.equalsIgnoreCase(nullable) ? TruthValue.FALSE : TruthValue.UNKNOWN;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected abstract &lt;T&gt; T processPrimaryKeysResultSet(String var1, String var2, Identifier var3, ExtractionContext.ResultSetProcessor&lt;T&gt; var4) throws SQLException;
+&nbsp;
+&nbsp;    public PrimaryKeyInformation getPrimaryKey(TableInformationImpl tableInformation) {
+&nbsp;        QualifiedTableName tableName = tableInformation.getName();
+&nbsp;        Identifier catalog = tableName.getCatalogName();
+&nbsp;        Identifier schema = tableName.getSchemaName();
+&nbsp;        String catalogFilter;
+&nbsp;        if (catalog == null) {
+&nbsp;            catalogFilter = &quot;&quot;;
+&nbsp;        } else {
+&nbsp;            catalogFilter = catalog.getText();
+&nbsp;        }
+&nbsp;
+&nbsp;        String schemaFilter;
+&nbsp;        if (schema == null) {
+&nbsp;            schemaFilter = &quot;&quot;;
+&nbsp;        } else {
+&nbsp;            schemaFilter = schema.getText();
+&nbsp;        }
+&nbsp;
+&nbsp;        try {
+&nbsp;            return (PrimaryKeyInformation)this.processPrimaryKeysResultSet(catalogFilter, schemaFilter, tableInformation.getName().getTableName(), (resultSet) -&gt; this.extractPrimaryKeyInformation(tableInformation, resultSet));
+&nbsp;        } catch (SQLException e) {
+&nbsp;            throw this.convertSQLException(e, &quot;Error while reading primary key meta data for &quot; + tableInformation.getName().toString());
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private PrimaryKeyInformation extractPrimaryKeyInformation(TableInformation tableInformation, ResultSet resultSet) throws SQLException {
+&nbsp;        List&lt;ColumnInformation&gt; pkColumns = new ArrayList();
+&nbsp;        boolean firstPass = true;
+&nbsp;        Identifier pkIdentifier = null;
+&nbsp;
+&nbsp;        while(resultSet.next()) {
+&nbsp;            String currentPkName = resultSet.getString(this.getResultSetPrimaryKeyNameLabel());
+&nbsp;            Identifier currentPkIdentifier = currentPkName == null ? null : DatabaseIdentifier.toIdentifier(currentPkName);
+&nbsp;            if (firstPass) {
+&nbsp;                pkIdentifier = currentPkIdentifier;
+&nbsp;                firstPass = false;
+&nbsp;            } else if (!Objects.equals(pkIdentifier, currentPkIdentifier)) {
+&nbsp;                throw new SchemaExtractionException(String.format(&quot;Encountered primary keys differing name on table %s&quot;, tableInformation.getName().toString()));
+&nbsp;            }
+&nbsp;
+&nbsp;            int columnPosition = resultSet.getInt(this.getResultSetColumnPositionColumn());
+&nbsp;            int index = columnPosition - 1;
+&nbsp;
+&nbsp;            while(pkColumns.size() &lt;= index) {
+&nbsp;                pkColumns.add((Object)null);
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            Identifier columnIdentifier = DatabaseIdentifier.toIdentifier(resultSet.getString(this.getResultSetColumnNameLabel()));
+&nbsp;            pkColumns.set(index, tableInformation.getColumn(columnIdentifier));
+&nbsp;        }
+&nbsp;
+&nbsp;        if (firstPass) {
+<b class="nc">&nbsp;            return null;</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; pkColumns.size(); ++i) {</b>
+<b class="nc">&nbsp;                if (pkColumns.get(i) == null) {</b>
+<b class="nc">&nbsp;                    throw new SchemaExtractionException(&quot;Primary Key information was missing for KEY_SEQ = &quot; + (i + 1));</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            return new PrimaryKeyInformationImpl(pkIdentifier, pkColumns);</b>
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected abstract &lt;T&gt; T processIndexInfoResultSet(String var1, String var2, String var3, boolean var4, boolean var5, ExtractionContext.ResultSetProcessor&lt;T&gt; var6) throws SQLException;
+&nbsp;
+&nbsp;    public Iterable&lt;IndexInformation&gt; getIndexes(TableInformation tableInformation) {
+&nbsp;        Map&lt;Identifier, IndexInformationImpl.Builder&gt; builders = new HashMap();
+<b class="nc">&nbsp;        QualifiedTableName tableName = tableInformation.getName();</b>
+&nbsp;        Identifier catalog = tableName.getCatalogName();
+&nbsp;        Identifier schema = tableName.getSchemaName();
+&nbsp;        String catalogFilter;
+&nbsp;        if (catalog == null) {
+&nbsp;            catalogFilter = &quot;&quot;;
+&nbsp;        } else {
+&nbsp;            catalogFilter = catalog.getText();
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        String schemaFilter;
+<b class="nc">&nbsp;        if (schema == null) {</b>
+<b class="nc">&nbsp;            schemaFilter = &quot;&quot;;</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            schemaFilter = schema.getText();</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        try {
+<b class="nc">&nbsp;            this.processIndexInfoResultSet(catalogFilter, schemaFilter, tableName.getTableName().getText(), false, true, (resultSet) -&gt; {</b>
+&nbsp;                while(resultSet.next()) {
+&nbsp;                    if (resultSet.getShort(this.getResultSetIndexTypeLabel()) != 0) {
+&nbsp;                        Identifier indexIdentifier = DatabaseIdentifier.toIdentifier(resultSet.getString(this.getResultSetIndexNameLabel()));
+<b class="nc">&nbsp;                        IndexInformationImpl.Builder builder = (IndexInformationImpl.Builder)builders.get(indexIdentifier);</b>
+<b class="nc">&nbsp;                        if (builder == null) {</b>
+<b class="nc">&nbsp;                            builder = IndexInformationImpl.builder(indexIdentifier);</b>
+<b class="nc">&nbsp;                            builders.put(indexIdentifier, builder);</b>
+&nbsp;                        }
+<b class="nc">&nbsp;</b>
+&nbsp;                        Identifier columnIdentifier = DatabaseIdentifier.toIdentifier(resultSet.getString(this.getResultSetColumnNameLabel()));
+&nbsp;                        ColumnInformation columnInformation = tableInformation.getColumn(columnIdentifier);
+&nbsp;                        if (columnInformation == null) {
+&nbsp;                            LOG.logCannotLocateIndexColumnInformation(columnIdentifier.getText(), indexIdentifier.getText());
+&nbsp;                        }
+&nbsp;
+&nbsp;                        builder.addColumn(columnInformation);
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                return null;
+&nbsp;            });
+&nbsp;        } catch (SQLException e) {
+&nbsp;            throw this.convertSQLException(e, &quot;Error accessing index information: &quot; + tableInformation.getName().toString());
+&nbsp;        }
+&nbsp;
+&nbsp;        List&lt;IndexInformation&gt; indexes = new ArrayList();
+&nbsp;
+&nbsp;        for(IndexInformationImpl.Builder builder : builders.values()) {
+&nbsp;            IndexInformationImpl index = builder.build();
+&nbsp;            indexes.add(index);
+&nbsp;        }
+&nbsp;
+&nbsp;        return indexes;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected abstract &lt;T&gt; T processImportedKeysResultSet(String var1, String var2, String var3, ExtractionContext.ResultSetProcessor&lt;T&gt; var4) throws SQLException;
+&nbsp;
+&nbsp;    protected abstract &lt;T&gt; T processCrossReferenceResultSet(String var1, String var2, String var3, String var4, String var5, String var6, ExtractionContext.ResultSetProcessor&lt;T&gt; var7) throws SQLException;
+&nbsp;
+&nbsp;    public Iterable&lt;ForeignKeyInformation&gt; getForeignKeys(TableInformation tableInformation) {
+&nbsp;        Map&lt;Identifier, ForeignKeyBuilder&gt; fkBuilders = new HashMap();
+&nbsp;        QualifiedTableName tableName = tableInformation.getName();
+&nbsp;        Identifier catalog = tableName.getCatalogName();
+&nbsp;        Identifier schema = tableName.getSchemaName();
+&nbsp;        String catalogFilter;
+&nbsp;        if (catalog == null) {
+&nbsp;            catalogFilter = &quot;&quot;;
+&nbsp;        } else {
+&nbsp;            catalogFilter = catalog.getText();
+&nbsp;        }
+&nbsp;
+&nbsp;        String schemaFilter;
+&nbsp;        if (schema == null) {
+&nbsp;            schemaFilter = &quot;&quot;;
+&nbsp;        } else {
+&nbsp;            schemaFilter = schema.getText();
+&nbsp;        }
+&nbsp;
+&nbsp;        try {
+&nbsp;            ExtractionContext.ResultSetProcessor&lt;Void&gt; processor = (resultSet) -&gt; {
+&nbsp;                while(resultSet.next()) {
+&nbsp;                    Identifier fkIdentifier = DatabaseIdentifier.toIdentifier(resultSet.getString(this.getResultSetForeignKeyLabel()));
+&nbsp;                    ForeignKeyBuilder fkBuilder = (ForeignKeyBuilder)fkBuilders.get(fkIdentifier);
+&nbsp;                    if (fkBuilder == null) {
+&nbsp;                        fkBuilder = this.generateForeignKeyBuilder(fkIdentifier);
+&nbsp;                        fkBuilders.put(fkIdentifier, fkBuilder);
+&nbsp;                    }
+&nbsp;
+&nbsp;                    QualifiedTableName incomingPkTableName = this.extractPrimaryKeyTableName(resultSet);
+&nbsp;                    TableInformation pkTableInformation = this.extractionContext.getDatabaseObjectAccess().locateTableInformation(incomingPkTableName);
+&nbsp;                    if (pkTableInformation != null) {
+&nbsp;                        Identifier fkColumnIdentifier = DatabaseIdentifier.toIdentifier(resultSet.getString(this.getResultSetForeignKeyColumnNameLabel()));
+&nbsp;                        Identifier pkColumnIdentifier = DatabaseIdentifier.toIdentifier(resultSet.getString(this.getResultSetPrimaryKeyColumnNameLabel()));
+<b class="nc">&nbsp;                        fkBuilder.addColumnMapping(tableInformation.getColumn(fkColumnIdentifier), pkTableInformation.getColumn(pkColumnIdentifier));</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                return null;
+<b class="nc">&nbsp;            };</b>
+&nbsp;            this.processImportedKeysResultSet(catalogFilter, schemaFilter, tableInformation.getName().getTableName().getText(), processor);
+&nbsp;            Dialect dialect = this.extractionContext.getJdbcEnvironment().getDialect();
+&nbsp;            if (dialect.useCrossReferenceForeignKeys()) {
+&nbsp;                this.processCrossReferenceResultSet((String)null, (String)null, dialect.getCrossReferenceParentTableFilter(), catalogFilter, schemaFilter, tableInformation.getName().getTableName().getText(), processor);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        } catch (SQLException e) {</b>
+&nbsp;            throw this.convertSQLException(e, &quot;Error accessing column metadata: &quot; + tableInformation.getName().toString());
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        List&lt;ForeignKeyInformation&gt; fks = new ArrayList();</b>
+&nbsp;
+&nbsp;        for(ForeignKeyBuilder fkBuilder : fkBuilders.values()) {
+&nbsp;            ForeignKeyInformation fk = fkBuilder.build();
+<b class="nc">&nbsp;            fks.add(fk);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return fks;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private ForeignKeyBuilder generateForeignKeyBuilder(Identifier fkIdentifier) {</b>
+<b class="nc">&nbsp;        return new ForeignKeyBuilderImpl(fkIdentifier);</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private QualifiedTableName extractPrimaryKeyTableName(ResultSet resultSet) throws SQLException {</b>
+<b class="nc">&nbsp;        String incomingCatalogName = resultSet.getString(this.getResultSetPrimaryKeyCatalogLabel());</b>
+&nbsp;        String incomingSchemaName = resultSet.getString(this.getResultSetPrimaryKeySchemaLabel());
+&nbsp;        String incomingTableName = resultSet.getString(this.getResultSetPrimaryKeyTableLabel());
+&nbsp;        DatabaseIdentifier catalog = DatabaseIdentifier.toIdentifier(incomingCatalogName);
+<b class="nc">&nbsp;        DatabaseIdentifier schema = DatabaseIdentifier.toIdentifier(incomingSchemaName);</b>
+<b class="nc">&nbsp;        DatabaseIdentifier table = DatabaseIdentifier.toIdentifier(incomingTableName);</b>
+&nbsp;        return new QualifiedTableName(catalog, schema, table);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private QualifiedTableName extractTableName(ResultSet resultSet) throws SQLException {
+&nbsp;        String incomingCatalogName = resultSet.getString(this.getResultSetCatalogLabel());
+<b class="nc">&nbsp;        String incomingSchemaName = resultSet.getString(this.getResultSetSchemaLabel());</b>
+&nbsp;        String incomingTableName = resultSet.getString(this.getResultSetTableNameLabel());
+&nbsp;        DatabaseIdentifier catalog = DatabaseIdentifier.toIdentifier(incomingCatalogName);
+&nbsp;        DatabaseIdentifier schema = DatabaseIdentifier.toIdentifier(incomingSchemaName);
+&nbsp;        DatabaseIdentifier table = DatabaseIdentifier.toIdentifier(incomingTableName);
+<b class="nc">&nbsp;        return new QualifiedTableName(catalog, schema, table);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected static class ForeignKeyBuilderImpl implements ForeignKeyBuilder {
+&nbsp;        private final Identifier fkIdentifier;
+&nbsp;        private final List&lt;ForeignKeyInformation.ColumnReferenceMapping&gt; columnMappingList = new ArrayList();
+&nbsp;
+&nbsp;        public ForeignKeyBuilderImpl(Identifier fkIdentifier) {
+&nbsp;            this.fkIdentifier = fkIdentifier;
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        public ForeignKeyBuilder addColumnMapping(ColumnInformation referencing, ColumnInformation referenced) {
+&nbsp;            this.columnMappingList.add(new ForeignKeyInformationImpl.ColumnReferenceMappingImpl(referencing, referenced));
+&nbsp;            return this;
+&nbsp;        }
+&nbsp;
+&nbsp;        public ForeignKeyInformationImpl build() {
+&nbsp;            if (this.columnMappingList.isEmpty()) {
+&nbsp;                throw new SchemaManagementException(&quot;Attempt to resolve foreign key metadata from JDBC metadata failed to find column mappings for foreign key named [&quot; + this.fkIdentifier.getText() + &quot;]&quot;);
+&nbsp;            } else {
+<b class="nc">&nbsp;                return new ForeignKeyInformationImpl(this.fkIdentifier, this.columnMappingList);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    protected interface ForeignKeyBuilder {</b>
+<b class="nc">&nbsp;        ForeignKeyBuilder addColumnMapping(ColumnInformation var1, ColumnInformation var2);</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        ForeignKeyInformation build();
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
+</div>
+</body>
+</html>

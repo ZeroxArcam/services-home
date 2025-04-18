@@ -1,0 +1,390 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > AbstractMessageInterpolator</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.validator.messageinterpolation</a>
+</div>
+
+<h1>Coverage Summary for Class: AbstractMessageInterpolator (org.hibernate.validator.messageinterpolation)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AbstractMessageInterpolator</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    22.7%
+  </span>
+  <span class="absValue">
+    (5/22)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    13.2%
+  </span>
+  <span class="absValue">
+    (5/38)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    26.5%
+  </span>
+  <span class="absValue">
+    (30/113)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.validator.messageinterpolation;
+&nbsp;
+&nbsp;import jakarta.validation.MessageInterpolator;
+&nbsp;import java.lang.invoke.MethodHandles;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.EnumSet;
+&nbsp;import java.util.HashSet;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Locale;
+&nbsp;import java.util.MissingResourceException;
+&nbsp;import java.util.ResourceBundle;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.regex.Matcher;
+&nbsp;import java.util.regex.Pattern;
+&nbsp;import org.hibernate.validator.Incubating;
+&nbsp;import org.hibernate.validator.internal.engine.messageinterpolation.DefaultLocaleResolver;
+&nbsp;import org.hibernate.validator.internal.engine.messageinterpolation.DefaultLocaleResolverContext;
+&nbsp;import org.hibernate.validator.internal.engine.messageinterpolation.InterpolationTermType;
+&nbsp;import org.hibernate.validator.internal.engine.messageinterpolation.LocalizedMessage;
+&nbsp;import org.hibernate.validator.internal.engine.messageinterpolation.parser.MessageDescriptorFormatException;
+&nbsp;import org.hibernate.validator.internal.engine.messageinterpolation.parser.Token;
+&nbsp;import org.hibernate.validator.internal.engine.messageinterpolation.parser.TokenCollector;
+&nbsp;import org.hibernate.validator.internal.engine.messageinterpolation.parser.TokenIterator;
+&nbsp;import org.hibernate.validator.internal.util.CollectionHelper;
+&nbsp;import org.hibernate.validator.internal.util.ConcurrentReferenceHashMap;
+&nbsp;import org.hibernate.validator.internal.util.Contracts;
+&nbsp;import org.hibernate.validator.internal.util.ConcurrentReferenceHashMap.ReferenceType;
+&nbsp;import org.hibernate.validator.internal.util.logging.Log;
+&nbsp;import org.hibernate.validator.internal.util.logging.LoggerFactory;
+&nbsp;import org.hibernate.validator.internal.util.logging.Messages;
+&nbsp;import org.hibernate.validator.resourceloading.PlatformResourceBundleLocator;
+&nbsp;import org.hibernate.validator.spi.messageinterpolation.LocaleResolver;
+&nbsp;import org.hibernate.validator.spi.messageinterpolation.LocaleResolverContext;
+&nbsp;import org.hibernate.validator.spi.resourceloading.ResourceBundleLocator;
+&nbsp;
+&nbsp;public abstract class AbstractMessageInterpolator implements MessageInterpolator {
+&nbsp;    private static final Log LOG = LoggerFactory.make(MethodHandles.lookup());
+&nbsp;    private static final int DEFAULT_INITIAL_CAPACITY = 100;
+&nbsp;    private static final float DEFAULT_LOAD_FACTOR = 0.75F;
+&nbsp;    private static final int DEFAULT_CONCURRENCY_LEVEL = 16;
+&nbsp;    public static final String DEFAULT_VALIDATION_MESSAGES = &quot;org.hibernate.validator.ValidationMessages&quot;;
+&nbsp;    public static final String USER_VALIDATION_MESSAGES = &quot;ValidationMessages&quot;;
+&nbsp;    public static final String CONTRIBUTOR_VALIDATION_MESSAGES = &quot;ContributorValidationMessages&quot;;
+&nbsp;    private final LocaleResolver localeResolver;
+&nbsp;    private final LocaleResolverContext localeResolverContext;
+&nbsp;    private final ResourceBundleLocator userResourceBundleLocator;
+&nbsp;    private final ResourceBundleLocator defaultResourceBundleLocator;
+&nbsp;    private final ResourceBundleLocator contributorResourceBundleLocator;
+&nbsp;    private final ConcurrentReferenceHashMap&lt;LocalizedMessage, String&gt; resolvedMessages;
+&nbsp;    private final ConcurrentReferenceHashMap&lt;String, List&lt;Token&gt;&gt; tokenizedParameterMessages;
+&nbsp;    private final ConcurrentReferenceHashMap&lt;String, List&lt;Token&gt;&gt; tokenizedELMessages;
+&nbsp;    private final boolean cachingEnabled;
+&nbsp;    private static final Pattern LEFT_BRACE = Pattern.compile(&quot;\\{&quot;, 16);
+&nbsp;    private static final Pattern RIGHT_BRACE = Pattern.compile(&quot;\\}&quot;, 16);
+<b class="fc">&nbsp;    private static final Pattern SLASH = Pattern.compile(&quot;\\\\&quot;, 16);</b>
+&nbsp;    private static final Pattern DOLLAR = Pattern.compile(&quot;\\$&quot;, 16);
+&nbsp;
+&nbsp;    public AbstractMessageInterpolator() {
+&nbsp;        this(Collections.emptySet(), Locale.getDefault(), new DefaultLocaleResolver(), false);
+&nbsp;    }
+&nbsp;
+&nbsp;    public AbstractMessageInterpolator(ResourceBundleLocator userResourceBundleLocator) {
+&nbsp;        this(userResourceBundleLocator, Collections.emptySet(), Locale.getDefault(), new DefaultLocaleResolver(), false);
+&nbsp;    }
+&nbsp;
+&nbsp;    public AbstractMessageInterpolator(ResourceBundleLocator userResourceBundleLocator, ResourceBundleLocator contributorResourceBundleLocator) {
+&nbsp;        this(userResourceBundleLocator, contributorResourceBundleLocator, Collections.emptySet(), Locale.getDefault(), new DefaultLocaleResolver(), false);
+&nbsp;    }
+&nbsp;
+&nbsp;    public AbstractMessageInterpolator(ResourceBundleLocator userResourceBundleLocator, ResourceBundleLocator contributorResourceBundleLocator, boolean cacheMessages) {
+&nbsp;        this(userResourceBundleLocator, contributorResourceBundleLocator, Collections.emptySet(), Locale.getDefault(), new DefaultLocaleResolver(), cacheMessages);
+&nbsp;    }
+&nbsp;
+&nbsp;    @Incubating
+&nbsp;    public AbstractMessageInterpolator(Set&lt;Locale&gt; locales, Locale defaultLocale, LocaleResolver localeResolver, boolean preloadResourceBundles) {
+&nbsp;        this((ResourceBundleLocator)null, locales, defaultLocale, localeResolver, preloadResourceBundles);
+&nbsp;    }
+&nbsp;
+&nbsp;    @Incubating
+&nbsp;    public AbstractMessageInterpolator(ResourceBundleLocator userResourceBundleLocator, Set&lt;Locale&gt; locales, Locale defaultLocale, LocaleResolver localeResolver, boolean preloadResourceBundles) {
+&nbsp;        this(userResourceBundleLocator, (ResourceBundleLocator)null, locales, defaultLocale, localeResolver, preloadResourceBundles);
+&nbsp;    }
+&nbsp;
+&nbsp;    @Incubating
+&nbsp;    public AbstractMessageInterpolator(ResourceBundleLocator userResourceBundleLocator, ResourceBundleLocator contributorResourceBundleLocator, Set&lt;Locale&gt; localesToInitialize, Locale defaultLocale, LocaleResolver localeResolver, boolean preloadResourceBundles) {
+&nbsp;        this(userResourceBundleLocator, contributorResourceBundleLocator, localesToInitialize, defaultLocale, localeResolver, preloadResourceBundles, true);
+&nbsp;    }
+&nbsp;
+&nbsp;    @Incubating
+&nbsp;    public AbstractMessageInterpolator(ResourceBundleLocator userResourceBundleLocator, ResourceBundleLocator contributorResourceBundleLocator, Set&lt;Locale&gt; locales, Locale defaultLocale, LocaleResolver localeResolver, boolean preloadResourceBundles, boolean cacheMessages) {
+&nbsp;        Contracts.assertNotNull(locales, Messages.MESSAGES.parameterMustNotBeNull(&quot;localesToInitialize&quot;));
+&nbsp;        Contracts.assertNotNull(defaultLocale, Messages.MESSAGES.parameterMustNotBeNull(&quot;defaultLocale&quot;));
+&nbsp;        Contracts.assertNotNull(localeResolver, Messages.MESSAGES.parameterMustNotBeNull(&quot;localeResolver&quot;));
+&nbsp;        Set&lt;Locale&gt; allLocales = CollectionHelper.toImmutableSet(this.getAllLocales(locales, defaultLocale));
+&nbsp;        this.localeResolverContext = new DefaultLocaleResolverContext(allLocales, defaultLocale);
+&nbsp;        this.localeResolver = localeResolver;
+&nbsp;        Set&lt;Locale&gt; allLocalesToInitialize = preloadResourceBundles ? allLocales : Collections.emptySet();
+&nbsp;        if (userResourceBundleLocator == null) {
+&nbsp;            this.userResourceBundleLocator = new PlatformResourceBundleLocator(&quot;ValidationMessages&quot;, allLocalesToInitialize);
+&nbsp;        } else {
+&nbsp;            this.userResourceBundleLocator = userResourceBundleLocator;
+&nbsp;        }
+&nbsp;
+&nbsp;        if (contributorResourceBundleLocator == null) {
+&nbsp;            this.contributorResourceBundleLocator = new PlatformResourceBundleLocator(&quot;ContributorValidationMessages&quot;, allLocalesToInitialize, (ClassLoader)null, true);
+&nbsp;        } else {
+&nbsp;            this.contributorResourceBundleLocator = contributorResourceBundleLocator;
+&nbsp;        }
+&nbsp;
+&nbsp;        this.defaultResourceBundleLocator = new PlatformResourceBundleLocator(&quot;org.hibernate.validator.ValidationMessages&quot;, allLocalesToInitialize);
+&nbsp;        this.cachingEnabled = cacheMessages;
+&nbsp;        if (this.cachingEnabled) {
+&nbsp;            this.resolvedMessages = new ConcurrentReferenceHashMap(100, 0.75F, 16, ReferenceType.SOFT, ReferenceType.SOFT, EnumSet.noneOf(ConcurrentReferenceHashMap.Option.class));
+&nbsp;            this.tokenizedParameterMessages = new ConcurrentReferenceHashMap(100, 0.75F, 16, ReferenceType.SOFT, ReferenceType.SOFT, EnumSet.noneOf(ConcurrentReferenceHashMap.Option.class));
+&nbsp;            this.tokenizedELMessages = new ConcurrentReferenceHashMap(100, 0.75F, 16, ReferenceType.SOFT, ReferenceType.SOFT, EnumSet.noneOf(ConcurrentReferenceHashMap.Option.class));
+&nbsp;        } else {
+&nbsp;            this.resolvedMessages = null;
+&nbsp;            this.tokenizedParameterMessages = null;
+&nbsp;            this.tokenizedELMessages = null;
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public String interpolate(String message, MessageInterpolator.Context context) {
+&nbsp;        String interpolatedMessage = message;
+&nbsp;
+&nbsp;        try {
+&nbsp;            interpolatedMessage = this.interpolateMessage(message, context, this.localeResolver.resolve(this.localeResolverContext));
+&nbsp;        } catch (MessageDescriptorFormatException e) {
+&nbsp;            LOG.warn(e.getMessage());
+&nbsp;        }
+&nbsp;
+&nbsp;        return interpolatedMessage;
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public String interpolate(String message, MessageInterpolator.Context context, Locale locale) {</b>
+<b class="fc">&nbsp;        String interpolatedMessage = message;</b>
+&nbsp;
+&nbsp;        try {
+&nbsp;            interpolatedMessage = this.interpolateMessage(message, context, locale);
+&nbsp;        } catch (MessageDescriptorFormatException e) {
+&nbsp;            LOG.warn(e.getMessage());
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return interpolatedMessage;
+&nbsp;    }
+&nbsp;
+&nbsp;    private Set&lt;Locale&gt; getAllLocales(Set&lt;Locale&gt; localesToInitialize, Locale defaultLocale) {
+&nbsp;        if (localesToInitialize.contains(defaultLocale)) {
+&nbsp;            return localesToInitialize;
+&nbsp;        } else {
+<b class="nc">&nbsp;            Set&lt;Locale&gt; allLocales = new HashSet(localesToInitialize.size() + 1);</b>
+&nbsp;            allLocales.addAll(localesToInitialize);
+&nbsp;            allLocales.add(defaultLocale);
+&nbsp;            return allLocales;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private String interpolateMessage(String message, MessageInterpolator.Context context, Locale locale) throws MessageDescriptorFormatException {
+&nbsp;        if (message.indexOf(123) &lt; 0) {
+&nbsp;            return this.replaceEscapedLiterals(message);
+&nbsp;        } else {
+&nbsp;            String resolvedMessage = null;
+<b class="nc">&nbsp;            if (this.cachingEnabled) {</b>
+&nbsp;                resolvedMessage = (String)this.resolvedMessages.computeIfAbsent(new LocalizedMessage(message, locale), (lm) -&gt; this.resolveMessage(message, locale));
+&nbsp;            } else {
+&nbsp;                resolvedMessage = this.resolveMessage(message, locale);
+&nbsp;            }
+&nbsp;
+&nbsp;            if (resolvedMessage.indexOf(123) &gt; -1) {
+&nbsp;                resolvedMessage = this.interpolateExpression(new TokenIterator(this.getParameterTokens(resolvedMessage, this.tokenizedParameterMessages, InterpolationTermType.PARAMETER)), context, locale);
+&nbsp;                if (!(context instanceof HibernateMessageInterpolatorContext) || ((HibernateMessageInterpolatorContext)context).getExpressionLanguageFeatureLevel() != ExpressionLanguageFeatureLevel.NONE) {
+&nbsp;                    resolvedMessage = this.interpolateExpression(new TokenIterator(this.getParameterTokens(resolvedMessage, this.tokenizedELMessages, InterpolationTermType.EL)), context, locale);
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            resolvedMessage = this.replaceEscapedLiterals(resolvedMessage);
+<b class="nc">&nbsp;            return resolvedMessage;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private List&lt;Token&gt; getParameterTokens(String resolvedMessage, ConcurrentReferenceHashMap&lt;String, List&lt;Token&gt;&gt; cache, InterpolationTermType termType) {
+&nbsp;        return this.cachingEnabled ? (List)cache.computeIfAbsent(resolvedMessage, (rm) -&gt; (new TokenCollector(resolvedMessage, termType)).getTokenList()) : (new TokenCollector(resolvedMessage, termType)).getTokenList();
+&nbsp;    }
+&nbsp;
+&nbsp;    private String resolveMessage(String message, Locale locale) {
+&nbsp;        String resolvedMessage = message;
+&nbsp;        ResourceBundle userResourceBundle = this.userResourceBundleLocator.getResourceBundle(locale);
+&nbsp;        ResourceBundle constraintContributorResourceBundle = this.contributorResourceBundleLocator.getResourceBundle(locale);
+&nbsp;        ResourceBundle defaultResourceBundle = this.defaultResourceBundleLocator.getResourceBundle(locale);
+&nbsp;        boolean evaluatedDefaultBundleOnce = false;
+&nbsp;
+&nbsp;        while(true) {
+&nbsp;            String userBundleResolvedMessage = this.interpolateBundleMessage(resolvedMessage, userResourceBundle, locale, true);
+<b class="nc">&nbsp;            if (!this.hasReplacementTakenPlace(userBundleResolvedMessage, resolvedMessage)) {</b>
+&nbsp;                userBundleResolvedMessage = this.interpolateBundleMessage(resolvedMessage, constraintContributorResourceBundle, locale, true);
+&nbsp;            }
+&nbsp;
+&nbsp;            if (evaluatedDefaultBundleOnce &amp;&amp; !this.hasReplacementTakenPlace(userBundleResolvedMessage, resolvedMessage)) {
+&nbsp;                return resolvedMessage;
+&nbsp;            }
+&nbsp;
+&nbsp;            resolvedMessage = this.interpolateBundleMessage(userBundleResolvedMessage, defaultResourceBundle, locale, false);
+&nbsp;            evaluatedDefaultBundleOnce = true;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private String replaceEscapedLiterals(String resolvedMessage) {
+&nbsp;        if (resolvedMessage.indexOf(92) &gt; -1) {
+&nbsp;            resolvedMessage = LEFT_BRACE.matcher(resolvedMessage).replaceAll(&quot;{&quot;);
+&nbsp;            resolvedMessage = RIGHT_BRACE.matcher(resolvedMessage).replaceAll(&quot;}&quot;);
+&nbsp;            resolvedMessage = SLASH.matcher(resolvedMessage).replaceAll(Matcher.quoteReplacement(&quot;\\&quot;));
+&nbsp;            resolvedMessage = DOLLAR.matcher(resolvedMessage).replaceAll(Matcher.quoteReplacement(&quot;$&quot;));
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        return resolvedMessage;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean hasReplacementTakenPlace(String origMessage, String newMessage) {
+&nbsp;        return !origMessage.equals(newMessage);
+&nbsp;    }
+&nbsp;
+&nbsp;    private String interpolateBundleMessage(String message, ResourceBundle bundle, Locale locale, boolean recursive) throws MessageDescriptorFormatException {
+&nbsp;        TokenCollector tokenCollector = new TokenCollector(message, InterpolationTermType.PARAMETER);
+&nbsp;        TokenIterator tokenIterator = new TokenIterator(tokenCollector.getTokenList());
+&nbsp;
+&nbsp;        while(tokenIterator.hasMoreInterpolationTerms()) {
+&nbsp;            String term = tokenIterator.nextInterpolationTerm();
+&nbsp;            String resolvedParameterValue = this.resolveParameter(term, bundle, locale, recursive);
+&nbsp;            tokenIterator.replaceCurrentInterpolationTerm(resolvedParameterValue);
+&nbsp;        }
+&nbsp;
+&nbsp;        return tokenIterator.getInterpolatedMessage();
+&nbsp;    }
+&nbsp;
+&nbsp;    private String interpolateExpression(TokenIterator tokenIterator, MessageInterpolator.Context context, Locale locale) throws MessageDescriptorFormatException {
+&nbsp;        while(tokenIterator.hasMoreInterpolationTerms()) {
+&nbsp;            String term = tokenIterator.nextInterpolationTerm();
+<b class="fc">&nbsp;            String resolvedExpression = this.interpolate(context, locale, term);</b>
+&nbsp;            tokenIterator.replaceCurrentInterpolationTerm(resolvedExpression);
+&nbsp;        }
+&nbsp;
+&nbsp;        return tokenIterator.getInterpolatedMessage();
+&nbsp;    }
+&nbsp;
+&nbsp;    protected abstract String interpolate(MessageInterpolator.Context var1, Locale var2, String var3);
+&nbsp;
+&nbsp;    private String resolveParameter(String parameterName, ResourceBundle bundle, Locale locale, boolean recursive) throws MessageDescriptorFormatException {
+&nbsp;        String parameterValue;
+&nbsp;        try {
+&nbsp;            if (bundle != null) {
+&nbsp;                parameterValue = bundle.getString(this.removeCurlyBraces(parameterName));
+&nbsp;                if (recursive) {
+&nbsp;                    parameterValue = this.interpolateBundleMessage(parameterValue, bundle, locale, recursive);
+&nbsp;                }
+&nbsp;            } else {
+&nbsp;                parameterValue = parameterName;
+&nbsp;            }
+&nbsp;        } catch (MissingResourceException var7) {
+&nbsp;            parameterValue = parameterName;
+&nbsp;        }
+&nbsp;
+&nbsp;        return parameterValue;
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private String removeCurlyBraces(String parameter) {</b>
+<b class="fc">&nbsp;        return parameter.substring(1, parameter.length() - 1);</b>
+&nbsp;    }
+<b class="fc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:58</div>
+</div>
+</body>
+</html>

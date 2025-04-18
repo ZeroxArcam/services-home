@@ -1,0 +1,205 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > FetchProfileHelper</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: FetchProfileHelper (org.hibernate.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">FetchProfileHelper</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    16.7%
+  </span>
+  <span class="absValue">
+    (1/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    6.2%
+  </span>
+  <span class="absValue">
+    (1/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    11.4%
+  </span>
+  <span class="absValue">
+    (4/35)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.internal;
+&nbsp;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.Map;
+&nbsp;import org.hibernate.HibernateException;
+&nbsp;import org.hibernate.boot.spi.MetadataImplementor;
+&nbsp;import org.hibernate.engine.FetchStyle;
+&nbsp;import org.hibernate.engine.FetchTiming;
+&nbsp;import org.hibernate.engine.profile.Association;
+&nbsp;import org.hibernate.engine.profile.DefaultFetchProfile;
+&nbsp;import org.hibernate.engine.profile.Fetch;
+&nbsp;import org.hibernate.engine.profile.FetchProfile;
+&nbsp;import org.hibernate.engine.profile.Fetch.Style;
+&nbsp;import org.hibernate.engine.profile.internal.FetchProfileAffectee;
+&nbsp;import org.hibernate.metamodel.MappingMetamodel;
+&nbsp;import org.hibernate.metamodel.RuntimeMetamodels;
+&nbsp;import org.hibernate.metamodel.mapping.EntityValuedModelPart;
+&nbsp;import org.hibernate.metamodel.mapping.ModelPart;
+&nbsp;import org.hibernate.metamodel.mapping.PluralAttributeMapping;
+&nbsp;import org.hibernate.persister.entity.EntityPersister;
+&nbsp;
+&nbsp;public class FetchProfileHelper {
+&nbsp;    public FetchProfileHelper() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Map&lt;String, FetchProfile&gt; getFetchProfiles(MetadataImplementor bootMetamodel, RuntimeMetamodels runtimeMetamodels) {
+&nbsp;        Map&lt;String, FetchProfile&gt; fetchProfiles = new HashMap();
+&nbsp;
+&nbsp;        for(org.hibernate.mapping.FetchProfile mappingProfile : bootMetamodel.getFetchProfiles()) {
+<b class="nc">&nbsp;            FetchProfile fetchProfile = createFetchProfile(runtimeMetamodels.getMappingMetamodel(), mappingProfile);</b>
+&nbsp;            fetchProfiles.put(fetchProfile.getName(), fetchProfile);
+&nbsp;        }
+&nbsp;
+&nbsp;        fetchProfiles.put(&quot;org.hibernate.defaultProfile&quot;, new DefaultFetchProfile(runtimeMetamodels));
+<b class="fc">&nbsp;        return fetchProfiles;</b>
+<b class="pc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private static FetchProfile createFetchProfile(MappingMetamodel mappingMetamodel, org.hibernate.mapping.FetchProfile mappingProfile) {</b>
+&nbsp;        String profileName = mappingProfile.getName();
+<b class="fc">&nbsp;        FetchProfile fetchProfile = new FetchProfile(profileName);</b>
+<b class="fc">&nbsp;</b>
+&nbsp;        for(org.hibernate.mapping.FetchProfile.Fetch mappingFetch : mappingProfile.getFetches()) {
+&nbsp;            EntityPersister owner = getEntityPersister(mappingMetamodel, fetchProfile, mappingFetch);
+&nbsp;            ((FetchProfileAffectee)owner).registerAffectingFetchProfile(profileName);
+&nbsp;            Association association = new Association(owner, mappingFetch.getAssociation());
+&nbsp;            FetchStyle fetchStyle = Style.forMethod(mappingFetch.getMethod()).toFetchStyle();
+<b class="nc">&nbsp;            FetchTiming fetchTiming = FetchTiming.forType(mappingFetch.getType());</b>
+<b class="nc">&nbsp;            ModelPart fetchablePart = owner.findByPath(association.getAssociationPath());</b>
+<b class="nc">&nbsp;            validateFetchablePart(fetchablePart, profileName, association);</b>
+&nbsp;            if (fetchablePart instanceof FetchProfileAffectee) {
+<b class="nc">&nbsp;                ((FetchProfileAffectee)fetchablePart).registerAffectingFetchProfile(profileName);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            fetchProfile.addFetch(new Fetch(association, fetchStyle, fetchTiming));</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return fetchProfile;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private static void validateFetchablePart(ModelPart fetchablePart, String profileName, Association association) {</b>
+<b class="nc">&nbsp;        if (fetchablePart == null) {</b>
+<b class="nc">&nbsp;            throw new HibernateException(String.format(&quot;Fetch profile [%s] specified an association that does not exist - %s&quot;, profileName, association.getRole()));</b>
+&nbsp;        } else if (!isAssociation(fetchablePart)) {
+&nbsp;            throw new HibernateException(String.format(&quot;Fetch profile [%s] specified an association that is not an association - %s&quot;, profileName, association.getRole()));
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private static boolean isAssociation(ModelPart fetchablePart) {</b>
+&nbsp;        return fetchablePart instanceof EntityValuedModelPart || fetchablePart instanceof PluralAttributeMapping;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private static EntityPersister getEntityPersister(MappingMetamodel mappingMetamodel, FetchProfile fetchProfile, org.hibernate.mapping.FetchProfile.Fetch mappingFetch) {</b>
+<b class="nc">&nbsp;        String entityName = mappingMetamodel.getImportedName(mappingFetch.getEntity());</b>
+&nbsp;        if (entityName != null) {
+&nbsp;            EntityPersister persister = mappingMetamodel.getEntityDescriptor(entityName);
+<b class="nc">&nbsp;            if (persister != null) {</b>
+&nbsp;                return persister;
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        String var10002 = mappingFetch.getEntity();</b>
+&nbsp;        throw new HibernateException(&quot;Unable to resolve entity reference [&quot; + var10002 + &quot;] in fetch profile [&quot; + fetchProfile.getName() + &quot;]&quot;);
+&nbsp;    }
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:57</div>
+</div>
+</body>
+</html>

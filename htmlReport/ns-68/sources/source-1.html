@@ -1,0 +1,337 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > CompositeMeterRegistry</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">io.micrometer.core.instrument.composite</a>
+</div>
+
+<h1>Coverage Summary for Class: CompositeMeterRegistry (io.micrometer.core.instrument.composite)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">CompositeMeterRegistry</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/27)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/30)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/71)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package io.micrometer.core.instrument.composite;
+&nbsp;
+&nbsp;import io.micrometer.common.lang.Nullable;
+&nbsp;import io.micrometer.core.instrument.Clock;
+&nbsp;import io.micrometer.core.instrument.Counter;
+&nbsp;import io.micrometer.core.instrument.DistributionSummary;
+&nbsp;import io.micrometer.core.instrument.FunctionCounter;
+&nbsp;import io.micrometer.core.instrument.FunctionTimer;
+&nbsp;import io.micrometer.core.instrument.Gauge;
+&nbsp;import io.micrometer.core.instrument.LongTaskTimer;
+&nbsp;import io.micrometer.core.instrument.Measurement;
+&nbsp;import io.micrometer.core.instrument.Meter;
+&nbsp;import io.micrometer.core.instrument.MeterRegistry;
+&nbsp;import io.micrometer.core.instrument.TimeGauge;
+&nbsp;import io.micrometer.core.instrument.Timer;
+&nbsp;import io.micrometer.core.instrument.config.NamingConvention;
+&nbsp;import io.micrometer.core.instrument.distribution.DistributionStatisticConfig;
+&nbsp;import io.micrometer.core.instrument.distribution.pause.PauseDetector;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.IdentityHashMap;
+&nbsp;import java.util.Objects;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.concurrent.TimeUnit;
+&nbsp;import java.util.concurrent.atomic.AtomicBoolean;
+&nbsp;import java.util.function.ToDoubleFunction;
+&nbsp;import java.util.function.ToLongFunction;
+&nbsp;
+&nbsp;public class CompositeMeterRegistry extends MeterRegistry {
+&nbsp;    private final AtomicBoolean registriesLock;
+&nbsp;    private final Set&lt;MeterRegistry&gt; registries;
+&nbsp;    private final Set&lt;MeterRegistry&gt; unmodifiableRegistries;
+&nbsp;    volatile Set&lt;MeterRegistry&gt; nonCompositeDescendants;
+&nbsp;    private final AtomicBoolean parentLock;
+&nbsp;    private volatile Set&lt;CompositeMeterRegistry&gt; parents;
+&nbsp;
+&nbsp;    public CompositeMeterRegistry() {
+<b class="nc">&nbsp;        this(Clock.SYSTEM);</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public CompositeMeterRegistry(Clock clock) {
+<b class="nc">&nbsp;        this(clock, Collections.emptySet());</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public CompositeMeterRegistry(Clock clock, Iterable&lt;MeterRegistry&gt; registries) {</b>
+&nbsp;        super(clock);
+<b class="nc">&nbsp;        this.registriesLock = new AtomicBoolean();</b>
+&nbsp;        this.registries = Collections.newSetFromMap(new IdentityHashMap());
+<b class="nc">&nbsp;        this.unmodifiableRegistries = Collections.unmodifiableSet(this.registries);</b>
+&nbsp;        this.nonCompositeDescendants = Collections.emptySet();
+&nbsp;        this.parentLock = new AtomicBoolean();
+<b class="nc">&nbsp;        this.parents = Collections.newSetFromMap(new IdentityHashMap());</b>
+&nbsp;        this.config().namingConvention(NamingConvention.identity).onMeterAdded((m) -&gt; {
+&nbsp;            if (m instanceof CompositeMeter) {
+&nbsp;                this.lock(this.registriesLock, () -&gt; {
+<b class="nc">&nbsp;                    Set var10000 = this.nonCompositeDescendants;</b>
+&nbsp;                    CompositeMeter var10001 = (CompositeMeter)m;
+&nbsp;                    Objects.requireNonNull((CompositeMeter)m);
+&nbsp;                    var10000.forEach(var10001::add);
+<b class="nc">&nbsp;                });</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        }).onMeterRemoved((m) -&gt; {</b>
+&nbsp;            if (m instanceof CompositeMeter) {
+<b class="nc">&nbsp;                this.lock(this.registriesLock, () -&gt; this.nonCompositeDescendants.forEach((r) -&gt; r.removeByPreFilterId(m.getId())));</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        });
+&nbsp;        registries.forEach(this::add);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected Timer newTimer(Meter.Id id, DistributionStatisticConfig distributionStatisticConfig, PauseDetector pauseDetector) {
+&nbsp;        return new CompositeTimer(id, this.clock, distributionStatisticConfig, pauseDetector);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected DistributionSummary newDistributionSummary(Meter.Id id, DistributionStatisticConfig distributionStatisticConfig, double scale) {
+<b class="nc">&nbsp;        return new CompositeDistributionSummary(id, distributionStatisticConfig, scale);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Counter newCounter(Meter.Id id) {
+&nbsp;        return new CompositeCounter(id);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected LongTaskTimer newLongTaskTimer(Meter.Id id, DistributionStatisticConfig distributionStatisticConfig) {
+&nbsp;        return new CompositeLongTaskTimer(id, distributionStatisticConfig);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected &lt;T&gt; Gauge newGauge(Meter.Id id, @Nullable T obj, ToDoubleFunction&lt;T&gt; valueFunction) {</b>
+&nbsp;        return new CompositeGauge(id, obj, valueFunction);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected &lt;T&gt; TimeGauge newTimeGauge(Meter.Id id, @Nullable T obj, TimeUnit valueFunctionUnit, ToDoubleFunction&lt;T&gt; valueFunction) {
+<b class="nc">&nbsp;        return new CompositeTimeGauge(id, obj, valueFunctionUnit, valueFunction);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected &lt;T&gt; FunctionTimer newFunctionTimer(Meter.Id id, T obj, ToLongFunction&lt;T&gt; countFunction, ToDoubleFunction&lt;T&gt; totalTimeFunction, TimeUnit totalTimeFunctionUnit) {
+&nbsp;        return new CompositeFunctionTimer(id, obj, countFunction, totalTimeFunction, totalTimeFunctionUnit);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected &lt;T&gt; FunctionCounter newFunctionCounter(Meter.Id id, T obj, ToDoubleFunction&lt;T&gt; countFunction) {
+&nbsp;        return new CompositeFunctionCounter(id, obj, countFunction);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected TimeUnit getBaseTimeUnit() {</b>
+&nbsp;        return TimeUnit.SECONDS;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected DistributionStatisticConfig defaultHistogramConfig() {
+&nbsp;        return DistributionStatisticConfig.NONE;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected Meter newMeter(Meter.Id id, Meter.Type type, Iterable&lt;Measurement&gt; measurements) {
+&nbsp;        return new CompositeCustomMeter(id, type, measurements);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public CompositeMeterRegistry add(MeterRegistry registry) {
+&nbsp;        this.lock(this.registriesLock, () -&gt; {
+&nbsp;            this.forbidSelfContainingComposite(registry);
+&nbsp;            if (registry instanceof CompositeMeterRegistry) {
+<b class="nc">&nbsp;                ((CompositeMeterRegistry)registry).addParent(this);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            if (this.registries.add(registry)) {
+&nbsp;                this.updateDescendants();
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;        });
+&nbsp;        return this;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private void forbidSelfContainingComposite(MeterRegistry registry) {
+&nbsp;        if (registry == this) {
+&nbsp;            throw new IllegalArgumentException(&quot;Adding a composite meter registry to itself is not allowed!&quot;);
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            if (registry instanceof CompositeMeterRegistry) {</b>
+&nbsp;                ((CompositeMeterRegistry)registry).getRegistries().forEach(this::forbidSelfContainingComposite);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public CompositeMeterRegistry remove(MeterRegistry registry) {</b>
+&nbsp;        this.lock(this.registriesLock, () -&gt; {
+&nbsp;            if (registry instanceof CompositeMeterRegistry) {
+&nbsp;                ((CompositeMeterRegistry)registry).removeParent(this);
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            if (this.registries.remove(registry)) {
+&nbsp;                this.updateDescendants();
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        });
+&nbsp;        return this;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private void removeParent(CompositeMeterRegistry registry) {
+&nbsp;        this.lock(this.parentLock, () -&gt; this.parents.remove(registry));
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private void addParent(CompositeMeterRegistry registry) {</b>
+<b class="nc">&nbsp;        this.lock(this.parentLock, () -&gt; this.parents.add(registry));</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private void lock(AtomicBoolean lock, Runnable r) {
+<b class="nc">&nbsp;        while(!lock.compareAndSet(false, true)) {</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        try {
+&nbsp;            r.run();
+<b class="nc">&nbsp;        } finally {</b>
+&nbsp;            lock.set(false);
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private void updateDescendants() {
+&nbsp;        Set&lt;MeterRegistry&gt; descendants = Collections.newSetFromMap(new IdentityHashMap());
+<b class="nc">&nbsp;</b>
+&nbsp;        for(MeterRegistry r : this.registries) {
+&nbsp;            if (r instanceof CompositeMeterRegistry) {
+&nbsp;                descendants.addAll(((CompositeMeterRegistry)r).nonCompositeDescendants);
+&nbsp;            } else {
+<b class="nc">&nbsp;                descendants.add(r);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        Set&lt;MeterRegistry&gt; removes = Collections.newSetFromMap(new IdentityHashMap());
+&nbsp;        removes.addAll(this.nonCompositeDescendants);
+<b class="nc">&nbsp;        removes.removeAll(descendants);</b>
+&nbsp;        Set&lt;MeterRegistry&gt; adds = Collections.newSetFromMap(new IdentityHashMap());
+&nbsp;        adds.addAll(descendants);
+&nbsp;        adds.removeAll(this.nonCompositeDescendants);
+&nbsp;        if (!removes.isEmpty() || !adds.isEmpty()) {
+&nbsp;            for(Meter meter : this.getMeters()) {
+&nbsp;                if (meter instanceof CompositeMeter) {
+<b class="nc">&nbsp;                    CompositeMeter composite = (CompositeMeter)meter;</b>
+<b class="nc">&nbsp;                    Objects.requireNonNull(composite);</b>
+<b class="nc">&nbsp;                    removes.forEach(composite::remove);</b>
+<b class="nc">&nbsp;                    Objects.requireNonNull(composite);</b>
+&nbsp;                    adds.forEach(composite::add);
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        this.nonCompositeDescendants = descendants;
+<b class="nc">&nbsp;        this.lock(this.parentLock, () -&gt; this.parents.forEach(CompositeMeterRegistry::updateDescendants));</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public Set&lt;MeterRegistry&gt; getRegistries() {
+<b class="nc">&nbsp;        return this.unmodifiableRegistries;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public void close() {
+<b class="nc">&nbsp;        this.registries.forEach(MeterRegistry::close);</b>
+<b class="nc">&nbsp;        super.close();</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 21:00</div>
+</div>
+</body>
+</html>

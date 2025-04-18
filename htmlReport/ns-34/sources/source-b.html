@@ -1,0 +1,200 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > OpenedClassReader</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">net.bytebuddy.utility</a>
+</div>
+
+<h1>Coverage Summary for Class: OpenedClassReader (net.bytebuddy.utility)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">OpenedClassReader</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    57.1%
+  </span>
+  <span class="absValue">
+    (4/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    25%
+  </span>
+  <span class="absValue">
+    (1/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (8/24)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package net.bytebuddy.utility;
+&nbsp;
+&nbsp;import java.security.AccessController;
+&nbsp;import java.security.PrivilegedAction;
+&nbsp;import net.bytebuddy.ClassFileVersion;
+&nbsp;import net.bytebuddy.build.AccessControllerPlugin.Enhance;
+&nbsp;import net.bytebuddy.jar.asm.ClassReader;
+&nbsp;import net.bytebuddy.utility.privilege.GetSystemPropertyAction;
+&nbsp;
+&nbsp;public class OpenedClassReader implements AsmClassReader.Factory {
+&nbsp;    public static final String EXPERIMENTAL_PROPERTY = &quot;net.bytebuddy.experimental&quot;;
+&nbsp;    public static final boolean EXPERIMENTAL;
+&nbsp;    public static final int ASM_API;
+&nbsp;    private static final boolean ACCESS_CONTROLLER;
+&nbsp;
+&nbsp;    public OpenedClassReader() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public AsmClassReader make(byte[] binaryRepresentation) {
+&nbsp;        return new AsmClassReader.Default(of(binaryRepresentation));
+&nbsp;    }
+&nbsp;
+&nbsp;    public AsmClassReader make(byte[] binaryRepresentation, boolean experimental) {
+&nbsp;        return new AsmClassReader.Default(of(binaryRepresentation, experimental));
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    @Enhance
+&nbsp;    private static &lt;T&gt; T doPrivileged(PrivilegedAction&lt;T&gt; action) {
+&nbsp;        return (T)(ACCESS_CONTROLLER ? AccessController.doPrivileged(action) : action.run());
+&nbsp;    }
+&nbsp;
+&nbsp;    public static ClassReader of(byte[] binaryRepresentation) {
+&nbsp;        return of(binaryRepresentation, EXPERIMENTAL);
+&nbsp;    }
+&nbsp;
+&nbsp;    public static ClassReader of(byte[] binaryRepresentation, boolean experimental) {
+&nbsp;        ClassFileVersion classFileVersion = ClassFileVersion.ofClassFile(binaryRepresentation);
+&nbsp;        ClassFileVersion latest = ClassFileVersion.latest();
+&nbsp;        if (classFileVersion.isGreaterThan(latest)) {
+&nbsp;            if (experimental) {
+&nbsp;                binaryRepresentation[4] = (byte)(latest.getMinorVersion() &gt;&gt;&gt; 8);
+&nbsp;                binaryRepresentation[5] = (byte)latest.getMinorVersion();
+&nbsp;                binaryRepresentation[6] = (byte)(latest.getMajorVersion() &gt;&gt;&gt; 8);
+&nbsp;                binaryRepresentation[7] = (byte)latest.getMajorVersion();
+&nbsp;                ClassReader classReader = new ClassReader(binaryRepresentation);
+&nbsp;                binaryRepresentation[4] = (byte)(classFileVersion.getMinorVersion() &gt;&gt;&gt; 8);
+&nbsp;                binaryRepresentation[5] = (byte)classFileVersion.getMinorVersion();
+<b class="fc">&nbsp;                binaryRepresentation[6] = (byte)(classFileVersion.getMajorVersion() &gt;&gt;&gt; 8);</b>
+&nbsp;                binaryRepresentation[7] = (byte)classFileVersion.getMajorVersion();
+<b class="nc">&nbsp;                return classReader;</b>
+&nbsp;            } else {
+<b class="fc">&nbsp;                throw new IllegalArgumentException(classFileVersion + &quot; is not supported by the current version of Byte Buddy which officially supports &quot; + latest + &quot; - update Byte Buddy or set &quot; + &quot;net.bytebuddy.experimental&quot; + &quot; as a VM property&quot;);</b>
+<b class="fc">&nbsp;            }</b>
+&nbsp;        } else {
+&nbsp;            return new ClassReader(binaryRepresentation);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    static {
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            Class.forName(&quot;java.security.AccessController&quot;, false, (ClassLoader)null);
+&nbsp;            ACCESS_CONTROLLER = Boolean.parseBoolean(System.getProperty(&quot;net.bytebuddy.securitymanager&quot;, &quot;true&quot;));
+&nbsp;        } catch (ClassNotFoundException var3) {
+&nbsp;            ACCESS_CONTROLLER = false;
+&nbsp;        } catch (SecurityException var4) {
+&nbsp;            ACCESS_CONTROLLER = true;
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        boolean experimental;
+&nbsp;        try {
+&nbsp;            experimental = Boolean.parseBoolean((String)doPrivileged(new GetSystemPropertyAction(&quot;net.bytebuddy.experimental&quot;)));
+&nbsp;        } catch (Exception var2) {
+&nbsp;            experimental = false;
+&nbsp;        }
+&nbsp;
+&nbsp;        EXPERIMENTAL = experimental;
+&nbsp;        ASM_API = 589824;
+&nbsp;    }
+<b class="fc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-20 13:42</div>
+</div>
+</body>
+</html>

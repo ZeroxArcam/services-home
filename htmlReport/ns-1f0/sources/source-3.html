@@ -1,0 +1,382 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > JdbcTypeRegistry</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.type.descriptor.jdbc.spi</a>
+</div>
+
+<h1>Coverage Summary for Class: JdbcTypeRegistry (org.hibernate.type.descriptor.jdbc.spi)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">JdbcTypeRegistry</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    47.4%
+  </span>
+  <span class="absValue">
+    (9/19)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    22%
+  </span>
+  <span class="absValue">
+    (11/50)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    26.4%
+  </span>
+  <span class="absValue">
+    (23/87)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.type.descriptor.jdbc.spi;
+&nbsp;
+&nbsp;import java.io.Serializable;
+&nbsp;import java.util.Locale;
+&nbsp;import java.util.Objects;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import org.checkerframework.checker.nullness.qual.Nullable;
+&nbsp;import org.hibernate.boot.model.TruthValue;
+&nbsp;import org.hibernate.metamodel.mapping.EmbeddableMappingType;
+&nbsp;import org.hibernate.metamodel.spi.RuntimeModelCreationContext;
+&nbsp;import org.hibernate.tool.schema.extract.spi.ColumnTypeInformation;
+&nbsp;import org.hibernate.type.BasicType;
+&nbsp;import org.hibernate.type.descriptor.JdbcTypeNameMapper;
+&nbsp;import org.hibernate.type.descriptor.jdbc.AggregateJdbcType;
+&nbsp;import org.hibernate.type.descriptor.jdbc.JdbcType;
+&nbsp;import org.hibernate.type.descriptor.jdbc.JdbcTypeConstructor;
+&nbsp;import org.hibernate.type.descriptor.jdbc.JdbcTypeFamilyInformation;
+&nbsp;import org.hibernate.type.descriptor.jdbc.ObjectJdbcType;
+&nbsp;import org.hibernate.type.descriptor.jdbc.SqlTypedJdbcType;
+&nbsp;import org.hibernate.type.descriptor.jdbc.internal.JdbcTypeBaseline;
+&nbsp;import org.hibernate.type.spi.TypeConfiguration;
+&nbsp;import org.jboss.logging.Logger;
+&nbsp;
+&nbsp;public class JdbcTypeRegistry implements JdbcTypeBaseline.BaselineTarget, Serializable {
+&nbsp;    private static final Logger log = Logger.getLogger(JdbcTypeRegistry.class);
+&nbsp;    private final TypeConfiguration typeConfiguration;
+&nbsp;    private final ConcurrentHashMap&lt;Integer, JdbcType&gt; descriptorMap = new ConcurrentHashMap();
+&nbsp;    private final ConcurrentHashMap&lt;Integer, JdbcTypeConstructor&gt; descriptorConstructorMap = new ConcurrentHashMap();
+&nbsp;    private final ConcurrentHashMap&lt;String, AggregateJdbcType&gt; aggregateDescriptorMap = new ConcurrentHashMap();
+&nbsp;    private final ConcurrentHashMap&lt;TypeConstructedJdbcTypeKey, JdbcType&gt; typeConstructorDescriptorMap = new ConcurrentHashMap();
+&nbsp;    private final ConcurrentHashMap&lt;String, SqlTypedJdbcType&gt; sqlTypedDescriptorMap = new ConcurrentHashMap();
+&nbsp;
+&nbsp;    public JdbcTypeRegistry(TypeConfiguration typeConfiguration) {
+&nbsp;        this.typeConfiguration = typeConfiguration;
+&nbsp;        JdbcTypeBaseline.prime(this);
+&nbsp;    }
+&nbsp;
+&nbsp;    public TypeConfiguration getTypeConfiguration() {
+&nbsp;        return this.typeConfiguration;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void addDescriptor(JdbcType jdbcType) {
+<b class="fc">&nbsp;        JdbcType previous = (JdbcType)this.descriptorMap.put(jdbcType.getDefaultSqlTypeCode(), jdbcType);</b>
+<b class="fc">&nbsp;        if (previous != null &amp;&amp; previous != jdbcType) {</b>
+<b class="fc">&nbsp;            log.debugf(&quot;addDescriptor(%s) replaced previous registration(%s)&quot;, jdbcType, previous);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void addDescriptor(int typeCode, JdbcType jdbcType) {
+&nbsp;        JdbcType previous = (JdbcType)this.descriptorMap.put(typeCode, jdbcType);
+<b class="fc">&nbsp;        if (previous != null &amp;&amp; previous != jdbcType) {</b>
+<b class="fc">&nbsp;            log.debugf(&quot;addDescriptor(%d, %s) replaced previous registration(%s)&quot;, typeCode, jdbcType, previous);</b>
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    public void addDescriptorIfAbsent(JdbcType jdbcType) {
+&nbsp;        this.descriptorMap.putIfAbsent(jdbcType.getDefaultSqlTypeCode(), jdbcType);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void addDescriptorIfAbsent(int typeCode, JdbcType jdbcType) {
+&nbsp;        this.descriptorMap.putIfAbsent(typeCode, jdbcType);
+&nbsp;    }
+&nbsp;
+&nbsp;    public JdbcType findDescriptor(int jdbcTypeCode) {
+&nbsp;        return (JdbcType)this.descriptorMap.get(jdbcTypeCode);
+<b class="fc">&nbsp;    }</b>
+<b class="pc">&nbsp;</b>
+<b class="fc">&nbsp;    public JdbcType getDescriptor(int jdbcTypeCode) {</b>
+&nbsp;        JdbcType descriptor = (JdbcType)this.descriptorMap.get(jdbcTypeCode);
+&nbsp;        if (descriptor != null) {
+&nbsp;            return descriptor;
+&nbsp;        } else {
+&nbsp;            if (JdbcTypeNameMapper.isStandardTypeCode(jdbcTypeCode)) {
+<b class="fc">&nbsp;                log.debugf(&quot;A standard JDBC type code [%s] was not defined in SqlTypeDescriptorRegistry&quot;, jdbcTypeCode);</b>
+<b class="pc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            JdbcTypeFamilyInformation.Family family = JdbcTypeFamilyInformation.INSTANCE.locateJdbcTypeFamilyByTypeCode(jdbcTypeCode);
+&nbsp;            if (family != null) {
+&nbsp;                for(int potentialAlternateTypeCode : family.getTypeCodes()) {
+&nbsp;                    if (potentialAlternateTypeCode != jdbcTypeCode) {
+<b class="fc">&nbsp;                        JdbcType potentialAlternateDescriptor = (JdbcType)this.descriptorMap.get(potentialAlternateTypeCode);</b>
+&nbsp;                        if (potentialAlternateDescriptor != null) {
+&nbsp;                            return potentialAlternateDescriptor;
+&nbsp;                        }
+<b class="fc">&nbsp;</b>
+&nbsp;                        if (JdbcTypeNameMapper.isStandardTypeCode(potentialAlternateTypeCode)) {
+&nbsp;                            log.debugf(&quot;A standard JDBC type code [%s] was not defined in SqlTypeDescriptorRegistry&quot;, potentialAlternateTypeCode);
+&nbsp;                        }
+<b class="fc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            ObjectJdbcType fallBackDescriptor = new ObjectJdbcType(jdbcTypeCode);</b>
+<b class="pc">&nbsp;            this.addDescriptor(fallBackDescriptor);</b>
+<b class="fc">&nbsp;            return fallBackDescriptor;</b>
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public AggregateJdbcType resolveAggregateDescriptor(int jdbcTypeCode, String typeName, EmbeddableMappingType embeddableMappingType, RuntimeModelCreationContext creationContext) {</b>
+&nbsp;        String registrationKey;
+&nbsp;        if (typeName != null) {
+&nbsp;            registrationKey = typeName.toLowerCase(Locale.ROOT);
+&nbsp;            AggregateJdbcType aggregateJdbcType = (AggregateJdbcType)this.aggregateDescriptorMap.get(registrationKey);
+&nbsp;            if (aggregateJdbcType != null) {
+&nbsp;                if (aggregateJdbcType.getEmbeddableMappingType() != embeddableMappingType) {
+<b class="nc">&nbsp;                    return aggregateJdbcType.resolveAggregateJdbcType(embeddableMappingType, typeName, creationContext);</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                return aggregateJdbcType;</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            registrationKey = null;</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        JdbcType descriptor = this.getDescriptor(jdbcTypeCode);
+&nbsp;        if (!(descriptor instanceof AggregateJdbcType)) {
+<b class="nc">&nbsp;            throw new IllegalArgumentException(String.format(&quot;Tried to resolve the JdbcType [%s] as AggregateJdbcType but it does not implement that interface!&quot;, descriptor.getClass().getName()));</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            AggregateJdbcType aggregateJdbcType = (AggregateJdbcType)descriptor;
+&nbsp;            AggregateJdbcType resolvedJdbcType = aggregateJdbcType.resolveAggregateJdbcType(embeddableMappingType, typeName, creationContext);
+&nbsp;            if (registrationKey != null) {
+&nbsp;                this.aggregateDescriptorMap.put(registrationKey, resolvedJdbcType);
+&nbsp;                if (resolvedJdbcType instanceof SqlTypedJdbcType) {
+&nbsp;                    SqlTypedJdbcType sqlTypedJdbcType = (SqlTypedJdbcType)resolvedJdbcType;
+&nbsp;                    this.sqlTypedDescriptorMap.put(sqlTypedJdbcType.getSqlTypeName().toLowerCase(Locale.ROOT), sqlTypedJdbcType);
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            return resolvedJdbcType;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public AggregateJdbcType findAggregateDescriptor(String typeName) {
+&nbsp;        return (AggregateJdbcType)this.aggregateDescriptorMap.get(typeName.toLowerCase(Locale.ROOT));
+&nbsp;    }
+&nbsp;
+&nbsp;    public SqlTypedJdbcType findSqlTypedDescriptor(String sqlTypeName) {
+&nbsp;        return (SqlTypedJdbcType)this.sqlTypedDescriptorMap.get(sqlTypeName.toLowerCase(Locale.ROOT));
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public JdbcType resolveTypeConstructorDescriptor(int jdbcTypeConstructorCode, BasicType&lt;?&gt; elementType, @Nullable ColumnTypeInformation columnTypeInformation) {</b>
+<b class="nc">&nbsp;        return this.resolveTypeConstructorDescriptor(jdbcTypeConstructorCode, elementType, columnTypeInformation);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public JdbcType resolveTypeConstructorDescriptor(int jdbcTypeConstructorCode, JdbcType elementType, @Nullable ColumnTypeInformation columnTypeInformation) {
+&nbsp;        return this.resolveTypeConstructorDescriptor(jdbcTypeConstructorCode, elementType, columnTypeInformation);
+&nbsp;    }
+&nbsp;
+&nbsp;    private JdbcType resolveTypeConstructorDescriptor(int jdbcTypeConstructorCode, Object elementType, @Nullable ColumnTypeInformation columnTypeInformation) {
+<b class="nc">&nbsp;        TypeConstructedJdbcTypeKey key = new TypeConstructedJdbcTypeKey(jdbcTypeConstructorCode, elementType, columnTypeInformation);</b>
+&nbsp;        JdbcType descriptor = (JdbcType)this.typeConstructorDescriptorMap.get(key);
+&nbsp;        if (descriptor != null) {
+&nbsp;            return descriptor;
+&nbsp;        } else {
+&nbsp;            JdbcTypeConstructor jdbcTypeConstructor = this.getConstructor(jdbcTypeConstructorCode);
+<b class="nc">&nbsp;            if (jdbcTypeConstructor != null) {</b>
+&nbsp;                JdbcType jdbcType;
+&nbsp;                if (elementType instanceof BasicType) {
+&nbsp;                    jdbcType = jdbcTypeConstructor.resolveType(this.typeConfiguration, this.typeConfiguration.getCurrentBaseSqlTypeIndicators().getDialect(), (BasicType)elementType, columnTypeInformation);
+<b class="nc">&nbsp;                } else {</b>
+&nbsp;                    jdbcType = jdbcTypeConstructor.resolveType(this.typeConfiguration, this.typeConfiguration.getCurrentBaseSqlTypeIndicators().getDialect(), (JdbcType)elementType, columnTypeInformation);
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                JdbcType existingType = (JdbcType)this.typeConstructorDescriptorMap.putIfAbsent(key, jdbcType);</b>
+<b class="nc">&nbsp;                if (existingType != null) {</b>
+&nbsp;                    return existingType;
+<b class="nc">&nbsp;                } else {</b>
+&nbsp;                    if (jdbcType instanceof SqlTypedJdbcType) {
+&nbsp;                        SqlTypedJdbcType sqlTypedJdbcType = (SqlTypedJdbcType)jdbcType;
+&nbsp;                        this.sqlTypedDescriptorMap.put(sqlTypedJdbcType.getSqlTypeName().toLowerCase(Locale.ROOT), sqlTypedJdbcType);
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                    return jdbcType;
+&nbsp;                }
+&nbsp;            } else {
+&nbsp;                return this.getDescriptor(jdbcTypeConstructorCode);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public boolean hasRegisteredDescriptor(int jdbcTypeCode) {</b>
+&nbsp;        return this.descriptorMap.containsKey(jdbcTypeCode) || JdbcTypeNameMapper.isStandardTypeCode(jdbcTypeCode) || JdbcTypeFamilyInformation.INSTANCE.locateJdbcTypeFamilyByTypeCode(jdbcTypeCode) != null;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public JdbcTypeConstructor getConstructor(int jdbcTypeCode) {
+&nbsp;        return (JdbcTypeConstructor)this.descriptorConstructorMap.get(jdbcTypeCode);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void addTypeConstructor(int jdbcTypeCode, JdbcTypeConstructor jdbcTypeConstructor) {
+&nbsp;        this.descriptorConstructorMap.put(jdbcTypeCode, jdbcTypeConstructor);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void addTypeConstructor(JdbcTypeConstructor jdbcTypeConstructor) {
+&nbsp;        this.addTypeConstructor(jdbcTypeConstructor.getDefaultSqlTypeCode(), jdbcTypeConstructor);
+&nbsp;    }
+&nbsp;
+&nbsp;    private static final class TypeConstructedJdbcTypeKey {
+&nbsp;        private final int typeConstructorTypeCode;
+&nbsp;        private final Object jdbcTypeOrBasicType;
+&nbsp;        private final TruthValue nullable;
+&nbsp;        private final int typeCode;
+&nbsp;        private final @Nullable String typeName;
+<b class="nc">&nbsp;        private final int columnSize;</b>
+&nbsp;        private final int decimalDigits;
+&nbsp;
+&nbsp;        public TypeConstructedJdbcTypeKey(int typeConstructorTypeCode, Object jdbcTypeOrBasicType, @Nullable ColumnTypeInformation columnTypeInformation) {
+&nbsp;            this.typeConstructorTypeCode = typeConstructorTypeCode;
+&nbsp;            this.jdbcTypeOrBasicType = jdbcTypeOrBasicType;
+&nbsp;            if (columnTypeInformation == null) {
+&nbsp;                this.nullable = TruthValue.UNKNOWN;
+&nbsp;                this.typeCode = 1111;
+&nbsp;                this.typeName = null;
+&nbsp;                this.columnSize = 0;
+<b class="nc">&nbsp;                this.decimalDigits = 0;</b>
+&nbsp;            } else {
+&nbsp;                this.nullable = columnTypeInformation.getNullable();
+&nbsp;                this.typeCode = columnTypeInformation.getTypeCode();
+&nbsp;                this.typeName = columnTypeInformation.getTypeName();
+&nbsp;                this.columnSize = columnTypeInformation.getColumnSize();
+&nbsp;                this.decimalDigits = columnTypeInformation.getDecimalDigits();
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean equals(Object o) {
+<b class="nc">&nbsp;            if (this == o) {</b>
+<b class="nc">&nbsp;                return true;</b>
+<b class="nc">&nbsp;            } else if (o != null &amp;&amp; this.getClass() == o.getClass()) {</b>
+&nbsp;                TypeConstructedJdbcTypeKey that = (TypeConstructedJdbcTypeKey)o;
+<b class="nc">&nbsp;                if (this.typeConstructorTypeCode != that.typeConstructorTypeCode) {</b>
+<b class="nc">&nbsp;                    return false;</b>
+&nbsp;                } else if (this.typeCode != that.typeCode) {
+<b class="nc">&nbsp;                    return false;</b>
+<b class="nc">&nbsp;                } else if (this.columnSize != that.columnSize) {</b>
+&nbsp;                    return false;
+<b class="nc">&nbsp;                } else if (this.decimalDigits != that.decimalDigits) {</b>
+&nbsp;                    return false;
+&nbsp;                } else if (!this.jdbcTypeOrBasicType.equals(that.jdbcTypeOrBasicType)) {
+&nbsp;                    return false;
+&nbsp;                } else {
+&nbsp;                    return this.nullable != that.nullable ? false : Objects.equals(this.typeName, that.typeName);
+<b class="nc">&nbsp;                }</b>
+&nbsp;            } else {
+<b class="nc">&nbsp;                return false;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        public int hashCode() {
+<b class="nc">&nbsp;            int result = this.typeConstructorTypeCode;</b>
+<b class="nc">&nbsp;            result = 31 * result + this.jdbcTypeOrBasicType.hashCode();</b>
+<b class="nc">&nbsp;            result = 31 * result + (this.nullable != null ? this.nullable.hashCode() : 0);</b>
+&nbsp;            result = 31 * result + this.typeCode;
+<b class="nc">&nbsp;            result = 31 * result + (this.typeName != null ? this.typeName.hashCode() : 0);</b>
+<b class="nc">&nbsp;            result = 31 * result + this.columnSize;</b>
+<b class="nc">&nbsp;            result = 31 * result + this.decimalDigits;</b>
+&nbsp;            return result;
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:54</div>
+</div>
+</body>
+</html>

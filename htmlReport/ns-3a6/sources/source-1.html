@@ -1,0 +1,1007 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > CodeFlow</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.expression.spel</a>
+</div>
+
+<h1>Coverage Summary for Class: CodeFlow (org.springframework.expression.spel)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">CodeFlow</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    4.3%
+  </span>
+  <span class="absValue">
+    (2/46)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0.8%
+  </span>
+  <span class="absValue">
+    (3/387)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    1.9%
+  </span>
+  <span class="absValue">
+    (6/318)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.expression.spel;
+&nbsp;
+&nbsp;import java.lang.reflect.Constructor;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;import java.util.ArrayDeque;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Deque;
+&nbsp;import java.util.List;
+&nbsp;import org.springframework.asm.ClassWriter;
+&nbsp;import org.springframework.asm.MethodVisitor;
+&nbsp;import org.springframework.asm.Opcodes;
+&nbsp;import org.springframework.lang.Contract;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.CollectionUtils;
+&nbsp;
+&nbsp;public class CodeFlow implements Opcodes {
+&nbsp;    private final String className;
+&nbsp;    private final ClassWriter classWriter;
+&nbsp;    private final Deque&lt;List&lt;String&gt;&gt; compilationScopes;
+&nbsp;    @Nullable
+&nbsp;    private List&lt;FieldAdder&gt; fieldAdders;
+&nbsp;    @Nullable
+&nbsp;    private List&lt;ClinitAdder&gt; clinitAdders;
+&nbsp;    private int nextFieldId = 1;
+&nbsp;    private int nextFreeVariableId = 1;
+&nbsp;
+&nbsp;    public CodeFlow(String className, ClassWriter classWriter) {
+&nbsp;        this.className = className;
+&nbsp;        this.classWriter = classWriter;
+&nbsp;        this.compilationScopes = new ArrayDeque();
+&nbsp;        this.compilationScopes.add(new ArrayList());
+&nbsp;    }
+&nbsp;
+&nbsp;    public void loadTarget(MethodVisitor mv) {
+&nbsp;        mv.visitVarInsn(25, 1);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void loadEvaluationContext(MethodVisitor mv) {
+&nbsp;        mv.visitVarInsn(25, 2);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void pushDescriptor(@Nullable String descriptor) {
+&nbsp;        if (descriptor != null) {
+&nbsp;            ((List)this.compilationScopes.element()).add(descriptor);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void enterCompilationScope() {
+&nbsp;        this.compilationScopes.push(new ArrayList());
+&nbsp;    }
+&nbsp;
+&nbsp;    public void exitCompilationScope() {
+&nbsp;        this.compilationScopes.pop();
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public String lastDescriptor() {
+&nbsp;        return (String)CollectionUtils.lastElement((List)this.compilationScopes.peek());
+&nbsp;    }
+&nbsp;
+&nbsp;    public void unboxBooleanIfNecessary(MethodVisitor mv) {
+&nbsp;        if (&quot;Ljava/lang/Boolean&quot;.equals(this.lastDescriptor())) {
+&nbsp;            mv.visitMethodInsn(182, &quot;java/lang/Boolean&quot;, &quot;booleanValue&quot;, &quot;()Z&quot;, false);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void finish() {
+&nbsp;        if (this.fieldAdders != null) {
+&nbsp;            for(FieldAdder fieldAdder : this.fieldAdders) {
+&nbsp;                fieldAdder.generateField(this.classWriter, this);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        if (this.clinitAdders != null) {
+&nbsp;            MethodVisitor mv = this.classWriter.visitMethod(9, &quot;&lt;clinit&gt;&quot;, &quot;()V&quot;, (String)null, (String[])null);
+&nbsp;            mv.visitCode();
+&nbsp;            this.nextFreeVariableId = 0;
+&nbsp;
+&nbsp;            for(ClinitAdder clinitAdder : this.clinitAdders) {
+<b class="nc">&nbsp;                clinitAdder.generateCode(mv, this);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            mv.visitInsn(177);
+&nbsp;            mv.visitMaxs(0, 0);
+&nbsp;            mv.visitEnd();
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void registerNewField(FieldAdder fieldAdder) {
+&nbsp;        if (this.fieldAdders == null) {
+&nbsp;            this.fieldAdders = new ArrayList();
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        this.fieldAdders.add(fieldAdder);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void registerNewClinit(ClinitAdder clinitAdder) {</b>
+&nbsp;        if (this.clinitAdders == null) {
+&nbsp;            this.clinitAdders = new ArrayList();
+&nbsp;        }
+&nbsp;
+&nbsp;        this.clinitAdders.add(clinitAdder);
+&nbsp;    }
+&nbsp;
+&nbsp;    public int nextFieldId() {
+&nbsp;        return this.nextFieldId++;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public int nextFreeVariableId() {
+&nbsp;        return this.nextFreeVariableId++;
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getClassName() {
+&nbsp;        return this.className;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void generateCodeForArgument(MethodVisitor methodVisitor, SpelNode argument, Class&lt;?&gt; requiredType) {</b>
+&nbsp;        this.generateCodeForArgument(methodVisitor, argument, toDescriptor(requiredType));
+&nbsp;    }
+&nbsp;
+&nbsp;    public void generateCodeForArgument(MethodVisitor methodVisitor, SpelNode argument, String requiredTypeDesc) {
+&nbsp;        this.enterCompilationScope();
+&nbsp;        argument.generateCode(methodVisitor, this);
+&nbsp;        String lastDesc = this.lastDescriptor();
+<b class="nc">&nbsp;        Assert.state(lastDesc != null, &quot;No last descriptor&quot;);</b>
+<b class="nc">&nbsp;        boolean primitiveOnStack = isPrimitive(lastDesc);</b>
+&nbsp;        if (primitiveOnStack &amp;&amp; requiredTypeDesc.charAt(0) == &#39;L&#39;) {
+&nbsp;            insertBoxIfNecessary(methodVisitor, lastDesc.charAt(0));
+&nbsp;        } else if (requiredTypeDesc.length() == 1 &amp;&amp; !primitiveOnStack) {
+&nbsp;            insertUnboxInsns(methodVisitor, requiredTypeDesc.charAt(0), lastDesc);
+&nbsp;        } else if (!requiredTypeDesc.equals(lastDesc)) {
+&nbsp;            insertCheckCast(methodVisitor, requiredTypeDesc);
+&nbsp;        }
+&nbsp;
+&nbsp;        this.exitCompilationScope();
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public static void insertUnboxInsns(MethodVisitor mv, char ch, @Nullable String stackDescriptor) {
+&nbsp;        if (stackDescriptor != null) {
+&nbsp;            switch (ch) {
+&nbsp;                case &#39;B&#39;:
+&nbsp;                    if (!stackDescriptor.equals(&quot;Ljava/lang/Byte&quot;)) {
+&nbsp;                        mv.visitTypeInsn(192, &quot;java/lang/Byte&quot;);
+&nbsp;                    }
+<b class="nc">&nbsp;</b>
+&nbsp;                    mv.visitMethodInsn(182, &quot;java/lang/Byte&quot;, &quot;byteValue&quot;, &quot;()B&quot;, false);
+&nbsp;                    break;
+&nbsp;                case &#39;C&#39;:
+&nbsp;                    if (!stackDescriptor.equals(&quot;Ljava/lang/Character&quot;)) {
+&nbsp;                        mv.visitTypeInsn(192, &quot;java/lang/Character&quot;);
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    mv.visitMethodInsn(182, &quot;java/lang/Character&quot;, &quot;charValue&quot;, &quot;()C&quot;, false);</b>
+&nbsp;                    break;
+&nbsp;                case &#39;D&#39;:
+&nbsp;                    if (!stackDescriptor.equals(&quot;Ljava/lang/Double&quot;)) {
+&nbsp;                        mv.visitTypeInsn(192, &quot;java/lang/Double&quot;);
+&nbsp;                    }
+&nbsp;
+&nbsp;                    mv.visitMethodInsn(182, &quot;java/lang/Double&quot;, &quot;doubleValue&quot;, &quot;()D&quot;, false);
+&nbsp;                    break;
+<b class="nc">&nbsp;                case &#39;E&#39;:</b>
+<b class="nc">&nbsp;                case &#39;G&#39;:</b>
+&nbsp;                case &#39;H&#39;:
+&nbsp;                case &#39;K&#39;:
+&nbsp;                case &#39;L&#39;:
+&nbsp;                case &#39;M&#39;:
+&nbsp;                case &#39;N&#39;:
+&nbsp;                case &#39;O&#39;:
+&nbsp;                case &#39;P&#39;:
+&nbsp;                case &#39;Q&#39;:
+&nbsp;                case &#39;R&#39;:
+<b class="nc">&nbsp;                case &#39;T&#39;:</b>
+<b class="nc">&nbsp;                case &#39;U&#39;:</b>
+<b class="nc">&nbsp;                case &#39;V&#39;:</b>
+&nbsp;                case &#39;W&#39;:
+&nbsp;                case &#39;X&#39;:
+<b class="nc">&nbsp;                case &#39;Y&#39;:</b>
+<b class="nc">&nbsp;                default:</b>
+<b class="nc">&nbsp;                    throw new IllegalArgumentException(&quot;Unboxing should not be attempted for descriptor &#39;&quot; + ch + &quot;&#39;&quot;);</b>
+<b class="nc">&nbsp;                case &#39;F&#39;:</b>
+<b class="nc">&nbsp;                    if (!stackDescriptor.equals(&quot;Ljava/lang/Float&quot;)) {</b>
+<b class="nc">&nbsp;                        mv.visitTypeInsn(192, &quot;java/lang/Float&quot;);</b>
+&nbsp;                    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                    mv.visitMethodInsn(182, &quot;java/lang/Float&quot;, &quot;floatValue&quot;, &quot;()F&quot;, false);</b>
+<b class="nc">&nbsp;                    break;</b>
+&nbsp;                case &#39;I&#39;:
+&nbsp;                    if (!stackDescriptor.equals(&quot;Ljava/lang/Integer&quot;)) {
+&nbsp;                        mv.visitTypeInsn(192, &quot;java/lang/Integer&quot;);
+&nbsp;                    }
+&nbsp;
+&nbsp;                    mv.visitMethodInsn(182, &quot;java/lang/Integer&quot;, &quot;intValue&quot;, &quot;()I&quot;, false);
+&nbsp;                    break;
+&nbsp;                case &#39;J&#39;:
+&nbsp;                    if (!stackDescriptor.equals(&quot;Ljava/lang/Long&quot;)) {
+<b class="nc">&nbsp;                        mv.visitTypeInsn(192, &quot;java/lang/Long&quot;);</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;
+<b class="nc">&nbsp;                    mv.visitMethodInsn(182, &quot;java/lang/Long&quot;, &quot;longValue&quot;, &quot;()J&quot;, false);</b>
+&nbsp;                    break;
+&nbsp;                case &#39;S&#39;:
+&nbsp;                    if (!stackDescriptor.equals(&quot;Ljava/lang/Short&quot;)) {
+&nbsp;                        mv.visitTypeInsn(192, &quot;java/lang/Short&quot;);
+&nbsp;                    }
+&nbsp;
+&nbsp;                    mv.visitMethodInsn(182, &quot;java/lang/Short&quot;, &quot;shortValue&quot;, &quot;()S&quot;, false);
+&nbsp;                    break;
+<b class="nc">&nbsp;                case &#39;Z&#39;:</b>
+<b class="nc">&nbsp;                    if (!stackDescriptor.equals(&quot;Ljava/lang/Boolean&quot;)) {</b>
+&nbsp;                        mv.visitTypeInsn(192, &quot;java/lang/Boolean&quot;);
+<b class="nc">&nbsp;                    }</b>
+&nbsp;
+&nbsp;                    mv.visitMethodInsn(182, &quot;java/lang/Boolean&quot;, &quot;booleanValue&quot;, &quot;()Z&quot;, false);
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public static void insertUnboxNumberInsns(MethodVisitor mv, char targetDescriptor, @Nullable String stackDescriptor) {</b>
+&nbsp;        if (stackDescriptor != null) {
+&nbsp;            switch (targetDescriptor) {
+&nbsp;                case &#39;D&#39;:
+<b class="nc">&nbsp;                    if (stackDescriptor.equals(&quot;Ljava/lang/Object&quot;)) {</b>
+&nbsp;                        mv.visitTypeInsn(192, &quot;java/lang/Number&quot;);
+&nbsp;                    }
+&nbsp;
+&nbsp;                    mv.visitMethodInsn(182, &quot;java/lang/Number&quot;, &quot;doubleValue&quot;, &quot;()D&quot;, false);
+&nbsp;                    break;
+&nbsp;                case &#39;E&#39;:
+&nbsp;                case &#39;G&#39;:
+&nbsp;                case &#39;H&#39;:
+&nbsp;                default:
+&nbsp;                    throw new IllegalArgumentException(&quot;Unboxing should not be attempted for descriptor &#39;&quot; + targetDescriptor + &quot;&#39;&quot;);
+&nbsp;                case &#39;F&#39;:
+&nbsp;                    if (stackDescriptor.equals(&quot;Ljava/lang/Object&quot;)) {
+&nbsp;                        mv.visitTypeInsn(192, &quot;java/lang/Number&quot;);
+&nbsp;                    }
+&nbsp;
+&nbsp;                    mv.visitMethodInsn(182, &quot;java/lang/Number&quot;, &quot;floatValue&quot;, &quot;()F&quot;, false);
+&nbsp;                    break;
+&nbsp;                case &#39;I&#39;:
+&nbsp;                    if (stackDescriptor.equals(&quot;Ljava/lang/Object&quot;)) {
+&nbsp;                        mv.visitTypeInsn(192, &quot;java/lang/Number&quot;);
+&nbsp;                    }
+&nbsp;
+&nbsp;                    mv.visitMethodInsn(182, &quot;java/lang/Number&quot;, &quot;intValue&quot;, &quot;()I&quot;, false);
+&nbsp;                    break;
+&nbsp;                case &#39;J&#39;:
+<b class="nc">&nbsp;                    if (stackDescriptor.equals(&quot;Ljava/lang/Object&quot;)) {</b>
+&nbsp;                        mv.visitTypeInsn(192, &quot;java/lang/Number&quot;);
+&nbsp;                    }
+&nbsp;
+&nbsp;                    mv.visitMethodInsn(182, &quot;java/lang/Number&quot;, &quot;longValue&quot;, &quot;()J&quot;, false);
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void insertAnyNecessaryTypeConversionBytecodes(MethodVisitor mv, char targetDescriptor, String stackDescriptor) {
+&nbsp;        if (isPrimitive(stackDescriptor)) {
+&nbsp;            char stackTop = stackDescriptor.charAt(0);
+&nbsp;            switch (stackTop) {
+&nbsp;                case &#39;B&#39;:
+&nbsp;                case &#39;C&#39;:
+&nbsp;                case &#39;I&#39;:
+&nbsp;                case &#39;S&#39;:
+&nbsp;                    switch (targetDescriptor) {
+&nbsp;                        case &#39;D&#39;:
+&nbsp;                            mv.visitInsn(135);
+&nbsp;                            return;
+&nbsp;                        case &#39;E&#39;:
+&nbsp;                        case &#39;G&#39;:
+<b class="nc">&nbsp;                        case &#39;H&#39;:</b>
+<b class="nc">&nbsp;                        default:</b>
+<b class="nc">&nbsp;                            throw new IllegalStateException(&quot;Cannot get from &quot; + stackTop + &quot; to &quot; + targetDescriptor);</b>
+<b class="nc">&nbsp;                        case &#39;F&#39;:</b>
+<b class="nc">&nbsp;                            mv.visitInsn(134);</b>
+&nbsp;                            return;
+<b class="nc">&nbsp;                        case &#39;I&#39;:</b>
+<b class="nc">&nbsp;                            return;</b>
+&nbsp;                        case &#39;J&#39;:
+&nbsp;                            mv.visitInsn(133);
+<b class="nc">&nbsp;                            return;</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                case &#39;D&#39;:
+&nbsp;                    switch (targetDescriptor) {
+<b class="nc">&nbsp;                        case &#39;D&#39;:</b>
+&nbsp;                            break;
+<b class="nc">&nbsp;                        case &#39;E&#39;:</b>
+&nbsp;                        case &#39;G&#39;:
+<b class="nc">&nbsp;                        case &#39;H&#39;:</b>
+&nbsp;                        default:
+&nbsp;                            throw new IllegalStateException(&quot;Cannot get from &quot; + stackDescriptor + &quot; to &quot; + targetDescriptor);
+&nbsp;                        case &#39;F&#39;:
+&nbsp;                            mv.visitInsn(144);
+&nbsp;                            break;
+&nbsp;                        case &#39;I&#39;:
+&nbsp;                            mv.visitInsn(142);
+&nbsp;                            break;
+&nbsp;                        case &#39;J&#39;:
+&nbsp;                            mv.visitInsn(143);
+&nbsp;                    }
+<b class="nc">&nbsp;                case &#39;E&#39;:</b>
+&nbsp;                case &#39;G&#39;:
+&nbsp;                case &#39;H&#39;:
+<b class="nc">&nbsp;                case &#39;K&#39;:</b>
+&nbsp;                case &#39;L&#39;:
+<b class="nc">&nbsp;                case &#39;M&#39;:</b>
+<b class="nc">&nbsp;                case &#39;N&#39;:</b>
+&nbsp;                case &#39;O&#39;:
+<b class="nc">&nbsp;                case &#39;P&#39;:</b>
+&nbsp;                case &#39;Q&#39;:
+&nbsp;                case &#39;R&#39;:
+<b class="nc">&nbsp;                default:</b>
+<b class="nc">&nbsp;                    break;</b>
+&nbsp;                case &#39;F&#39;:
+<b class="nc">&nbsp;                    switch (targetDescriptor) {</b>
+&nbsp;                        case &#39;D&#39;:
+&nbsp;                            mv.visitInsn(141);
+<b class="nc">&nbsp;                            return;</b>
+<b class="nc">&nbsp;                        case &#39;E&#39;:</b>
+&nbsp;                        case &#39;G&#39;:
+<b class="nc">&nbsp;                        case &#39;H&#39;:</b>
+&nbsp;                        default:
+&nbsp;                            throw new IllegalStateException(&quot;Cannot get from &quot; + stackTop + &quot; to &quot; + targetDescriptor);
+<b class="nc">&nbsp;                        case &#39;F&#39;:</b>
+<b class="nc">&nbsp;                            return;</b>
+&nbsp;                        case &#39;I&#39;:
+<b class="nc">&nbsp;                            mv.visitInsn(139);</b>
+&nbsp;                            return;
+&nbsp;                        case &#39;J&#39;:
+<b class="nc">&nbsp;                            mv.visitInsn(140);</b>
+<b class="nc">&nbsp;                            return;</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                case &#39;J&#39;:</b>
+&nbsp;                    switch (targetDescriptor) {
+&nbsp;                        case &#39;D&#39;:
+<b class="nc">&nbsp;                            mv.visitInsn(138);</b>
+<b class="nc">&nbsp;                            break;</b>
+&nbsp;                        case &#39;E&#39;:
+<b class="nc">&nbsp;                        case &#39;G&#39;:</b>
+&nbsp;                        case &#39;H&#39;:
+&nbsp;                        default:
+<b class="nc">&nbsp;                            throw new IllegalStateException(&quot;Cannot get from &quot; + stackTop + &quot; to &quot; + targetDescriptor);</b>
+<b class="nc">&nbsp;                        case &#39;F&#39;:</b>
+&nbsp;                            mv.visitInsn(137);
+<b class="nc">&nbsp;                            break;</b>
+&nbsp;                        case &#39;I&#39;:
+&nbsp;                            mv.visitInsn(136);
+<b class="nc">&nbsp;                        case &#39;J&#39;:</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public static String createSignatureDescriptor(Method method) {
+&nbsp;        Class&lt;?&gt;[] params = method.getParameterTypes();
+&nbsp;        StringBuilder sb = new StringBuilder();
+&nbsp;        sb.append(&#39;(&#39;);
+&nbsp;
+&nbsp;        for(Class&lt;?&gt; param : params) {
+&nbsp;            sb.append(toJvmDescriptor(param));
+&nbsp;        }
+&nbsp;
+&nbsp;        sb.append(&#39;)&#39;);
+&nbsp;        sb.append(toJvmDescriptor(method.getReturnType()));
+&nbsp;        return sb.toString();
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public static String createSignatureDescriptor(Constructor&lt;?&gt; ctor) {
+&nbsp;        Class&lt;?&gt;[] params = ctor.getParameterTypes();
+<b class="nc">&nbsp;        StringBuilder sb = new StringBuilder();</b>
+&nbsp;        sb.append(&#39;(&#39;);
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        for(Class&lt;?&gt; param : params) {</b>
+&nbsp;            sb.append(toJvmDescriptor(param));
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        sb.append(&quot;)V&quot;);
+<b class="nc">&nbsp;        return sb.toString();</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public static String toJvmDescriptor(Class&lt;?&gt; clazz) {</b>
+&nbsp;        StringBuilder sb = new StringBuilder();
+&nbsp;        if (clazz.isArray()) {
+<b class="nc">&nbsp;            while(clazz.isArray()) {</b>
+<b class="nc">&nbsp;                sb.append(&#39;[&#39;);</b>
+&nbsp;                clazz = clazz.componentType();
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if (clazz.isPrimitive()) {</b>
+<b class="nc">&nbsp;            if (clazz == Boolean.TYPE) {</b>
+&nbsp;                sb.append(&#39;Z&#39;);
+<b class="nc">&nbsp;            } else if (clazz == Byte.TYPE) {</b>
+&nbsp;                sb.append(&#39;B&#39;);
+&nbsp;            } else if (clazz == Character.TYPE) {
+&nbsp;                sb.append(&#39;C&#39;);
+<b class="nc">&nbsp;            } else if (clazz == Double.TYPE) {</b>
+&nbsp;                sb.append(&#39;D&#39;);
+&nbsp;            } else if (clazz == Float.TYPE) {
+&nbsp;                sb.append(&#39;F&#39;);
+&nbsp;            } else if (clazz == Integer.TYPE) {
+&nbsp;                sb.append(&#39;I&#39;);
+&nbsp;            } else if (clazz == Long.TYPE) {
+&nbsp;                sb.append(&#39;J&#39;);
+&nbsp;            } else if (clazz == Short.TYPE) {
+&nbsp;                sb.append(&#39;S&#39;);
+&nbsp;            } else if (clazz == Void.TYPE) {
+&nbsp;                sb.append(&#39;V&#39;);
+<b class="nc">&nbsp;            }</b>
+&nbsp;        } else {
+&nbsp;            sb.append(&#39;L&#39;);
+<b class="nc">&nbsp;            sb.append(clazz.getName().replace(&#39;.&#39;, &#39;/&#39;));</b>
+<b class="nc">&nbsp;            sb.append(&#39;;&#39;);</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return sb.toString();</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public static String toDescriptorFromObject(@Nullable Object value) {
+&nbsp;        return value == null ? &quot;Ljava/lang/Object&quot; : toDescriptor(value.getClass());
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    @Contract(&quot;null -&gt; false&quot;)
+&nbsp;    public static boolean isBooleanCompatible(@Nullable String descriptor) {
+<b class="nc">&nbsp;        return descriptor != null &amp;&amp; (descriptor.equals(&quot;Z&quot;) || descriptor.equals(&quot;Ljava/lang/Boolean&quot;));</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    @Contract(&quot;null -&gt; false&quot;)
+<b class="nc">&nbsp;    public static boolean isPrimitive(@Nullable String descriptor) {</b>
+&nbsp;        return descriptor != null &amp;&amp; descriptor.length() == 1;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    @Contract(&quot;null -&gt; false&quot;)
+&nbsp;    public static boolean isPrimitiveArray(@Nullable String descriptor) {
+<b class="nc">&nbsp;        if (descriptor == null) {</b>
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            boolean primitive = true;</b>
+<b class="nc">&nbsp;            int i = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;            for(int max = descriptor.length(); i &lt; max; ++i) {</b>
+&nbsp;                char ch = descriptor.charAt(i);
+&nbsp;                if (ch != &#39;[&#39;) {
+&nbsp;                    primitive = ch != &#39;L&#39;;
+<b class="nc">&nbsp;                    break;</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            return primitive;</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public static boolean areBoxingCompatible(String desc1, String desc2) {
+&nbsp;        if (desc1.equals(desc2)) {
+&nbsp;            return true;
+&nbsp;        } else if (desc1.length() == 1) {
+&nbsp;            return checkPairs(desc1, desc2);
+&nbsp;        } else {
+&nbsp;            return desc2.length() == 1 ? checkPairs(desc2, desc1) : false;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static boolean checkPairs(String desc1, String desc2) {
+&nbsp;        boolean var10000;
+&nbsp;        switch (desc1) {
+&nbsp;            case &quot;Z&quot; -&gt; var10000 = desc2.equals(&quot;Ljava/lang/Boolean&quot;);
+<b class="nc">&nbsp;            case &quot;D&quot; -&gt; var10000 = desc2.equals(&quot;Ljava/lang/Double&quot;);</b>
+<b class="nc">&nbsp;            case &quot;F&quot; -&gt; var10000 = desc2.equals(&quot;Ljava/lang/Float&quot;);</b>
+<b class="nc">&nbsp;            case &quot;I&quot; -&gt; var10000 = desc2.equals(&quot;Ljava/lang/Integer&quot;);</b>
+<b class="nc">&nbsp;            case &quot;J&quot; -&gt; var10000 = desc2.equals(&quot;Ljava/lang/Long&quot;);</b>
+<b class="nc">&nbsp;            default -&gt; var10000 = false;</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return var10000;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    @Contract(&quot;null -&gt; false&quot;)
+&nbsp;    public static boolean isPrimitiveOrUnboxableSupportedNumberOrBoolean(@Nullable String descriptor) {
+&nbsp;        if (descriptor == null) {
+&nbsp;            return false;
+&nbsp;        } else if (isPrimitiveOrUnboxableSupportedNumber(descriptor)) {
+&nbsp;            return true;
+&nbsp;        } else {
+&nbsp;            return &quot;Z&quot;.equals(descriptor) || descriptor.equals(&quot;Ljava/lang/Boolean&quot;);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    @Contract(&quot;null -&gt; false&quot;)</b>
+<b class="nc">&nbsp;    public static boolean isPrimitiveOrUnboxableSupportedNumber(@Nullable String descriptor) {</b>
+<b class="nc">&nbsp;        if (descriptor == null) {</b>
+<b class="nc">&nbsp;            return false;</b>
+<b class="nc">&nbsp;        } else if (descriptor.length() == 1) {</b>
+&nbsp;            return &quot;DFIJ&quot;.contains(descriptor);
+<b class="nc">&nbsp;        } else if (!descriptor.startsWith(&quot;Ljava/lang/&quot;)) {</b>
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        } else {
+&nbsp;            String name = descriptor.substring(&quot;Ljava/lang/&quot;.length());
+&nbsp;            return name.equals(&quot;Double&quot;) || name.equals(&quot;Float&quot;) || name.equals(&quot;Integer&quot;) || name.equals(&quot;Long&quot;);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Contract(&quot;null -&gt; false&quot;)
+&nbsp;    public static boolean isIntegerForNumericOp(Number number) {
+&nbsp;        return number instanceof Integer || number instanceof Short || number instanceof Byte;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public static char toPrimitiveTargetDesc(String descriptor) {</b>
+<b class="nc">&nbsp;        if (descriptor.length() == 1) {</b>
+<b class="nc">&nbsp;            return descriptor.charAt(0);</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            char var10000;</b>
+&nbsp;            switch (descriptor) {
+&nbsp;                case &quot;Ljava/lang/Double&quot; -&gt; var10000 = &#39;D&#39;;
+<b class="nc">&nbsp;                case &quot;Ljava/lang/Float&quot; -&gt; var10000 = &#39;F&#39;;</b>
+<b class="nc">&nbsp;                case &quot;Ljava/lang/Integer&quot; -&gt; var10000 = &#39;I&#39;;</b>
+<b class="nc">&nbsp;                case &quot;Ljava/lang/Long&quot; -&gt; var10000 = &#39;J&#39;;</b>
+&nbsp;                case &quot;Ljava/lang/Boolean&quot; -&gt; var10000 = &#39;Z&#39;;
+<b class="nc">&nbsp;                case &quot;Ljava/lang/Character&quot; -&gt; var10000 = &#39;C&#39;;</b>
+<b class="nc">&nbsp;                case &quot;Ljava/lang/Byte&quot; -&gt; var10000 = &#39;B&#39;;</b>
+&nbsp;                case &quot;Ljava/lang/Short&quot; -&gt; var10000 = &#39;S&#39;;
+<b class="nc">&nbsp;                default -&gt; throw new IllegalStateException(&quot;No primitive for &#39;&quot; + descriptor + &quot;&#39;&quot;);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            return var10000;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public static void insertCheckCast(MethodVisitor mv, @Nullable String descriptor) {</b>
+&nbsp;        if (descriptor != null &amp;&amp; descriptor.length() != 1) {
+<b class="nc">&nbsp;            if (descriptor.charAt(0) == &#39;[&#39;) {</b>
+<b class="nc">&nbsp;                if (isPrimitiveArray(descriptor)) {</b>
+&nbsp;                    mv.visitTypeInsn(192, descriptor);
+<b class="nc">&nbsp;                } else {</b>
+<b class="nc">&nbsp;                    mv.visitTypeInsn(192, descriptor + &quot;;&quot;);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            } else if (!descriptor.equals(&quot;Ljava/lang/Object&quot;)) {</b>
+<b class="nc">&nbsp;                mv.visitTypeInsn(192, descriptor.substring(1));</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void insertBoxIfNecessary(MethodVisitor mv, @Nullable String descriptor) {
+<b class="nc">&nbsp;        if (descriptor != null &amp;&amp; descriptor.length() == 1) {</b>
+<b class="nc">&nbsp;            insertBoxIfNecessary(mv, descriptor.charAt(0));</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public static void insertBoxIfNecessary(MethodVisitor mv, char ch) {
+&nbsp;        switch (ch) {
+&nbsp;            case &#39;B&#39;:
+&nbsp;                mv.visitMethodInsn(184, &quot;java/lang/Byte&quot;, &quot;valueOf&quot;, &quot;(B)Ljava/lang/Byte;&quot;, false);
+&nbsp;                break;
+&nbsp;            case &#39;C&#39;:
+&nbsp;                mv.visitMethodInsn(184, &quot;java/lang/Character&quot;, &quot;valueOf&quot;, &quot;(C)Ljava/lang/Character;&quot;, false);
+&nbsp;                break;
+<b class="pc">&nbsp;            case &#39;D&#39;:</b>
+<b class="nc">&nbsp;                mv.visitMethodInsn(184, &quot;java/lang/Double&quot;, &quot;valueOf&quot;, &quot;(D)Ljava/lang/Double;&quot;, false);</b>
+&nbsp;                break;
+&nbsp;            case &#39;E&#39;:
+<b class="fc">&nbsp;            case &#39;G&#39;:</b>
+&nbsp;            case &#39;H&#39;:
+&nbsp;            case &#39;K&#39;:
+&nbsp;            case &#39;M&#39;:
+&nbsp;            case &#39;N&#39;:
+&nbsp;            case &#39;O&#39;:
+&nbsp;            case &#39;P&#39;:
+&nbsp;            case &#39;Q&#39;:
+&nbsp;            case &#39;R&#39;:
+&nbsp;            case &#39;T&#39;:
+&nbsp;            case &#39;U&#39;:
+<b class="nc">&nbsp;            case &#39;W&#39;:</b>
+&nbsp;            case &#39;X&#39;:
+&nbsp;            case &#39;Y&#39;:
+&nbsp;            default:
+&nbsp;                throw new IllegalArgumentException(&quot;Boxing should not be attempted for descriptor &#39;&quot; + ch + &quot;&#39;&quot;);
+&nbsp;            case &#39;F&#39;:
+&nbsp;                mv.visitMethodInsn(184, &quot;java/lang/Float&quot;, &quot;valueOf&quot;, &quot;(F)Ljava/lang/Float;&quot;, false);
+&nbsp;                break;
+&nbsp;            case &#39;I&#39;:
+&nbsp;                mv.visitMethodInsn(184, &quot;java/lang/Integer&quot;, &quot;valueOf&quot;, &quot;(I)Ljava/lang/Integer;&quot;, false);
+<b class="nc">&nbsp;                break;</b>
+&nbsp;            case &#39;J&#39;:
+&nbsp;                mv.visitMethodInsn(184, &quot;java/lang/Long&quot;, &quot;valueOf&quot;, &quot;(J)Ljava/lang/Long;&quot;, false);
+&nbsp;            case &#39;L&#39;:
+&nbsp;            case &#39;V&#39;:
+&nbsp;            case &#39;[&#39;:
+&nbsp;                break;
+&nbsp;            case &#39;S&#39;:
+&nbsp;                mv.visitMethodInsn(184, &quot;java/lang/Short&quot;, &quot;valueOf&quot;, &quot;(S)Ljava/lang/Short;&quot;, false);
+&nbsp;                break;
+<b class="nc">&nbsp;            case &#39;Z&#39;:</b>
+<b class="nc">&nbsp;                mv.visitMethodInsn(184, &quot;java/lang/Boolean&quot;, &quot;valueOf&quot;, &quot;(Z)Ljava/lang/Boolean;&quot;, false);</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public static String toDescriptor(Class&lt;?&gt; type) {</b>
+&nbsp;        String name = type.getName();
+&nbsp;        if (type.isPrimitive()) {
+<b class="nc">&nbsp;            switch (name.length()) {</b>
+&nbsp;                case 3:
+&nbsp;                    return &quot;I&quot;;
+<b class="nc">&nbsp;                case 4:</b>
+&nbsp;                    String var4;
+&nbsp;                    switch (name) {
+&nbsp;                        case &quot;byte&quot; -&gt; var4 = &quot;B&quot;;
+&nbsp;                        case &quot;char&quot; -&gt; var4 = &quot;C&quot;;
+&nbsp;                        case &quot;long&quot; -&gt; var4 = &quot;J&quot;;
+&nbsp;                        case &quot;void&quot; -&gt; var4 = &quot;V&quot;;
+&nbsp;                        default -&gt; throw new IllegalArgumentException(&quot;Unknown primitive type: &quot; + name);
+&nbsp;                    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                    return var4;</b>
+&nbsp;                case 5:
+<b class="nc">&nbsp;                    if (name.equals(&quot;float&quot;)) {</b>
+<b class="nc">&nbsp;                        return &quot;F&quot;;</b>
+&nbsp;                    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                    if (name.equals(&quot;short&quot;)) {</b>
+&nbsp;                        return &quot;S&quot;;
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                    break;
+&nbsp;                case 6:
+&nbsp;                    if (name.equals(&quot;double&quot;)) {
+<b class="nc">&nbsp;                        return &quot;D&quot;;</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                    break;</b>
+<b class="nc">&nbsp;                case 7:</b>
+<b class="nc">&nbsp;                    if (name.equals(&quot;boolean&quot;)) {</b>
+<b class="nc">&nbsp;                        return &quot;Z&quot;;</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                    break;
+&nbsp;                default:
+&nbsp;                    throw new IllegalArgumentException(&quot;Unknown primitive type: &quot; + name);
+&nbsp;            }
+&nbsp;
+&nbsp;            return &quot;&quot;;
+&nbsp;        } else if (name.charAt(0) != &#39;[&#39;) {
+&nbsp;            String var10000 = type.getName();
+&nbsp;            return &quot;L&quot; + var10000.replace(&#39;.&#39;, &#39;/&#39;);
+&nbsp;        } else {
+&nbsp;            return name.endsWith(&quot;;&quot;) ? name.substring(0, name.length() - 1).replace(&#39;.&#39;, &#39;/&#39;) : name;
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public static String[] toParamDescriptors(Method method) {
+<b class="nc">&nbsp;        return toDescriptors(method.getParameterTypes());</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public static String[] toParamDescriptors(Constructor&lt;?&gt; ctor) {</b>
+&nbsp;        return toDescriptors(ctor.getParameterTypes());
+&nbsp;    }
+&nbsp;
+&nbsp;    public static String[] toDescriptors(Class&lt;?&gt;[] types) {
+&nbsp;        int typesCount = types.length;
+&nbsp;        String[] descriptors = new String[typesCount];
+&nbsp;
+&nbsp;        for(int p = 0; p &lt; typesCount; ++p) {
+&nbsp;            descriptors[p] = toDescriptor(types[p]);
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return descriptors;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public static void insertOptimalLoad(MethodVisitor mv, int value) {</b>
+<b class="nc">&nbsp;        if (value &lt; 6) {</b>
+&nbsp;            mv.visitInsn(3 + value);
+<b class="nc">&nbsp;        } else if (value &lt; 127) {</b>
+<b class="nc">&nbsp;            mv.visitIntInsn(16, value);</b>
+<b class="nc">&nbsp;        } else if (value &lt; 32767) {</b>
+&nbsp;            mv.visitIntInsn(17, value);
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            mv.visitLdcInsn(value);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void insertArrayStore(MethodVisitor mv, String arrayComponentType) {
+&nbsp;        if (arrayComponentType.length() == 1) {
+&nbsp;            char componentType = arrayComponentType.charAt(0);
+&nbsp;            switch (componentType) {
+&nbsp;                case &#39;B&#39;:
+<b class="nc">&nbsp;                case &#39;Z&#39;:</b>
+&nbsp;                    mv.visitInsn(84);
+&nbsp;                    break;
+&nbsp;                case &#39;C&#39;:
+&nbsp;                    mv.visitInsn(85);
+&nbsp;                    break;
+&nbsp;                case &#39;D&#39;:
+&nbsp;                    mv.visitInsn(82);
+&nbsp;                    break;
+<b class="nc">&nbsp;                case &#39;E&#39;:</b>
+<b class="nc">&nbsp;                case &#39;G&#39;:</b>
+&nbsp;                case &#39;H&#39;:
+<b class="nc">&nbsp;                case &#39;K&#39;:</b>
+<b class="nc">&nbsp;                case &#39;L&#39;:</b>
+<b class="nc">&nbsp;                case &#39;M&#39;:</b>
+<b class="nc">&nbsp;                case &#39;N&#39;:</b>
+<b class="nc">&nbsp;                case &#39;O&#39;:</b>
+<b class="nc">&nbsp;                case &#39;P&#39;:</b>
+<b class="nc">&nbsp;                case &#39;Q&#39;:</b>
+<b class="nc">&nbsp;                case &#39;R&#39;:</b>
+<b class="nc">&nbsp;                case &#39;T&#39;:</b>
+<b class="nc">&nbsp;                case &#39;U&#39;:</b>
+&nbsp;                case &#39;V&#39;:
+&nbsp;                case &#39;W&#39;:
+&nbsp;                case &#39;X&#39;:
+&nbsp;                case &#39;Y&#39;:
+&nbsp;                default:
+&nbsp;                    throw new IllegalArgumentException(&quot;Unexpected array component type &quot; + componentType);
+&nbsp;                case &#39;F&#39;:
+&nbsp;                    mv.visitInsn(81);
+&nbsp;                    break;
+<b class="nc">&nbsp;                case &#39;I&#39;:</b>
+<b class="nc">&nbsp;                    mv.visitInsn(79);</b>
+<b class="nc">&nbsp;                    break;</b>
+<b class="nc">&nbsp;                case &#39;J&#39;:</b>
+&nbsp;                    mv.visitInsn(80);
+&nbsp;                    break;
+<b class="nc">&nbsp;                case &#39;S&#39;:</b>
+&nbsp;                    mv.visitInsn(86);
+&nbsp;            }
+&nbsp;        } else {
+<b class="nc">&nbsp;            mv.visitInsn(83);</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static int arrayCodeFor(String arrayType) {
+&nbsp;        byte var10000;
+&nbsp;        switch (arrayType.charAt(0)) {
+&nbsp;            case &#39;B&#39;:
+&nbsp;                var10000 = 8;
+&nbsp;                break;
+&nbsp;            case &#39;C&#39;:
+&nbsp;                var10000 = 5;
+&nbsp;                break;
+&nbsp;            case &#39;D&#39;:
+<b class="nc">&nbsp;                var10000 = 7;</b>
+<b class="nc">&nbsp;                break;</b>
+&nbsp;            case &#39;E&#39;:
+&nbsp;            case &#39;G&#39;:
+&nbsp;            case &#39;H&#39;:
+&nbsp;            case &#39;K&#39;:
+&nbsp;            case &#39;L&#39;:
+&nbsp;            case &#39;M&#39;:
+&nbsp;            case &#39;N&#39;:
+&nbsp;            case &#39;O&#39;:
+&nbsp;            case &#39;P&#39;:
+&nbsp;            case &#39;Q&#39;:
+<b class="nc">&nbsp;            case &#39;R&#39;:</b>
+&nbsp;            case &#39;T&#39;:
+<b class="nc">&nbsp;            case &#39;U&#39;:</b>
+&nbsp;            case &#39;V&#39;:
+<b class="nc">&nbsp;            case &#39;W&#39;:</b>
+&nbsp;            case &#39;X&#39;:
+<b class="nc">&nbsp;            case &#39;Y&#39;:</b>
+&nbsp;            default:
+<b class="nc">&nbsp;                throw new IllegalArgumentException(&quot;Unexpected array type &quot; + arrayType.charAt(0));</b>
+&nbsp;            case &#39;F&#39;:
+<b class="nc">&nbsp;                var10000 = 6;</b>
+&nbsp;                break;
+<b class="nc">&nbsp;            case &#39;I&#39;:</b>
+&nbsp;                var10000 = 10;
+<b class="nc">&nbsp;                break;</b>
+&nbsp;            case &#39;J&#39;:
+<b class="nc">&nbsp;                var10000 = 11;</b>
+&nbsp;                break;
+&nbsp;            case &#39;S&#39;:
+&nbsp;                var10000 = 9;
+<b class="nc">&nbsp;                break;</b>
+&nbsp;            case &#39;Z&#39;:
+&nbsp;                var10000 = 4;
+&nbsp;        }
+&nbsp;
+&nbsp;        return var10000;
+&nbsp;    }
+&nbsp;
+&nbsp;    public static boolean isReferenceTypeArray(String arrayType) {
+&nbsp;        int length = arrayType.length();
+&nbsp;
+<b class="fc">&nbsp;        for(int i = 0; i &lt; length; ++i) {</b>
+<b class="pc">&nbsp;            char ch = arrayType.charAt(i);</b>
+<b class="nc">&nbsp;            if (ch != &#39;[&#39;) {</b>
+&nbsp;                return ch == &#39;L&#39;;
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return false;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public static void insertNewArrayCode(MethodVisitor mv, int size, String arrayType) {</b>
+<b class="nc">&nbsp;        insertOptimalLoad(mv, size);</b>
+&nbsp;        if (arrayType.length() == 1) {
+&nbsp;            mv.visitIntInsn(188, arrayCodeFor(arrayType));
+<b class="nc">&nbsp;        } else if (arrayType.charAt(0) == &#39;[&#39;) {</b>
+<b class="nc">&nbsp;            if (isReferenceTypeArray(arrayType)) {</b>
+&nbsp;                mv.visitTypeInsn(189, arrayType + &quot;;&quot;);
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                mv.visitTypeInsn(189, arrayType);</b>
+&nbsp;            }
+&nbsp;        } else {
+&nbsp;            mv.visitTypeInsn(189, arrayType.substring(1));
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static void insertNumericUnboxOrPrimitiveTypeCoercion(MethodVisitor mv, @Nullable String stackDescriptor, char targetDescriptor) {
+<b class="nc">&nbsp;        if (!isPrimitive(stackDescriptor)) {</b>
+<b class="nc">&nbsp;            insertUnboxNumberInsns(mv, targetDescriptor, stackDescriptor);</b>
+&nbsp;        } else {
+&nbsp;            insertAnyNecessaryTypeConversionBytecodes(mv, targetDescriptor, stackDescriptor);
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+<b class="pc">&nbsp;    public static String toBoxedDescriptor(String primitiveDescriptor) {</b>
+<b class="fc">&nbsp;        String var10000;</b>
+&nbsp;        switch (primitiveDescriptor.charAt(0)) {
+&nbsp;            case &#39;B&#39;:
+<b class="nc">&nbsp;                var10000 = &quot;Ljava/lang/Byte&quot;;</b>
+<b class="nc">&nbsp;                break;</b>
+&nbsp;            case &#39;C&#39;:
+&nbsp;                var10000 = &quot;Ljava/lang/Character&quot;;
+<b class="nc">&nbsp;                break;</b>
+&nbsp;            case &#39;D&#39;:
+&nbsp;                var10000 = &quot;Ljava/lang/Double&quot;;
+&nbsp;                break;
+<b class="nc">&nbsp;            case &#39;E&#39;:</b>
+&nbsp;            case &#39;G&#39;:
+&nbsp;            case &#39;H&#39;:
+&nbsp;            case &#39;K&#39;:
+&nbsp;            case &#39;L&#39;:
+&nbsp;            case &#39;M&#39;:
+&nbsp;            case &#39;N&#39;:
+&nbsp;            case &#39;O&#39;:
+&nbsp;            case &#39;P&#39;:
+&nbsp;            case &#39;Q&#39;:
+<b class="nc">&nbsp;            case &#39;R&#39;:</b>
+&nbsp;            case &#39;T&#39;:
+&nbsp;            case &#39;U&#39;:
+&nbsp;            case &#39;V&#39;:
+&nbsp;            case &#39;W&#39;:
+&nbsp;            case &#39;X&#39;:
+&nbsp;            case &#39;Y&#39;:
+&nbsp;            default:
+&nbsp;                throw new IllegalArgumentException(&quot;Unexpected non primitive descriptor &quot; + primitiveDescriptor);
+&nbsp;            case &#39;F&#39;:
+<b class="nc">&nbsp;                var10000 = &quot;Ljava/lang/Float&quot;;</b>
+&nbsp;                break;
+&nbsp;            case &#39;I&#39;:
+&nbsp;                var10000 = &quot;Ljava/lang/Integer&quot;;
+&nbsp;                break;
+&nbsp;            case &#39;J&#39;:
+&nbsp;                var10000 = &quot;Ljava/lang/Long&quot;;
+&nbsp;                break;
+&nbsp;            case &#39;S&#39;:
+<b class="nc">&nbsp;                var10000 = &quot;Ljava/lang/Short&quot;;</b>
+<b class="nc">&nbsp;                break;</b>
+<b class="nc">&nbsp;            case &#39;Z&#39;:</b>
+<b class="nc">&nbsp;                var10000 = &quot;Ljava/lang/Boolean&quot;;</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        return var10000;
+&nbsp;    }
+&nbsp;
+&nbsp;    @FunctionalInterface
+&nbsp;    public interface ClinitAdder {
+&nbsp;        void generateCode(MethodVisitor mv, CodeFlow codeflow);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    @FunctionalInterface</b>
+<b class="nc">&nbsp;    public interface FieldAdder {</b>
+&nbsp;        void generateField(ClassWriter cw, CodeFlow codeflow);
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:54</div>
+</div>
+</body>
+</html>

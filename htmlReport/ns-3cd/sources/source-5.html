@@ -1,0 +1,669 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > JpaTransactionManager</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.orm.jpa</a>
+</div>
+
+<h1>Coverage Summary for Class: JpaTransactionManager (org.springframework.orm.jpa)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">JpaTransactionManager</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/30)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/98)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/168)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.orm.jpa;
+&nbsp;
+&nbsp;import jakarta.persistence.EntityManager;
+&nbsp;import jakarta.persistence.EntityManagerFactory;
+&nbsp;import jakarta.persistence.EntityTransaction;
+&nbsp;import jakarta.persistence.PersistenceException;
+&nbsp;import jakarta.persistence.RollbackException;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Properties;
+&nbsp;import java.util.function.Consumer;
+&nbsp;import javax.sql.DataSource;
+&nbsp;import org.apache.commons.logging.Log;
+&nbsp;import org.springframework.beans.BeansException;
+&nbsp;import org.springframework.beans.factory.BeanFactory;
+&nbsp;import org.springframework.beans.factory.BeanFactoryAware;
+&nbsp;import org.springframework.beans.factory.InitializingBean;
+&nbsp;import org.springframework.beans.factory.ListableBeanFactory;
+&nbsp;import org.springframework.dao.DataAccessException;
+&nbsp;import org.springframework.dao.support.DataAccessUtils;
+&nbsp;import org.springframework.jdbc.datasource.ConnectionHandle;
+&nbsp;import org.springframework.jdbc.datasource.ConnectionHolder;
+&nbsp;import org.springframework.jdbc.datasource.JdbcTransactionObjectSupport;
+&nbsp;import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.transaction.CannotCreateTransactionException;
+&nbsp;import org.springframework.transaction.IllegalTransactionStateException;
+&nbsp;import org.springframework.transaction.NestedTransactionNotSupportedException;
+&nbsp;import org.springframework.transaction.SavepointManager;
+&nbsp;import org.springframework.transaction.TransactionDefinition;
+&nbsp;import org.springframework.transaction.TransactionException;
+&nbsp;import org.springframework.transaction.TransactionSystemException;
+&nbsp;import org.springframework.transaction.support.AbstractPlatformTransactionManager;
+&nbsp;import org.springframework.transaction.support.DefaultTransactionStatus;
+&nbsp;import org.springframework.transaction.support.DelegatingTransactionDefinition;
+&nbsp;import org.springframework.transaction.support.ResourceTransactionDefinition;
+&nbsp;import org.springframework.transaction.support.ResourceTransactionManager;
+&nbsp;import org.springframework.transaction.support.TransactionSynchronizationManager;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.CollectionUtils;
+&nbsp;
+&nbsp;public class JpaTransactionManager extends AbstractPlatformTransactionManager implements ResourceTransactionManager, BeanFactoryAware, InitializingBean {
+&nbsp;    @Nullable
+&nbsp;    private EntityManagerFactory entityManagerFactory;
+&nbsp;    @Nullable
+&nbsp;    private String persistenceUnitName;
+&nbsp;    private final Map&lt;String, Object&gt; jpaPropertyMap;
+&nbsp;    @Nullable
+&nbsp;    private DataSource dataSource;
+&nbsp;    private JpaDialect jpaDialect;
+&nbsp;    @Nullable
+&nbsp;    private Consumer&lt;EntityManager&gt; entityManagerInitializer;
+&nbsp;
+&nbsp;    public JpaTransactionManager() {
+&nbsp;        this.jpaPropertyMap = new HashMap();
+&nbsp;        this.jpaDialect = new DefaultJpaDialect();
+&nbsp;        this.setNestedTransactionAllowed(true);
+&nbsp;    }
+&nbsp;
+&nbsp;    public JpaTransactionManager(EntityManagerFactory emf) {
+&nbsp;        this();
+&nbsp;        this.entityManagerFactory = emf;
+&nbsp;        this.afterPropertiesSet();
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setEntityManagerFactory(@Nullable EntityManagerFactory emf) {
+&nbsp;        this.entityManagerFactory = emf;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public EntityManagerFactory getEntityManagerFactory() {
+&nbsp;        return this.entityManagerFactory;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected final EntityManagerFactory obtainEntityManagerFactory() {
+&nbsp;        EntityManagerFactory emf = this.getEntityManagerFactory();
+&nbsp;        Assert.state(emf != null, &quot;No EntityManagerFactory set&quot;);
+&nbsp;        return emf;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setPersistenceUnitName(@Nullable String persistenceUnitName) {
+&nbsp;        this.persistenceUnitName = persistenceUnitName;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public String getPersistenceUnitName() {
+&nbsp;        return this.persistenceUnitName;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setJpaProperties(@Nullable Properties jpaProperties) {
+&nbsp;        CollectionUtils.mergePropertiesIntoMap(jpaProperties, this.jpaPropertyMap);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setJpaPropertyMap(@Nullable Map&lt;String, ?&gt; jpaProperties) {
+&nbsp;        if (jpaProperties != null) {
+&nbsp;            this.jpaPropertyMap.putAll(jpaProperties);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public Map&lt;String, Object&gt; getJpaPropertyMap() {
+&nbsp;        return this.jpaPropertyMap;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setDataSource(@Nullable DataSource dataSource) {
+&nbsp;        if (dataSource instanceof TransactionAwareDataSourceProxy proxy) {
+&nbsp;            this.dataSource = proxy.getTargetDataSource();
+&nbsp;        } else {
+&nbsp;            this.dataSource = dataSource;
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public DataSource getDataSource() {
+&nbsp;        return this.dataSource;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setJpaDialect(@Nullable JpaDialect jpaDialect) {
+&nbsp;        this.jpaDialect = (JpaDialect)(jpaDialect != null ? jpaDialect : new DefaultJpaDialect());
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public JpaDialect getJpaDialect() {
+&nbsp;        return this.jpaDialect;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void setEntityManagerInitializer(Consumer&lt;EntityManager&gt; entityManagerInitializer) {
+&nbsp;        this.entityManagerInitializer = entityManagerInitializer;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+&nbsp;        if (this.getEntityManagerFactory() == null) {
+&nbsp;            if (!(beanFactory instanceof ListableBeanFactory)) {
+&nbsp;                throw new IllegalStateException(&quot;Cannot retrieve EntityManagerFactory by persistence unit name in a non-listable BeanFactory: &quot; + String.valueOf(beanFactory));
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            ListableBeanFactory lbf = (ListableBeanFactory)beanFactory;</b>
+<b class="nc">&nbsp;            this.setEntityManagerFactory(EntityManagerFactoryUtils.findEntityManagerFactory(lbf, this.getPersistenceUnitName()));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void afterPropertiesSet() {
+&nbsp;        if (this.getEntityManagerFactory() == null) {
+&nbsp;            throw new IllegalArgumentException(&quot;&#39;entityManagerFactory&#39; or &#39;persistenceUnitName&#39; is required&quot;);
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            EntityManagerFactory dataSource = this.getEntityManagerFactory();</b>
+<b class="nc">&nbsp;            if (dataSource instanceof EntityManagerFactoryInfo) {</b>
+&nbsp;                EntityManagerFactoryInfo emfInfo = (EntityManagerFactoryInfo)dataSource;
+&nbsp;                DataSource dataSource = emfInfo.getDataSource();
+&nbsp;                if (dataSource != null) {
+&nbsp;                    this.setDataSource(dataSource);
+&nbsp;                }
+&nbsp;
+&nbsp;                JpaDialect jpaDialect = emfInfo.getJpaDialect();
+&nbsp;                if (jpaDialect != null) {
+&nbsp;                    this.setJpaDialect(jpaDialect);
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public Object getResourceFactory() {
+&nbsp;        return this.obtainEntityManagerFactory();
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected Object doGetTransaction() {</b>
+&nbsp;        JpaTransactionObject txObject = new JpaTransactionObject();
+&nbsp;        txObject.setSavepointAllowed(this.isNestedTransactionAllowed());
+&nbsp;        EntityManagerHolder emHolder = (EntityManagerHolder)TransactionSynchronizationManager.getResource(this.obtainEntityManagerFactory());
+&nbsp;        if (emHolder != null) {
+&nbsp;            if (this.logger.isDebugEnabled()) {
+&nbsp;                this.logger.debug(&quot;Found thread-bound EntityManager [&quot; + String.valueOf(emHolder.getEntityManager()) + &quot;] for JPA transaction&quot;);
+&nbsp;            }
+&nbsp;
+&nbsp;            txObject.setEntityManagerHolder(emHolder, false);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if (this.getDataSource() != null) {</b>
+&nbsp;            ConnectionHolder conHolder = (ConnectionHolder)TransactionSynchronizationManager.getResource(this.getDataSource());
+&nbsp;            txObject.setConnectionHolder(conHolder);
+&nbsp;        }
+&nbsp;
+&nbsp;        return txObject;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected boolean isExistingTransaction(Object transaction) {
+&nbsp;        return ((JpaTransactionObject)transaction).hasTransaction();
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected void doBegin(Object transaction, TransactionDefinition definition) {</b>
+&nbsp;        JpaTransactionObject txObject = (JpaTransactionObject)transaction;
+&nbsp;        if (txObject.hasConnectionHolder() &amp;&amp; !txObject.getConnectionHolder().isSynchronizedWithTransaction()) {
+&nbsp;            throw new IllegalTransactionStateException(&quot;Pre-bound JDBC Connection found! JpaTransactionManager does not support running within DataSourceTransactionManager if told to manage the DataSource itself. It is recommended to use a single JpaTransactionManager for all transactions on a single DataSource, no matter whether JPA or JDBC access.&quot;);
+&nbsp;        } else {
+&nbsp;            try {
+&nbsp;                if (!txObject.hasEntityManagerHolder() || txObject.getEntityManagerHolder().isSynchronizedWithTransaction()) {
+&nbsp;                    EntityManager newEm = this.createEntityManagerForTransaction();
+<b class="nc">&nbsp;                    if (this.logger.isDebugEnabled()) {</b>
+&nbsp;                        this.logger.debug(&quot;Opened new EntityManager [&quot; + String.valueOf(newEm) + &quot;] for JPA transaction&quot;);
+&nbsp;                    }
+&nbsp;
+&nbsp;                    txObject.setEntityManagerHolder(new EntityManagerHolder(newEm), true);
+&nbsp;                }
+&nbsp;
+&nbsp;                EntityManager em = txObject.getEntityManagerHolder().getEntityManager();
+&nbsp;                int timeoutToUse = this.determineTimeout(definition);
+&nbsp;                Object transactionData = this.getJpaDialect().beginTransaction(em, new JpaTransactionDefinition(definition, timeoutToUse, txObject.isNewEntityManagerHolder()));
+&nbsp;                txObject.setTransactionData(transactionData);
+<b class="nc">&nbsp;                txObject.setReadOnly(definition.isReadOnly());</b>
+&nbsp;                if (timeoutToUse != -1) {
+&nbsp;                    txObject.getEntityManagerHolder().setTimeoutInSeconds(timeoutToUse);
+&nbsp;                }
+&nbsp;
+&nbsp;                if (this.getDataSource() != null) {
+&nbsp;                    ConnectionHandle conHandle = this.getJpaDialect().getJdbcConnection(em, definition.isReadOnly());
+&nbsp;                    if (conHandle != null) {
+&nbsp;                        ConnectionHolder conHolder = new ConnectionHolder(conHandle);
+&nbsp;                        if (timeoutToUse != -1) {
+<b class="nc">&nbsp;                            conHolder.setTimeoutInSeconds(timeoutToUse);</b>
+<b class="nc">&nbsp;                        }</b>
+&nbsp;
+&nbsp;                        if (this.logger.isDebugEnabled()) {
+&nbsp;                            this.logger.debug(&quot;Exposing JPA transaction as JDBC [&quot; + String.valueOf(conHandle) + &quot;]&quot;);
+&nbsp;                        }
+&nbsp;
+&nbsp;                        TransactionSynchronizationManager.bindResource(this.getDataSource(), conHolder);
+&nbsp;                        txObject.setConnectionHolder(conHolder);
+&nbsp;                    } else if (this.logger.isDebugEnabled()) {
+&nbsp;                        Log var10000 = this.logger;
+<b class="nc">&nbsp;                        String var10001 = String.valueOf(em);</b>
+&nbsp;                        var10000.debug(&quot;Not exposing JPA transaction [&quot; + var10001 + &quot;] as JDBC transaction because JpaDialect [&quot; + String.valueOf(this.getJpaDialect()) + &quot;] does not support JDBC Connection retrieval&quot;);
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                if (txObject.isNewEntityManagerHolder()) {
+&nbsp;                    TransactionSynchronizationManager.bindResource(this.obtainEntityManagerFactory(), txObject.getEntityManagerHolder());
+&nbsp;                }
+&nbsp;
+&nbsp;                txObject.getEntityManagerHolder().setSynchronizedWithTransaction(true);
+&nbsp;            } catch (TransactionException ex) {
+&nbsp;                this.closeEntityManagerAfterFailedBegin(txObject);
+&nbsp;                throw ex;
+&nbsp;            } catch (Throwable ex) {
+&nbsp;                this.closeEntityManagerAfterFailedBegin(txObject);
+&nbsp;                throw new CannotCreateTransactionException(&quot;Could not open JPA EntityManager for transaction&quot;, ex);
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected EntityManager createEntityManagerForTransaction() {
+&nbsp;        EntityManagerFactory emf = this.obtainEntityManagerFactory();
+&nbsp;        Map&lt;String, Object&gt; properties = this.getJpaPropertyMap();
+&nbsp;        EntityManager em;
+&nbsp;        if (emf instanceof EntityManagerFactoryInfo emfInfo) {
+&nbsp;            em = emfInfo.createNativeEntityManager(properties);
+&nbsp;        } else {
+&nbsp;            em = !CollectionUtils.isEmpty(properties) ? emf.createEntityManager(properties) : emf.createEntityManager();
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        if (this.entityManagerInitializer != null) {
+&nbsp;            this.entityManagerInitializer.accept(em);
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return em;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected void closeEntityManagerAfterFailedBegin(JpaTransactionObject txObject) {
+&nbsp;        if (txObject.isNewEntityManagerHolder()) {
+&nbsp;            EntityManager em = txObject.getEntityManagerHolder().getEntityManager();
+&nbsp;
+&nbsp;            try {
+&nbsp;                if (em.getTransaction().isActive()) {
+&nbsp;                    em.getTransaction().rollback();
+<b class="nc">&nbsp;                }</b>
+&nbsp;            } catch (Throwable ex) {
+&nbsp;                this.logger.debug(&quot;Could not rollback EntityManager after failed transaction begin&quot;, ex);
+&nbsp;            } finally {
+&nbsp;                EntityManagerFactoryUtils.closeEntityManager(em);
+&nbsp;            }
+&nbsp;
+&nbsp;            txObject.setEntityManagerHolder((EntityManagerHolder)null, false);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Object doSuspend(Object transaction) {
+&nbsp;        JpaTransactionObject txObject = (JpaTransactionObject)transaction;
+&nbsp;        txObject.setEntityManagerHolder((EntityManagerHolder)null, false);
+<b class="nc">&nbsp;        EntityManagerHolder entityManagerHolder = (EntityManagerHolder)TransactionSynchronizationManager.unbindResource(this.obtainEntityManagerFactory());</b>
+&nbsp;        txObject.setConnectionHolder((ConnectionHolder)null);
+&nbsp;        ConnectionHolder connectionHolder = null;
+&nbsp;        if (this.getDataSource() != null &amp;&amp; TransactionSynchronizationManager.hasResource(this.getDataSource())) {
+&nbsp;            connectionHolder = (ConnectionHolder)TransactionSynchronizationManager.unbindResource(this.getDataSource());
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return new SuspendedResourcesHolder(entityManagerHolder, connectionHolder);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void doResume(@Nullable Object transaction, Object suspendedResources) {
+&nbsp;        SuspendedResourcesHolder resourcesHolder = (SuspendedResourcesHolder)suspendedResources;
+&nbsp;        TransactionSynchronizationManager.bindResource(this.obtainEntityManagerFactory(), resourcesHolder.getEntityManagerHolder());
+&nbsp;        ConnectionHolder connectionHolder = resourcesHolder.getConnectionHolder();
+&nbsp;        if (connectionHolder != null &amp;&amp; this.getDataSource() != null) {
+&nbsp;            TransactionSynchronizationManager.bindResource(this.getDataSource(), connectionHolder);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected boolean shouldCommitOnGlobalRollbackOnly() {
+&nbsp;        return true;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected void doCommit(DefaultTransactionStatus status) {
+&nbsp;        JpaTransactionObject txObject = (JpaTransactionObject)status.getTransaction();
+&nbsp;        if (status.isDebug()) {
+&nbsp;            this.logger.debug(&quot;Committing JPA transaction on EntityManager [&quot; + String.valueOf(txObject.getEntityManagerHolder().getEntityManager()) + &quot;]&quot;);
+&nbsp;        }
+&nbsp;
+&nbsp;        try {
+&nbsp;            EntityTransaction tx = txObject.getEntityManagerHolder().getEntityManager().getTransaction();
+<b class="nc">&nbsp;            tx.commit();</b>
+<b class="nc">&nbsp;        } catch (RollbackException ex) {</b>
+<b class="nc">&nbsp;            Throwable dae = ex.getCause();</b>
+&nbsp;            if (dae instanceof RuntimeException runtimeException) {
+&nbsp;                DataAccessException dae = this.getJpaDialect().translateExceptionIfPossible(runtimeException);
+<b class="nc">&nbsp;                if (dae != null) {</b>
+&nbsp;                    throw dae;
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            throw new TransactionSystemException(&quot;Could not commit JPA transaction&quot;, ex);
+&nbsp;        } catch (RuntimeException ex) {
+&nbsp;            throw DataAccessUtils.translateIfNecessary(ex, this.getJpaDialect());
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected void doRollback(DefaultTransactionStatus status) {</b>
+<b class="nc">&nbsp;        JpaTransactionObject txObject = (JpaTransactionObject)status.getTransaction();</b>
+&nbsp;        if (status.isDebug()) {
+<b class="nc">&nbsp;            this.logger.debug(&quot;Rolling back JPA transaction on EntityManager [&quot; + String.valueOf(txObject.getEntityManagerHolder().getEntityManager()) + &quot;]&quot;);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            EntityTransaction tx = txObject.getEntityManagerHolder().getEntityManager().getTransaction();
+<b class="nc">&nbsp;            if (tx.isActive()) {</b>
+<b class="nc">&nbsp;                tx.rollback();</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        } catch (PersistenceException ex) {
+&nbsp;            DataAccessException dae = this.getJpaDialect().translateExceptionIfPossible(ex);
+&nbsp;            if (dae != null) {
+&nbsp;                throw dae;
+&nbsp;            }
+&nbsp;
+&nbsp;            throw new TransactionSystemException(&quot;Could not roll back JPA transaction&quot;, ex);
+<b class="nc">&nbsp;        } finally {</b>
+&nbsp;            if (!txObject.isNewEntityManagerHolder()) {
+&nbsp;                txObject.getEntityManagerHolder().getEntityManager().clear();
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected void doSetRollbackOnly(DefaultTransactionStatus status) {</b>
+<b class="nc">&nbsp;        JpaTransactionObject txObject = (JpaTransactionObject)status.getTransaction();</b>
+<b class="nc">&nbsp;        if (status.isDebug()) {</b>
+<b class="nc">&nbsp;            this.logger.debug(&quot;Setting JPA transaction on EntityManager [&quot; + String.valueOf(txObject.getEntityManagerHolder().getEntityManager()) + &quot;] rollback-only&quot;);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        txObject.setRollbackOnly();</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected void doCleanupAfterCompletion(Object transaction) {</b>
+<b class="nc">&nbsp;        JpaTransactionObject txObject = (JpaTransactionObject)transaction;</b>
+<b class="nc">&nbsp;        if (txObject.isNewEntityManagerHolder()) {</b>
+<b class="nc">&nbsp;            TransactionSynchronizationManager.unbindResourceIfPossible(this.obtainEntityManagerFactory());</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        txObject.getEntityManagerHolder().clear();</b>
+&nbsp;        if (this.getDataSource() != null &amp;&amp; txObject.hasConnectionHolder()) {
+&nbsp;            TransactionSynchronizationManager.unbindResource(this.getDataSource());
+&nbsp;            ConnectionHandle conHandle = txObject.getConnectionHolder().getConnectionHandle();
+&nbsp;            if (conHandle != null) {
+<b class="nc">&nbsp;                try {</b>
+&nbsp;                    this.getJpaDialect().releaseJdbcConnection(conHandle, txObject.getEntityManagerHolder().getEntityManager());
+&nbsp;                } catch (Throwable ex) {
+&nbsp;                    this.logger.error(&quot;Failed to release JDBC connection after transaction&quot;, ex);
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        this.getJpaDialect().cleanupTransaction(txObject.getTransactionData());</b>
+&nbsp;        if (txObject.isNewEntityManagerHolder()) {
+&nbsp;            EntityManager em = txObject.getEntityManagerHolder().getEntityManager();
+&nbsp;            if (this.logger.isDebugEnabled()) {
+&nbsp;                this.logger.debug(&quot;Closing JPA EntityManager [&quot; + String.valueOf(em) + &quot;] after transaction&quot;);
+&nbsp;            }
+&nbsp;
+&nbsp;            EntityManagerFactoryUtils.closeEntityManager(em);
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            this.logger.debug(&quot;Not closing pre-bound JPA EntityManager after transaction&quot;);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private class JpaTransactionObject extends JdbcTransactionObjectSupport {</b>
+&nbsp;        @Nullable
+&nbsp;        private EntityManagerHolder entityManagerHolder;
+<b class="nc">&nbsp;        private boolean newEntityManagerHolder;</b>
+&nbsp;        @Nullable
+&nbsp;        private Object transactionData;
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        private JpaTransactionObject() {</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        public void setEntityManagerHolder(@Nullable EntityManagerHolder entityManagerHolder, boolean newEntityManagerHolder) {</b>
+&nbsp;            this.entityManagerHolder = entityManagerHolder;
+&nbsp;            this.newEntityManagerHolder = newEntityManagerHolder;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        public EntityManagerHolder getEntityManagerHolder() {
+&nbsp;            Assert.state(this.entityManagerHolder != null, &quot;No EntityManagerHolder available&quot;);
+&nbsp;            return this.entityManagerHolder;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        public boolean hasEntityManagerHolder() {</b>
+<b class="nc">&nbsp;            return this.entityManagerHolder != null;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        public boolean isNewEntityManagerHolder() {
+<b class="nc">&nbsp;            return this.newEntityManagerHolder;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        public boolean hasTransaction() {</b>
+<b class="nc">&nbsp;            return this.entityManagerHolder != null &amp;&amp; this.entityManagerHolder.isTransactionActive();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        public void setTransactionData(@Nullable Object transactionData) {</b>
+<b class="nc">&nbsp;            this.transactionData = transactionData;</b>
+<b class="nc">&nbsp;            this.getEntityManagerHolder().setTransactionActive(true);</b>
+&nbsp;            if (transactionData instanceof SavepointManager savepointManager) {
+&nbsp;                this.getEntityManagerHolder().setSavepointManager(savepointManager);
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        @Nullable</b>
+<b class="nc">&nbsp;        public Object getTransactionData() {</b>
+&nbsp;            return this.transactionData;
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        public void setRollbackOnly() {
+&nbsp;            EntityTransaction tx = this.getEntityManagerHolder().getEntityManager().getTransaction();
+<b class="nc">&nbsp;            if (tx.isActive()) {</b>
+&nbsp;                tx.setRollbackOnly();
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if (this.hasConnectionHolder()) {</b>
+<b class="nc">&nbsp;                this.getConnectionHolder().setRollbackOnly();</b>
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean isRollbackOnly() {
+&nbsp;            EntityTransaction tx = this.getEntityManagerHolder().getEntityManager().getTransaction();
+&nbsp;            return tx.getRollbackOnly();
+&nbsp;        }
+&nbsp;
+&nbsp;        public void flush() {
+&nbsp;            try {
+&nbsp;                this.getEntityManagerHolder().getEntityManager().flush();
+&nbsp;            } catch (RuntimeException ex) {
+<b class="nc">&nbsp;                throw DataAccessUtils.translateIfNecessary(ex, JpaTransactionManager.this.getJpaDialect());</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        public Object createSavepoint() throws TransactionException {</b>
+&nbsp;            if (this.getEntityManagerHolder().isRollbackOnly()) {
+&nbsp;                throw new CannotCreateTransactionException(&quot;Cannot create savepoint for transaction which is already marked as rollback-only&quot;);
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                return this.getSavepointManager().createSavepoint();</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        public void rollbackToSavepoint(Object savepoint) throws TransactionException {
+<b class="nc">&nbsp;            this.getSavepointManager().rollbackToSavepoint(savepoint);</b>
+&nbsp;            this.getEntityManagerHolder().resetRollbackOnly();
+&nbsp;        }
+&nbsp;
+&nbsp;        public void releaseSavepoint(Object savepoint) throws TransactionException {
+&nbsp;            this.getSavepointManager().releaseSavepoint(savepoint);
+&nbsp;        }
+&nbsp;
+&nbsp;        private SavepointManager getSavepointManager() {
+<b class="nc">&nbsp;            if (!this.isSavepointAllowed()) {</b>
+<b class="nc">&nbsp;                throw new NestedTransactionNotSupportedException(&quot;Transaction manager does not allow nested transactions&quot;);</b>
+&nbsp;            } else {
+<b class="nc">&nbsp;                SavepointManager savepointManager = this.getEntityManagerHolder().getSavepointManager();</b>
+<b class="nc">&nbsp;                if (savepointManager == null) {</b>
+&nbsp;                    throw new NestedTransactionNotSupportedException(&quot;JpaDialect does not support savepoints - check your JPA provider&#39;s capabilities&quot;);
+&nbsp;                } else {
+&nbsp;                    return savepointManager;
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private static class JpaTransactionDefinition extends DelegatingTransactionDefinition implements ResourceTransactionDefinition {</b>
+&nbsp;        private final int timeout;
+&nbsp;        private final boolean localResource;
+&nbsp;
+&nbsp;        public JpaTransactionDefinition(TransactionDefinition targetDefinition, int timeout, boolean localResource) {
+&nbsp;            super(targetDefinition);
+<b class="nc">&nbsp;            this.timeout = timeout;</b>
+<b class="nc">&nbsp;            this.localResource = localResource;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        public int getTimeout() {</b>
+<b class="nc">&nbsp;            return this.timeout;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        public boolean isLocalResource() {
+<b class="nc">&nbsp;            return this.localResource;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static final class SuspendedResourcesHolder {
+<b class="nc">&nbsp;        private final EntityManagerHolder entityManagerHolder;</b>
+<b class="nc">&nbsp;        @Nullable</b>
+<b class="nc">&nbsp;        private final ConnectionHolder connectionHolder;</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        private SuspendedResourcesHolder(EntityManagerHolder emHolder, @Nullable ConnectionHolder conHolder) {</b>
+<b class="nc">&nbsp;            this.entityManagerHolder = emHolder;</b>
+&nbsp;            this.connectionHolder = conHolder;
+&nbsp;        }
+&nbsp;
+&nbsp;        private EntityManagerHolder getEntityManagerHolder() {
+&nbsp;            return this.entityManagerHolder;
+&nbsp;        }
+&nbsp;
+&nbsp;        @Nullable
+&nbsp;        private ConnectionHolder getConnectionHolder() {
+<b class="nc">&nbsp;            return this.connectionHolder;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
+</div>
+</body>
+</html>

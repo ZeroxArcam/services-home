@@ -1,0 +1,282 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > SimpleAliasRegistry</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.core</a>
+</div>
+
+<h1>Coverage Summary for Class: SimpleAliasRegistry (org.springframework.core)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SimpleAliasRegistry</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    84.6%
+  </span>
+  <span class="absValue">
+    (11/13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    34.1%
+  </span>
+  <span class="absValue">
+    (15/44)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    53.1%
+  </span>
+  <span class="absValue">
+    (43/81)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.core;
+&nbsp;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import org.apache.commons.logging.Log;
+&nbsp;import org.apache.commons.logging.LogFactory;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.ObjectUtils;
+&nbsp;import org.springframework.util.StringUtils;
+&nbsp;import org.springframework.util.StringValueResolver;
+&nbsp;
+&nbsp;public class SimpleAliasRegistry implements AliasRegistry {
+&nbsp;    protected final Log logger = LogFactory.getLog(this.getClass());
+&nbsp;    private final Map&lt;String, String&gt; aliasMap = new ConcurrentHashMap(16);
+&nbsp;    private final List&lt;String&gt; aliasNames = new ArrayList(16);
+&nbsp;
+&nbsp;    public SimpleAliasRegistry() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public void registerAlias(String name, String alias) {
+&nbsp;        Assert.hasText(name, &quot;&#39;name&#39; must not be empty&quot;);
+&nbsp;        Assert.hasText(alias, &quot;&#39;alias&#39; must not be empty&quot;);
+&nbsp;        synchronized(this.aliasMap) {
+&nbsp;            if (alias.equals(name)) {
+&nbsp;                this.aliasMap.remove(alias);
+&nbsp;                this.aliasNames.remove(alias);
+&nbsp;                if (this.logger.isDebugEnabled()) {
+&nbsp;                    this.logger.debug(&quot;Alias definition &#39;&quot; + alias + &quot;&#39; ignored since it points to same name&quot;);
+&nbsp;                }
+&nbsp;            } else {
+&nbsp;                String registeredName = (String)this.aliasMap.get(alias);
+&nbsp;                if (registeredName != null) {
+&nbsp;                    if (registeredName.equals(name)) {
+&nbsp;                        return;
+&nbsp;                    }
+&nbsp;
+<b class="fc">&nbsp;                    if (!this.allowAliasOverriding()) {</b>
+&nbsp;                        throw new IllegalStateException(&quot;Cannot define alias &#39;&quot; + alias + &quot;&#39; for name &#39;&quot; + name + &quot;&#39;: It is already registered for name &#39;&quot; + registeredName + &quot;&#39;.&quot;);
+&nbsp;                    }
+<b class="fc">&nbsp;</b>
+&nbsp;                    if (this.logger.isDebugEnabled()) {
+&nbsp;                        this.logger.debug(&quot;Overriding alias &#39;&quot; + alias + &quot;&#39; definition for registered name &#39;&quot; + registeredName + &quot;&#39; with new target name &#39;&quot; + name + &quot;&#39;&quot;);
+<b class="fc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                this.checkForAliasCircle(name, alias);</b>
+&nbsp;                this.aliasMap.put(alias, name);
+&nbsp;                this.aliasNames.add(alias);
+&nbsp;                if (this.logger.isTraceEnabled()) {
+&nbsp;                    this.logger.trace(&quot;Alias definition &#39;&quot; + alias + &quot;&#39; registered for name &#39;&quot; + name + &quot;&#39;&quot;);
+<b class="fc">&nbsp;                }</b>
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;</b>
+<b class="pc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected boolean allowAliasOverriding() {</b>
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean hasAlias(String name, String alias) {
+<b class="fc">&nbsp;        String registeredName = (String)this.aliasMap.get(alias);</b>
+<b class="pc">&nbsp;        return ObjectUtils.nullSafeEquals(registeredName, name) || registeredName != null &amp;&amp; this.hasAlias(name, registeredName);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public void removeAlias(String alias) {</b>
+&nbsp;        synchronized(this.aliasMap) {
+<b class="nc">&nbsp;            String name = (String)this.aliasMap.remove(alias);</b>
+<b class="nc">&nbsp;            this.aliasNames.remove(alias);</b>
+&nbsp;            if (name == null) {
+&nbsp;                throw new IllegalStateException(&quot;No alias &#39;&quot; + alias + &quot;&#39; registered&quot;);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isAlias(String name) {
+<b class="fc">&nbsp;        return this.aliasMap.containsKey(name);</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="pc">&nbsp;    public String[] getAliases(String name) {</b>
+<b class="nc">&nbsp;        List&lt;String&gt; result = new ArrayList();</b>
+&nbsp;        synchronized(this.aliasMap) {
+&nbsp;            this.retrieveAliases(name, result);
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return StringUtils.toStringArray(result);
+&nbsp;    }
+&nbsp;
+&nbsp;    private void retrieveAliases(String name, List&lt;String&gt; result) {
+&nbsp;        this.aliasMap.forEach((alias, registeredName) -&gt; {
+&nbsp;            if (registeredName.equals(name)) {
+<b class="nc">&nbsp;                result.add(alias);</b>
+&nbsp;                this.retrieveAliases(alias, result);
+&nbsp;            }
+&nbsp;
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    public void resolveAliases(StringValueResolver valueResolver) {
+&nbsp;        Assert.notNull(valueResolver, &quot;StringValueResolver must not be null&quot;);
+&nbsp;        synchronized(this.aliasMap) {
+<b class="fc">&nbsp;            List&lt;String&gt; aliasNamesCopy = new ArrayList(this.aliasNames);</b>
+<b class="pc">&nbsp;            aliasNamesCopy.forEach((alias) -&gt; {</b>
+<b class="nc">&nbsp;                String registeredName = (String)this.aliasMap.get(alias);</b>
+&nbsp;                if (registeredName != null) {
+&nbsp;                    String resolvedAlias = valueResolver.resolveStringValue(alias);
+&nbsp;                    String resolvedName = valueResolver.resolveStringValue(registeredName);
+&nbsp;                    if (resolvedAlias != null &amp;&amp; resolvedName != null &amp;&amp; !resolvedAlias.equals(resolvedName)) {
+<b class="nc">&nbsp;                        if (!resolvedAlias.equals(alias)) {</b>
+<b class="nc">&nbsp;                            String existingName = (String)this.aliasMap.get(resolvedAlias);</b>
+<b class="nc">&nbsp;                            if (existingName != null) {</b>
+<b class="nc">&nbsp;                                if (existingName.equals(resolvedName)) {</b>
+<b class="nc">&nbsp;                                    this.aliasMap.remove(alias);</b>
+&nbsp;                                    this.aliasNames.remove(alias);
+<b class="nc">&nbsp;                                    return;</b>
+&nbsp;                                }
+&nbsp;
+&nbsp;                                throw new IllegalStateException(&quot;Cannot register resolved alias &#39;&quot; + resolvedAlias + &quot;&#39; (original: &#39;&quot; + alias + &quot;&#39;) for name &#39;&quot; + resolvedName + &quot;&#39;: It is already registered for name &#39;&quot; + existingName + &quot;&#39;.&quot;);
+&nbsp;                            }
+<b class="fc">&nbsp;</b>
+&nbsp;                            this.checkForAliasCircle(resolvedName, resolvedAlias);
+&nbsp;                            this.aliasMap.remove(alias);
+&nbsp;                            this.aliasNames.remove(alias);
+&nbsp;                            this.aliasMap.put(resolvedAlias, resolvedName);
+<b class="fc">&nbsp;                            this.aliasNames.add(resolvedAlias);</b>
+<b class="fc">&nbsp;                        } else if (!registeredName.equals(resolvedName)) {</b>
+<b class="fc">&nbsp;                            this.aliasMap.put(alias, resolvedName);</b>
+<b class="fc">&nbsp;                            this.aliasNames.add(alias);</b>
+<b class="fc">&nbsp;                        }</b>
+&nbsp;                    } else {
+&nbsp;                        this.aliasMap.remove(alias);
+&nbsp;                        this.aliasNames.remove(alias);
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;            });
+&nbsp;        }
+<b class="fc">&nbsp;    }</b>
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;    protected void checkForAliasCircle(String name, String alias) {</b>
+<b class="nc">&nbsp;        if (this.hasAlias(alias, name)) {</b>
+&nbsp;            throw new IllegalStateException(&quot;Cannot register alias &#39;&quot; + alias + &quot;&#39; for name &#39;&quot; + name + &quot;&#39;: Circular reference - &#39;&quot; + name + &quot;&#39; is a direct or indirect alias for &#39;&quot; + alias + &quot;&#39; already&quot;);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public String canonicalName(String name) {
+&nbsp;        String canonicalName = name;
+&nbsp;
+&nbsp;        String resolvedName;
+&nbsp;        do {
+&nbsp;            resolvedName = (String)this.aliasMap.get(canonicalName);
+&nbsp;            if (resolvedName != null) {
+&nbsp;                canonicalName = resolvedName;
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;        } while(resolvedName != null);</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;        return canonicalName;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="pc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
+</div>
+</body>
+</html>

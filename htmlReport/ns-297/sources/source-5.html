@@ -1,0 +1,289 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > AopProxyUtils</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.aop.framework</a>
+</div>
+
+<h1>Coverage Summary for Class: AopProxyUtils (org.springframework.aop.framework)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AopProxyUtils</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    16.7%
+  </span>
+  <span class="absValue">
+    (2/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    6.2%
+  </span>
+  <span class="absValue">
+    (4/64)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    11.4%
+  </span>
+  <span class="absValue">
+    (9/79)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.aop.framework;
+&nbsp;
+&nbsp;import java.lang.reflect.Array;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;import java.lang.reflect.Proxy;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Arrays;
+&nbsp;import java.util.List;
+&nbsp;import org.springframework.aop.SpringProxy;
+&nbsp;import org.springframework.aop.TargetClassAware;
+&nbsp;import org.springframework.aop.TargetSource;
+&nbsp;import org.springframework.aop.support.AopUtils;
+&nbsp;import org.springframework.aop.target.SingletonTargetSource;
+&nbsp;import org.springframework.core.DecoratingProxy;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.ClassUtils;
+&nbsp;import org.springframework.util.ObjectUtils;
+&nbsp;
+&nbsp;public abstract class AopProxyUtils {
+&nbsp;    public AopProxyUtils() {
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public static Object getSingletonTarget(Object candidate) {
+&nbsp;        if (candidate instanceof Advised advised) {
+&nbsp;            TargetSource targetSource = advised.getTargetSource();
+&nbsp;            if (targetSource instanceof SingletonTargetSource singleTargetSource) {
+&nbsp;                return singleTargetSource.getTarget();
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return null;
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Class&lt;?&gt; ultimateTargetClass(Object candidate) {
+&nbsp;        Assert.notNull(candidate, &quot;Candidate object must not be null&quot;);
+&nbsp;        Object current = candidate;
+&nbsp;
+&nbsp;        Class&lt;?&gt; result;
+&nbsp;        for(result = null; current instanceof TargetClassAware; current = getSingletonTarget(current)) {
+&nbsp;            TargetClassAware targetClassAware = (TargetClassAware)current;
+&nbsp;            result = targetClassAware.getTargetClass();
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        if (result == null) {
+&nbsp;            result = AopUtils.isCglibProxy(candidate) ? candidate.getClass().getSuperclass() : candidate.getClass();
+&nbsp;        }
+&nbsp;
+&nbsp;        return result;
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Class&lt;?&gt;[] completeJdkProxyInterfaces(Class&lt;?&gt;... userInterfaces) {
+&nbsp;        List&lt;Class&lt;?&gt;&gt; completedInterfaces = new ArrayList(userInterfaces.length + 3);
+&nbsp;
+&nbsp;        for(Class&lt;?&gt; ifc : userInterfaces) {
+&nbsp;            Assert.notNull(ifc, &quot;&#39;userInterfaces&#39; must not contain null values&quot;);
+<b class="pc">&nbsp;            Assert.isTrue(ifc.isInterface() &amp;&amp; !ifc.isSealed(), () -&gt; ifc.getName() + &quot; must be a non-sealed interface&quot;);</b>
+<b class="nc">&nbsp;            completedInterfaces.add(ifc);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        completedInterfaces.add(SpringProxy.class);
+&nbsp;        completedInterfaces.add(Advised.class);
+<b class="fc">&nbsp;        completedInterfaces.add(DecoratingProxy.class);</b>
+&nbsp;        return (Class[])completedInterfaces.toArray((x$0) -&gt; new Class[x$0]);
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Class&lt;?&gt;[] completeProxiedInterfaces(AdvisedSupport advised) {
+&nbsp;        return completeProxiedInterfaces(advised, false);
+&nbsp;    }
+&nbsp;
+&nbsp;    static Class&lt;?&gt;[] completeProxiedInterfaces(AdvisedSupport advised, boolean decoratingProxy) {
+&nbsp;        Class&lt;?&gt;[] specifiedInterfaces = advised.getProxiedInterfaces();
+&nbsp;        if (specifiedInterfaces.length == 0) {
+&nbsp;            Class&lt;?&gt; targetClass = advised.getTargetClass();
+&nbsp;            if (targetClass != null) {
+&nbsp;                if (targetClass.isInterface()) {
+<b class="fc">&nbsp;                    advised.setInterfaces(new Class[]{targetClass});</b>
+<b class="fc">&nbsp;                } else if (Proxy.isProxyClass(targetClass) || ClassUtils.isLambdaClass(targetClass)) {</b>
+<b class="fc">&nbsp;                    advised.setInterfaces(targetClass.getInterfaces());</b>
+<b class="pc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                specifiedInterfaces = advised.getProxiedInterfaces();</b>
+&nbsp;            }
+<b class="pc">&nbsp;        }</b>
+<b class="pc">&nbsp;</b>
+&nbsp;        List&lt;Class&lt;?&gt;&gt; proxiedInterfaces = new ArrayList(specifiedInterfaces.length + 3);
+<b class="fc">&nbsp;</b>
+&nbsp;        for(Class&lt;?&gt; ifc : specifiedInterfaces) {
+&nbsp;            if (!ifc.isSealed()) {
+&nbsp;                proxiedInterfaces.add(ifc);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        if (!advised.isInterfaceProxied(SpringProxy.class)) {
+&nbsp;            proxiedInterfaces.add(SpringProxy.class);
+&nbsp;        }
+&nbsp;
+&nbsp;        if (!advised.isOpaque() &amp;&amp; !advised.isInterfaceProxied(Advised.class)) {
+&nbsp;            proxiedInterfaces.add(Advised.class);
+&nbsp;        }
+&nbsp;
+&nbsp;        if (decoratingProxy &amp;&amp; !advised.isInterfaceProxied(DecoratingProxy.class)) {
+&nbsp;            proxiedInterfaces.add(DecoratingProxy.class);
+&nbsp;        }
+&nbsp;
+&nbsp;        return ClassUtils.toClassArray(proxiedInterfaces);
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Class&lt;?&gt;[] proxiedUserInterfaces(Object proxy) {
+&nbsp;        Class&lt;?&gt;[] proxyInterfaces = proxy.getClass().getInterfaces();
+&nbsp;        int nonUserIfcCount = 0;
+&nbsp;        if (proxy instanceof SpringProxy) {
+&nbsp;            ++nonUserIfcCount;
+&nbsp;        }
+&nbsp;
+&nbsp;        if (proxy instanceof Advised) {
+<b class="nc">&nbsp;            ++nonUserIfcCount;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if (proxy instanceof DecoratingProxy) {</b>
+<b class="nc">&nbsp;            ++nonUserIfcCount;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        Class&lt;?&gt;[] userInterfaces = (Class[])Arrays.copyOf(proxyInterfaces, proxyInterfaces.length - nonUserIfcCount);</b>
+<b class="nc">&nbsp;        Assert.notEmpty(userInterfaces, &quot;JDK proxy must implement one or more interfaces&quot;);</b>
+<b class="nc">&nbsp;        return userInterfaces;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public static boolean equalsInProxy(AdvisedSupport a, AdvisedSupport b) {
+&nbsp;        return a == b || equalsProxiedInterfaces(a, b) &amp;&amp; equalsAdvisors(a, b) &amp;&amp; a.getTargetSource().equals(b.getTargetSource());
+&nbsp;    }
+&nbsp;
+&nbsp;    public static boolean equalsProxiedInterfaces(AdvisedSupport a, AdvisedSupport b) {
+&nbsp;        return Arrays.equals(a.getProxiedInterfaces(), b.getProxiedInterfaces());
+&nbsp;    }
+&nbsp;
+&nbsp;    public static boolean equalsAdvisors(AdvisedSupport a, AdvisedSupport b) {
+&nbsp;        return a.getAdvisorCount() == b.getAdvisorCount() &amp;&amp; Arrays.equals(a.getAdvisors(), b.getAdvisors());
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    static Object[] adaptArgumentsIfNecessary(Method method, @Nullable Object[] arguments) {</b>
+&nbsp;        if (ObjectUtils.isEmpty(arguments)) {
+&nbsp;            return new Object[0];
+&nbsp;        } else {
+&nbsp;            if (method.isVarArgs() &amp;&amp; method.getParameterCount() == arguments.length) {
+&nbsp;                Class&lt;?&gt;[] paramTypes = method.getParameterTypes();
+&nbsp;                int varargIndex = paramTypes.length - 1;
+&nbsp;                Class&lt;?&gt; varargType = paramTypes[varargIndex];
+&nbsp;                if (varargType.isArray()) {
+&nbsp;                    Object varargArray = arguments[varargIndex];
+&nbsp;                    if (varargArray instanceof Object[] &amp;&amp; !varargType.isInstance(varargArray)) {
+&nbsp;                        Object[] newArguments = new Object[arguments.length];
+&nbsp;                        System.arraycopy(arguments, 0, newArguments, 0, varargIndex);
+&nbsp;                        Class&lt;?&gt; targetElementType = varargType.componentType();
+&nbsp;                        int varargLength = Array.getLength(varargArray);
+&nbsp;                        Object newVarargArray = Array.newInstance(targetElementType, varargLength);
+&nbsp;                        System.arraycopy(varargArray, 0, newVarargArray, 0, varargLength);
+<b class="nc">&nbsp;                        newArguments[varargIndex] = newVarargArray;</b>
+<b class="nc">&nbsp;                        return newArguments;</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            return arguments;</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
+</div>
+</body>
+</html>

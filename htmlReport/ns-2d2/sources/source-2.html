@@ -1,0 +1,560 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > EndpointDiscoverer</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.boot.actuate.endpoint.annotation</a>
+</div>
+
+<h1>Coverage Summary for Class: EndpointDiscoverer (org.springframework.boot.actuate.endpoint.annotation)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">EndpointDiscoverer</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/33)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/68)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/130)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.boot.actuate.endpoint.annotation;
+&nbsp;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.HashSet;
+&nbsp;import java.util.LinkedHashMap;
+&nbsp;import java.util.LinkedHashSet;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Objects;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import java.util.function.Function;
+&nbsp;import java.util.function.Supplier;
+&nbsp;import java.util.stream.Collectors;
+&nbsp;import org.springframework.aop.scope.ScopedProxyUtils;
+&nbsp;import org.springframework.beans.BeanUtils;
+&nbsp;import org.springframework.beans.factory.BeanFactoryUtils;
+&nbsp;import org.springframework.boot.actuate.endpoint.Access;
+&nbsp;import org.springframework.boot.actuate.endpoint.EndpointFilter;
+&nbsp;import org.springframework.boot.actuate.endpoint.EndpointId;
+&nbsp;import org.springframework.boot.actuate.endpoint.EndpointsSupplier;
+&nbsp;import org.springframework.boot.actuate.endpoint.ExposableEndpoint;
+&nbsp;import org.springframework.boot.actuate.endpoint.Operation;
+&nbsp;import org.springframework.boot.actuate.endpoint.OperationFilter;
+&nbsp;import org.springframework.boot.actuate.endpoint.invoke.OperationInvoker;
+&nbsp;import org.springframework.boot.actuate.endpoint.invoke.OperationInvokerAdvisor;
+&nbsp;import org.springframework.boot.actuate.endpoint.invoke.ParameterValueMapper;
+&nbsp;import org.springframework.boot.util.LambdaSafe;
+&nbsp;import org.springframework.context.ApplicationContext;
+&nbsp;import org.springframework.core.ResolvableType;
+&nbsp;import org.springframework.core.annotation.MergedAnnotation;
+&nbsp;import org.springframework.core.annotation.MergedAnnotations;
+&nbsp;import org.springframework.core.annotation.MergedAnnotations.SearchStrategy;
+&nbsp;import org.springframework.core.env.Environment;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.ClassUtils;
+&nbsp;import org.springframework.util.CollectionUtils;
+&nbsp;import org.springframework.util.LinkedMultiValueMap;
+&nbsp;import org.springframework.util.MultiValueMap;
+&nbsp;import org.springframework.util.StringUtils;
+&nbsp;
+&nbsp;public abstract class EndpointDiscoverer&lt;E extends ExposableEndpoint&lt;O&gt;, O extends Operation&gt; implements EndpointsSupplier&lt;E&gt; {
+&nbsp;    private final ApplicationContext applicationContext;
+&nbsp;    private final Collection&lt;EndpointFilter&lt;E&gt;&gt; endpointFilters;
+&nbsp;    private final Collection&lt;OperationFilter&lt;O&gt;&gt; operationFilters;
+&nbsp;    private final DiscoveredOperationsFactory&lt;O&gt; operationsFactory;
+&nbsp;    private final Map&lt;EndpointBean, E&gt; filterEndpoints;
+&nbsp;    private volatile Collection&lt;E&gt; endpoints;
+&nbsp;
+&nbsp;    /** @deprecated */
+&nbsp;    @Deprecated(
+&nbsp;        since = &quot;3.4.0&quot;,
+&nbsp;        forRemoval = true
+&nbsp;    )
+&nbsp;    public EndpointDiscoverer(ApplicationContext applicationContext, ParameterValueMapper parameterValueMapper, Collection&lt;OperationInvokerAdvisor&gt; invokerAdvisors, Collection&lt;EndpointFilter&lt;E&gt;&gt; endpointFilters) {
+&nbsp;        this(applicationContext, parameterValueMapper, invokerAdvisors, endpointFilters, Collections.emptyList());
+&nbsp;    }
+&nbsp;
+&nbsp;    public EndpointDiscoverer(ApplicationContext applicationContext, ParameterValueMapper parameterValueMapper, Collection&lt;OperationInvokerAdvisor&gt; invokerAdvisors, Collection&lt;EndpointFilter&lt;E&gt;&gt; endpointFilters, Collection&lt;OperationFilter&lt;O&gt;&gt; operationFilters) {
+&nbsp;        this.filterEndpoints = new ConcurrentHashMap();
+&nbsp;        Assert.notNull(applicationContext, &quot;ApplicationContext must not be null&quot;);
+&nbsp;        Assert.notNull(parameterValueMapper, &quot;ParameterValueMapper must not be null&quot;);
+&nbsp;        Assert.notNull(invokerAdvisors, &quot;InvokerAdvisors must not be null&quot;);
+&nbsp;        Assert.notNull(endpointFilters, &quot;EndpointFilters must not be null&quot;);
+&nbsp;        Assert.notNull(operationFilters, &quot;OperationFilters must not be null&quot;);
+&nbsp;        this.applicationContext = applicationContext;
+&nbsp;        this.endpointFilters = Collections.unmodifiableCollection(endpointFilters);
+&nbsp;        this.operationFilters = Collections.unmodifiableCollection(operationFilters);
+&nbsp;        this.operationsFactory = this.getOperationsFactory(parameterValueMapper, invokerAdvisors);
+&nbsp;    }
+&nbsp;
+&nbsp;    private DiscoveredOperationsFactory&lt;O&gt; getOperationsFactory(ParameterValueMapper parameterValueMapper, Collection&lt;OperationInvokerAdvisor&gt; invokerAdvisors) {
+&nbsp;        return new DiscoveredOperationsFactory&lt;O&gt;(parameterValueMapper, invokerAdvisors) {
+&nbsp;            Collection&lt;O&gt; createOperations(EndpointId id, Object target) {
+&nbsp;                return super.createOperations(id, target);
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            protected O createOperation(EndpointId endpointId, DiscoveredOperationMethod operationMethod, OperationInvoker invoker) {
+&nbsp;                return (O)EndpointDiscoverer.this.createOperation(endpointId, operationMethod, invoker);
+&nbsp;            }
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    public final Collection&lt;E&gt; getEndpoints() {
+&nbsp;        if (this.endpoints == null) {
+&nbsp;            this.endpoints = this.discoverEndpoints();
+&nbsp;        }
+&nbsp;
+&nbsp;        return this.endpoints;
+&nbsp;    }
+&nbsp;
+&nbsp;    private Collection&lt;E&gt; discoverEndpoints() {
+<b class="nc">&nbsp;        Collection&lt;EndpointBean&gt; endpointBeans = this.createEndpointBeans();</b>
+&nbsp;        this.addExtensionBeans(endpointBeans);
+&nbsp;        return this.convertToEndpoints(endpointBeans);
+&nbsp;    }
+&nbsp;
+&nbsp;    private Collection&lt;EndpointBean&gt; createEndpointBeans() {
+&nbsp;        Map&lt;EndpointId, EndpointBean&gt; byId = new LinkedHashMap();
+&nbsp;        String[] beanNames = BeanFactoryUtils.beanNamesForAnnotationIncludingAncestors(this.applicationContext, Endpoint.class);
+&nbsp;
+&nbsp;        for(String beanName : beanNames) {
+&nbsp;            if (!ScopedProxyUtils.isScopedTarget(beanName)) {
+&nbsp;                EndpointBean endpointBean = this.createEndpointBean(beanName);
+&nbsp;                EndpointBean previous = (EndpointBean)byId.putIfAbsent(endpointBean.getId(), endpointBean);
+&nbsp;                Assert.state(previous == null, () -&gt; {
+<b class="nc">&nbsp;                    String var10000 = String.valueOf(endpointBean.getId());</b>
+<b class="nc">&nbsp;                    return &quot;Found two endpoints with the id &#39;&quot; + var10000 + &quot;&#39;: &#39;&quot; + endpointBean.getBeanName() + &quot;&#39; and &#39;&quot; + previous.getBeanName() + &quot;&#39;&quot;;</b>
+<b class="nc">&nbsp;                });</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return byId.values();</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private EndpointBean createEndpointBean(String beanName) {</b>
+&nbsp;        Class&lt;?&gt; beanType = ClassUtils.getUserClass(this.applicationContext.getType(beanName, false));
+&nbsp;        Supplier&lt;Object&gt; beanSupplier = () -&gt; this.applicationContext.getBean(beanName);
+&nbsp;        return new EndpointBean(this.applicationContext.getEnvironment(), beanName, beanType, beanSupplier);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private void addExtensionBeans(Collection&lt;EndpointBean&gt; endpointBeans) {
+&nbsp;        Map&lt;EndpointId, EndpointBean&gt; byId = (Map)endpointBeans.stream().collect(Collectors.toMap(EndpointBean::getId, Function.identity()));
+&nbsp;        String[] beanNames = BeanFactoryUtils.beanNamesForAnnotationIncludingAncestors(this.applicationContext, EndpointExtension.class);
+&nbsp;
+&nbsp;        for(String beanName : beanNames) {
+&nbsp;            ExtensionBean extensionBean = this.createExtensionBean(beanName);
+&nbsp;            EndpointBean endpointBean = (EndpointBean)byId.get(extensionBean.getEndpointId());
+&nbsp;            Assert.state(endpointBean != null, () -&gt; {
+&nbsp;                String var10000 = extensionBean.getBeanName();
+&nbsp;                return &quot;Invalid extension &#39;&quot; + var10000 + &quot;&#39;: no endpoint found with id &#39;&quot; + String.valueOf(extensionBean.getEndpointId()) + &quot;&#39;&quot;;
+&nbsp;            });
+&nbsp;            this.addExtensionBean(endpointBean, extensionBean);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private ExtensionBean createExtensionBean(String beanName) {
+<b class="nc">&nbsp;        Class&lt;?&gt; beanType = ClassUtils.getUserClass(this.applicationContext.getType(beanName));</b>
+<b class="nc">&nbsp;        Supplier&lt;Object&gt; beanSupplier = () -&gt; this.applicationContext.getBean(beanName);</b>
+&nbsp;        return new ExtensionBean(this.applicationContext.getEnvironment(), beanName, beanType, beanSupplier);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private void addExtensionBean(EndpointBean endpointBean, ExtensionBean extensionBean) {
+&nbsp;        if (this.isExtensionExposed(endpointBean, extensionBean)) {
+<b class="nc">&nbsp;            Assert.state(this.isEndpointExposed(endpointBean) || this.isEndpointFiltered(endpointBean), () -&gt; {</b>
+<b class="nc">&nbsp;                String var10000 = endpointBean.getBeanName();</b>
+<b class="nc">&nbsp;                return &quot;Endpoint bean &#39;&quot; + var10000 + &quot;&#39; cannot support the extension bean &#39;&quot; + extensionBean.getBeanName() + &quot;&#39;&quot;;</b>
+&nbsp;            });
+&nbsp;            endpointBean.addExtension(extensionBean);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private Collection&lt;E&gt; convertToEndpoints(Collection&lt;EndpointBean&gt; endpointBeans) {</b>
+<b class="nc">&nbsp;        Set&lt;E&gt; endpoints = new LinkedHashSet();</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        for(EndpointBean endpointBean : endpointBeans) {</b>
+<b class="nc">&nbsp;            if (this.isEndpointExposed(endpointBean)) {</b>
+<b class="nc">&nbsp;                E endpoint = this.convertToEndpoint(endpointBean);</b>
+&nbsp;                if (this.isInvocable(endpoint)) {
+&nbsp;                    endpoints.add(endpoint);
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return Collections.unmodifiableSet(endpoints);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    protected boolean isInvocable(E endpoint) {
+&nbsp;        return !endpoint.getOperations().isEmpty();
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private E convertToEndpoint(EndpointBean endpointBean) {</b>
+<b class="nc">&nbsp;        MultiValueMap&lt;OperationKey, O&gt; indexed = new LinkedMultiValueMap();</b>
+&nbsp;        EndpointId id = endpointBean.getId();
+<b class="nc">&nbsp;        this.addOperations(indexed, id, endpointBean.getDefaultAccess(), endpointBean.getBean(), false);</b>
+<b class="nc">&nbsp;        if (endpointBean.getExtensions().size() &gt; 1) {</b>
+<b class="nc">&nbsp;            String extensionBeans = (String)endpointBean.getExtensions().stream().map(ExtensionBean::getBeanName).collect(Collectors.joining(&quot;, &quot;));</b>
+<b class="nc">&nbsp;            String var10002 = endpointBean.getBeanName();</b>
+<b class="nc">&nbsp;            throw new IllegalStateException(&quot;Found multiple extensions for the endpoint bean &quot; + var10002 + &quot; (&quot; + extensionBeans + &quot;)&quot;);</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            for(ExtensionBean extensionBean : endpointBean.getExtensions()) {
+&nbsp;                this.addOperations(indexed, id, endpointBean.getDefaultAccess(), extensionBean.getBean(), true);
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            this.assertNoDuplicateOperations(endpointBean, indexed);</b>
+<b class="nc">&nbsp;            List&lt;O&gt; operations = indexed.values().stream().map(this::getLast).filter(Objects::nonNull).toList();</b>
+<b class="nc">&nbsp;            return (E)this.createEndpoint(endpointBean.getBean(), id, endpointBean.getDefaultAccess(), operations);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private void addOperations(MultiValueMap&lt;OperationKey, O&gt; indexed, EndpointId id, Access defaultAccess, Object target, boolean replaceLast) {</b>
+<b class="nc">&nbsp;        Set&lt;OperationKey&gt; replacedLast = new HashSet();</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        for(O operation : this.operationsFactory.createOperations(id, target)) {</b>
+<b class="nc">&nbsp;            if (!this.isOperationFiltered(operation, id, defaultAccess)) {</b>
+&nbsp;                OperationKey key = this.createOperationKey(operation);
+&nbsp;                O last = (O)(this.getLast((List)indexed.get(key)));
+&nbsp;                if (replaceLast &amp;&amp; replacedLast.add(key) &amp;&amp; last != null) {
+&nbsp;                    ((List)indexed.get(key)).remove(last);
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                indexed.add(key, operation);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private &lt;T&gt; T getLast(List&lt;T&gt; list) {
+<b class="nc">&nbsp;        return (T)(CollectionUtils.isEmpty(list) ? null : list.get(list.size() - 1));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void assertNoDuplicateOperations(EndpointBean endpointBean, MultiValueMap&lt;OperationKey, O&gt; indexed) {
+&nbsp;        List&lt;OperationKey&gt; duplicates = indexed.entrySet().stream().filter((entry) -&gt; ((List)entry.getValue()).size() &gt; 1).map(Map.Entry::getKey).toList();
+&nbsp;        if (!duplicates.isEmpty()) {
+&nbsp;            Set&lt;ExtensionBean&gt; extensions = endpointBean.getExtensions();
+&nbsp;            String extensionBeanNames = (String)extensions.stream().map(ExtensionBean::getBeanName).collect(Collectors.joining(&quot;, &quot;));
+&nbsp;            String var10002 = String.valueOf(duplicates);
+&nbsp;            throw new IllegalStateException(&quot;Unable to map duplicate endpoint operations: &quot; + var10002 + &quot; to &quot; + endpointBean.getBeanName() + (extensions.isEmpty() ? &quot;&quot; : &quot; (&quot; + extensionBeanNames + &quot;)&quot;));
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private boolean isExtensionExposed(EndpointBean endpointBean, ExtensionBean extensionBean) {
+&nbsp;        return this.isFilterMatch(extensionBean.getFilter(), endpointBean) &amp;&amp; this.isExtensionTypeExposed(extensionBean.getBeanType());
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected boolean isExtensionTypeExposed(Class&lt;?&gt; extensionBeanType) {</b>
+<b class="nc">&nbsp;        return true;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private boolean isEndpointExposed(EndpointBean endpointBean) {</b>
+<b class="nc">&nbsp;        return this.isFilterMatch(endpointBean.getFilter(), endpointBean) &amp;&amp; !this.isEndpointFiltered(endpointBean) &amp;&amp; this.isEndpointTypeExposed(endpointBean.getBeanType());</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected boolean isEndpointTypeExposed(Class&lt;?&gt; beanType) {</b>
+&nbsp;        return true;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private boolean isEndpointFiltered(EndpointBean endpointBean) {
+<b class="nc">&nbsp;        for(EndpointFilter&lt;E&gt; filter : this.endpointFilters) {</b>
+<b class="nc">&nbsp;            if (!this.isFilterMatch(filter, endpointBean)) {</b>
+<b class="nc">&nbsp;                return true;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return false;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private boolean isFilterMatch(Class&lt;?&gt; filter, EndpointBean endpointBean) {</b>
+<b class="nc">&nbsp;        if (!this.isEndpointTypeExposed(endpointBean.getBeanType())) {</b>
+<b class="nc">&nbsp;            return false;</b>
+<b class="nc">&nbsp;        } else if (filter == null) {</b>
+<b class="nc">&nbsp;            return true;</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            E endpoint = this.getFilterEndpoint(endpointBean);
+<b class="nc">&nbsp;            Class&lt;?&gt; generic = ResolvableType.forClass(EndpointFilter.class, filter).resolveGeneric(new int[]{0});</b>
+&nbsp;            if (generic != null &amp;&amp; !generic.isInstance(endpoint)) {
+&nbsp;                return false;
+&nbsp;            } else {
+&nbsp;                EndpointFilter&lt;E&gt; instance = (EndpointFilter)BeanUtils.instantiateClass(filter);
+&nbsp;                return this.isFilterMatch(instance, endpoint);
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private boolean isFilterMatch(EndpointFilter&lt;E&gt; filter, EndpointBean endpointBean) {</b>
+<b class="nc">&nbsp;        return this.isFilterMatch(filter, this.getFilterEndpoint(endpointBean));</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private boolean isFilterMatch(EndpointFilter&lt;E&gt; filter, E endpoint) {</b>
+<b class="nc">&nbsp;        return (Boolean)((LambdaSafe.Callback)LambdaSafe.callback(EndpointFilter.class, filter, endpoint, new Object[0]).withLogger(EndpointDiscoverer.class)).invokeAnd((f) -&gt; f.match(endpoint)).get();</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private boolean isOperationFiltered(Operation operation, EndpointId endpointId, Access defaultAccess) {</b>
+<b class="nc">&nbsp;        for(OperationFilter&lt;O&gt; filter : this.operationFilters) {</b>
+<b class="nc">&nbsp;            if (!this.isFilterMatch(filter, operation, endpointId, defaultAccess)) {</b>
+<b class="nc">&nbsp;                return true;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return false;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private boolean isFilterMatch(OperationFilter&lt;O&gt; filter, Operation operation, EndpointId endpointId, Access defaultAccess) {
+&nbsp;        return (Boolean)((LambdaSafe.Callback)LambdaSafe.callback(OperationFilter.class, filter, operation, new Object[0]).withLogger(EndpointDiscoverer.class)).invokeAnd((f) -&gt; f.match(operation, endpointId, defaultAccess)).get();
+&nbsp;    }
+&nbsp;
+&nbsp;    private E getFilterEndpoint(EndpointBean endpointBean) {
+&nbsp;        return (E)(this.filterEndpoints.computeIfAbsent(endpointBean, (key) -&gt; this.createEndpoint(endpointBean.getBean(), endpointBean.getId(), endpointBean.getDefaultAccess(), Collections.emptySet())));
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Class&lt;? extends E&gt; getEndpointType() {
+<b class="nc">&nbsp;        return ResolvableType.forClass(EndpointDiscoverer.class, this.getClass()).resolveGeneric(new int[]{0});</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @deprecated */
+<b class="nc">&nbsp;    @Deprecated(</b>
+<b class="nc">&nbsp;        since = &quot;3.4.0&quot;,</b>
+&nbsp;        forRemoval = true
+&nbsp;    )
+&nbsp;    protected E createEndpoint(Object endpointBean, EndpointId id, boolean enabledByDefault, Collection&lt;O&gt; operations) {
+&nbsp;        return (E)this.createEndpoint(endpointBean, id, enabledByDefault ? Access.UNRESTRICTED : Access.NONE, operations);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected abstract E createEndpoint(Object endpointBean, EndpointId id, Access defaultAccess, Collection&lt;O&gt; operations);
+&nbsp;
+&nbsp;    protected abstract O createOperation(EndpointId endpointId, DiscoveredOperationMethod operationMethod, OperationInvoker invoker);
+<b class="nc">&nbsp;</b>
+&nbsp;    protected abstract OperationKey createOperationKey(O operation);
+&nbsp;
+&nbsp;    protected static final class OperationKey {
+<b class="nc">&nbsp;        private final Object key;</b>
+<b class="nc">&nbsp;        private final Supplier&lt;String&gt; description;</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        public OperationKey(Object key, Supplier&lt;String&gt; description) {
+&nbsp;            Assert.notNull(key, &quot;Key must not be null&quot;);
+<b class="nc">&nbsp;            Assert.notNull(description, &quot;Description must not be null&quot;);</b>
+&nbsp;            this.key = key;
+&nbsp;            this.description = description;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        public boolean equals(Object obj) {</b>
+<b class="nc">&nbsp;            if (obj == this) {</b>
+&nbsp;                return true;
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                return obj != null &amp;&amp; this.getClass() == obj.getClass() ? this.key.equals(((OperationKey)obj).key) : false;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        public int hashCode() {</b>
+<b class="nc">&nbsp;            return this.key.hashCode();</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        public String toString() {</b>
+&nbsp;            return (String)this.description.get();
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private static class EndpointBean {
+&nbsp;        private final String beanName;
+&nbsp;        private final Class&lt;?&gt; beanType;
+&nbsp;        private final Supplier&lt;Object&gt; beanSupplier;
+<b class="nc">&nbsp;        private final EndpointId id;</b>
+<b class="nc">&nbsp;        private final Access defaultAccess;</b>
+<b class="nc">&nbsp;        private final Class&lt;?&gt; filter;</b>
+<b class="nc">&nbsp;        private final Set&lt;ExtensionBean&gt; extensions = new LinkedHashSet();</b>
+&nbsp;
+&nbsp;        EndpointBean(Environment environment, String beanName, Class&lt;?&gt; beanType, Supplier&lt;Object&gt; beanSupplier) {
+&nbsp;            MergedAnnotation&lt;Endpoint&gt; annotation = MergedAnnotations.from(beanType, SearchStrategy.TYPE_HIERARCHY).get(Endpoint.class);
+<b class="nc">&nbsp;            String id = annotation.getString(&quot;id&quot;);</b>
+<b class="nc">&nbsp;            Assert.state(StringUtils.hasText(id), () -&gt; &quot;No @Endpoint id attribute specified for &quot; + beanType.getName());</b>
+<b class="nc">&nbsp;            this.beanName = beanName;</b>
+&nbsp;            this.beanType = beanType;
+&nbsp;            this.beanSupplier = beanSupplier;
+<b class="nc">&nbsp;            this.id = EndpointId.of(environment, id);</b>
+&nbsp;            boolean enabledByDefault = annotation.getBoolean(&quot;enableByDefault&quot;);
+&nbsp;            this.defaultAccess = enabledByDefault ? (Access)annotation.getEnum(&quot;defaultAccess&quot;, Access.class) : Access.NONE;
+&nbsp;            this.filter = this.getFilter(beanType);
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        void addExtension(ExtensionBean extensionBean) {</b>
+<b class="nc">&nbsp;            this.extensions.add(extensionBean);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        Set&lt;ExtensionBean&gt; getExtensions() {
+&nbsp;            return this.extensions;
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        private Class&lt;?&gt; getFilter(Class&lt;?&gt; type) {</b>
+&nbsp;            return (Class)MergedAnnotations.from(type, SearchStrategy.TYPE_HIERARCHY).get(FilteredEndpoint.class).getValue(&quot;value&quot;, Class.class).orElse((Object)null);
+&nbsp;        }
+&nbsp;
+&nbsp;        String getBeanName() {
+<b class="nc">&nbsp;            return this.beanName;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        Class&lt;?&gt; getBeanType() {
+&nbsp;            return this.beanType;
+&nbsp;        }
+&nbsp;
+&nbsp;        Object getBean() {
+&nbsp;            return this.beanSupplier.get();
+&nbsp;        }
+&nbsp;
+&nbsp;        EndpointId getId() {
+&nbsp;            return this.id;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Access getDefaultAccess() {</b>
+&nbsp;            return this.defaultAccess;
+&nbsp;        }
+&nbsp;
+&nbsp;        Class&lt;?&gt; getFilter() {
+&nbsp;            return this.filter;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static class ExtensionBean {
+&nbsp;        private final String beanName;
+&nbsp;        private final Class&lt;?&gt; beanType;
+&nbsp;        private final Supplier&lt;Object&gt; beanSupplier;
+&nbsp;        private final EndpointId endpointId;
+&nbsp;        private final Class&lt;?&gt; filter;
+&nbsp;
+&nbsp;        ExtensionBean(Environment environment, String beanName, Class&lt;?&gt; beanType, Supplier&lt;Object&gt; beanSupplier) {
+&nbsp;            this.beanName = beanName;
+&nbsp;            this.beanType = beanType;
+&nbsp;            this.beanSupplier = beanSupplier;
+&nbsp;            MergedAnnotation&lt;EndpointExtension&gt; extensionAnnotation = MergedAnnotations.from(beanType, SearchStrategy.TYPE_HIERARCHY).get(EndpointExtension.class);
+&nbsp;            Class&lt;?&gt; endpointType = extensionAnnotation.getClass(&quot;endpoint&quot;);
+&nbsp;            MergedAnnotation&lt;Endpoint&gt; endpointAnnotation = MergedAnnotations.from(endpointType, SearchStrategy.TYPE_HIERARCHY).get(Endpoint.class);
+&nbsp;            Assert.state(endpointAnnotation.isPresent(), () -&gt; &quot;Extension &quot; + endpointType.getName() + &quot; does not specify an endpoint&quot;);
+&nbsp;            this.endpointId = EndpointId.of(environment, endpointAnnotation.getString(&quot;id&quot;));
+&nbsp;            this.filter = extensionAnnotation.getClass(&quot;filter&quot;);
+&nbsp;        }
+&nbsp;
+&nbsp;        String getBeanName() {
+&nbsp;            return this.beanName;
+&nbsp;        }
+&nbsp;
+&nbsp;        Class&lt;?&gt; getBeanType() {
+&nbsp;            return this.beanType;
+&nbsp;        }
+&nbsp;
+&nbsp;        Object getBean() {
+&nbsp;            return this.beanSupplier.get();
+&nbsp;        }
+&nbsp;
+&nbsp;        EndpointId getEndpointId() {
+&nbsp;            return this.endpointId;
+&nbsp;        }
+&nbsp;
+&nbsp;        Class&lt;?&gt; getFilter() {
+&nbsp;            return this.filter;
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 21:00</div>
+</div>
+</body>
+</html>

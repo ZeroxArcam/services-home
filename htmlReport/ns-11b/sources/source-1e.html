@@ -1,0 +1,378 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > PropertyContainer</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.boot.model.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: PropertyContainer (org.hibernate.boot.model.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PropertyContainer</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    92.3%
+  </span>
+  <span class="absValue">
+    (12/13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    26.4%
+  </span>
+  <span class="absValue">
+    (28/106)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    43%
+  </span>
+  <span class="absValue">
+    (64/149)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.boot.model.internal;
+&nbsp;
+&nbsp;import jakarta.persistence.Access;
+&nbsp;import jakarta.persistence.Basic;
+&nbsp;import jakarta.persistence.ManyToMany;
+&nbsp;import jakarta.persistence.ManyToOne;
+&nbsp;import jakarta.persistence.OneToMany;
+&nbsp;import jakarta.persistence.OneToOne;
+&nbsp;import jakarta.persistence.Transient;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.Iterator;
+&nbsp;import java.util.LinkedHashMap;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.TreeMap;
+&nbsp;import org.hibernate.AnnotationException;
+&nbsp;import org.hibernate.annotations.Any;
+&nbsp;import org.hibernate.annotations.JavaType;
+&nbsp;import org.hibernate.annotations.JdbcTypeCode;
+&nbsp;import org.hibernate.annotations.ManyToAny;
+&nbsp;import org.hibernate.annotations.Target;
+&nbsp;import org.hibernate.annotations.Type;
+&nbsp;import org.hibernate.annotations.common.reflection.XClass;
+&nbsp;import org.hibernate.annotations.common.reflection.XProperty;
+&nbsp;import org.hibernate.boot.MappingException;
+&nbsp;import org.hibernate.boot.jaxb.Origin;
+&nbsp;import org.hibernate.boot.jaxb.SourceType;
+&nbsp;import org.hibernate.boot.spi.AccessType;
+&nbsp;import org.hibernate.internal.CoreMessageLogger;
+&nbsp;import org.hibernate.internal.util.StringHelper;
+&nbsp;import org.hibernate.internal.util.collections.CollectionHelper;
+&nbsp;import org.jboss.logging.Logger;
+&nbsp;
+&nbsp;public class PropertyContainer {
+&nbsp;    private static final CoreMessageLogger LOG = (CoreMessageLogger)Logger.getMessageLogger(CoreMessageLogger.class, PropertyContainer.class.getName());
+&nbsp;    private final XClass xClass;
+&nbsp;    private final XClass entityAtStake;
+&nbsp;    private final AccessType classLevelAccessType;
+&nbsp;    private final List&lt;XProperty&gt; persistentAttributes;
+&nbsp;
+&nbsp;    public PropertyContainer(XClass clazz, XClass entityAtStake, AccessType defaultClassLevelAccessType) {
+&nbsp;        this.xClass = clazz;
+&nbsp;        this.entityAtStake = entityAtStake;
+&nbsp;        if (defaultClassLevelAccessType == AccessType.DEFAULT) {
+<b class="fc">&nbsp;            defaultClassLevelAccessType = AccessType.PROPERTY;</b>
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+&nbsp;        AccessType localClassLevelAccessType = this.determineLocalClassDefinedAccessStrategy();
+&nbsp;
+&nbsp;        assert localClassLevelAccessType != null;
+&nbsp;
+&nbsp;        this.classLevelAccessType = localClassLevelAccessType != AccessType.DEFAULT ? localClassLevelAccessType : defaultClassLevelAccessType;
+&nbsp;
+&nbsp;        assert this.classLevelAccessType == AccessType.FIELD || this.classLevelAccessType == AccessType.PROPERTY || this.classLevelAccessType == AccessType.RECORD;
+&nbsp;
+&nbsp;        List&lt;XProperty&gt; fields = this.xClass.getDeclaredProperties(AccessType.FIELD.getType());
+&nbsp;        List&lt;XProperty&gt; getters = this.xClass.getDeclaredProperties(AccessType.PROPERTY.getType());
+&nbsp;        List&lt;XProperty&gt; recordComponents = this.xClass.getDeclaredProperties(AccessType.RECORD.getType());
+&nbsp;        this.preFilter(fields, getters, recordComponents);
+&nbsp;        Map&lt;String, XProperty&gt; persistentAttributesFromGetters = new HashMap();
+&nbsp;        Map&lt;String, XProperty&gt; persistentAttributesFromComponents = new HashMap();
+&nbsp;        Map&lt;String, XProperty&gt; localAttributeMap;
+<b class="fc">&nbsp;        if (!recordComponents.isEmpty() &amp;&amp; recordComponents.size() == fields.size()) {</b>
+<b class="fc">&nbsp;            localAttributeMap = new LinkedHashMap();</b>
+<b class="fc">&nbsp;        } else {</b>
+&nbsp;            localAttributeMap = new TreeMap();
+<b class="pc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        collectPersistentAttributesUsingLocalAccessType(this.xClass, localAttributeMap, persistentAttributesFromGetters, persistentAttributesFromComponents, fields, getters, recordComponents);
+<b class="nc">&nbsp;        collectPersistentAttributesUsingClassLevelAccessType(this.xClass, this.classLevelAccessType, localAttributeMap, persistentAttributesFromGetters, persistentAttributesFromComponents, fields, getters, recordComponents);</b>
+&nbsp;        this.persistentAttributes = verifyAndInitializePersistentAttributes(this.xClass, localAttributeMap);
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="pc">&nbsp;    private void preFilter(List&lt;XProperty&gt; fields, List&lt;XProperty&gt; getters, List&lt;XProperty&gt; recordComponents) {</b>
+&nbsp;        Iterator&lt;XProperty&gt; propertyIterator = fields.iterator();
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;        while(propertyIterator.hasNext()) {</b>
+<b class="fc">&nbsp;            XProperty property = (XProperty)propertyIterator.next();</b>
+<b class="pc">&nbsp;            if (mustBeSkipped(property)) {</b>
+&nbsp;                propertyIterator.remove();
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;        propertyIterator = getters.iterator();</b>
+<b class="fc">&nbsp;</b>
+&nbsp;        while(propertyIterator.hasNext()) {
+<b class="fc">&nbsp;            XProperty property = (XProperty)propertyIterator.next();</b>
+&nbsp;            if (mustBeSkipped(property)) {
+<b class="fc">&nbsp;                propertyIterator.remove();</b>
+<b class="fc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        propertyIterator = recordComponents.iterator();
+&nbsp;
+<b class="pc">&nbsp;        while(propertyIterator.hasNext()) {</b>
+<b class="nc">&nbsp;            XProperty property = (XProperty)propertyIterator.next();</b>
+&nbsp;            if (mustBeSkipped(property)) {
+&nbsp;                propertyIterator.remove();
+&nbsp;            }
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private static void collectPersistentAttributesUsingLocalAccessType(XClass xClass, Map&lt;String, XProperty&gt; persistentAttributeMap, Map&lt;String, XProperty&gt; persistentAttributesFromGetters, Map&lt;String, XProperty&gt; persistentAttributesFromComponents, List&lt;XProperty&gt; fields, List&lt;XProperty&gt; getters, List&lt;XProperty&gt; recordComponents) {
+&nbsp;        Iterator&lt;XProperty&gt; propertyIterator = fields.iterator();
+&nbsp;
+&nbsp;        while(propertyIterator.hasNext()) {
+&nbsp;            XProperty xProperty = (XProperty)propertyIterator.next();
+&nbsp;            Access localAccessAnnotation = (Access)xProperty.getAnnotation(Access.class);
+&nbsp;            if (localAccessAnnotation != null &amp;&amp; localAccessAnnotation.value() == jakarta.persistence.AccessType.FIELD) {
+<b class="fc">&nbsp;                propertyIterator.remove();</b>
+&nbsp;                persistentAttributeMap.put(xProperty.getName(), xProperty);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        propertyIterator = getters.iterator();
+&nbsp;
+&nbsp;        while(propertyIterator.hasNext()) {
+&nbsp;            XProperty xProperty = (XProperty)propertyIterator.next();
+&nbsp;            Access localAccessAnnotation = (Access)xProperty.getAnnotation(Access.class);
+<b class="fc">&nbsp;            if (localAccessAnnotation != null &amp;&amp; localAccessAnnotation.value() == jakarta.persistence.AccessType.PROPERTY) {</b>
+&nbsp;                propertyIterator.remove();
+&nbsp;                String name = xProperty.getName();
+&nbsp;                XProperty previous = (XProperty)persistentAttributesFromGetters.get(name);
+<b class="fc">&nbsp;                if (previous != null) {</b>
+<b class="fc">&nbsp;                    throw new MappingException(LOG.ambiguousPropertyMethods(xClass.getName(), HCANNHelper.annotatedElementSignature(previous), HCANNHelper.annotatedElementSignature(xProperty)), new Origin(SourceType.ANNOTATION, xClass.getName()));</b>
+<b class="fc">&nbsp;                }</b>
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;                persistentAttributeMap.put(name, xProperty);</b>
+&nbsp;                persistentAttributesFromGetters.put(name, xProperty);
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;        propertyIterator = recordComponents.iterator();</b>
+<b class="fc">&nbsp;</b>
+<b class="pc">&nbsp;        while(propertyIterator.hasNext()) {</b>
+<b class="nc">&nbsp;            XProperty xProperty = (XProperty)propertyIterator.next();</b>
+&nbsp;            Access localAccessAnnotation = (Access)xProperty.getAnnotation(Access.class);
+&nbsp;            if (localAccessAnnotation != null) {
+&nbsp;                propertyIterator.remove();
+<b class="fc">&nbsp;                String name = xProperty.getName();</b>
+<b class="pc">&nbsp;                persistentAttributeMap.put(name, xProperty);</b>
+<b class="nc">&nbsp;                persistentAttributesFromComponents.put(name, xProperty);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private static void collectPersistentAttributesUsingClassLevelAccessType(XClass xClass, AccessType classLevelAccessType, Map&lt;String, XProperty&gt; persistentAttributeMap, Map&lt;String, XProperty&gt; persistentAttributesFromGetters, Map&lt;String, XProperty&gt; persistentAttributesFromComponents, List&lt;XProperty&gt; fields, List&lt;XProperty&gt; getters, List&lt;XProperty&gt; recordComponents) {
+&nbsp;        if (classLevelAccessType == AccessType.FIELD) {
+&nbsp;            for(XProperty field : fields) {
+&nbsp;                String name = field.getName();
+&nbsp;                if (!persistentAttributeMap.containsKey(name)) {
+&nbsp;                    persistentAttributeMap.put(name, field);
+&nbsp;                }
+&nbsp;            }
+&nbsp;        } else {
+&nbsp;            for(XProperty getter : getters) {
+&nbsp;                String name = getter.getName();
+<b class="fc">&nbsp;                XProperty previous = (XProperty)persistentAttributesFromGetters.get(name);</b>
+<b class="fc">&nbsp;                if (previous != null) {</b>
+<b class="fc">&nbsp;                    throw new MappingException(LOG.ambiguousPropertyMethods(xClass.getName(), HCANNHelper.annotatedElementSignature(previous), HCANNHelper.annotatedElementSignature(getter)), new Origin(SourceType.ANNOTATION, xClass.getName()));</b>
+<b class="fc">&nbsp;                }</b>
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;                if (!persistentAttributeMap.containsKey(name)) {</b>
+&nbsp;                    persistentAttributeMap.put(getter.getName(), getter);
+&nbsp;                    persistentAttributesFromGetters.put(name, getter);
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            for(XProperty recordComponent : recordComponents) {
+&nbsp;                String name = recordComponent.getName();
+&nbsp;                if (!persistentAttributeMap.containsKey(name)) {
+<b class="fc">&nbsp;                    persistentAttributeMap.put(name, recordComponent);</b>
+<b class="fc">&nbsp;                    persistentAttributesFromComponents.put(name, recordComponent);</b>
+<b class="fc">&nbsp;                }</b>
+<b class="fc">&nbsp;            }</b>
+<b class="pc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public XClass getEntityAtStake() {
+<b class="nc">&nbsp;        return this.entityAtStake;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public XClass getDeclaringClass() {
+&nbsp;        return this.xClass;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public AccessType getClassLevelAccessType() {</b>
+<b class="nc">&nbsp;        return this.classLevelAccessType;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public Iterable&lt;XProperty&gt; propertyIterator() {</b>
+&nbsp;        return this.persistentAttributes;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private static List&lt;XProperty&gt; verifyAndInitializePersistentAttributes(XClass xClass, Map&lt;String, XProperty&gt; localAttributeMap) {
+&nbsp;        ArrayList&lt;XProperty&gt; output = new ArrayList(localAttributeMap.size());
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        for(XProperty xProperty : localAttributeMap.values()) {</b>
+&nbsp;            if (!xProperty.isTypeResolved() &amp;&amp; !discoverTypeWithoutReflection(xClass, xProperty)) {
+&nbsp;                String msg = &quot;Property &#39;&quot; + StringHelper.qualify(xClass.getName(), xProperty.getName()) + &quot;&#39; has an unbound type and no explicit target entity (resolve this generics usage issue or set an explicit target attribute with &#39;@OneToMany(target=)&#39; or use an explicit &#39;@Type&#39;)&quot;;
+&nbsp;                throw new AnnotationException(msg);
+<b class="fc">&nbsp;            }</b>
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;            output.add(xProperty);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return CollectionHelper.toSmallList(output);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private AccessType determineLocalClassDefinedAccessStrategy() {</b>
+<b class="nc">&nbsp;        AccessType classDefinedAccessType = AccessType.DEFAULT;</b>
+<b class="nc">&nbsp;        Access access = (Access)this.xClass.getAnnotation(Access.class);</b>
+<b class="nc">&nbsp;        if (access != null) {</b>
+&nbsp;            classDefinedAccessType = AccessType.getAccessStrategy(access.value());
+&nbsp;        }
+&nbsp;
+&nbsp;        return classDefinedAccessType;
+&nbsp;    }
+&nbsp;
+&nbsp;    private static boolean discoverTypeWithoutReflection(XClass clazz, XProperty property) {
+&nbsp;        if (property.isAnnotationPresent(OneToOne.class) &amp;&amp; !((OneToOne)property.getAnnotation(OneToOne.class)).targetEntity().equals(Void.TYPE)) {
+&nbsp;            return true;
+&nbsp;        } else if (property.isAnnotationPresent(OneToMany.class) &amp;&amp; !((OneToMany)property.getAnnotation(OneToMany.class)).targetEntity().equals(Void.TYPE)) {
+&nbsp;            return true;
+&nbsp;        } else if (property.isAnnotationPresent(ManyToOne.class) &amp;&amp; !((ManyToOne)property.getAnnotation(ManyToOne.class)).targetEntity().equals(Void.TYPE)) {
+<b class="pc">&nbsp;            return true;</b>
+<b class="fc">&nbsp;        } else if (property.isAnnotationPresent(ManyToMany.class) &amp;&amp; !((ManyToMany)property.getAnnotation(ManyToMany.class)).targetEntity().equals(Void.TYPE)) {</b>
+<b class="fc">&nbsp;            return true;</b>
+<b class="pc">&nbsp;        } else if (property.isAnnotationPresent(Any.class)) {</b>
+&nbsp;            return true;
+&nbsp;        } else if (property.isAnnotationPresent(ManyToAny.class)) {
+&nbsp;            if (!property.isCollection() &amp;&amp; !property.isArray()) {
+<b class="fc">&nbsp;                throw new AnnotationException(&quot;Property &#39;&quot; + StringHelper.qualify(clazz.getName(), property.getName()) + &quot;&#39; annotated &#39;@ManyToAny&#39; is neither a collection nor an array&quot;);</b>
+&nbsp;            } else {
+&nbsp;                return true;
+&nbsp;            }
+<b class="nc">&nbsp;        } else if (property.isAnnotationPresent(Basic.class)) {</b>
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        } else if (property.isAnnotationPresent(Type.class)) {
+&nbsp;            return true;
+<b class="nc">&nbsp;        } else if (property.isAnnotationPresent(JavaType.class)) {</b>
+<b class="nc">&nbsp;            return true;</b>
+<b class="nc">&nbsp;        } else if (property.isAnnotationPresent(JdbcTypeCode.class)) {</b>
+<b class="nc">&nbsp;            return true;</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            return property.isAnnotationPresent(Target.class);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private static boolean mustBeSkipped(XProperty property) {
+&nbsp;        return property.isAnnotationPresent(Transient.class) || &quot;net.sf.cglib.transform.impl.InterceptFieldCallback&quot;.equals(property.getType().getName());
+&nbsp;    }
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:57</div>
+</div>
+</body>
+</html>

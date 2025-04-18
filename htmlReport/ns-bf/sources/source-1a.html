@@ -1,0 +1,886 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ConstantPool</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.aspectj.apache.bcel.classfile</a>
+</div>
+
+<h1>Coverage Summary for Class: ConstantPool (org.aspectj.apache.bcel.classfile)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ConstantPool</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    12.7%
+  </span>
+  <span class="absValue">
+    (7/55)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    4.2%
+  </span>
+  <span class="absValue">
+    (9/216)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    6.2%
+  </span>
+  <span class="absValue">
+    (25/400)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.aspectj.apache.bcel.classfile;
+&nbsp;
+&nbsp;import java.io.DataInputStream;
+&nbsp;import java.io.DataOutputStream;
+&nbsp;import java.io.IOException;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.Map;
+&nbsp;import org.aspectj.apache.bcel.Constants;
+&nbsp;import org.aspectj.apache.bcel.generic.ArrayType;
+&nbsp;import org.aspectj.apache.bcel.generic.ObjectType;
+&nbsp;
+&nbsp;public class ConstantPool implements Node {
+&nbsp;    private Constant[] pool;
+&nbsp;    private int poolSize;
+&nbsp;    private Map&lt;String, Integer&gt; utf8Cache = new HashMap();
+&nbsp;    private Map&lt;String, Integer&gt; methodCache = new HashMap();
+&nbsp;    private Map&lt;String, Integer&gt; fieldCache = new HashMap();
+&nbsp;
+&nbsp;    public int getSize() {
+&nbsp;        return this.poolSize;
+&nbsp;    }
+&nbsp;
+&nbsp;    public ConstantPool() {
+&nbsp;        this.pool = new Constant[10];
+&nbsp;        this.poolSize = 0;
+&nbsp;    }
+&nbsp;
+&nbsp;    public ConstantPool(Constant[] constants) {
+&nbsp;        this.pool = constants;
+&nbsp;        this.poolSize = constants == null ? 0 : constants.length;
+&nbsp;    }
+&nbsp;
+&nbsp;    ConstantPool(DataInputStream file) throws IOException {
+&nbsp;        this.poolSize = file.readUnsignedShort();
+&nbsp;        this.pool = new Constant[this.poolSize];
+&nbsp;
+&nbsp;        for(int i = 1; i &lt; this.poolSize; ++i) {
+&nbsp;            this.pool[i] = Constant.readConstant(file);
+&nbsp;            byte tag = this.pool[i].getTag();
+&nbsp;            if (tag == 6 || tag == 5) {
+&nbsp;                ++i;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public Constant getConstant(int index, byte tag) {
+&nbsp;        Constant c = this.getConstant(index);
+&nbsp;        if (c.tag == tag) {
+&nbsp;            return c;
+&nbsp;        } else {
+&nbsp;            throw new ClassFormatException(&quot;Expected class &#39;&quot; + Constants.CONSTANT_NAMES[tag] + &quot;&#39; at index &quot; + index + &quot; and found &quot; + c);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public Constant getConstant(int index) {
+&nbsp;        try {
+&nbsp;            return this.pool[index];
+&nbsp;        } catch (ArrayIndexOutOfBoundsException var3) {
+&nbsp;            throw new ClassFormatException(&quot;Index &quot; + index + &quot; into constant pool (size:&quot; + this.poolSize + &quot;) is invalid&quot;);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public ConstantPool copy() {
+<b class="fc">&nbsp;        Constant[] newConstants = new Constant[this.poolSize];</b>
+&nbsp;
+&nbsp;        for(int i = 1; i &lt; this.poolSize; ++i) {
+&nbsp;            if (this.pool[i] != null) {
+<b class="fc">&nbsp;                newConstants[i] = this.pool[i].copy();</b>
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return new ConstantPool(newConstants);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public String getConstantString(int index, byte tag) throws ClassFormatException {
+<b class="nc">&nbsp;        Constant c = this.getConstant(index, tag);</b>
+<b class="nc">&nbsp;        int i;</b>
+<b class="nc">&nbsp;        switch (tag) {</b>
+&nbsp;            case 7:
+&nbsp;                i = ((ConstantClass)c).getNameIndex();
+<b class="nc">&nbsp;                break;</b>
+<b class="nc">&nbsp;            case 8:</b>
+<b class="nc">&nbsp;                i = ((ConstantString)c).getStringIndex();</b>
+&nbsp;                break;
+&nbsp;            default:
+<b class="fc">&nbsp;                throw new RuntimeException(&quot;getConstantString called with illegal tag &quot; + tag);</b>
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;        c = this.getConstant(i, (byte)1);</b>
+&nbsp;        return ((ConstantUtf8)c).getValue();
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public String constantToString(Constant c) {</b>
+<b class="pc">&nbsp;        String str;</b>
+<b class="fc">&nbsp;        switch (c.tag) {</b>
+&nbsp;            case 1:
+&nbsp;            case 3:
+&nbsp;            case 4:
+&nbsp;            case 5:
+&nbsp;            case 6:
+<b class="fc">&nbsp;                str = ((SimpleConstant)c).getStringValue();</b>
+&nbsp;                break;
+<b class="pc">&nbsp;            case 2:</b>
+<b class="fc">&nbsp;            case 13:</b>
+<b class="nc">&nbsp;            case 14:</b>
+&nbsp;            default:
+&nbsp;                throw new RuntimeException(&quot;Unknown constant type &quot; + c.tag);
+&nbsp;            case 7:
+&nbsp;                int i = ((ConstantClass)c).getNameIndex();
+&nbsp;                c = this.getConstant(i, (byte)1);
+<b class="fc">&nbsp;                str = Utility.compactClassName(((ConstantUtf8)c).getValue(), false);</b>
+&nbsp;                break;
+<b class="nc">&nbsp;            case 8:</b>
+&nbsp;                int i = ((ConstantString)c).getStringIndex();
+&nbsp;                c = this.getConstant(i, (byte)1);
+&nbsp;                str = &quot;\&quot;&quot; + escape(((ConstantUtf8)c).getValue()) + &quot;\&quot;&quot;;
+&nbsp;                break;
+&nbsp;            case 9:
+&nbsp;            case 10:
+&nbsp;            case 11:
+<b class="nc">&nbsp;                str = this.constantToString(((ConstantCP)c).getClassIndex(), (byte)7) + &quot;.&quot; + this.constantToString(((ConstantCP)c).getNameAndTypeIndex(), (byte)12);</b>
+<b class="nc">&nbsp;                break;</b>
+<b class="nc">&nbsp;            case 12:</b>
+<b class="nc">&nbsp;                str = this.constantToString(((ConstantNameAndType)c).getNameIndex(), (byte)1) + &quot; &quot; + this.constantToString(((ConstantNameAndType)c).getSignatureIndex(), (byte)1);</b>
+&nbsp;                break;
+&nbsp;            case 15:
+<b class="nc">&nbsp;                ConstantMethodHandle cMH = (ConstantMethodHandle)c;</b>
+&nbsp;                return cMH.getReferenceKind() + &quot;:&quot; + this.constantToString(cMH.getReferenceIndex(), (byte)10);
+&nbsp;            case 16:
+&nbsp;                ConstantMethodType cMT = (ConstantMethodType)c;
+&nbsp;                return this.constantToString(cMT.getDescriptorIndex(), (byte)1);
+&nbsp;            case 17:
+&nbsp;                ConstantDynamic cD = (ConstantDynamic)c;
+&nbsp;                return &quot;#&quot; + cD.getBootstrapMethodAttrIndex() + &quot;.&quot; + this.constantToString(cD.getNameAndTypeIndex(), (byte)12);
+&nbsp;            case 18:
+&nbsp;                ConstantInvokeDynamic cID = (ConstantInvokeDynamic)c;
+&nbsp;                return &quot;#&quot; + cID.getBootstrapMethodAttrIndex() + &quot;.&quot; + this.constantToString(cID.getNameAndTypeIndex(), (byte)12);
+&nbsp;            case 19:
+&nbsp;                ConstantModule cM = (ConstantModule)c;
+&nbsp;                return &quot;Module:&quot; + this.constantToString(cM.getNameIndex(), (byte)1);
+&nbsp;            case 20:
+<b class="fc">&nbsp;                ConstantPackage cP = (ConstantPackage)c;</b>
+&nbsp;                return &quot;Package:&quot; + this.constantToString(cP.getNameIndex(), (byte)1);
+&nbsp;        }
+&nbsp;
+&nbsp;        return str;
+&nbsp;    }
+&nbsp;
+&nbsp;    private static final String escape(String str) {
+<b class="pc">&nbsp;        int len = str.length();</b>
+&nbsp;        StringBuilder buf = new StringBuilder(len + 5);
+<b class="fc">&nbsp;        char[] ch = str.toCharArray();</b>
+&nbsp;
+&nbsp;        for(int i = 0; i &lt; len; ++i) {
+<b class="nc">&nbsp;            switch (ch[i]) {</b>
+&nbsp;                case &#39;\b&#39;:
+&nbsp;                    buf.append(&quot;\\b&quot;);
+<b class="nc">&nbsp;                    break;</b>
+&nbsp;                case &#39;\t&#39;:
+&nbsp;                    buf.append(&quot;\\t&quot;);
+<b class="fc">&nbsp;                    break;</b>
+<b class="fc">&nbsp;                case &#39;\n&#39;:</b>
+&nbsp;                    buf.append(&quot;\\n&quot;);
+&nbsp;                    break;
+&nbsp;                case &#39;\r&#39;:
+&nbsp;                    buf.append(&quot;\\r&quot;);
+&nbsp;                    break;
+&nbsp;                case &#39;&quot;&#39;:
+&nbsp;                    buf.append(&quot;\\\&quot;&quot;);
+&nbsp;                    break;
+&nbsp;                default:
+<b class="nc">&nbsp;                    buf.append(ch[i]);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return buf.toString();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String constantToString(int index, byte tag) {
+<b class="nc">&nbsp;        Constant c = this.getConstant(index, tag);</b>
+<b class="nc">&nbsp;        return this.constantToString(c);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public String constantToString(int index) {
+&nbsp;        return this.constantToString(this.getConstant(index));
+&nbsp;    }
+&nbsp;
+&nbsp;    public void accept(ClassVisitor v) {
+&nbsp;        v.visitConstantPool(this);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public Constant[] getConstantPool() {
+&nbsp;        return this.pool;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public void dump(DataOutputStream file) throws IOException {
+&nbsp;        int size = Math.min(this.poolSize, 65535);
+&nbsp;        file.writeShort(size);
+&nbsp;
+&nbsp;        for(int i = 1; i &lt; size; ++i) {
+<b class="nc">&nbsp;            if (this.pool[i] != null) {</b>
+<b class="nc">&nbsp;                this.pool[i].dump(file);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public ConstantUtf8 getConstantUtf8(int index) {
+&nbsp;        Constant c = this.getConstant(index);
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        assert c != null;</b>
+&nbsp;
+&nbsp;        assert c.tag == 1;
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return (ConstantUtf8)c;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public ConstantModule getConstantModule(int index) {</b>
+<b class="nc">&nbsp;        Constant c = this.getConstant(index);</b>
+&nbsp;
+&nbsp;        assert c != null;
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        assert c.tag == 19;</b>
+&nbsp;
+&nbsp;        return (ConstantModule)c;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public ConstantPackage getConstantPackage(int index) {
+&nbsp;        Constant c = this.getConstant(index);
+<b class="nc">&nbsp;</b>
+&nbsp;        assert c != null;
+&nbsp;
+<b class="nc">&nbsp;        assert c.tag == 20;</b>
+&nbsp;
+&nbsp;        return (ConstantPackage)c;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public String getConstantString_CONSTANTClass(int index) {</b>
+<b class="nc">&nbsp;        ConstantClass c = (ConstantClass)this.getConstant(index, (byte)7);</b>
+&nbsp;        index = c.getNameIndex();
+<b class="nc">&nbsp;        return ((ConstantUtf8)this.getConstant(index, (byte)1)).getValue();</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public int getLength() {</b>
+&nbsp;        return this.poolSize;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public String toString() {
+&nbsp;        StringBuilder buf = new StringBuilder();
+<b class="nc">&nbsp;</b>
+&nbsp;        for(int i = 1; i &lt; this.poolSize; ++i) {
+&nbsp;            buf.append(i).append(&quot;) &quot;).append(this.pool[i]).append(&quot;\n&quot;);
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return buf.toString();
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public int lookupInteger(int n) {
+<b class="nc">&nbsp;        for(int i = 1; i &lt; this.poolSize; ++i) {</b>
+&nbsp;            if (this.pool[i] instanceof ConstantInteger) {
+&nbsp;                ConstantInteger c = (ConstantInteger)this.pool[i];
+&nbsp;                if (c.getValue() == n) {
+<b class="nc">&nbsp;                    return i;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return -1;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int lookupUtf8(String string) {
+<b class="nc">&nbsp;        Integer pos = (Integer)this.utf8Cache.get(string);</b>
+&nbsp;        if (pos != null) {
+&nbsp;            return pos;
+&nbsp;        } else {
+&nbsp;            for(int i = 1; i &lt; this.poolSize; ++i) {
+<b class="nc">&nbsp;                Constant c = this.pool[i];</b>
+&nbsp;                if (c != null &amp;&amp; c.tag == 1 &amp;&amp; ((ConstantUtf8)c).getValue().equals(string)) {
+&nbsp;                    this.utf8Cache.put(string, i);
+&nbsp;                    return i;
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            return -1;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public int lookupClass(String classname) {
+&nbsp;        for(int i = 1; i &lt; this.poolSize; ++i) {
+<b class="nc">&nbsp;            Constant c = this.pool[i];</b>
+<b class="nc">&nbsp;            if (c != null &amp;&amp; c.tag == 7) {</b>
+<b class="nc">&nbsp;                int cIndex = ((ConstantClass)c).getNameIndex();</b>
+<b class="nc">&nbsp;                String cName = ((ConstantUtf8)this.pool[cIndex]).getValue();</b>
+<b class="nc">&nbsp;                if (cName.equals(classname)) {</b>
+&nbsp;                    return i;
+&nbsp;                }
+&nbsp;            }
+<b class="fc">&nbsp;        }</b>
+<b class="pc">&nbsp;</b>
+<b class="pc">&nbsp;        return -1;</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public int addUtf8(String n) {
+&nbsp;        int ret = this.lookupUtf8(n);
+<b class="nc">&nbsp;        if (ret != -1) {</b>
+<b class="nc">&nbsp;            return ret;</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            this.adjustSize();</b>
+&nbsp;            ret = this.poolSize;
+&nbsp;            this.pool[this.poolSize++] = new ConstantUtf8(n);
+&nbsp;            return ret;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public int addInteger(int n) {</b>
+&nbsp;        int ret = this.lookupInteger(n);
+&nbsp;        if (ret != -1) {
+&nbsp;            return ret;
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            this.adjustSize();</b>
+<b class="nc">&nbsp;            ret = this.poolSize;</b>
+&nbsp;            this.pool[this.poolSize++] = new ConstantInteger(n);
+&nbsp;            return ret;
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public int addArrayClass(ArrayType type) {
+&nbsp;        return this.addClass(type.getSignature());
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public int addClass(ObjectType type) {
+<b class="nc">&nbsp;        return this.addClass(type.getClassName());</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public int addClass(String classname) {</b>
+&nbsp;        String toAdd = classname.replace(&#39;.&#39;, &#39;/&#39;);
+&nbsp;        int ret = this.lookupClass(toAdd);
+&nbsp;        if (ret != -1) {
+<b class="nc">&nbsp;            return ret;</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            this.adjustSize();</b>
+<b class="nc">&nbsp;            ConstantClass c = new ConstantClass(this.addUtf8(toAdd));</b>
+<b class="nc">&nbsp;            ret = this.poolSize;</b>
+&nbsp;            this.pool[this.poolSize++] = c;
+&nbsp;            return ret;
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void adjustSize() {
+<b class="nc">&nbsp;        if (this.poolSize + 3 &gt;= 65536) {</b>
+<b class="nc">&nbsp;            throw new IllegalStateException(&quot;The number of constants &quot; + (this.poolSize + 3) + &quot; is over the size of the constant pool: &quot; + &#39;\uffff&#39;);</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            if (this.poolSize + 3 &gt;= this.pool.length) {
+<b class="nc">&nbsp;                Constant[] cs = this.pool;</b>
+<b class="nc">&nbsp;                int size = cs.length + 8;</b>
+<b class="nc">&nbsp;                size = Math.min(size, 65536);</b>
+<b class="nc">&nbsp;                this.pool = new Constant[size];</b>
+<b class="nc">&nbsp;                System.arraycopy(cs, 0, this.pool, 0, cs.length);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            if (this.poolSize == 0) {
+&nbsp;                this.poolSize = 1;
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public int addFieldref(String class_name, String field_name, String signature) {</b>
+<b class="nc">&nbsp;        int ret = this.lookupFieldref(class_name, field_name, signature);</b>
+<b class="nc">&nbsp;        if (ret != -1) {</b>
+<b class="nc">&nbsp;            return ret;</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            this.adjustSize();</b>
+&nbsp;            int class_index = this.addClass(class_name);
+&nbsp;            int name_and_type_index = this.addNameAndType(field_name, signature);
+<b class="nc">&nbsp;            ret = this.poolSize;</b>
+&nbsp;            this.pool[this.poolSize++] = new ConstantFieldref(class_index, name_and_type_index);
+&nbsp;            return ret;
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public int lookupFieldref(String searchClassname, String searchFieldname, String searchSignature) {</b>
+<b class="nc">&nbsp;        searchClassname = searchClassname.replace(&#39;.&#39;, &#39;/&#39;);</b>
+<b class="nc">&nbsp;        String k = searchClassname + searchFieldname + searchSignature;</b>
+<b class="nc">&nbsp;        Integer pos = (Integer)this.fieldCache.get(k);</b>
+<b class="nc">&nbsp;        if (pos != null) {</b>
+&nbsp;            return pos;
+&nbsp;        } else {
+&nbsp;            for(int i = 1; i &lt; this.poolSize; ++i) {
+<b class="nc">&nbsp;                Constant c = this.pool[i];</b>
+<b class="nc">&nbsp;                if (c != null &amp;&amp; c.tag == 9) {</b>
+<b class="nc">&nbsp;                    ConstantFieldref cfr = (ConstantFieldref)c;</b>
+<b class="nc">&nbsp;                    ConstantNameAndType cnat = (ConstantNameAndType)this.pool[cfr.getNameAndTypeIndex()];</b>
+<b class="nc">&nbsp;                    int cIndex = cfr.getClassIndex();</b>
+<b class="nc">&nbsp;                    ConstantClass cc = (ConstantClass)this.pool[cIndex];</b>
+<b class="nc">&nbsp;                    String cName = ((ConstantUtf8)this.pool[cc.getNameIndex()]).getValue();</b>
+&nbsp;                    if (cName.equals(searchClassname)) {
+&nbsp;                        String name = ((ConstantUtf8)this.pool[cnat.getNameIndex()]).getValue();
+&nbsp;                        if (name.equals(searchFieldname)) {
+<b class="nc">&nbsp;                            String typeSignature = ((ConstantUtf8)this.pool[cnat.getSignatureIndex()]).getValue();</b>
+&nbsp;                            if (typeSignature.equals(searchSignature)) {
+&nbsp;                                this.fieldCache.put(k, i);
+&nbsp;                                return i;
+<b class="nc">&nbsp;                            }</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            return -1;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public int addNameAndType(String name, String signature) {</b>
+<b class="nc">&nbsp;        int ret = this.lookupNameAndType(name, signature);</b>
+<b class="nc">&nbsp;        if (ret != -1) {</b>
+&nbsp;            return ret;
+&nbsp;        } else {
+&nbsp;            this.adjustSize();
+&nbsp;            int name_index = this.addUtf8(name);
+<b class="nc">&nbsp;            int signature_index = this.addUtf8(signature);</b>
+<b class="nc">&nbsp;            ret = this.poolSize;</b>
+&nbsp;            this.pool[this.poolSize++] = new ConstantNameAndType(name_index, signature_index);
+&nbsp;            return ret;
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public int lookupNameAndType(String searchName, String searchTypeSignature) {</b>
+<b class="nc">&nbsp;        for(int i = 1; i &lt; this.poolSize; ++i) {</b>
+&nbsp;            Constant c = this.pool[i];
+<b class="nc">&nbsp;            if (c != null &amp;&amp; c.tag == 12) {</b>
+<b class="nc">&nbsp;                ConstantNameAndType cnat = (ConstantNameAndType)c;</b>
+<b class="nc">&nbsp;                String name = ((ConstantUtf8)this.pool[cnat.getNameIndex()]).getValue();</b>
+&nbsp;                if (name.equals(searchName)) {
+<b class="nc">&nbsp;                    String typeSignature = ((ConstantUtf8)this.pool[cnat.getSignatureIndex()]).getValue();</b>
+<b class="nc">&nbsp;                    if (typeSignature.equals(searchTypeSignature)) {</b>
+&nbsp;                        return i;
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return -1;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public int addFloat(float f) {</b>
+&nbsp;        int ret = this.lookupFloat(f);
+<b class="nc">&nbsp;        if (ret != -1) {</b>
+<b class="nc">&nbsp;            return ret;</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            this.adjustSize();</b>
+&nbsp;            ret = this.poolSize;
+<b class="nc">&nbsp;            this.pool[this.poolSize++] = new ConstantFloat(f);</b>
+&nbsp;            return ret;
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public int lookupFloat(float f) {</b>
+<b class="nc">&nbsp;        int bits = Float.floatToIntBits(f);</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        for(int i = 1; i &lt; this.poolSize; ++i) {</b>
+<b class="nc">&nbsp;            Constant c = this.pool[i];</b>
+<b class="nc">&nbsp;            if (c != null &amp;&amp; c.tag == 4) {</b>
+<b class="nc">&nbsp;                ConstantFloat cf = (ConstantFloat)c;</b>
+<b class="nc">&nbsp;                if (Float.floatToIntBits(cf.getValue()) == bits) {</b>
+<b class="nc">&nbsp;                    return i;</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return -1;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public int addDouble(double d) {
+&nbsp;        int ret = this.lookupDouble(d);
+<b class="nc">&nbsp;        if (ret != -1) {</b>
+<b class="nc">&nbsp;            return ret;</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            this.adjustSize();</b>
+<b class="nc">&nbsp;            ret = this.poolSize;</b>
+&nbsp;            this.pool[this.poolSize] = new ConstantDouble(d);
+<b class="nc">&nbsp;            this.poolSize += 2;</b>
+<b class="nc">&nbsp;            return ret;</b>
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public int lookupDouble(double d) {
+&nbsp;        long bits = Double.doubleToLongBits(d);
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 1; i &lt; this.poolSize; ++i) {</b>
+<b class="nc">&nbsp;            Constant c = this.pool[i];</b>
+<b class="nc">&nbsp;            if (c != null &amp;&amp; c.tag == 6) {</b>
+<b class="nc">&nbsp;                ConstantDouble cf = (ConstantDouble)c;</b>
+<b class="nc">&nbsp;                if (Double.doubleToLongBits(cf.getValue()) == bits) {</b>
+<b class="nc">&nbsp;                    return i;</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return -1;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public int addLong(long l) {</b>
+<b class="nc">&nbsp;        int ret = this.lookupLong(l);</b>
+<b class="nc">&nbsp;        if (ret != -1) {</b>
+<b class="nc">&nbsp;            return ret;</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            this.adjustSize();
+<b class="nc">&nbsp;            ret = this.poolSize;</b>
+<b class="nc">&nbsp;            this.pool[this.poolSize] = new ConstantLong(l);</b>
+&nbsp;            this.poolSize += 2;
+<b class="nc">&nbsp;            return ret;</b>
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public int lookupString(String s) {
+&nbsp;        for(int i = 1; i &lt; this.poolSize; ++i) {
+&nbsp;            Constant c = this.pool[i];
+<b class="nc">&nbsp;            if (c != null &amp;&amp; c.tag == 8) {</b>
+<b class="nc">&nbsp;                ConstantString cs = (ConstantString)c;</b>
+<b class="nc">&nbsp;                ConstantUtf8 cu8 = (ConstantUtf8)this.pool[cs.getStringIndex()];</b>
+<b class="nc">&nbsp;                if (cu8.getValue().equals(s)) {</b>
+<b class="nc">&nbsp;                    return i;</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        return -1;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public int addString(String str) {</b>
+<b class="nc">&nbsp;        int ret = this.lookupString(str);</b>
+<b class="nc">&nbsp;        if (ret != -1) {</b>
+<b class="nc">&nbsp;            return ret;</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            int utf8 = this.addUtf8(str);
+&nbsp;            this.adjustSize();
+<b class="nc">&nbsp;            ConstantString s = new ConstantString(utf8);</b>
+&nbsp;            ret = this.poolSize;
+&nbsp;            this.pool[this.poolSize++] = s;
+&nbsp;            return ret;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public int lookupLong(long l) {</b>
+<b class="nc">&nbsp;        for(int i = 1; i &lt; this.poolSize; ++i) {</b>
+<b class="nc">&nbsp;            Constant c = this.pool[i];</b>
+<b class="nc">&nbsp;            if (c != null &amp;&amp; c.tag == 5) {</b>
+<b class="nc">&nbsp;                ConstantLong cf = (ConstantLong)c;</b>
+&nbsp;                if (cf.getValue() == l) {
+&nbsp;                    return i;
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return -1;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public int addConstant(Constant c, ConstantPool cp) {</b>
+&nbsp;        Constant[] constants = cp.getConstantPool();
+&nbsp;        switch (c.getTag()) {
+<b class="nc">&nbsp;            case 1:</b>
+&nbsp;                return this.addUtf8(((ConstantUtf8)c).getValue());
+&nbsp;            case 2:
+&nbsp;            case 13:
+<b class="nc">&nbsp;            case 14:</b>
+<b class="nc">&nbsp;            default:</b>
+<b class="nc">&nbsp;                throw new RuntimeException(&quot;Unknown constant type &quot; + c);</b>
+<b class="nc">&nbsp;            case 3:</b>
+<b class="nc">&nbsp;                return this.addInteger(((ConstantInteger)c).getValue());</b>
+<b class="nc">&nbsp;            case 4:</b>
+<b class="nc">&nbsp;                return this.addFloat(((ConstantFloat)c).getValue());</b>
+<b class="nc">&nbsp;            case 5:</b>
+&nbsp;                return this.addLong(((ConstantLong)c).getValue());
+&nbsp;            case 6:
+&nbsp;                return this.addDouble(((ConstantDouble)c).getValue());
+<b class="nc">&nbsp;            case 7:</b>
+<b class="nc">&nbsp;                ConstantClass s = (ConstantClass)c;</b>
+<b class="nc">&nbsp;                ConstantUtf8 u8 = (ConstantUtf8)constants[s.getNameIndex()];</b>
+<b class="nc">&nbsp;                return this.addClass(u8.getValue());</b>
+<b class="nc">&nbsp;            case 8:</b>
+<b class="nc">&nbsp;                ConstantString s = (ConstantString)c;</b>
+<b class="nc">&nbsp;                ConstantUtf8 u8 = (ConstantUtf8)constants[s.getStringIndex()];</b>
+&nbsp;                return this.addString(u8.getValue());
+&nbsp;            case 9:
+<b class="nc">&nbsp;            case 10:</b>
+&nbsp;            case 11:
+&nbsp;                ConstantCP m = (ConstantCP)c;
+&nbsp;                ConstantClass clazz = (ConstantClass)constants[m.getClassIndex()];
+<b class="nc">&nbsp;                ConstantNameAndType n = (ConstantNameAndType)constants[m.getNameAndTypeIndex()];</b>
+<b class="nc">&nbsp;                ConstantUtf8 u8 = (ConstantUtf8)constants[clazz.getNameIndex()];</b>
+<b class="nc">&nbsp;                String class_name = u8.getValue().replace(&#39;/&#39;, &#39;.&#39;);</b>
+<b class="nc">&nbsp;                u8 = (ConstantUtf8)constants[n.getNameIndex()];</b>
+<b class="nc">&nbsp;                String name = u8.getValue();</b>
+<b class="nc">&nbsp;                u8 = (ConstantUtf8)constants[n.getSignatureIndex()];</b>
+<b class="nc">&nbsp;                String signature = u8.getValue();</b>
+<b class="nc">&nbsp;                switch (c.getTag()) {</b>
+<b class="nc">&nbsp;                    case 9:</b>
+&nbsp;                        return this.addFieldref(class_name, name, signature);
+&nbsp;                    case 10:
+&nbsp;                        return this.addMethodref(class_name, name, signature);
+<b class="nc">&nbsp;                    case 11:</b>
+<b class="nc">&nbsp;                        return this.addInterfaceMethodref(class_name, name, signature);</b>
+<b class="nc">&nbsp;                    default:</b>
+<b class="nc">&nbsp;                        throw new RuntimeException(&quot;Unknown constant type &quot; + c);</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            case 12:</b>
+&nbsp;                ConstantNameAndType n = (ConstantNameAndType)c;
+&nbsp;                ConstantUtf8 u8 = (ConstantUtf8)constants[n.getNameIndex()];
+<b class="nc">&nbsp;                ConstantUtf8 u8_2 = (ConstantUtf8)constants[n.getSignatureIndex()];</b>
+&nbsp;                return this.addNameAndType(u8.getValue(), u8_2.getValue());
+&nbsp;            case 15:
+&nbsp;                ConstantMethodHandle cmh = (ConstantMethodHandle)c;
+<b class="nc">&nbsp;                return this.addMethodHandle(cmh.getReferenceKind(), this.addConstant(constants[cmh.getReferenceIndex()], cp));</b>
+<b class="nc">&nbsp;            case 16:</b>
+&nbsp;                ConstantMethodType cmt = (ConstantMethodType)c;
+&nbsp;                return this.addMethodType(this.addConstant(constants[cmt.getDescriptorIndex()], cp));
+<b class="nc">&nbsp;            case 17:</b>
+<b class="nc">&nbsp;                ConstantDynamic cd = (ConstantDynamic)c;</b>
+&nbsp;                int index1 = cd.getBootstrapMethodAttrIndex();
+<b class="nc">&nbsp;                ConstantNameAndType cnat = (ConstantNameAndType)constants[cd.getNameAndTypeIndex()];</b>
+&nbsp;                ConstantUtf8 name = (ConstantUtf8)constants[cnat.getNameIndex()];
+&nbsp;                ConstantUtf8 signature = (ConstantUtf8)constants[cnat.getSignatureIndex()];
+&nbsp;                int index2 = this.addNameAndType(name.getValue(), signature.getValue());
+<b class="nc">&nbsp;                return this.addConstantDynamic(index1, index2);</b>
+<b class="nc">&nbsp;            case 18:</b>
+&nbsp;                ConstantInvokeDynamic cid = (ConstantInvokeDynamic)c;
+<b class="nc">&nbsp;                int index1 = cid.getBootstrapMethodAttrIndex();</b>
+&nbsp;                ConstantNameAndType cnat = (ConstantNameAndType)constants[cid.getNameAndTypeIndex()];
+&nbsp;                ConstantUtf8 name = (ConstantUtf8)constants[cnat.getNameIndex()];
+&nbsp;                ConstantUtf8 signature = (ConstantUtf8)constants[cnat.getSignatureIndex()];
+<b class="nc">&nbsp;                int index2 = this.addNameAndType(name.getValue(), signature.getValue());</b>
+<b class="nc">&nbsp;                return this.addInvokeDynamic(index1, index2);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public int addMethodHandle(byte referenceKind, int referenceIndex) {
+&nbsp;        this.adjustSize();
+&nbsp;        int ret = this.poolSize;
+<b class="nc">&nbsp;        this.pool[this.poolSize++] = new ConstantMethodHandle(referenceKind, referenceIndex);</b>
+<b class="nc">&nbsp;        return ret;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public int addMethodType(int descriptorIndex) {</b>
+<b class="nc">&nbsp;        this.adjustSize();</b>
+<b class="nc">&nbsp;        int ret = this.poolSize;</b>
+&nbsp;        this.pool[this.poolSize++] = new ConstantMethodType(descriptorIndex);
+&nbsp;        return ret;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public int addMethodref(String class_name, String method_name, String signature) {</b>
+<b class="nc">&nbsp;        int ret;</b>
+<b class="nc">&nbsp;        if ((ret = this.lookupMethodref(class_name, method_name, signature)) != -1) {</b>
+<b class="nc">&nbsp;            return ret;</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            this.adjustSize();</b>
+&nbsp;            int name_and_type_index = this.addNameAndType(method_name, signature);
+&nbsp;            int class_index = this.addClass(class_name);
+&nbsp;            ret = this.poolSize;
+<b class="nc">&nbsp;            this.pool[this.poolSize++] = new ConstantMethodref(class_index, name_and_type_index);</b>
+<b class="nc">&nbsp;            return ret;</b>
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public int addInvokeDynamic(int bootstrapMethodIndex, int constantNameAndTypeIndex) {
+&nbsp;        this.adjustSize();
+<b class="nc">&nbsp;        int ret = this.poolSize;</b>
+&nbsp;        this.pool[this.poolSize++] = new ConstantInvokeDynamic(bootstrapMethodIndex, constantNameAndTypeIndex);
+&nbsp;        return ret;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public int addConstantDynamic(int bootstrapMethodIndex, int constantNameAndTypeIndex) {
+<b class="nc">&nbsp;        this.adjustSize();</b>
+&nbsp;        int ret = this.poolSize;
+&nbsp;        this.pool[this.poolSize++] = new ConstantDynamic(bootstrapMethodIndex, constantNameAndTypeIndex);
+<b class="nc">&nbsp;        return ret;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public int addInterfaceMethodref(String class_name, String method_name, String signature) {</b>
+<b class="nc">&nbsp;        int ret = this.lookupInterfaceMethodref(class_name, method_name, signature);</b>
+&nbsp;        if (ret != -1) {
+&nbsp;            return ret;
+&nbsp;        } else {
+&nbsp;            this.adjustSize();
+<b class="nc">&nbsp;            int class_index = this.addClass(class_name);</b>
+<b class="nc">&nbsp;            int name_and_type_index = this.addNameAndType(method_name, signature);</b>
+<b class="nc">&nbsp;            ret = this.poolSize;</b>
+<b class="nc">&nbsp;            this.pool[this.poolSize++] = new ConstantInterfaceMethodref(class_index, name_and_type_index);</b>
+<b class="nc">&nbsp;            return ret;</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public int lookupInterfaceMethodref(String searchClassname, String searchMethodName, String searchSignature) {
+<b class="nc">&nbsp;        searchClassname = searchClassname.replace(&#39;.&#39;, &#39;/&#39;);</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        for(int i = 1; i &lt; this.poolSize; ++i) {
+<b class="nc">&nbsp;            Constant c = this.pool[i];</b>
+&nbsp;            if (c != null &amp;&amp; c.tag == 11) {
+<b class="nc">&nbsp;                ConstantInterfaceMethodref cfr = (ConstantInterfaceMethodref)c;</b>
+&nbsp;                ConstantClass cc = (ConstantClass)this.pool[cfr.getClassIndex()];
+&nbsp;                String cName = ((ConstantUtf8)this.pool[cc.getNameIndex()]).getValue();
+<b class="nc">&nbsp;                if (cName.equals(searchClassname)) {</b>
+&nbsp;                    ConstantNameAndType cnat = (ConstantNameAndType)this.pool[cfr.getNameAndTypeIndex()];
+&nbsp;                    String name = ((ConstantUtf8)this.pool[cnat.getNameIndex()]).getValue();
+<b class="nc">&nbsp;                    if (name.equals(searchMethodName)) {</b>
+&nbsp;                        String typeSignature = ((ConstantUtf8)this.pool[cnat.getSignatureIndex()]).getValue();
+&nbsp;                        if (typeSignature.equals(searchSignature)) {
+<b class="nc">&nbsp;                            return i;</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return -1;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public int lookupMethodref(String searchClassname, String searchMethodName, String searchSignature) {</b>
+<b class="nc">&nbsp;        String key = searchClassname + searchMethodName + searchSignature;</b>
+<b class="nc">&nbsp;        Integer cached = (Integer)this.methodCache.get(key);</b>
+<b class="nc">&nbsp;        if (cached != null) {</b>
+&nbsp;            return cached;
+&nbsp;        } else {
+&nbsp;            searchClassname = searchClassname.replace(&#39;.&#39;, &#39;/&#39;);
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            for(int i = 1; i &lt; this.poolSize; ++i) {</b>
+<b class="nc">&nbsp;                Constant c = this.pool[i];</b>
+<b class="nc">&nbsp;                if (c != null &amp;&amp; c.tag == 10) {</b>
+&nbsp;                    ConstantMethodref cfr = (ConstantMethodref)c;
+&nbsp;                    ConstantNameAndType cnat = (ConstantNameAndType)this.pool[cfr.getNameAndTypeIndex()];
+&nbsp;                    int cIndex = cfr.getClassIndex();
+&nbsp;                    ConstantClass cc = (ConstantClass)this.pool[cIndex];
+&nbsp;                    String cName = ((ConstantUtf8)this.pool[cc.getNameIndex()]).getValue();
+<b class="nc">&nbsp;                    if (cName.equals(searchClassname)) {</b>
+<b class="nc">&nbsp;                        String name = ((ConstantUtf8)this.pool[cnat.getNameIndex()]).getValue();</b>
+&nbsp;                        if (name.equals(searchMethodName)) {
+<b class="nc">&nbsp;                            String typeSignature = ((ConstantUtf8)this.pool[cnat.getSignatureIndex()]).getValue();</b>
+&nbsp;                            if (typeSignature.equals(searchSignature)) {
+<b class="nc">&nbsp;                                this.methodCache.put(key, i);</b>
+<b class="nc">&nbsp;                                return i;</b>
+<b class="nc">&nbsp;                            }</b>
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            return -1;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public ConstantPool getFinalConstantPool() {
+&nbsp;        Constant[] cs = new Constant[this.poolSize];
+<b class="nc">&nbsp;        System.arraycopy(this.pool, 0, cs, 0, this.poolSize);</b>
+<b class="nc">&nbsp;        return new ConstantPool(cs);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public String getModuleName(int moduleIndex) {
+&nbsp;        return this.getConstantModule(moduleIndex).getModuleName(this);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public String getPackageName(int packageIndex) {
+&nbsp;        return this.getConstantPackage(packageIndex).getPackageName(this);
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
+</div>
+</body>
+</html>

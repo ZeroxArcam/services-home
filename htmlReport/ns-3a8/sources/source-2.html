@@ -1,0 +1,530 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > SpelExpression</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.expression.spel.standard</a>
+</div>
+
+<h1>Coverage Summary for Class: SpelExpression (org.springframework.expression.spel.standard)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SpelExpression</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    9.4%
+  </span>
+  <span class="absValue">
+    (3/32)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    3%
+  </span>
+  <span class="absValue">
+    (2/66)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    8.4%
+  </span>
+  <span class="absValue">
+    (16/190)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.expression.spel.standard;
+&nbsp;
+&nbsp;import java.util.concurrent.atomic.AtomicInteger;
+&nbsp;import org.springframework.core.convert.TypeDescriptor;
+&nbsp;import org.springframework.expression.EvaluationContext;
+&nbsp;import org.springframework.expression.EvaluationException;
+&nbsp;import org.springframework.expression.Expression;
+&nbsp;import org.springframework.expression.TypedValue;
+&nbsp;import org.springframework.expression.common.ExpressionUtils;
+&nbsp;import org.springframework.expression.spel.CompiledExpression;
+&nbsp;import org.springframework.expression.spel.ExpressionState;
+&nbsp;import org.springframework.expression.spel.SpelCompilerMode;
+&nbsp;import org.springframework.expression.spel.SpelEvaluationException;
+&nbsp;import org.springframework.expression.spel.SpelMessage;
+&nbsp;import org.springframework.expression.spel.SpelNode;
+&nbsp;import org.springframework.expression.spel.SpelParserConfiguration;
+&nbsp;import org.springframework.expression.spel.ast.SpelNodeImpl;
+&nbsp;import org.springframework.expression.spel.support.StandardEvaluationContext;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;
+&nbsp;public class SpelExpression implements Expression {
+&nbsp;    private static final int INTERPRETED_COUNT_THRESHOLD = 100;
+&nbsp;    private static final int FAILED_ATTEMPTS_THRESHOLD = 100;
+&nbsp;    private final String expression;
+&nbsp;    private final SpelNodeImpl ast;
+&nbsp;    private final SpelParserConfiguration configuration;
+&nbsp;    @Nullable
+&nbsp;    private EvaluationContext evaluationContext;
+&nbsp;    @Nullable
+&nbsp;    private volatile CompiledExpression compiledAst;
+&nbsp;    private final AtomicInteger interpretedCount = new AtomicInteger();
+&nbsp;    private final AtomicInteger failedAttempts = new AtomicInteger();
+&nbsp;
+&nbsp;    public SpelExpression(String expression, SpelNodeImpl ast, SpelParserConfiguration configuration) {
+&nbsp;        this.expression = expression;
+&nbsp;        this.ast = ast;
+&nbsp;        this.configuration = configuration;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setEvaluationContext(EvaluationContext evaluationContext) {
+&nbsp;        this.evaluationContext = evaluationContext;
+&nbsp;    }
+&nbsp;
+&nbsp;    public EvaluationContext getEvaluationContext() {
+&nbsp;        if (this.evaluationContext == null) {
+&nbsp;            this.evaluationContext = new StandardEvaluationContext();
+&nbsp;        }
+&nbsp;
+&nbsp;        return this.evaluationContext;
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getExpressionString() {
+&nbsp;        return this.expression;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public Object getValue() throws EvaluationException {
+&nbsp;        CompiledExpression compiledAst = this.compiledAst;
+&nbsp;        if (compiledAst != null) {
+&nbsp;            try {
+&nbsp;                EvaluationContext context = this.getEvaluationContext();
+&nbsp;                return compiledAst.getValue(context.getRootObject().getValue(), context);
+&nbsp;            } catch (Throwable ex) {
+&nbsp;                if (this.configuration.getCompilerMode() != SpelCompilerMode.MIXED) {
+&nbsp;                    throw new SpelEvaluationException(ex, SpelMessage.EXCEPTION_RUNNING_COMPILED_EXPRESSION, new Object[0]);
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            this.compiledAst = null;</b>
+&nbsp;            this.interpretedCount.set(0);
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        ExpressionState expressionState = new ExpressionState(this.getEvaluationContext(), this.configuration);</b>
+&nbsp;        Object result = this.ast.getValue(expressionState);
+&nbsp;        this.checkCompile(expressionState);
+&nbsp;        return result;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    @Nullable</b>
+<b class="fc">&nbsp;    public &lt;T&gt; T getValue(@Nullable Class&lt;T&gt; expectedResultType) throws EvaluationException {</b>
+<b class="fc">&nbsp;        CompiledExpression compiledAst = this.compiledAst;</b>
+<b class="fc">&nbsp;        if (compiledAst != null) {</b>
+&nbsp;            try {
+&nbsp;                EvaluationContext context = this.getEvaluationContext();
+&nbsp;                Object result = compiledAst.getValue(context.getRootObject().getValue(), context);
+&nbsp;                if (expectedResultType == null) {
+&nbsp;                    return (T)result;
+&nbsp;                }
+&nbsp;
+&nbsp;                return (T)ExpressionUtils.convertTypedValue(this.getEvaluationContext(), new TypedValue(result), expectedResultType);
+<b class="nc">&nbsp;            } catch (Throwable ex) {</b>
+&nbsp;                if (this.configuration.getCompilerMode() != SpelCompilerMode.MIXED) {
+&nbsp;                    throw new SpelEvaluationException(ex, SpelMessage.EXCEPTION_RUNNING_COMPILED_EXPRESSION, new Object[0]);
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            this.compiledAst = null;
+&nbsp;            this.interpretedCount.set(0);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        ExpressionState expressionState = new ExpressionState(this.getEvaluationContext(), this.configuration);
+<b class="nc">&nbsp;        TypedValue typedResultValue = this.ast.getTypedValue(expressionState);</b>
+&nbsp;        this.checkCompile(expressionState);
+&nbsp;        return (T)ExpressionUtils.convertTypedValue(expressionState.getEvaluationContext(), typedResultValue, expectedResultType);
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public Object getValue(@Nullable Object rootObject) throws EvaluationException {
+&nbsp;        CompiledExpression compiledAst = this.compiledAst;
+<b class="nc">&nbsp;        if (compiledAst != null) {</b>
+&nbsp;            try {
+&nbsp;                return compiledAst.getValue(rootObject, this.getEvaluationContext());
+&nbsp;            } catch (Throwable ex) {
+&nbsp;                if (this.configuration.getCompilerMode() != SpelCompilerMode.MIXED) {
+&nbsp;                    throw new SpelEvaluationException(ex, SpelMessage.EXCEPTION_RUNNING_COMPILED_EXPRESSION, new Object[0]);
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            this.compiledAst = null;</b>
+<b class="nc">&nbsp;            this.interpretedCount.set(0);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        ExpressionState expressionState = new ExpressionState(this.getEvaluationContext(), this.toTypedValue(rootObject), this.configuration);
+<b class="nc">&nbsp;        Object result = this.ast.getValue(expressionState);</b>
+<b class="nc">&nbsp;        this.checkCompile(expressionState);</b>
+<b class="nc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+<b class="nc">&nbsp;    public &lt;T&gt; T getValue(@Nullable Object rootObject, @Nullable Class&lt;T&gt; expectedResultType) throws EvaluationException {</b>
+&nbsp;        CompiledExpression compiledAst = this.compiledAst;
+&nbsp;        if (compiledAst != null) {
+&nbsp;            try {
+&nbsp;                Object result = compiledAst.getValue(rootObject, this.getEvaluationContext());
+<b class="nc">&nbsp;                if (expectedResultType == null) {</b>
+<b class="nc">&nbsp;                    return (T)result;</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                return (T)ExpressionUtils.convertTypedValue(this.getEvaluationContext(), new TypedValue(result), expectedResultType);
+&nbsp;            } catch (Throwable ex) {
+&nbsp;                if (this.configuration.getCompilerMode() != SpelCompilerMode.MIXED) {
+&nbsp;                    throw new SpelEvaluationException(ex, SpelMessage.EXCEPTION_RUNNING_COMPILED_EXPRESSION, new Object[0]);
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            this.compiledAst = null;</b>
+&nbsp;            this.interpretedCount.set(0);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        ExpressionState expressionState = new ExpressionState(this.getEvaluationContext(), this.toTypedValue(rootObject), this.configuration);</b>
+<b class="nc">&nbsp;        TypedValue typedResultValue = this.ast.getTypedValue(expressionState);</b>
+&nbsp;        this.checkCompile(expressionState);
+&nbsp;        return (T)ExpressionUtils.convertTypedValue(expressionState.getEvaluationContext(), typedResultValue, expectedResultType);
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    @Nullable
+&nbsp;    public Object getValue(EvaluationContext context) throws EvaluationException {
+&nbsp;        Assert.notNull(context, &quot;EvaluationContext must not be null&quot;);
+&nbsp;        CompiledExpression compiledAst = this.compiledAst;
+<b class="nc">&nbsp;        if (compiledAst != null) {</b>
+<b class="nc">&nbsp;            try {</b>
+<b class="nc">&nbsp;                return compiledAst.getValue(context.getRootObject().getValue(), context);</b>
+&nbsp;            } catch (Throwable ex) {
+&nbsp;                if (this.configuration.getCompilerMode() != SpelCompilerMode.MIXED) {
+&nbsp;                    throw new SpelEvaluationException(ex, SpelMessage.EXCEPTION_RUNNING_COMPILED_EXPRESSION, new Object[0]);
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            this.compiledAst = null;
+&nbsp;            this.interpretedCount.set(0);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        ExpressionState expressionState = new ExpressionState(context, this.configuration);</b>
+<b class="nc">&nbsp;        Object result = this.ast.getValue(expressionState);</b>
+<b class="nc">&nbsp;        this.checkCompile(expressionState);</b>
+&nbsp;        return result;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public &lt;T&gt; T getValue(EvaluationContext context, @Nullable Class&lt;T&gt; expectedResultType) throws EvaluationException {
+<b class="nc">&nbsp;        Assert.notNull(context, &quot;EvaluationContext must not be null&quot;);</b>
+<b class="nc">&nbsp;        CompiledExpression compiledAst = this.compiledAst;</b>
+&nbsp;        if (compiledAst != null) {
+<b class="nc">&nbsp;            try {</b>
+&nbsp;                Object result = compiledAst.getValue(context.getRootObject().getValue(), context);
+&nbsp;                if (expectedResultType != null) {
+&nbsp;                    return (T)ExpressionUtils.convertTypedValue(context, new TypedValue(result), expectedResultType);
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                return (T)result;</b>
+&nbsp;            } catch (Throwable ex) {
+&nbsp;                if (this.configuration.getCompilerMode() != SpelCompilerMode.MIXED) {
+&nbsp;                    throw new SpelEvaluationException(ex, SpelMessage.EXCEPTION_RUNNING_COMPILED_EXPRESSION, new Object[0]);
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            this.compiledAst = null;
+&nbsp;            this.interpretedCount.set(0);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        ExpressionState expressionState = new ExpressionState(context, this.configuration);</b>
+<b class="nc">&nbsp;        TypedValue typedResultValue = this.ast.getTypedValue(expressionState);</b>
+<b class="nc">&nbsp;        this.checkCompile(expressionState);</b>
+&nbsp;        return (T)ExpressionUtils.convertTypedValue(context, typedResultValue, expectedResultType);
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public Object getValue(EvaluationContext context, @Nullable Object rootObject) throws EvaluationException {
+&nbsp;        Assert.notNull(context, &quot;EvaluationContext must not be null&quot;);
+<b class="nc">&nbsp;        CompiledExpression compiledAst = this.compiledAst;</b>
+<b class="nc">&nbsp;        if (compiledAst != null) {</b>
+&nbsp;            try {
+<b class="nc">&nbsp;                return compiledAst.getValue(rootObject, context);</b>
+<b class="nc">&nbsp;            } catch (Throwable ex) {</b>
+<b class="nc">&nbsp;                if (this.configuration.getCompilerMode() != SpelCompilerMode.MIXED) {</b>
+&nbsp;                    throw new SpelEvaluationException(ex, SpelMessage.EXCEPTION_RUNNING_COMPILED_EXPRESSION, new Object[0]);
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            this.compiledAst = null;
+&nbsp;            this.interpretedCount.set(0);
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        ExpressionState expressionState = new ExpressionState(context, this.toTypedValue(rootObject), this.configuration);</b>
+<b class="nc">&nbsp;        Object result = this.ast.getValue(expressionState);</b>
+<b class="nc">&nbsp;        this.checkCompile(expressionState);</b>
+&nbsp;        return result;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    @Nullable</b>
+&nbsp;    public &lt;T&gt; T getValue(EvaluationContext context, @Nullable Object rootObject, @Nullable Class&lt;T&gt; expectedResultType) throws EvaluationException {
+&nbsp;        Assert.notNull(context, &quot;EvaluationContext must not be null&quot;);
+&nbsp;        CompiledExpression compiledAst = this.compiledAst;
+&nbsp;        if (compiledAst != null) {
+<b class="nc">&nbsp;            try {</b>
+<b class="nc">&nbsp;                Object result = compiledAst.getValue(rootObject, context);</b>
+<b class="nc">&nbsp;                if (expectedResultType != null) {</b>
+<b class="nc">&nbsp;                    return (T)ExpressionUtils.convertTypedValue(context, new TypedValue(result), expectedResultType);</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                return (T)result;
+&nbsp;            } catch (Throwable ex) {
+&nbsp;                if (this.configuration.getCompilerMode() != SpelCompilerMode.MIXED) {
+&nbsp;                    throw new SpelEvaluationException(ex, SpelMessage.EXCEPTION_RUNNING_COMPILED_EXPRESSION, new Object[0]);
+&nbsp;                }
+<b class="fc">&nbsp;            }</b>
+&nbsp;
+<b class="fc">&nbsp;            this.compiledAst = null;</b>
+<b class="pc">&nbsp;            this.interpretedCount.set(0);</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        ExpressionState expressionState = new ExpressionState(context, this.toTypedValue(rootObject), this.configuration);
+&nbsp;        TypedValue typedResultValue = this.ast.getTypedValue(expressionState);
+&nbsp;        this.checkCompile(expressionState);
+<b class="nc">&nbsp;        return (T)ExpressionUtils.convertTypedValue(context, typedResultValue, expectedResultType);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    @Nullable
+&nbsp;    public Class&lt;?&gt; getValueType() throws EvaluationException {
+&nbsp;        return this.getValueType(this.getEvaluationContext());
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public Class&lt;?&gt; getValueType(@Nullable Object rootObject) throws EvaluationException {
+&nbsp;        return this.getValueType(this.getEvaluationContext(), rootObject);
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    @Nullable</b>
+<b class="fc">&nbsp;    public Class&lt;?&gt; getValueType(EvaluationContext context) throws EvaluationException {</b>
+&nbsp;        Assert.notNull(context, &quot;EvaluationContext must not be null&quot;);
+&nbsp;        ExpressionState expressionState = new ExpressionState(context, this.configuration);
+&nbsp;        TypeDescriptor typeDescriptor = this.ast.getValueInternal(expressionState).getTypeDescriptor();
+&nbsp;        return typeDescriptor != null ? typeDescriptor.getType() : null;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    @Nullable</b>
+&nbsp;    public Class&lt;?&gt; getValueType(EvaluationContext context, @Nullable Object rootObject) throws EvaluationException {
+<b class="nc">&nbsp;        ExpressionState expressionState = new ExpressionState(context, this.toTypedValue(rootObject), this.configuration);</b>
+<b class="nc">&nbsp;        TypeDescriptor typeDescriptor = this.ast.getValueInternal(expressionState).getTypeDescriptor();</b>
+&nbsp;        return typeDescriptor != null ? typeDescriptor.getType() : null;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    @Nullable</b>
+&nbsp;    public TypeDescriptor getValueTypeDescriptor() throws EvaluationException {
+&nbsp;        return this.getValueTypeDescriptor(this.getEvaluationContext());
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public TypeDescriptor getValueTypeDescriptor(@Nullable Object rootObject) throws EvaluationException {
+&nbsp;        ExpressionState expressionState = new ExpressionState(this.getEvaluationContext(), this.toTypedValue(rootObject), this.configuration);
+<b class="nc">&nbsp;        return this.ast.getValueInternal(expressionState).getTypeDescriptor();</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    @Nullable
+&nbsp;    public TypeDescriptor getValueTypeDescriptor(EvaluationContext context) throws EvaluationException {
+&nbsp;        Assert.notNull(context, &quot;EvaluationContext must not be null&quot;);
+<b class="nc">&nbsp;        ExpressionState expressionState = new ExpressionState(context, this.configuration);</b>
+&nbsp;        return this.ast.getValueInternal(expressionState).getTypeDescriptor();
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+<b class="nc">&nbsp;    public TypeDescriptor getValueTypeDescriptor(EvaluationContext context, @Nullable Object rootObject) throws EvaluationException {</b>
+<b class="nc">&nbsp;        Assert.notNull(context, &quot;EvaluationContext must not be null&quot;);</b>
+<b class="nc">&nbsp;        ExpressionState expressionState = new ExpressionState(context, this.toTypedValue(rootObject), this.configuration);</b>
+<b class="nc">&nbsp;        return this.ast.getValueInternal(expressionState).getTypeDescriptor();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isWritable(@Nullable Object rootObject) throws EvaluationException {
+&nbsp;        return this.ast.isWritable(new ExpressionState(this.getEvaluationContext(), this.toTypedValue(rootObject), this.configuration));
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public boolean isWritable(EvaluationContext context) throws EvaluationException {
+<b class="nc">&nbsp;        Assert.notNull(context, &quot;EvaluationContext must not be null&quot;);</b>
+<b class="nc">&nbsp;        return this.ast.isWritable(new ExpressionState(context, this.configuration));</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public boolean isWritable(EvaluationContext context, @Nullable Object rootObject) throws EvaluationException {
+&nbsp;        Assert.notNull(context, &quot;EvaluationContext must not be null&quot;);
+&nbsp;        return this.ast.isWritable(new ExpressionState(context, this.toTypedValue(rootObject), this.configuration));
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void setValue(@Nullable Object rootObject, @Nullable Object value) throws EvaluationException {</b>
+&nbsp;        this.ast.setValue(new ExpressionState(this.getEvaluationContext(), this.toTypedValue(rootObject), this.configuration), value);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void setValue(EvaluationContext context, @Nullable Object value) throws EvaluationException {</b>
+&nbsp;        Assert.notNull(context, &quot;EvaluationContext must not be null&quot;);
+&nbsp;        this.ast.setValue(new ExpressionState(context, this.configuration), value);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void setValue(EvaluationContext context, @Nullable Object rootObject, @Nullable Object value) throws EvaluationException {</b>
+<b class="nc">&nbsp;        Assert.notNull(context, &quot;EvaluationContext must not be null&quot;);</b>
+<b class="nc">&nbsp;        this.ast.setValue(new ExpressionState(context, this.toTypedValue(rootObject), this.configuration), value);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private void checkCompile(ExpressionState expressionState) {
+&nbsp;        this.interpretedCount.incrementAndGet();
+&nbsp;        SpelCompilerMode compilerMode = expressionState.getConfiguration().getCompilerMode();
+&nbsp;        if (compilerMode != SpelCompilerMode.OFF) {
+&nbsp;            if (compilerMode == SpelCompilerMode.IMMEDIATE) {
+&nbsp;                if (this.interpretedCount.get() &gt; 1) {
+&nbsp;                    this.compileExpression();
+<b class="nc">&nbsp;                }</b>
+&nbsp;            } else if (this.interpretedCount.get() &gt; 100) {
+<b class="nc">&nbsp;                this.compileExpression();</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public boolean compileExpression() {
+&nbsp;        CompiledExpression compiledAst = this.compiledAst;
+<b class="nc">&nbsp;        if (compiledAst != null) {</b>
+&nbsp;            return true;
+&nbsp;        } else if (this.failedAttempts.get() &gt; 100) {
+&nbsp;            return false;
+&nbsp;        } else {
+<b class="nc">&nbsp;            synchronized(this) {</b>
+<b class="nc">&nbsp;                if (this.compiledAst != null) {</b>
+<b class="nc">&nbsp;                    return true;</b>
+&nbsp;                } else {
+&nbsp;                    boolean var10000;
+&nbsp;                    try {
+<b class="nc">&nbsp;                        SpelCompiler compiler = SpelCompiler.getCompiler(this.configuration.getCompilerClassLoader());</b>
+&nbsp;                        compiledAst = compiler.compile(this.ast);
+&nbsp;                        if (compiledAst != null) {
+&nbsp;                            this.compiledAst = compiledAst;
+&nbsp;                            var10000 = true;
+<b class="nc">&nbsp;                            return var10000;</b>
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                        this.failedAttempts.incrementAndGet();</b>
+&nbsp;                        var10000 = false;
+&nbsp;                    } catch (Exception ex) {
+&nbsp;                        this.failedAttempts.incrementAndGet();
+&nbsp;                        if (this.configuration.getCompilerMode() == SpelCompilerMode.MIXED) {
+&nbsp;                            this.compiledAst = null;
+<b class="nc">&nbsp;                            this.interpretedCount.set(0);</b>
+&nbsp;                            return false;
+&nbsp;                        }
+&nbsp;
+&nbsp;                        throw new SpelEvaluationException(ex, SpelMessage.EXCEPTION_COMPILING_EXPRESSION, new Object[0]);
+&nbsp;                    }
+<b class="nc">&nbsp;</b>
+&nbsp;                    return var10000;
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void revertToInterpreted() {</b>
+<b class="nc">&nbsp;        this.compiledAst = null;</b>
+<b class="nc">&nbsp;        this.interpretedCount.set(0);</b>
+&nbsp;        this.failedAttempts.set(0);
+&nbsp;    }
+&nbsp;
+&nbsp;    public SpelNode getAST() {
+&nbsp;        return this.ast;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public String toStringAST() {</b>
+&nbsp;        return this.ast.toStringAST();
+&nbsp;    }
+&nbsp;
+&nbsp;    private TypedValue toTypedValue(@Nullable Object object) {
+&nbsp;        return object != null ? new TypedValue(object) : TypedValue.NULL;
+<b class="nc">&nbsp;    }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:58</div>
+</div>
+</body>
+</html>

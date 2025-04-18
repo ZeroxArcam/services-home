@@ -1,0 +1,279 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > AbstractEntityInsertAction</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.action.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: AbstractEntityInsertAction (org.hibernate.action.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AbstractEntityInsertAction</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/36)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/87)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.action.internal;
+&nbsp;
+&nbsp;import org.hibernate.LockMode;
+&nbsp;import org.hibernate.collection.spi.PersistentCollection;
+&nbsp;import org.hibernate.engine.internal.ForeignKeys;
+&nbsp;import org.hibernate.engine.internal.NonNullableTransientDependencies;
+&nbsp;import org.hibernate.engine.internal.Nullability;
+&nbsp;import org.hibernate.engine.internal.Versioning;
+&nbsp;import org.hibernate.engine.spi.CachedNaturalIdValueSource;
+&nbsp;import org.hibernate.engine.spi.CollectionKey;
+&nbsp;import org.hibernate.engine.spi.EntityEntry;
+&nbsp;import org.hibernate.engine.spi.EntityHolder;
+&nbsp;import org.hibernate.engine.spi.EntityKey;
+&nbsp;import org.hibernate.engine.spi.PersistenceContext;
+&nbsp;import org.hibernate.engine.spi.Status;
+&nbsp;import org.hibernate.event.spi.EventSource;
+&nbsp;import org.hibernate.metamodel.mapping.AttributeMapping;
+&nbsp;import org.hibernate.metamodel.mapping.AttributeMappingsList;
+&nbsp;import org.hibernate.metamodel.mapping.EmbeddableMappingType;
+&nbsp;import org.hibernate.metamodel.mapping.NaturalIdMapping;
+&nbsp;import org.hibernate.metamodel.mapping.PluralAttributeMapping;
+&nbsp;import org.hibernate.metamodel.mapping.internal.EmbeddedAttributeMapping;
+&nbsp;import org.hibernate.persister.collection.CollectionPersister;
+&nbsp;import org.hibernate.persister.entity.AbstractEntityPersister;
+&nbsp;import org.hibernate.persister.entity.EntityPersister;
+&nbsp;
+&nbsp;public abstract class AbstractEntityInsertAction extends EntityAction {
+&nbsp;    private transient Object[] state;
+&nbsp;    private final boolean isVersionIncrementDisabled;
+&nbsp;    private boolean isExecuted;
+&nbsp;    private boolean areTransientReferencesNullified;
+&nbsp;
+&nbsp;    protected AbstractEntityInsertAction(Object id, Object[] state, Object instance, boolean isVersionIncrementDisabled, EntityPersister persister, EventSource session) {
+&nbsp;        super(session, id, instance, persister);
+&nbsp;        this.state = state;
+&nbsp;        this.isVersionIncrementDisabled = isVersionIncrementDisabled;
+&nbsp;        this.isExecuted = false;
+&nbsp;        this.areTransientReferencesNullified = false;
+&nbsp;        if (id != null) {
+&nbsp;            this.handleNaturalIdPreSaveNotifications();
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public Object[] getState() {
+&nbsp;        return this.state;
+&nbsp;    }
+&nbsp;
+&nbsp;    public abstract boolean isEarlyInsert();
+&nbsp;
+&nbsp;    public NonNullableTransientDependencies findNonNullableTransientEntities() {
+&nbsp;        return ForeignKeys.findNonNullableTransientEntities(this.getPersister().getEntityName(), this.getInstance(), this.getState(), this.isEarlyInsert(), this.getSession());
+&nbsp;    }
+&nbsp;
+&nbsp;    protected final void nullifyTransientReferencesIfNotAlready() {
+&nbsp;        if (!this.areTransientReferencesNullified) {
+<b class="nc">&nbsp;            (new ForeignKeys.Nullifier(this.getInstance(), false, this.isEarlyInsert(), this.getSession(), this.getPersister())).nullifyTransientReferences(this.getState());</b>
+<b class="nc">&nbsp;            (new Nullability(this.getSession())).checkNullability(this.getState(), this.getPersister(), false);</b>
+<b class="nc">&nbsp;            this.areTransientReferencesNullified = true;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public final void makeEntityManaged() {</b>
+&nbsp;        this.nullifyTransientReferencesIfNotAlready();
+&nbsp;        Object version = Versioning.getVersion(this.getState(), this.getPersister());
+&nbsp;        PersistenceContext persistenceContextInternal = this.getSession().getPersistenceContextInternal();
+&nbsp;        EntityHolder entityHolder = persistenceContextInternal.addEntityHolder(this.getEntityKey(), this.getInstance());
+&nbsp;        EntityEntry entityEntry = persistenceContextInternal.addEntry(this.getInstance(), this.getPersister().isMutable() ? Status.MANAGED : Status.READ_ONLY, this.getState(), this.getRowId(), this.getEntityKey().getIdentifier(), version, LockMode.WRITE, this.isExecuted, this.getPersister(), this.isVersionIncrementDisabled);
+&nbsp;        entityHolder.setEntityEntry(entityEntry);
+&nbsp;        if (this.isEarlyInsert()) {
+&nbsp;            this.addCollectionsByKeyToPersistenceContext(persistenceContextInternal, this.getState());
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void addCollectionsByKeyToPersistenceContext(PersistenceContext persistenceContext, Object[] objects) {
+&nbsp;        for(int i = 0; i &lt; objects.length; ++i) {
+<b class="nc">&nbsp;            AttributeMapping attributeMapping = this.getPersister().getAttributeMapping(i);</b>
+&nbsp;            if (attributeMapping.isEmbeddedAttributeMapping()) {
+&nbsp;                this.visitEmbeddedAttributeMapping(attributeMapping.asEmbeddedAttributeMapping(), objects[i], persistenceContext);
+&nbsp;            } else if (attributeMapping.isPluralAttributeMapping()) {
+&nbsp;                this.addCollectionKey(attributeMapping.asPluralAttributeMapping(), objects[i], persistenceContext);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private void visitEmbeddedAttributeMapping(EmbeddedAttributeMapping attributeMapping, Object object, PersistenceContext persistenceContext) {
+&nbsp;        if (object != null) {
+&nbsp;            EmbeddableMappingType descriptor = attributeMapping.getEmbeddableTypeDescriptor();
+&nbsp;            EmbeddableMappingType.ConcreteEmbeddableType concreteEmbeddableType = descriptor.findSubtypeBySubclass(object.getClass().getName());
+&nbsp;            AttributeMappingsList attributeMappings = descriptor.getAttributeMappings();
+&nbsp;
+&nbsp;            for(int i = 0; i &lt; attributeMappings.size(); ++i) {
+<b class="nc">&nbsp;                AttributeMapping attribute = attributeMappings.get(i);</b>
+<b class="nc">&nbsp;                if (concreteEmbeddableType.declaresAttribute(attribute)) {</b>
+<b class="nc">&nbsp;                    if (attribute.isPluralAttributeMapping()) {</b>
+<b class="nc">&nbsp;                        this.addCollectionKey(attribute.asPluralAttributeMapping(), descriptor.getValue(object, i), persistenceContext);</b>
+<b class="nc">&nbsp;                    } else if (attribute.isEmbeddedAttributeMapping()) {</b>
+<b class="nc">&nbsp;                        this.visitEmbeddedAttributeMapping(attribute.asEmbeddedAttributeMapping(), descriptor.getValue(object, i), persistenceContext);</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private void addCollectionKey(PluralAttributeMapping pluralAttributeMapping, Object o, PersistenceContext persistenceContext) {
+&nbsp;        if (o instanceof PersistentCollection) {
+&nbsp;            CollectionPersister collectionPersister = pluralAttributeMapping.getCollectionDescriptor();
+&nbsp;            Object key = ((AbstractEntityPersister)this.getPersister()).getCollectionKey(collectionPersister, this.getInstance(), persistenceContext.getEntry(this.getInstance()), this.getSession());
+&nbsp;            if (key != null) {
+&nbsp;                CollectionKey collectionKey = new CollectionKey(collectionPersister, key);
+&nbsp;                persistenceContext.addCollectionByKey(collectionKey, (PersistentCollection)o);
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected void markExecuted() {</b>
+<b class="nc">&nbsp;        this.isExecuted = true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected abstract EntityKey getEntityKey();
+&nbsp;
+&nbsp;    protected abstract Object getRowId();
+&nbsp;
+&nbsp;    public void afterDeserialize(EventSource session) {
+<b class="nc">&nbsp;        super.afterDeserialize(session);</b>
+<b class="nc">&nbsp;        if (session != null) {</b>
+<b class="nc">&nbsp;            EntityEntry entityEntry = session.getPersistenceContextInternal().getEntry(this.getInstance());</b>
+<b class="nc">&nbsp;            this.state = entityEntry.getLoadedState();</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected void handleNaturalIdPreSaveNotifications() {</b>
+<b class="nc">&nbsp;        NaturalIdMapping naturalIdMapping = this.getPersister().getNaturalIdMapping();</b>
+<b class="nc">&nbsp;        if (naturalIdMapping != null) {</b>
+<b class="nc">&nbsp;            this.getSession().getPersistenceContextInternal().getNaturalIdResolutions().manageLocalResolution(this.getId(), naturalIdMapping.extractNaturalIdFromEntityState(this.state), this.getPersister(), CachedNaturalIdValueSource.INSERT);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void handleNaturalIdPostSaveNotifications(Object generatedId) {</b>
+&nbsp;        NaturalIdMapping naturalIdMapping = this.getPersister().getNaturalIdMapping();
+&nbsp;        if (naturalIdMapping != null) {
+<b class="nc">&nbsp;            Object naturalIdValues = naturalIdMapping.extractNaturalIdFromEntityState(this.state);</b>
+<b class="nc">&nbsp;            if (this.isEarlyInsert()) {</b>
+<b class="nc">&nbsp;                this.getSession().getPersistenceContextInternal().getNaturalIdResolutions().manageLocalResolution(generatedId, naturalIdValues, this.getPersister(), CachedNaturalIdValueSource.INSERT);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            this.getSession().getPersistenceContextInternal().getNaturalIdResolutions().manageSharedResolution(generatedId, naturalIdValues, (Object)null, this.getPersister(), CachedNaturalIdValueSource.INSERT);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
+</div>
+</body>
+</html>

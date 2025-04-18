@@ -1,0 +1,487 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ConstructorReference</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.expression.spel.ast</a>
+</div>
+
+<h1>Coverage Summary for Class: ConstructorReference (org.springframework.expression.spel.ast)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ConstructorReference</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/20)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/99)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/183)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.expression.spel.ast;
+&nbsp;
+&nbsp;import java.lang.reflect.Array;
+&nbsp;import java.lang.reflect.Constructor;
+&nbsp;import java.lang.reflect.InvocationTargetException;
+&nbsp;import java.lang.reflect.Modifier;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.List;
+&nbsp;import java.util.StringJoiner;
+&nbsp;import org.springframework.asm.MethodVisitor;
+&nbsp;import org.springframework.core.convert.TypeDescriptor;
+&nbsp;import org.springframework.expression.AccessException;
+&nbsp;import org.springframework.expression.ConstructorExecutor;
+&nbsp;import org.springframework.expression.ConstructorResolver;
+&nbsp;import org.springframework.expression.EvaluationContext;
+&nbsp;import org.springframework.expression.EvaluationException;
+&nbsp;import org.springframework.expression.TypeConverter;
+&nbsp;import org.springframework.expression.TypedValue;
+&nbsp;import org.springframework.expression.common.ExpressionUtils;
+&nbsp;import org.springframework.expression.spel.CodeFlow;
+&nbsp;import org.springframework.expression.spel.ExpressionState;
+&nbsp;import org.springframework.expression.spel.SpelEvaluationException;
+&nbsp;import org.springframework.expression.spel.SpelMessage;
+&nbsp;import org.springframework.expression.spel.support.ReflectiveConstructorExecutor;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;
+&nbsp;public class ConstructorReference extends SpelNodeImpl {
+&nbsp;    private static final int MAX_ARRAY_ELEMENTS = 262144;
+&nbsp;    private final boolean isArrayConstructor;
+&nbsp;    @Nullable
+&nbsp;    private final SpelNodeImpl[] dimensions;
+&nbsp;    @Nullable
+&nbsp;    private volatile ConstructorExecutor cachedExecutor;
+&nbsp;
+&nbsp;    public ConstructorReference(int startPos, int endPos, SpelNodeImpl... arguments) {
+&nbsp;        super(startPos, endPos, arguments);
+&nbsp;        this.isArrayConstructor = false;
+&nbsp;        this.dimensions = null;
+&nbsp;    }
+&nbsp;
+&nbsp;    public ConstructorReference(int startPos, int endPos, SpelNodeImpl[] dimensions, SpelNodeImpl... arguments) {
+&nbsp;        super(startPos, endPos, arguments);
+&nbsp;        this.isArrayConstructor = true;
+&nbsp;        this.dimensions = dimensions;
+&nbsp;    }
+&nbsp;
+&nbsp;    public TypedValue getValueInternal(ExpressionState state) throws EvaluationException {
+&nbsp;        return this.isArrayConstructor ? this.createArray(state) : this.createNewInstance(state);
+&nbsp;    }
+&nbsp;
+&nbsp;    private TypedValue createNewInstance(ExpressionState state) throws EvaluationException {
+&nbsp;        Object[] arguments = new Object[this.getChildCount() - 1];
+&nbsp;        List&lt;TypeDescriptor&gt; argumentTypes = new ArrayList(this.getChildCount() - 1);
+&nbsp;
+&nbsp;        for(int i = 0; i &lt; arguments.length; ++i) {
+&nbsp;            TypedValue childValue = this.children[i + 1].getValueInternal(state);
+&nbsp;            Object value = childValue.getValue();
+&nbsp;            arguments[i] = value;
+&nbsp;            argumentTypes.add(TypeDescriptor.forObject(value));
+&nbsp;        }
+&nbsp;
+&nbsp;        ConstructorExecutor executorToUse = this.cachedExecutor;
+&nbsp;        if (executorToUse != null) {
+&nbsp;            try {
+&nbsp;                return executorToUse.execute(state.getEvaluationContext(), arguments);
+&nbsp;            } catch (AccessException ex) {
+&nbsp;                Throwable rootCause = ex.getCause();
+&nbsp;                if (rootCause instanceof InvocationTargetException) {
+&nbsp;                    InvocationTargetException cause = (InvocationTargetException)rootCause;
+&nbsp;                    rootCause = cause.getCause();
+&nbsp;                    if (rootCause instanceof RuntimeException) {
+&nbsp;                        RuntimeException runtimeException = (RuntimeException)rootCause;
+&nbsp;                        throw runtimeException;
+&nbsp;                    }
+&nbsp;
+&nbsp;                    String typeName = (String)this.children[0].getValueInternal(state).getValue();
+&nbsp;                    throw new SpelEvaluationException(this.getStartPosition(), rootCause, SpelMessage.CONSTRUCTOR_INVOCATION_PROBLEM, new Object[]{typeName, FormatHelper.formatMethodForMessage(&quot;&quot;, argumentTypes)});
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            this.cachedExecutor = null;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        String typeName = (String)this.children[0].getValueInternal(state).getValue();</b>
+<b class="nc">&nbsp;        Assert.state(typeName != null, &quot;No type name&quot;);</b>
+<b class="nc">&nbsp;        executorToUse = this.findExecutorForConstructor(typeName, argumentTypes, state);</b>
+&nbsp;
+&nbsp;        try {
+&nbsp;            this.cachedExecutor = executorToUse;
+&nbsp;            if (executorToUse instanceof ReflectiveConstructorExecutor reflectiveConstructorExecutor) {
+&nbsp;                this.exitTypeDescriptor = CodeFlow.toDescriptor(reflectiveConstructorExecutor.getConstructor().getDeclaringClass());
+&nbsp;            }
+&nbsp;
+&nbsp;            return executorToUse.execute(state.getEvaluationContext(), arguments);
+&nbsp;        } catch (AccessException ex) {
+<b class="nc">&nbsp;            throw new SpelEvaluationException(this.getStartPosition(), ex, SpelMessage.CONSTRUCTOR_INVOCATION_PROBLEM, new Object[]{typeName, FormatHelper.formatMethodForMessage(&quot;&quot;, argumentTypes)});</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private ConstructorExecutor findExecutorForConstructor(String typeName, List&lt;TypeDescriptor&gt; argumentTypes, ExpressionState state) throws SpelEvaluationException {
+&nbsp;        EvaluationContext evalContext = state.getEvaluationContext();
+&nbsp;
+&nbsp;        for(ConstructorResolver ctorResolver : evalContext.getConstructorResolvers()) {
+&nbsp;            try {
+&nbsp;                ConstructorExecutor ce = ctorResolver.resolve(state.getEvaluationContext(), typeName, argumentTypes);
+&nbsp;                if (ce != null) {
+<b class="nc">&nbsp;                    return ce;</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            } catch (AccessException ex) {
+&nbsp;                throw new SpelEvaluationException(this.getStartPosition(), ex, SpelMessage.CONSTRUCTOR_INVOCATION_PROBLEM, new Object[]{typeName, FormatHelper.formatMethodForMessage(&quot;&quot;, argumentTypes)});
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        throw new SpelEvaluationException(this.getStartPosition(), SpelMessage.CONSTRUCTOR_NOT_FOUND, new Object[]{typeName, FormatHelper.formatMethodForMessage(&quot;&quot;, argumentTypes)});
+&nbsp;    }
+&nbsp;
+&nbsp;    public String toStringAST() {
+&nbsp;        StringBuilder sb = new StringBuilder(&quot;new &quot;);
+&nbsp;        sb.append(this.getChild(0).toStringAST());
+&nbsp;        if (this.isArrayConstructor) {
+&nbsp;            if (this.hasInitializer()) {
+<b class="nc">&nbsp;                InlineList initializer = (InlineList)this.getChild(1);</b>
+<b class="nc">&nbsp;                sb.append(&quot;[] &quot;).append(initializer.toStringAST());</b>
+<b class="nc">&nbsp;            } else if (this.dimensions != null) {</b>
+<b class="nc">&nbsp;                for(SpelNodeImpl dimension : this.dimensions) {</b>
+<b class="nc">&nbsp;                    sb.append(&#39;[&#39;).append(dimension.toStringAST()).append(&#39;]&#39;);</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        } else {
+&nbsp;            StringJoiner sj = new StringJoiner(&quot;,&quot;, &quot;(&quot;, &quot;)&quot;);
+<b class="nc">&nbsp;            int count = this.getChildCount();</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            for(int i = 1; i &lt; count; ++i) {
+<b class="nc">&nbsp;                sj.add(this.getChild(i).toStringAST());</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            sb.append(sj.toString());
+&nbsp;        }
+&nbsp;
+&nbsp;        return sb.toString();
+&nbsp;    }
+&nbsp;
+&nbsp;    private TypedValue createArray(ExpressionState state) throws EvaluationException {
+&nbsp;        Object intendedArrayType = this.getChild(0).getValue(state);
+&nbsp;        if (!(intendedArrayType instanceof String type)) {
+&nbsp;            throw new SpelEvaluationException(this.getChild(0).getStartPosition(), SpelMessage.TYPE_NAME_EXPECTED_FOR_ARRAY_CONSTRUCTION, new Object[]{FormatHelper.formatClassNameForMessage(intendedArrayType != null ? intendedArrayType.getClass() : null)});
+<b class="nc">&nbsp;        } else if (state.getEvaluationContext().getConstructorResolvers().isEmpty()) {</b>
+&nbsp;            throw new SpelEvaluationException(this.getStartPosition(), SpelMessage.CONSTRUCTOR_NOT_FOUND, new Object[]{type + &quot;[]&quot;, &quot;[]&quot;});
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            TypeCode arrayTypeCode = TypeCode.forName(type);</b>
+&nbsp;            Class&lt;?&gt; componentType;
+&nbsp;            if (arrayTypeCode == TypeCode.OBJECT) {
+&nbsp;                componentType = state.findType(type);
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                componentType = arrayTypeCode.getType();</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            Object newArray = null;
+&nbsp;            if (!this.hasInitializer()) {
+&nbsp;                if (this.dimensions != null) {
+&nbsp;                    for(SpelNodeImpl dimension : this.dimensions) {
+<b class="nc">&nbsp;                        if (dimension == null) {</b>
+&nbsp;                            throw new SpelEvaluationException(this.getStartPosition(), SpelMessage.MISSING_ARRAY_DIMENSION, new Object[0]);
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    TypeConverter typeConverter = state.getEvaluationContext().getTypeConverter();</b>
+<b class="nc">&nbsp;                    if (this.dimensions.length == 1) {</b>
+<b class="nc">&nbsp;                        TypedValue o = this.dimensions[0].getTypedValue(state);</b>
+&nbsp;                        int arraySize = ExpressionUtils.toInt(typeConverter, o);
+<b class="nc">&nbsp;                        this.checkNumElements((long)arraySize);</b>
+<b class="nc">&nbsp;                        newArray = Array.newInstance(componentType, arraySize);</b>
+<b class="nc">&nbsp;                    } else {</b>
+<b class="nc">&nbsp;                        int[] dims = new int[this.dimensions.length];</b>
+&nbsp;                        long numElements = 1L;
+&nbsp;
+<b class="nc">&nbsp;                        for(int d = 0; d &lt; this.dimensions.length; ++d) {</b>
+&nbsp;                            TypedValue o = this.dimensions[d].getTypedValue(state);
+&nbsp;                            int arraySize = ExpressionUtils.toInt(typeConverter, o);
+<b class="nc">&nbsp;                            dims[d] = arraySize;</b>
+&nbsp;                            numElements *= (long)arraySize;
+<b class="nc">&nbsp;                            this.checkNumElements(numElements);</b>
+&nbsp;                        }
+&nbsp;
+&nbsp;                        newArray = Array.newInstance(componentType, dims);
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            } else {
+&nbsp;                if (this.dimensions == null || this.dimensions.length &gt; 1) {
+&nbsp;                    throw new SpelEvaluationException(this.getStartPosition(), SpelMessage.MULTIDIM_ARRAY_INITIALIZER_NOT_SUPPORTED, new Object[0]);
+&nbsp;                }
+&nbsp;
+&nbsp;                TypeConverter typeConverter = state.getEvaluationContext().getTypeConverter();
+&nbsp;                InlineList initializer = (InlineList)this.getChild(1);
+&nbsp;                if (this.dimensions[0] != null) {
+&nbsp;                    TypedValue dValue = this.dimensions[0].getTypedValue(state);
+&nbsp;                    int i = ExpressionUtils.toInt(typeConverter, dValue);
+<b class="nc">&nbsp;                    if (i != initializer.getChildCount()) {</b>
+<b class="nc">&nbsp;                        throw new SpelEvaluationException(this.getStartPosition(), SpelMessage.INITIALIZER_LENGTH_INCORRECT, new Object[0]);</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                Object var10000;</b>
+<b class="nc">&nbsp;                switch (arrayTypeCode) {</b>
+&nbsp;                    case OBJECT -&gt; var10000 = this.createReferenceTypeArray(state, typeConverter, initializer.children, componentType);
+&nbsp;                    case BOOLEAN -&gt; var10000 = this.createBooleanArray(state, typeConverter, initializer.children);
+&nbsp;                    case CHAR -&gt; var10000 = this.createCharArray(state, typeConverter, initializer.children);
+<b class="nc">&nbsp;                    case BYTE -&gt; var10000 = this.createByteArray(state, typeConverter, initializer.children);</b>
+&nbsp;                    case SHORT -&gt; var10000 = this.createShortArray(state, typeConverter, initializer.children);
+<b class="nc">&nbsp;                    case INT -&gt; var10000 = this.createIntArray(state, typeConverter, initializer.children);</b>
+&nbsp;                    case LONG -&gt; var10000 = this.createLongArray(state, typeConverter, initializer.children);
+&nbsp;                    case FLOAT -&gt; var10000 = this.createFloatArray(state, typeConverter, initializer.children);
+<b class="nc">&nbsp;                    case DOUBLE -&gt; var10000 = this.createDoubleArray(state, typeConverter, initializer.children);</b>
+<b class="nc">&nbsp;                    default -&gt; throw new IllegalStateException(&quot;Unsupported TypeCode: &quot; + String.valueOf(arrayTypeCode));</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                newArray = var10000;
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            return new TypedValue(newArray);</b>
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private void checkNumElements(long numElements) {</b>
+&nbsp;        if (numElements &gt;= 262144L) {
+<b class="nc">&nbsp;            throw new SpelEvaluationException(this.getStartPosition(), SpelMessage.MAX_ARRAY_ELEMENTS_THRESHOLD_EXCEEDED, new Object[]{262144});</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private Object createReferenceTypeArray(ExpressionState state, TypeConverter typeConverter, SpelNodeImpl[] children, Class&lt;?&gt; componentType) {
+<b class="nc">&nbsp;        Object[] array = Array.newInstance(componentType, children.length);</b>
+<b class="nc">&nbsp;        TypeDescriptor targetType = TypeDescriptor.valueOf(componentType);</b>
+&nbsp;
+&nbsp;        for(int i = 0; i &lt; array.length; ++i) {
+&nbsp;            Object value = children[i].getValue(state);
+&nbsp;            array[i] = typeConverter.convertValue(value, TypeDescriptor.forObject(value), targetType);
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return array;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private boolean[] createBooleanArray(ExpressionState state, TypeConverter typeConverter, SpelNodeImpl[] children) {</b>
+&nbsp;        boolean[] array = new boolean[children.length];
+<b class="nc">&nbsp;</b>
+&nbsp;        for(int i = 0; i &lt; array.length; ++i) {
+&nbsp;            TypedValue typedValue = children[i].getTypedValue(state);
+<b class="nc">&nbsp;            array[i] = ExpressionUtils.toBoolean(typeConverter, typedValue);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        return array;
+&nbsp;    }
+&nbsp;
+&nbsp;    private char[] createCharArray(ExpressionState state, TypeConverter typeConverter, SpelNodeImpl[] children) {
+&nbsp;        char[] array = new char[children.length];
+&nbsp;
+&nbsp;        for(int i = 0; i &lt; array.length; ++i) {
+&nbsp;            TypedValue typedValue = children[i].getTypedValue(state);
+<b class="nc">&nbsp;            array[i] = ExpressionUtils.toChar(typeConverter, typedValue);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return array;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private byte[] createByteArray(ExpressionState state, TypeConverter converter, SpelNodeImpl[] children) {
+&nbsp;        byte[] array = new byte[children.length];
+<b class="nc">&nbsp;</b>
+&nbsp;        for(int i = 0; i &lt; array.length; ++i) {
+<b class="nc">&nbsp;            TypedValue typedValue = children[i].getTypedValue(state);</b>
+&nbsp;            array[i] = ExpressionUtils.toByte(converter, typedValue);
+&nbsp;        }
+&nbsp;
+&nbsp;        return array;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private short[] createShortArray(ExpressionState state, TypeConverter typeConverter, SpelNodeImpl[] children) {</b>
+&nbsp;        short[] array = new short[children.length];
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; array.length; ++i) {</b>
+&nbsp;            TypedValue typedValue = children[i].getTypedValue(state);
+&nbsp;            array[i] = ExpressionUtils.toShort(typeConverter, typedValue);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return array;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private int[] createIntArray(ExpressionState state, TypeConverter typeConverter, SpelNodeImpl[] children) {</b>
+<b class="nc">&nbsp;        int[] array = new int[children.length];</b>
+&nbsp;
+&nbsp;        for(int i = 0; i &lt; array.length; ++i) {
+<b class="nc">&nbsp;            TypedValue typedValue = children[i].getTypedValue(state);</b>
+<b class="nc">&nbsp;            array[i] = ExpressionUtils.toInt(typeConverter, typedValue);</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return array;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private long[] createLongArray(ExpressionState state, TypeConverter converter, SpelNodeImpl[] children) {
+&nbsp;        long[] array = new long[children.length];
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; array.length; ++i) {</b>
+<b class="nc">&nbsp;            TypedValue typedValue = children[i].getTypedValue(state);</b>
+<b class="nc">&nbsp;            array[i] = ExpressionUtils.toLong(converter, typedValue);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return array;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private float[] createFloatArray(ExpressionState state, TypeConverter typeConverter, SpelNodeImpl[] children) {
+<b class="nc">&nbsp;        float[] array = new float[children.length];</b>
+&nbsp;
+&nbsp;        for(int i = 0; i &lt; array.length; ++i) {
+&nbsp;            TypedValue typedValue = children[i].getTypedValue(state);
+&nbsp;            array[i] = ExpressionUtils.toFloat(typeConverter, typedValue);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        return array;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private double[] createDoubleArray(ExpressionState state, TypeConverter typeConverter, SpelNodeImpl[] children) {
+&nbsp;        double[] array = new double[children.length];
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; array.length; ++i) {</b>
+&nbsp;            TypedValue typedValue = children[i].getTypedValue(state);
+<b class="nc">&nbsp;            array[i] = ExpressionUtils.toDouble(typeConverter, typedValue);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return array;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private boolean hasInitializer() {
+<b class="nc">&nbsp;        return this.getChildCount() &gt; 1;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public boolean isCompilable() {</b>
+<b class="nc">&nbsp;        ConstructorExecutor constructor = this.cachedExecutor;</b>
+<b class="nc">&nbsp;        if (constructor instanceof ReflectiveConstructorExecutor executor) {</b>
+<b class="nc">&nbsp;            if (this.exitTypeDescriptor != null) {</b>
+<b class="nc">&nbsp;                for(int i = 1; i &lt; this.children.length; ++i) {</b>
+<b class="nc">&nbsp;                    if (!this.children[i].isCompilable()) {</b>
+<b class="nc">&nbsp;                        return false;</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                Constructor&lt;?&gt; constructor = executor.getConstructor();</b>
+&nbsp;                return Modifier.isPublic(constructor.getModifiers()) &amp;&amp; Modifier.isPublic(constructor.getDeclaringClass().getModifiers());
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return false;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void generateCode(MethodVisitor mv, CodeFlow cf) {
+&nbsp;        ReflectiveConstructorExecutor executor = (ReflectiveConstructorExecutor)this.cachedExecutor;
+&nbsp;        Assert.state(executor != null, &quot;No cached executor&quot;);
+&nbsp;        Constructor&lt;?&gt; constructor = executor.getConstructor();
+&nbsp;        String classDesc = constructor.getDeclaringClass().getName().replace(&#39;.&#39;, &#39;/&#39;);
+<b class="nc">&nbsp;        mv.visitTypeInsn(187, classDesc);</b>
+<b class="nc">&nbsp;        mv.visitInsn(89);</b>
+<b class="nc">&nbsp;        SpelNodeImpl[] arguments = new SpelNodeImpl[this.children.length - 1];</b>
+<b class="nc">&nbsp;        System.arraycopy(this.children, 1, arguments, 0, this.children.length - 1);</b>
+<b class="nc">&nbsp;        generateCodeForArguments(mv, cf, constructor, arguments);</b>
+&nbsp;        mv.visitMethodInsn(183, classDesc, &quot;&lt;init&gt;&quot;, CodeFlow.createSignatureDescriptor(constructor), false);
+<b class="nc">&nbsp;        cf.pushDescriptor(this.exitTypeDescriptor);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

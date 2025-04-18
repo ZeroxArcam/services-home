@@ -1,0 +1,1873 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > WriterBasedJsonGenerator</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.fasterxml.jackson.core.json</a>
+</div>
+
+<h1>Coverage Summary for Class: WriterBasedJsonGenerator (com.fasterxml.jackson.core.json)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">WriterBasedJsonGenerator</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/79)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/528)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/906)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package com.fasterxml.jackson.core.json;
+&nbsp;
+&nbsp;import com.fasterxml.jackson.core.Base64Variant;
+&nbsp;import com.fasterxml.jackson.core.JsonGenerationException;
+&nbsp;import com.fasterxml.jackson.core.JsonStreamContext;
+&nbsp;import com.fasterxml.jackson.core.ObjectCodec;
+&nbsp;import com.fasterxml.jackson.core.SerializableString;
+&nbsp;import com.fasterxml.jackson.core.JsonGenerator.Feature;
+&nbsp;import com.fasterxml.jackson.core.io.CharTypes;
+&nbsp;import com.fasterxml.jackson.core.io.CharacterEscapes;
+&nbsp;import com.fasterxml.jackson.core.io.IOContext;
+&nbsp;import com.fasterxml.jackson.core.io.NumberOutput;
+&nbsp;import java.io.IOException;
+&nbsp;import java.io.InputStream;
+&nbsp;import java.io.Reader;
+&nbsp;import java.io.Writer;
+<b class="nc">&nbsp;import java.math.BigDecimal;</b>
+<b class="nc">&nbsp;import java.math.BigInteger;</b>
+&nbsp;
+&nbsp;public class WriterBasedJsonGenerator extends JsonGeneratorImpl {
+<b class="nc">&nbsp;    protected static final int SHORT_WRITE = 32;</b>
+&nbsp;    protected static final char[] HEX_CHARS_UPPER = CharTypes.copyHexChars(true);
+&nbsp;    protected static final char[] HEX_CHARS_LOWER = CharTypes.copyHexChars(false);
+&nbsp;    protected final Writer _writer;
+&nbsp;    protected char _quoteChar;
+&nbsp;    protected char[] _outputBuffer;
+&nbsp;    protected int _outputHead;
+&nbsp;    protected int _outputTail;
+&nbsp;    protected int _outputEnd;
+&nbsp;    protected char[] _entityBuffer;
+&nbsp;    protected SerializableString _currentEscape;
+&nbsp;    protected char[] _copyBuffer;
+&nbsp;
+&nbsp;    private char[] getHexChars() {
+&nbsp;        return this._cfgWriteHexUppercase ? HEX_CHARS_UPPER : HEX_CHARS_LOWER;
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @deprecated */
+&nbsp;    @Deprecated
+&nbsp;    public WriterBasedJsonGenerator(IOContext ctxt, int features, ObjectCodec codec, Writer w) {
+&nbsp;        this(ctxt, features, codec, w, &#39;&quot;&#39;);
+&nbsp;    }
+&nbsp;
+&nbsp;    public WriterBasedJsonGenerator(IOContext ctxt, int features, ObjectCodec codec, Writer w, char quoteChar) {
+&nbsp;        super(ctxt, features, codec);
+&nbsp;        this._writer = w;
+&nbsp;        this._outputBuffer = ctxt.allocConcatBuffer();
+&nbsp;        this._outputEnd = this._outputBuffer.length;
+&nbsp;        this._quoteChar = quoteChar;
+&nbsp;        boolean escapeSlash = this.isEnabled(JsonWriteFeature.ESCAPE_FORWARD_SLASHES.mappedFeature());
+&nbsp;        if (quoteChar != &#39;&quot;&#39; || escapeSlash) {
+&nbsp;            this._outputEscapes = CharTypes.get7BitOutputEscapes(quoteChar, escapeSlash);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public Object getOutputTarget() {
+&nbsp;        return this._writer;
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getOutputBuffered() {
+&nbsp;        int len = this._outputTail - this._outputHead;
+&nbsp;        return Math.max(0, len);
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean canWriteFormattedNumbers() {
+&nbsp;        return true;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void writeFieldName(String name) throws IOException {
+&nbsp;        int status = this._writeContext.writeFieldName(name);
+&nbsp;        if (status == 4) {
+&nbsp;            this._reportError(&quot;Can not write a field name, expecting a value&quot;);
+&nbsp;        }
+&nbsp;
+&nbsp;        this._writeFieldName(name, status == 1);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void writeFieldName(SerializableString name) throws IOException {
+&nbsp;        int status = this._writeContext.writeFieldName(name.getValue());
+&nbsp;        if (status == 4) {
+&nbsp;            this._reportError(&quot;Can not write a field name, expecting a value&quot;);
+&nbsp;        }
+&nbsp;
+&nbsp;        this._writeFieldName(name, status == 1);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void _writeFieldName(String name, boolean commaBefore) throws IOException {
+&nbsp;        if (this._cfgPrettyPrinter != null) {
+&nbsp;            this._writePPFieldName(name, commaBefore);
+&nbsp;        } else {
+&nbsp;            if (this._outputTail + 1 &gt;= this._outputEnd) {
+&nbsp;                this._flushBuffer();
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if (commaBefore) {</b>
+&nbsp;                this._outputBuffer[this._outputTail++] = &#39;,&#39;;
+&nbsp;            }
+&nbsp;
+&nbsp;            if (this._cfgUnqNames) {
+&nbsp;                this._writeString(name);
+&nbsp;            } else {
+&nbsp;                this._outputBuffer[this._outputTail++] = this._quoteChar;
+<b class="nc">&nbsp;                this._writeString(name);</b>
+<b class="nc">&nbsp;                if (this._outputTail &gt;= this._outputEnd) {</b>
+<b class="nc">&nbsp;                    this._flushBuffer();</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                this._outputBuffer[this._outputTail++] = this._quoteChar;</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void _writeFieldName(SerializableString name, boolean commaBefore) throws IOException {
+&nbsp;        if (this._cfgPrettyPrinter != null) {
+&nbsp;            this._writePPFieldName(name, commaBefore);
+&nbsp;        } else {
+&nbsp;            if (this._outputTail + 1 &gt;= this._outputEnd) {
+&nbsp;                this._flushBuffer();
+&nbsp;            }
+&nbsp;
+&nbsp;            if (commaBefore) {
+<b class="nc">&nbsp;                this._outputBuffer[this._outputTail++] = &#39;,&#39;;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            if (this._cfgUnqNames) {
+&nbsp;                char[] ch = name.asQuotedChars();
+&nbsp;                this.writeRaw((char[])ch, 0, ch.length);
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                this._outputBuffer[this._outputTail++] = this._quoteChar;</b>
+&nbsp;                int len = name.appendQuoted(this._outputBuffer, this._outputTail);
+&nbsp;                if (len &lt; 0) {
+&nbsp;                    this._writeFieldNameTail(name);
+&nbsp;                } else {
+<b class="nc">&nbsp;                    this._outputTail += len;</b>
+&nbsp;                    if (this._outputTail &gt;= this._outputEnd) {
+&nbsp;                        this._flushBuffer();
+&nbsp;                    }
+&nbsp;
+&nbsp;                    this._outputBuffer[this._outputTail++] = this._quoteChar;
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected void _writeFieldNameTail(SerializableString name) throws IOException {</b>
+<b class="nc">&nbsp;        char[] quoted = name.asQuotedChars();</b>
+<b class="nc">&nbsp;        this.writeRaw((char[])quoted, 0, quoted.length);</b>
+&nbsp;        if (this._outputTail &gt;= this._outputEnd) {
+<b class="nc">&nbsp;            this._flushBuffer();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        this._outputBuffer[this._outputTail++] = this._quoteChar;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void writeStartArray() throws IOException {
+<b class="nc">&nbsp;        this._verifyValueWrite(&quot;start an array&quot;);</b>
+<b class="nc">&nbsp;        this._writeContext = this._writeContext.createChildArrayContext();</b>
+<b class="nc">&nbsp;        this.streamWriteConstraints().validateNestingDepth(this._writeContext.getNestingDepth());</b>
+&nbsp;        if (this._cfgPrettyPrinter != null) {
+<b class="nc">&nbsp;            this._cfgPrettyPrinter.writeStartArray(this);</b>
+&nbsp;        } else {
+&nbsp;            if (this._outputTail &gt;= this._outputEnd) {
+&nbsp;                this._flushBuffer();
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            this._outputBuffer[this._outputTail++] = &#39;[&#39;;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void writeStartArray(Object currentValue) throws IOException {</b>
+&nbsp;        this._verifyValueWrite(&quot;start an array&quot;);
+<b class="nc">&nbsp;        this._writeContext = this._writeContext.createChildArrayContext(currentValue);</b>
+<b class="nc">&nbsp;        this.streamWriteConstraints().validateNestingDepth(this._writeContext.getNestingDepth());</b>
+&nbsp;        if (this._cfgPrettyPrinter != null) {
+&nbsp;            this._cfgPrettyPrinter.writeStartArray(this);
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            if (this._outputTail &gt;= this._outputEnd) {</b>
+&nbsp;                this._flushBuffer();
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            this._outputBuffer[this._outputTail++] = &#39;[&#39;;</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void writeStartArray(Object currentValue, int size) throws IOException {</b>
+&nbsp;        this._verifyValueWrite(&quot;start an array&quot;);
+<b class="nc">&nbsp;        this._writeContext = this._writeContext.createChildArrayContext(currentValue);</b>
+&nbsp;        this.streamWriteConstraints().validateNestingDepth(this._writeContext.getNestingDepth());
+&nbsp;        if (this._cfgPrettyPrinter != null) {
+&nbsp;            this._cfgPrettyPrinter.writeStartArray(this);
+&nbsp;        } else {
+<b class="nc">&nbsp;            if (this._outputTail &gt;= this._outputEnd) {</b>
+<b class="nc">&nbsp;                this._flushBuffer();</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            this._outputBuffer[this._outputTail++] = &#39;[&#39;;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void writeEndArray() throws IOException {</b>
+&nbsp;        if (!this._writeContext.inArray()) {
+&nbsp;            this._reportError(&quot;Current context not Array but &quot; + this._writeContext.typeDesc());
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if (this._cfgPrettyPrinter != null) {</b>
+&nbsp;            this._cfgPrettyPrinter.writeEndArray(this, this._writeContext.getEntryCount());
+&nbsp;        } else {
+&nbsp;            if (this._outputTail &gt;= this._outputEnd) {
+<b class="nc">&nbsp;                this._flushBuffer();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            this._outputBuffer[this._outputTail++] = &#39;]&#39;;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        this._writeContext = this._writeContext.clearAndGetParent();
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void writeStartObject() throws IOException {</b>
+<b class="nc">&nbsp;        this._verifyValueWrite(&quot;start an object&quot;);</b>
+&nbsp;        this._writeContext = this._writeContext.createChildObjectContext();
+<b class="nc">&nbsp;        this.streamWriteConstraints().validateNestingDepth(this._writeContext.getNestingDepth());</b>
+&nbsp;        if (this._cfgPrettyPrinter != null) {
+&nbsp;            this._cfgPrettyPrinter.writeStartObject(this);
+&nbsp;        } else {
+&nbsp;            if (this._outputTail &gt;= this._outputEnd) {
+<b class="nc">&nbsp;                this._flushBuffer();</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            this._outputBuffer[this._outputTail++] = &#39;{&#39;;</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void writeStartObject(Object forValue) throws IOException {
+&nbsp;        this._verifyValueWrite(&quot;start an object&quot;);
+&nbsp;        JsonWriteContext ctxt = this._writeContext.createChildObjectContext(forValue);
+&nbsp;        this.streamWriteConstraints().validateNestingDepth(this._writeContext.getNestingDepth());
+&nbsp;        this._writeContext = ctxt;
+&nbsp;        if (this._cfgPrettyPrinter != null) {
+&nbsp;            this._cfgPrettyPrinter.writeStartObject(this);
+&nbsp;        } else {
+&nbsp;            if (this._outputTail &gt;= this._outputEnd) {
+<b class="nc">&nbsp;                this._flushBuffer();</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            this._outputBuffer[this._outputTail++] = &#39;{&#39;;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public void writeStartObject(Object forValue, int size) throws IOException {
+<b class="nc">&nbsp;        this.writeStartObject(forValue);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void writeEndObject() throws IOException {
+&nbsp;        if (!this._writeContext.inObject()) {
+&nbsp;            this._reportError(&quot;Current context not Object but &quot; + this._writeContext.typeDesc());
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if (this._cfgPrettyPrinter != null) {</b>
+<b class="nc">&nbsp;            this._cfgPrettyPrinter.writeEndObject(this, this._writeContext.getEntryCount());</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            if (this._outputTail &gt;= this._outputEnd) {</b>
+&nbsp;                this._flushBuffer();
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            this._outputBuffer[this._outputTail++] = &#39;}&#39;;
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        this._writeContext = this._writeContext.clearAndGetParent();
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void _writePPFieldName(String name, boolean commaBefore) throws IOException {
+&nbsp;        if (commaBefore) {
+<b class="nc">&nbsp;            this._cfgPrettyPrinter.writeObjectEntrySeparator(this);</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            this._cfgPrettyPrinter.beforeObjectEntries(this);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        if (this._cfgUnqNames) {
+<b class="nc">&nbsp;            this._writeString(name);</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            if (this._outputTail &gt;= this._outputEnd) {
+<b class="nc">&nbsp;                this._flushBuffer();</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            this._outputBuffer[this._outputTail++] = this._quoteChar;
+&nbsp;            this._writeString(name);
+&nbsp;            if (this._outputTail &gt;= this._outputEnd) {
+&nbsp;                this._flushBuffer();
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            this._outputBuffer[this._outputTail++] = this._quoteChar;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected void _writePPFieldName(SerializableString name, boolean commaBefore) throws IOException {</b>
+&nbsp;        if (commaBefore) {
+<b class="nc">&nbsp;            this._cfgPrettyPrinter.writeObjectEntrySeparator(this);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            this._cfgPrettyPrinter.beforeObjectEntries(this);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        char[] quoted = name.asQuotedChars();
+&nbsp;        if (this._cfgUnqNames) {
+&nbsp;            this.writeRaw((char[])quoted, 0, quoted.length);
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            if (this._outputTail &gt;= this._outputEnd) {</b>
+<b class="nc">&nbsp;                this._flushBuffer();</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            this._outputBuffer[this._outputTail++] = this._quoteChar;
+<b class="nc">&nbsp;            this.writeRaw((char[])quoted, 0, quoted.length);</b>
+<b class="nc">&nbsp;            if (this._outputTail &gt;= this._outputEnd) {</b>
+&nbsp;                this._flushBuffer();
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            this._outputBuffer[this._outputTail++] = this._quoteChar;
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void writeString(String text) throws IOException {</b>
+<b class="nc">&nbsp;        this._verifyValueWrite(&quot;write a string&quot;);</b>
+<b class="nc">&nbsp;        if (text == null) {</b>
+<b class="nc">&nbsp;            this._writeNull();</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            if (this._outputTail &gt;= this._outputEnd) {</b>
+&nbsp;                this._flushBuffer();
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            this._outputBuffer[this._outputTail++] = this._quoteChar;
+<b class="nc">&nbsp;            this._writeString(text);</b>
+&nbsp;            if (this._outputTail &gt;= this._outputEnd) {
+&nbsp;                this._flushBuffer();
+&nbsp;            }
+&nbsp;
+&nbsp;            this._outputBuffer[this._outputTail++] = this._quoteChar;
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void writeString(Reader reader, int len) throws IOException {
+&nbsp;        this._verifyValueWrite(&quot;write a string&quot;);
+&nbsp;        if (reader == null) {
+<b class="nc">&nbsp;            this._reportError(&quot;null reader&quot;);</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            int toRead = len &gt;= 0 ? len : Integer.MAX_VALUE;
+<b class="nc">&nbsp;            if (this._outputTail &gt;= this._outputEnd) {</b>
+<b class="nc">&nbsp;                this._flushBuffer();</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            this._outputBuffer[this._outputTail++] = this._quoteChar;</b>
+&nbsp;
+<b class="nc">&nbsp;            int numRead;</b>
+&nbsp;            for(char[] buf = this._allocateCopyBuffer(); toRead &gt; 0; toRead -= numRead) {
+<b class="nc">&nbsp;                int toReadNow = Math.min(toRead, buf.length);</b>
+&nbsp;                numRead = reader.read(buf, 0, toReadNow);
+&nbsp;                if (numRead &lt;= 0) {
+&nbsp;                    break;
+&nbsp;                }
+&nbsp;
+&nbsp;                this._writeString(buf, 0, numRead);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            if (this._outputTail &gt;= this._outputEnd) {
+<b class="nc">&nbsp;                this._flushBuffer();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            this._outputBuffer[this._outputTail++] = this._quoteChar;</b>
+<b class="nc">&nbsp;            if (toRead &gt; 0 &amp;&amp; len &gt;= 0) {</b>
+&nbsp;                this._reportError(&quot;Didn&#39;t read enough from reader&quot;);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void writeString(char[] text, int offset, int len) throws IOException {</b>
+<b class="nc">&nbsp;        this._verifyValueWrite(&quot;write a string&quot;);</b>
+&nbsp;        if (this._outputTail &gt;= this._outputEnd) {
+<b class="nc">&nbsp;            this._flushBuffer();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        this._outputBuffer[this._outputTail++] = this._quoteChar;
+&nbsp;        this._writeString(text, offset, len);
+&nbsp;        if (this._outputTail &gt;= this._outputEnd) {
+<b class="nc">&nbsp;            this._flushBuffer();</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        this._outputBuffer[this._outputTail++] = this._quoteChar;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void writeString(SerializableString sstr) throws IOException {</b>
+<b class="nc">&nbsp;        this._verifyValueWrite(&quot;write a string&quot;);</b>
+&nbsp;        if (this._outputTail &gt;= this._outputEnd) {
+<b class="nc">&nbsp;            this._flushBuffer();</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        this._outputBuffer[this._outputTail++] = this._quoteChar;</b>
+<b class="nc">&nbsp;        int len = sstr.appendQuoted(this._outputBuffer, this._outputTail);</b>
+<b class="nc">&nbsp;        if (len &lt; 0) {</b>
+<b class="nc">&nbsp;            this._writeString2(sstr);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            this._outputTail += len;</b>
+&nbsp;            if (this._outputTail &gt;= this._outputEnd) {
+&nbsp;                this._flushBuffer();
+&nbsp;            }
+&nbsp;
+&nbsp;            this._outputBuffer[this._outputTail++] = this._quoteChar;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void _writeString2(SerializableString sstr) throws IOException {
+&nbsp;        char[] text = sstr.asQuotedChars();
+&nbsp;        int len = text.length;
+&nbsp;        if (len &lt; 32) {
+<b class="nc">&nbsp;            int room = this._outputEnd - this._outputTail;</b>
+<b class="nc">&nbsp;            if (len &gt; room) {</b>
+<b class="nc">&nbsp;                this._flushBuffer();</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            System.arraycopy(text, 0, this._outputBuffer, this._outputTail, len);</b>
+<b class="nc">&nbsp;            this._outputTail += len;</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            this._flushBuffer();</b>
+<b class="nc">&nbsp;            this._writer.write(text, 0, len);</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if (this._outputTail &gt;= this._outputEnd) {</b>
+&nbsp;            this._flushBuffer();
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        this._outputBuffer[this._outputTail++] = this._quoteChar;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void writeRawUTF8String(byte[] text, int offset, int length) throws IOException {
+<b class="nc">&nbsp;        this._reportUnsupportedOperation();</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public void writeUTF8String(byte[] text, int offset, int length) throws IOException {
+&nbsp;        this._reportUnsupportedOperation();
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public void writeRaw(String text) throws IOException {</b>
+<b class="nc">&nbsp;        int len = text.length();</b>
+&nbsp;        int room = this._outputEnd - this._outputTail;
+<b class="nc">&nbsp;        if (room == 0) {</b>
+&nbsp;            this._flushBuffer();
+<b class="nc">&nbsp;            room = this._outputEnd - this._outputTail;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if (room &gt;= len) {</b>
+<b class="nc">&nbsp;            text.getChars(0, len, this._outputBuffer, this._outputTail);</b>
+&nbsp;            this._outputTail += len;
+&nbsp;        } else {
+<b class="nc">&nbsp;            this.writeRawLong(text);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void writeRaw(String text, int offset, int len) throws IOException {</b>
+&nbsp;        this._checkRangeBoundsForString(text, offset, len);
+<b class="nc">&nbsp;        int room = this._outputEnd - this._outputTail;</b>
+&nbsp;        if (room &lt; len) {
+<b class="nc">&nbsp;            this._flushBuffer();</b>
+<b class="nc">&nbsp;            room = this._outputEnd - this._outputTail;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        if (room &gt;= len) {
+&nbsp;            text.getChars(offset, offset + len, this._outputBuffer, this._outputTail);
+&nbsp;            this._outputTail += len;
+&nbsp;        } else {
+<b class="nc">&nbsp;            this.writeRawLong(text.substring(offset, offset + len));</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void writeRaw(SerializableString text) throws IOException {</b>
+&nbsp;        int len = text.appendUnquoted(this._outputBuffer, this._outputTail);
+<b class="nc">&nbsp;        if (len &lt; 0) {</b>
+<b class="nc">&nbsp;            this.writeRaw(text.getValue());</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            this._outputTail += len;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void writeRaw(char[] cbuf, int offset, int len) throws IOException {
+&nbsp;        this._checkRangeBoundsForCharArray(cbuf, offset, len);
+<b class="nc">&nbsp;        if (len &lt; 32) {</b>
+<b class="nc">&nbsp;            int room = this._outputEnd - this._outputTail;</b>
+<b class="nc">&nbsp;            if (len &gt; room) {</b>
+&nbsp;                this._flushBuffer();
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            System.arraycopy(cbuf, offset, this._outputBuffer, this._outputTail, len);</b>
+<b class="nc">&nbsp;            this._outputTail += len;</b>
+&nbsp;        } else {
+&nbsp;            this._flushBuffer();
+<b class="nc">&nbsp;            this._writer.write(cbuf, offset, len);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public void writeRaw(char c) throws IOException {</b>
+&nbsp;        if (this._outputTail &gt;= this._outputEnd) {
+&nbsp;            this._flushBuffer();
+&nbsp;        }
+&nbsp;
+&nbsp;        this._outputBuffer[this._outputTail++] = c;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private void writeRawLong(String text) throws IOException {</b>
+<b class="nc">&nbsp;        int room = this._outputEnd - this._outputTail;</b>
+<b class="nc">&nbsp;        text.getChars(0, room, this._outputBuffer, this._outputTail);</b>
+<b class="nc">&nbsp;        this._outputTail += room;</b>
+&nbsp;        this._flushBuffer();
+<b class="nc">&nbsp;        int offset = room;</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        int len;
+<b class="nc">&nbsp;        int amount;</b>
+<b class="nc">&nbsp;        for(len = text.length() - room; len &gt; this._outputEnd; len -= amount) {</b>
+&nbsp;            amount = this._outputEnd;
+<b class="nc">&nbsp;            text.getChars(offset, offset + amount, this._outputBuffer, 0);</b>
+<b class="nc">&nbsp;            this._outputHead = 0;</b>
+&nbsp;            this._outputTail = amount;
+<b class="nc">&nbsp;            this._flushBuffer();</b>
+&nbsp;            offset += amount;
+&nbsp;        }
+&nbsp;
+&nbsp;        text.getChars(offset, offset + len, this._outputBuffer, 0);
+&nbsp;        this._outputHead = 0;
+<b class="nc">&nbsp;        this._outputTail = len;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void writeBinary(Base64Variant b64variant, byte[] data, int offset, int len) throws IOException, JsonGenerationException {
+&nbsp;        this._checkRangeBoundsForByteArray(data, offset, len);
+&nbsp;        this._verifyValueWrite(&quot;write a binary value&quot;);
+<b class="nc">&nbsp;        if (this._outputTail &gt;= this._outputEnd) {</b>
+&nbsp;            this._flushBuffer();
+&nbsp;        }
+&nbsp;
+&nbsp;        this._outputBuffer[this._outputTail++] = this._quoteChar;
+&nbsp;        this._writeBinary(b64variant, data, offset, offset + len);
+&nbsp;        if (this._outputTail &gt;= this._outputEnd) {
+&nbsp;            this._flushBuffer();
+&nbsp;        }
+&nbsp;
+&nbsp;        this._outputBuffer[this._outputTail++] = this._quoteChar;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public int writeBinary(Base64Variant b64variant, InputStream data, int dataLength) throws IOException, JsonGenerationException {</b>
+<b class="nc">&nbsp;        this._verifyValueWrite(&quot;write a binary value&quot;);</b>
+&nbsp;        if (this._outputTail &gt;= this._outputEnd) {
+<b class="nc">&nbsp;            this._flushBuffer();</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        this._outputBuffer[this._outputTail++] = this._quoteChar;
+&nbsp;        byte[] encodingBuffer = this._ioContext.allocBase64Buffer();
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        int bytes;</b>
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            if (dataLength &lt; 0) {
+<b class="nc">&nbsp;                bytes = this._writeBinary(b64variant, data, encodingBuffer);</b>
+&nbsp;            } else {
+&nbsp;                int missing = this._writeBinary(b64variant, data, encodingBuffer, dataLength);
+&nbsp;                if (missing &gt; 0) {
+&nbsp;                    this._reportError(&quot;Too few bytes available: missing &quot; + missing + &quot; bytes (out of &quot; + dataLength + &quot;)&quot;);
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                bytes = dataLength;</b>
+&nbsp;            }
+&nbsp;        } finally {
+<b class="nc">&nbsp;            this._ioContext.releaseBase64Buffer(encodingBuffer);</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if (this._outputTail &gt;= this._outputEnd) {</b>
+<b class="nc">&nbsp;            this._flushBuffer();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        this._outputBuffer[this._outputTail++] = this._quoteChar;</b>
+<b class="nc">&nbsp;        return bytes;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public void writeNumber(short s) throws IOException {</b>
+&nbsp;        this._verifyValueWrite(&quot;write a number&quot;);
+&nbsp;        if (this._cfgNumbersAsStrings) {
+&nbsp;            this._writeQuotedShort(s);
+&nbsp;        } else {
+&nbsp;            if (this._outputTail + 6 &gt;= this._outputEnd) {
+&nbsp;                this._flushBuffer();
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            this._outputTail = NumberOutput.outputInt(s, this._outputBuffer, this._outputTail);</b>
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private void _writeQuotedShort(short s) throws IOException {
+&nbsp;        if (this._outputTail + 8 &gt;= this._outputEnd) {
+&nbsp;            this._flushBuffer();
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        this._outputBuffer[this._outputTail++] = this._quoteChar;</b>
+&nbsp;        this._outputTail = NumberOutput.outputInt(s, this._outputBuffer, this._outputTail);
+&nbsp;        this._outputBuffer[this._outputTail++] = this._quoteChar;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void writeNumber(int i) throws IOException {</b>
+<b class="nc">&nbsp;        this._verifyValueWrite(&quot;write a number&quot;);</b>
+&nbsp;        if (this._cfgNumbersAsStrings) {
+<b class="nc">&nbsp;            this._writeQuotedInt(i);</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            if (this._outputTail + 11 &gt;= this._outputEnd) {
+&nbsp;                this._flushBuffer();
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            this._outputTail = NumberOutput.outputInt(i, this._outputBuffer, this._outputTail);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void _writeQuotedInt(int i) throws IOException {
+&nbsp;        if (this._outputTail + 13 &gt;= this._outputEnd) {
+<b class="nc">&nbsp;            this._flushBuffer();</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        this._outputBuffer[this._outputTail++] = this._quoteChar;</b>
+&nbsp;        this._outputTail = NumberOutput.outputInt(i, this._outputBuffer, this._outputTail);
+&nbsp;        this._outputBuffer[this._outputTail++] = this._quoteChar;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void writeNumber(long l) throws IOException {</b>
+&nbsp;        this._verifyValueWrite(&quot;write a number&quot;);
+<b class="nc">&nbsp;        if (this._cfgNumbersAsStrings) {</b>
+<b class="nc">&nbsp;            this._writeQuotedLong(l);</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            if (this._outputTail + 21 &gt;= this._outputEnd) {</b>
+<b class="nc">&nbsp;                this._flushBuffer();</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            this._outputTail = NumberOutput.outputLong(l, this._outputBuffer, this._outputTail);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private void _writeQuotedLong(long l) throws IOException {</b>
+<b class="nc">&nbsp;        if (this._outputTail + 23 &gt;= this._outputEnd) {</b>
+<b class="nc">&nbsp;            this._flushBuffer();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        this._outputBuffer[this._outputTail++] = this._quoteChar;</b>
+<b class="nc">&nbsp;        this._outputTail = NumberOutput.outputLong(l, this._outputBuffer, this._outputTail);</b>
+<b class="nc">&nbsp;        this._outputBuffer[this._outputTail++] = this._quoteChar;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void writeNumber(BigInteger value) throws IOException {
+&nbsp;        this._verifyValueWrite(&quot;write a number&quot;);
+&nbsp;        if (value == null) {
+&nbsp;            this._writeNull();
+&nbsp;        } else if (this._cfgNumbersAsStrings) {
+&nbsp;            this._writeQuotedRaw(value.toString());
+&nbsp;        } else {
+&nbsp;            this.writeRaw(value.toString());
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public void writeNumber(double d) throws IOException {</b>
+&nbsp;        if (!this._cfgNumbersAsStrings &amp;&amp; (!NumberOutput.notFinite(d) || !this.isEnabled(Feature.QUOTE_NON_NUMERIC_NUMBERS))) {
+<b class="nc">&nbsp;            this._verifyValueWrite(&quot;write a number&quot;);</b>
+<b class="nc">&nbsp;            this.writeRaw(NumberOutput.toString(d, this.isEnabled(Feature.USE_FAST_DOUBLE_WRITER)));</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            this.writeString(NumberOutput.toString(d, this.isEnabled(Feature.USE_FAST_DOUBLE_WRITER)));</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void writeNumber(float f) throws IOException {</b>
+&nbsp;        if (!this._cfgNumbersAsStrings &amp;&amp; (!NumberOutput.notFinite(f) || !this.isEnabled(Feature.QUOTE_NON_NUMERIC_NUMBERS))) {
+<b class="nc">&nbsp;            this._verifyValueWrite(&quot;write a number&quot;);</b>
+&nbsp;            this.writeRaw(NumberOutput.toString(f, this.isEnabled(Feature.USE_FAST_DOUBLE_WRITER)));
+&nbsp;        } else {
+&nbsp;            this.writeString(NumberOutput.toString(f, this.isEnabled(Feature.USE_FAST_DOUBLE_WRITER)));
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void writeNumber(BigDecimal value) throws IOException {
+<b class="nc">&nbsp;        this._verifyValueWrite(&quot;write a number&quot;);</b>
+&nbsp;        if (value == null) {
+<b class="nc">&nbsp;            this._writeNull();</b>
+<b class="nc">&nbsp;        } else if (this._cfgNumbersAsStrings) {</b>
+&nbsp;            this._writeQuotedRaw(this._asString(value));
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            this.writeRaw(this._asString(value));</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public void writeNumber(String encodedValue) throws IOException {
+<b class="nc">&nbsp;        this._verifyValueWrite(&quot;write a number&quot;);</b>
+<b class="nc">&nbsp;        if (encodedValue == null) {</b>
+<b class="nc">&nbsp;            this._writeNull();</b>
+&nbsp;        } else if (this._cfgNumbersAsStrings) {
+<b class="nc">&nbsp;            this._writeQuotedRaw(encodedValue);</b>
+&nbsp;        } else {
+&nbsp;            this.writeRaw(encodedValue);
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void writeNumber(char[] encodedValueBuffer, int offset, int length) throws IOException {</b>
+&nbsp;        this._verifyValueWrite(&quot;write a number&quot;);
+<b class="nc">&nbsp;        if (this._cfgNumbersAsStrings) {</b>
+<b class="nc">&nbsp;            this._writeQuotedRaw(encodedValueBuffer, offset, length);</b>
+&nbsp;        } else {
+&nbsp;            this.writeRaw(encodedValueBuffer, offset, length);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private void _writeQuotedRaw(String value) throws IOException {
+&nbsp;        if (this._outputTail &gt;= this._outputEnd) {
+&nbsp;            this._flushBuffer();
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        this._outputBuffer[this._outputTail++] = this._quoteChar;</b>
+<b class="nc">&nbsp;        this.writeRaw(value);</b>
+<b class="nc">&nbsp;        if (this._outputTail &gt;= this._outputEnd) {</b>
+&nbsp;            this._flushBuffer();
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        this._outputBuffer[this._outputTail++] = this._quoteChar;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private void _writeQuotedRaw(char[] text, int offset, int length) throws IOException {</b>
+&nbsp;        if (this._outputTail &gt;= this._outputEnd) {
+&nbsp;            this._flushBuffer();
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        this._outputBuffer[this._outputTail++] = this._quoteChar;</b>
+&nbsp;        this.writeRaw(text, offset, length);
+<b class="nc">&nbsp;        if (this._outputTail &gt;= this._outputEnd) {</b>
+<b class="nc">&nbsp;            this._flushBuffer();</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        this._outputBuffer[this._outputTail++] = this._quoteChar;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void writeBoolean(boolean state) throws IOException {
+<b class="nc">&nbsp;        this._verifyValueWrite(&quot;write a boolean value&quot;);</b>
+<b class="nc">&nbsp;        if (this._outputTail + 5 &gt;= this._outputEnd) {</b>
+<b class="nc">&nbsp;            this._flushBuffer();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        int ptr = this._outputTail;
+<b class="nc">&nbsp;        char[] buf = this._outputBuffer;</b>
+<b class="nc">&nbsp;        if (state) {</b>
+&nbsp;            buf[ptr] = &#39;t&#39;;
+<b class="nc">&nbsp;            ++ptr;</b>
+&nbsp;            buf[ptr] = &#39;r&#39;;
+&nbsp;            ++ptr;
+&nbsp;            buf[ptr] = &#39;u&#39;;
+<b class="nc">&nbsp;            ++ptr;</b>
+<b class="nc">&nbsp;            buf[ptr] = &#39;e&#39;;</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            buf[ptr] = &#39;f&#39;;</b>
+<b class="nc">&nbsp;            ++ptr;</b>
+<b class="nc">&nbsp;            buf[ptr] = &#39;a&#39;;</b>
+&nbsp;            ++ptr;
+&nbsp;            buf[ptr] = &#39;l&#39;;
+&nbsp;            ++ptr;
+&nbsp;            buf[ptr] = &#39;s&#39;;
+&nbsp;            ++ptr;
+<b class="nc">&nbsp;            buf[ptr] = &#39;e&#39;;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        this._outputTail = ptr + 1;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void writeNull() throws IOException {
+<b class="nc">&nbsp;        this._verifyValueWrite(&quot;write a null&quot;);</b>
+&nbsp;        this._writeNull();
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected void _verifyValueWrite(String typeMsg) throws IOException {
+&nbsp;        int status = this._writeContext.writeValue();
+<b class="nc">&nbsp;        if (this._cfgPrettyPrinter != null) {</b>
+<b class="nc">&nbsp;            this._verifyPrettyValueWrite(typeMsg, status);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            char c;</b>
+<b class="nc">&nbsp;            switch (status) {</b>
+<b class="nc">&nbsp;                case 0:</b>
+&nbsp;                case 4:
+&nbsp;                default:
+&nbsp;                    return;
+&nbsp;                case 1:
+&nbsp;                    c = &#39;,&#39;;
+&nbsp;                    break;
+&nbsp;                case 2:
+<b class="nc">&nbsp;                    c = &#39;:&#39;;</b>
+<b class="nc">&nbsp;                    break;</b>
+<b class="nc">&nbsp;                case 3:</b>
+<b class="nc">&nbsp;                    if (this._rootValueSeparator != null) {</b>
+<b class="nc">&nbsp;                        this.writeRaw(this._rootValueSeparator.getValue());</b>
+&nbsp;                    }
+<b class="nc">&nbsp;</b>
+&nbsp;                    return;
+&nbsp;                case 5:
+&nbsp;                    this._reportCantWriteValueExpectName(typeMsg);
+&nbsp;                    return;
+&nbsp;            }
+&nbsp;
+&nbsp;            if (this._outputTail &gt;= this._outputEnd) {
+<b class="nc">&nbsp;                this._flushBuffer();</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            this._outputBuffer[this._outputTail++] = c;
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void flush() throws IOException {</b>
+&nbsp;        this._flushBuffer();
+&nbsp;        if (this._writer != null &amp;&amp; this.isEnabled(Feature.FLUSH_PASSED_TO_STREAM)) {
+&nbsp;            this._writer.flush();
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void close() throws IOException {</b>
+<b class="nc">&nbsp;        super.close();</b>
+&nbsp;        IOException flushFail = null;
+&nbsp;
+&nbsp;        try {
+<b class="nc">&nbsp;            if (this._outputBuffer != null &amp;&amp; this.isEnabled(Feature.AUTO_CLOSE_JSON_CONTENT)) {</b>
+<b class="nc">&nbsp;                while(true) {</b>
+&nbsp;                    JsonStreamContext ctxt = this.getOutputContext();
+&nbsp;                    if (ctxt.inArray()) {
+&nbsp;                        this.writeEndArray();
+&nbsp;                    } else {
+&nbsp;                        if (!ctxt.inObject()) {
+&nbsp;                            break;
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                        this.writeEndObject();</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            this._flushBuffer();
+&nbsp;        } catch (IOException e) {
+&nbsp;            flushFail = e;
+&nbsp;        }
+&nbsp;
+&nbsp;        this._outputHead = 0;
+<b class="nc">&nbsp;        this._outputTail = 0;</b>
+<b class="nc">&nbsp;        if (this._writer != null) {</b>
+<b class="nc">&nbsp;            try {</b>
+<b class="nc">&nbsp;                if (!this._ioContext.isResourceManaged() &amp;&amp; !this.isEnabled(Feature.AUTO_CLOSE_TARGET)) {</b>
+<b class="nc">&nbsp;                    if (this.isEnabled(Feature.FLUSH_PASSED_TO_STREAM)) {</b>
+&nbsp;                        this._writer.flush();
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                } else {
+&nbsp;                    this._writer.close();
+&nbsp;                }
+&nbsp;            } catch (RuntimeException | IOException var3) {
+&nbsp;                if (flushFail != null) {
+<b class="nc">&nbsp;                    ((Exception)var3).addSuppressed(flushFail);</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                throw var3;
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        this._releaseBuffers();
+&nbsp;        if (flushFail != null) {
+&nbsp;            throw flushFail;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    protected void _releaseBuffers() {</b>
+<b class="nc">&nbsp;        char[] buf = this._outputBuffer;</b>
+<b class="nc">&nbsp;        if (buf != null) {</b>
+<b class="nc">&nbsp;            this._outputBuffer = null;</b>
+&nbsp;            this._ioContext.releaseConcatBuffer(buf);
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        buf = this._copyBuffer;
+&nbsp;        if (buf != null) {
+&nbsp;            this._copyBuffer = null;
+<b class="nc">&nbsp;            this._ioContext.releaseNameCopyBuffer(buf);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private void _writeString(String text) throws IOException {</b>
+<b class="nc">&nbsp;        int len = text.length();</b>
+&nbsp;        if (len &gt; this._outputEnd) {
+<b class="nc">&nbsp;            this._writeLongString(text);</b>
+&nbsp;        } else {
+&nbsp;            if (this._outputTail + len &gt; this._outputEnd) {
+&nbsp;                this._flushBuffer();
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            text.getChars(0, len, this._outputBuffer, this._outputTail);</b>
+<b class="nc">&nbsp;            if (this._characterEscapes != null) {</b>
+<b class="nc">&nbsp;                this._writeStringCustom(len);</b>
+&nbsp;            } else if (this._maximumNonEscapedChar != 0) {
+<b class="nc">&nbsp;                this._writeStringASCII(len, this._maximumNonEscapedChar);</b>
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                this._writeString2(len);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private void _writeString2(int len) throws IOException {</b>
+<b class="nc">&nbsp;        int end = this._outputTail + len;</b>
+<b class="nc">&nbsp;        int[] escCodes = this._outputEscapes;</b>
+<b class="nc">&nbsp;        int escLen = escCodes.length;</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        while(this._outputTail &lt; end) {
+<b class="nc">&nbsp;            char c = this._outputBuffer[this._outputTail];</b>
+&nbsp;            if (c &lt; escLen &amp;&amp; escCodes[c] != 0) {
+&nbsp;                c = (char)(this._outputTail - this._outputHead);
+&nbsp;                if (c &gt; 0) {
+&nbsp;                    this._writer.write(this._outputBuffer, this._outputHead, c);
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                char c = this._outputBuffer[this._outputTail++];
+&nbsp;                this._prependOrWriteCharacterEscape(c, escCodes[c]);
+&nbsp;            } else if (++this._outputTail &gt;= end) {
+&nbsp;                return;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private void _writeLongString(String text) throws IOException {
+&nbsp;        this._flushBuffer();
+<b class="nc">&nbsp;        int textLen = text.length();</b>
+<b class="nc">&nbsp;        int offset = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;        do {</b>
+&nbsp;            int max = this._outputEnd;
+&nbsp;            int segmentLen = offset + max &gt; textLen ? textLen - offset : max;
+&nbsp;            text.getChars(offset, offset + segmentLen, this._outputBuffer, 0);
+<b class="nc">&nbsp;            if (this._characterEscapes != null) {</b>
+&nbsp;                this._writeSegmentCustom(segmentLen);
+&nbsp;            } else if (this._maximumNonEscapedChar != 0) {
+&nbsp;                this._writeSegmentASCII(segmentLen, this._maximumNonEscapedChar);
+&nbsp;            } else {
+<b class="nc">&nbsp;                this._writeSegment(segmentLen);</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            offset += segmentLen;</b>
+&nbsp;        } while(offset &lt; textLen);
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private void _writeSegment(int end) throws IOException {
+&nbsp;        int[] escCodes = this._outputEscapes;
+&nbsp;        int escLen = escCodes.length;
+<b class="nc">&nbsp;        int ptr = 0;</b>
+&nbsp;
+&nbsp;        char c;
+<b class="nc">&nbsp;        for(int start = ptr; ptr &lt; end; start = this._prependOrWriteCharacterEscape(this._outputBuffer, ptr, end, c, escCodes[c])) {</b>
+<b class="nc">&nbsp;            do {</b>
+&nbsp;                c = this._outputBuffer[ptr];
+<b class="nc">&nbsp;                if (c &lt; escLen &amp;&amp; escCodes[c] != 0) {</b>
+&nbsp;                    break;
+&nbsp;                }
+&nbsp;
+&nbsp;                ++ptr;
+&nbsp;            } while(ptr &lt; end);
+&nbsp;
+&nbsp;            int flushLen = ptr - start;
+&nbsp;            if (flushLen &gt; 0) {
+&nbsp;                this._writer.write(this._outputBuffer, start, flushLen);
+&nbsp;                if (ptr &gt;= end) {
+&nbsp;                    break;
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            ++ptr;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private void _writeString(char[] text, int offset, int len) throws IOException {
+&nbsp;        if (this._characterEscapes != null) {
+&nbsp;            this._writeStringCustom(text, offset, len);
+<b class="nc">&nbsp;        } else if (this._maximumNonEscapedChar != 0) {</b>
+&nbsp;            this._writeStringASCII(text, offset, len, this._maximumNonEscapedChar);
+&nbsp;        } else {
+&nbsp;            len += offset;
+<b class="nc">&nbsp;            int[] escCodes = this._outputEscapes;</b>
+&nbsp;            int escLen = escCodes.length;
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            while(offset &lt; len) {</b>
+&nbsp;                int start = offset;
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                do {</b>
+<b class="nc">&nbsp;                    char c = text[offset];</b>
+<b class="nc">&nbsp;                    if (c &lt; escLen &amp;&amp; escCodes[c] != 0) {</b>
+<b class="nc">&nbsp;                        break;</b>
+&nbsp;                    }
+&nbsp;
+&nbsp;                    ++offset;
+&nbsp;                } while(offset &lt; len);
+&nbsp;
+<b class="nc">&nbsp;                int newAmount = offset - start;</b>
+&nbsp;                if (newAmount &lt; 32) {
+&nbsp;                    if (this._outputTail + newAmount &gt; this._outputEnd) {
+&nbsp;                        this._flushBuffer();
+<b class="nc">&nbsp;                    }</b>
+&nbsp;
+<b class="nc">&nbsp;                    if (newAmount &gt; 0) {</b>
+<b class="nc">&nbsp;                        System.arraycopy(text, start, this._outputBuffer, this._outputTail, newAmount);</b>
+&nbsp;                        this._outputTail += newAmount;
+&nbsp;                    }
+&nbsp;                } else {
+&nbsp;                    this._flushBuffer();
+&nbsp;                    this._writer.write(text, start, newAmount);
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if (offset &gt;= len) {</b>
+&nbsp;                    break;
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                char c = text[offset++];</b>
+&nbsp;                this._appendCharacterEscape(c, escCodes[c]);
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private void _writeStringASCII(int len, int maxNonEscaped) throws IOException, JsonGenerationException {
+&nbsp;        int end = this._outputTail + len;
+&nbsp;        int[] escCodes = this._outputEscapes;
+&nbsp;        int escLimit = Math.min(escCodes.length, maxNonEscaped + 1);
+&nbsp;        int escCode = 0;
+<b class="nc">&nbsp;</b>
+&nbsp;        while(this._outputTail &lt; end) {
+<b class="nc">&nbsp;            char c;</b>
+&nbsp;            while(true) {
+&nbsp;                c = this._outputBuffer[this._outputTail];
+&nbsp;                if (c &lt; escLimit) {
+&nbsp;                    escCode = escCodes[c];
+&nbsp;                    if (escCode != 0) {
+&nbsp;                        break;
+&nbsp;                    }
+<b class="nc">&nbsp;                } else if (c &gt; maxNonEscaped) {</b>
+<b class="nc">&nbsp;                    escCode = -1;</b>
+<b class="nc">&nbsp;                    break;</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="nc">&nbsp;                if (++this._outputTail &gt;= end) {</b>
+<b class="nc">&nbsp;                    return;</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            int flushLen = this._outputTail - this._outputHead;
+&nbsp;            if (flushLen &gt; 0) {
+&nbsp;                this._writer.write(this._outputBuffer, this._outputHead, flushLen);
+&nbsp;            }
+&nbsp;
+&nbsp;            ++this._outputTail;
+&nbsp;            this._prependOrWriteCharacterEscape(c, escCode);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private void _writeSegmentASCII(int end, int maxNonEscaped) throws IOException, JsonGenerationException {
+&nbsp;        int[] escCodes = this._outputEscapes;
+&nbsp;        int escLimit = Math.min(escCodes.length, maxNonEscaped + 1);
+&nbsp;        int ptr = 0;
+<b class="nc">&nbsp;        int escCode = 0;</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        char c;</b>
+&nbsp;        for(int start = ptr; ptr &lt; end; start = this._prependOrWriteCharacterEscape(this._outputBuffer, ptr, end, c, escCode)) {
+&nbsp;            do {
+&nbsp;                c = this._outputBuffer[ptr];
+&nbsp;                if (c &lt; escLimit) {
+&nbsp;                    escCode = escCodes[c];
+<b class="nc">&nbsp;                    if (escCode != 0) {</b>
+<b class="nc">&nbsp;                        break;</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                } else if (c &gt; maxNonEscaped) {</b>
+&nbsp;                    escCode = -1;
+<b class="nc">&nbsp;                    break;</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                ++ptr;</b>
+&nbsp;            } while(ptr &lt; end);
+<b class="nc">&nbsp;</b>
+&nbsp;            int flushLen = ptr - start;
+&nbsp;            if (flushLen &gt; 0) {
+&nbsp;                this._writer.write(this._outputBuffer, start, flushLen);
+&nbsp;                if (ptr &gt;= end) {
+&nbsp;                    break;
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            ++ptr;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private void _writeStringASCII(char[] text, int offset, int len, int maxNonEscaped) throws IOException, JsonGenerationException {
+&nbsp;        len += offset;
+<b class="nc">&nbsp;        int[] escCodes = this._outputEscapes;</b>
+<b class="nc">&nbsp;        int escLimit = Math.min(escCodes.length, maxNonEscaped + 1);</b>
+&nbsp;        int escCode = 0;
+&nbsp;
+<b class="nc">&nbsp;        while(offset &lt; len) {</b>
+&nbsp;            int start = offset;
+&nbsp;
+&nbsp;            char c;
+&nbsp;            do {
+&nbsp;                c = text[offset];
+&nbsp;                if (c &lt; escLimit) {
+&nbsp;                    escCode = escCodes[c];
+&nbsp;                    if (escCode != 0) {
+<b class="nc">&nbsp;                        break;</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                } else if (c &gt; maxNonEscaped) {</b>
+&nbsp;                    escCode = -1;
+&nbsp;                    break;
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                ++offset;</b>
+<b class="nc">&nbsp;            } while(offset &lt; len);</b>
+&nbsp;
+&nbsp;            int newAmount = offset - start;
+&nbsp;            if (newAmount &lt; 32) {
+&nbsp;                if (this._outputTail + newAmount &gt; this._outputEnd) {
+&nbsp;                    this._flushBuffer();
+&nbsp;                }
+&nbsp;
+&nbsp;                if (newAmount &gt; 0) {
+&nbsp;                    System.arraycopy(text, start, this._outputBuffer, this._outputTail, newAmount);
+&nbsp;                    this._outputTail += newAmount;
+<b class="nc">&nbsp;                }</b>
+&nbsp;            } else {
+&nbsp;                this._flushBuffer();
+<b class="nc">&nbsp;                this._writer.write(text, start, newAmount);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            if (offset &gt;= len) {</b>
+<b class="nc">&nbsp;                break;</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            ++offset;</b>
+<b class="nc">&nbsp;            this._appendCharacterEscape(c, escCode);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private void _writeStringCustom(int len) throws IOException, JsonGenerationException {
+<b class="nc">&nbsp;        int end = this._outputTail + len;</b>
+<b class="nc">&nbsp;        int[] escCodes = this._outputEscapes;</b>
+&nbsp;        int maxNonEscaped = this._maximumNonEscapedChar &lt; 1 ? &#39;\uffff&#39; : this._maximumNonEscapedChar;
+&nbsp;        int escLimit = Math.min(escCodes.length, maxNonEscaped + 1);
+&nbsp;        int escCode = 0;
+&nbsp;        CharacterEscapes customEscapes = this._characterEscapes;
+&nbsp;
+&nbsp;        while(this._outputTail &lt; end) {
+&nbsp;            char c;
+&nbsp;            while(true) {
+&nbsp;                c = this._outputBuffer[this._outputTail];
+&nbsp;                if (c &lt; escLimit) {
+&nbsp;                    escCode = escCodes[c];
+&nbsp;                    if (escCode != 0) {
+&nbsp;                        break;
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                } else {</b>
+&nbsp;                    if (c &gt; maxNonEscaped) {
+<b class="nc">&nbsp;                        escCode = -1;</b>
+<b class="nc">&nbsp;                        break;</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    if ((this._currentEscape = customEscapes.getEscapeSequence(c)) != null) {</b>
+&nbsp;                        escCode = -2;
+&nbsp;                        break;
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                if (++this._outputTail &gt;= end) {
+&nbsp;                    return;
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            int flushLen = this._outputTail - this._outputHead;
+&nbsp;            if (flushLen &gt; 0) {
+&nbsp;                this._writer.write(this._outputBuffer, this._outputHead, flushLen);
+&nbsp;            }
+&nbsp;
+&nbsp;            ++this._outputTail;
+<b class="nc">&nbsp;            this._prependOrWriteCharacterEscape(c, escCode);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private void _writeSegmentCustom(int end) throws IOException, JsonGenerationException {
+&nbsp;        int[] escCodes = this._outputEscapes;
+<b class="nc">&nbsp;        int maxNonEscaped = this._maximumNonEscapedChar &lt; 1 ? &#39;\uffff&#39; : this._maximumNonEscapedChar;</b>
+&nbsp;        int escLimit = Math.min(escCodes.length, maxNonEscaped + 1);
+<b class="nc">&nbsp;        CharacterEscapes customEscapes = this._characterEscapes;</b>
+&nbsp;        int ptr = 0;
+&nbsp;        int escCode = 0;
+&nbsp;
+&nbsp;        char c;
+&nbsp;        for(int start = ptr; ptr &lt; end; start = this._prependOrWriteCharacterEscape(this._outputBuffer, ptr, end, c, escCode)) {
+&nbsp;            do {
+&nbsp;                c = this._outputBuffer[ptr];
+&nbsp;                if (c &lt; escLimit) {
+&nbsp;                    escCode = escCodes[c];
+<b class="nc">&nbsp;                    if (escCode != 0) {</b>
+<b class="nc">&nbsp;                        break;</b>
+&nbsp;                    }
+&nbsp;                } else {
+<b class="nc">&nbsp;                    if (c &gt; maxNonEscaped) {</b>
+<b class="nc">&nbsp;                        escCode = -1;</b>
+&nbsp;                        break;
+&nbsp;                    }
+&nbsp;
+&nbsp;                    if ((this._currentEscape = customEscapes.getEscapeSequence(c)) != null) {
+&nbsp;                        escCode = -2;
+&nbsp;                        break;
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                ++ptr;</b>
+<b class="nc">&nbsp;            } while(ptr &lt; end);</b>
+&nbsp;
+&nbsp;            int flushLen = ptr - start;
+<b class="nc">&nbsp;            if (flushLen &gt; 0) {</b>
+<b class="nc">&nbsp;                this._writer.write(this._outputBuffer, start, flushLen);</b>
+&nbsp;                if (ptr &gt;= end) {
+&nbsp;                    break;
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            ++ptr;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private void _writeStringCustom(char[] text, int offset, int len) throws IOException, JsonGenerationException {
+<b class="nc">&nbsp;        len += offset;</b>
+<b class="nc">&nbsp;        int[] escCodes = this._outputEscapes;</b>
+&nbsp;        int maxNonEscaped = this._maximumNonEscapedChar &lt; 1 ? &#39;\uffff&#39; : this._maximumNonEscapedChar;
+<b class="nc">&nbsp;        int escLimit = Math.min(escCodes.length, maxNonEscaped + 1);</b>
+<b class="nc">&nbsp;        CharacterEscapes customEscapes = this._characterEscapes;</b>
+<b class="nc">&nbsp;        int escCode = 0;</b>
+&nbsp;
+&nbsp;        while(offset &lt; len) {
+<b class="nc">&nbsp;            int start = offset;</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            char c;
+&nbsp;            do {
+<b class="nc">&nbsp;                c = text[offset];</b>
+&nbsp;                if (c &lt; escLimit) {
+&nbsp;                    escCode = escCodes[c];
+&nbsp;                    if (escCode != 0) {
+<b class="nc">&nbsp;                        break;</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                } else {
+&nbsp;                    if (c &gt; maxNonEscaped) {
+&nbsp;                        escCode = -1;
+&nbsp;                        break;
+&nbsp;                    }
+&nbsp;
+&nbsp;                    if ((this._currentEscape = customEscapes.getEscapeSequence(c)) != null) {
+&nbsp;                        escCode = -2;
+&nbsp;                        break;
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                ++offset;
+&nbsp;            } while(offset &lt; len);
+&nbsp;
+&nbsp;            int newAmount = offset - start;
+&nbsp;            if (newAmount &lt; 32) {
+<b class="nc">&nbsp;                if (this._outputTail + newAmount &gt; this._outputEnd) {</b>
+<b class="nc">&nbsp;                    this._flushBuffer();</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                if (newAmount &gt; 0) {
+&nbsp;                    System.arraycopy(text, start, this._outputBuffer, this._outputTail, newAmount);
+<b class="nc">&nbsp;                    this._outputTail += newAmount;</b>
+&nbsp;                }
+&nbsp;            } else {
+&nbsp;                this._flushBuffer();
+&nbsp;                this._writer.write(text, start, newAmount);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            if (offset &gt;= len) {</b>
+<b class="nc">&nbsp;                break;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            ++offset;</b>
+<b class="nc">&nbsp;            this._appendCharacterEscape(c, escCode);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected void _writeBinary(Base64Variant b64variant, byte[] input, int inputPtr, int inputEnd) throws IOException, JsonGenerationException {
+&nbsp;        int safeInputEnd = inputEnd - 3;
+<b class="nc">&nbsp;        int safeOutputEnd = this._outputEnd - 6;</b>
+<b class="nc">&nbsp;        int chunksBeforeLF = b64variant.getMaxLineLength() &gt;&gt; 2;</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        while(inputPtr &lt;= safeInputEnd) {
+<b class="nc">&nbsp;            if (this._outputTail &gt; safeOutputEnd) {</b>
+<b class="nc">&nbsp;                this._flushBuffer();</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            int b24 = input[inputPtr++] &lt;&lt; 8;
+&nbsp;            b24 |= input[inputPtr++] &amp; 255;
+&nbsp;            b24 = b24 &lt;&lt; 8 | input[inputPtr++] &amp; 255;
+&nbsp;            this._outputTail = b64variant.encodeBase64Chunk(b24, this._outputBuffer, this._outputTail);
+<b class="nc">&nbsp;            --chunksBeforeLF;</b>
+<b class="nc">&nbsp;            if (chunksBeforeLF &lt;= 0) {</b>
+&nbsp;                this._outputBuffer[this._outputTail++] = &#39;\\&#39;;
+<b class="nc">&nbsp;                this._outputBuffer[this._outputTail++] = &#39;n&#39;;</b>
+<b class="nc">&nbsp;                chunksBeforeLF = b64variant.getMaxLineLength() &gt;&gt; 2;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        int inputLeft = inputEnd - inputPtr;</b>
+&nbsp;        if (inputLeft &gt; 0) {
+&nbsp;            if (this._outputTail &gt; safeOutputEnd) {
+&nbsp;                this._flushBuffer();
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            int b24 = input[inputPtr++] &lt;&lt; 16;</b>
+<b class="nc">&nbsp;            if (inputLeft == 2) {</b>
+&nbsp;                b24 |= (input[inputPtr++] &amp; 255) &lt;&lt; 8;
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            this._outputTail = b64variant.encodeBase64Partial(b24, inputLeft, this._outputBuffer, this._outputTail);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected int _writeBinary(Base64Variant b64variant, InputStream data, byte[] readBuffer, int bytesLeft) throws IOException, JsonGenerationException {
+&nbsp;        int inputPtr = 0;
+<b class="nc">&nbsp;        int inputEnd = 0;</b>
+<b class="nc">&nbsp;        int lastFullOffset = -3;</b>
+<b class="nc">&nbsp;        int safeOutputEnd = this._outputEnd - 6;</b>
+<b class="nc">&nbsp;        int chunksBeforeLF = b64variant.getMaxLineLength() &gt;&gt; 2;</b>
+&nbsp;
+&nbsp;        while(bytesLeft &gt; 2) {
+&nbsp;            if (inputPtr &gt; lastFullOffset) {
+<b class="nc">&nbsp;                inputEnd = this._readMore(data, readBuffer, inputPtr, inputEnd, bytesLeft);</b>
+<b class="nc">&nbsp;                inputPtr = 0;</b>
+&nbsp;                if (inputEnd &lt; 3) {
+&nbsp;                    break;
+&nbsp;                }
+&nbsp;
+&nbsp;                lastFullOffset = inputEnd - 3;
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if (this._outputTail &gt; safeOutputEnd) {</b>
+<b class="nc">&nbsp;                this._flushBuffer();</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            int b24 = readBuffer[inputPtr++] &lt;&lt; 8;</b>
+&nbsp;            b24 |= readBuffer[inputPtr++] &amp; 255;
+<b class="nc">&nbsp;            b24 = b24 &lt;&lt; 8 | readBuffer[inputPtr++] &amp; 255;</b>
+<b class="nc">&nbsp;            bytesLeft -= 3;</b>
+&nbsp;            this._outputTail = b64variant.encodeBase64Chunk(b24, this._outputBuffer, this._outputTail);
+&nbsp;            --chunksBeforeLF;
+&nbsp;            if (chunksBeforeLF &lt;= 0) {
+<b class="nc">&nbsp;                this._outputBuffer[this._outputTail++] = &#39;\\&#39;;</b>
+<b class="nc">&nbsp;                this._outputBuffer[this._outputTail++] = &#39;n&#39;;</b>
+<b class="nc">&nbsp;                chunksBeforeLF = b64variant.getMaxLineLength() &gt;&gt; 2;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if (bytesLeft &gt; 0) {</b>
+<b class="nc">&nbsp;            inputEnd = this._readMore(data, readBuffer, inputPtr, inputEnd, bytesLeft);</b>
+&nbsp;            inputPtr = 0;
+&nbsp;            if (inputEnd &gt; 0) {
+<b class="nc">&nbsp;                if (this._outputTail &gt; safeOutputEnd) {</b>
+&nbsp;                    this._flushBuffer();
+&nbsp;                }
+&nbsp;
+&nbsp;                int b24 = readBuffer[inputPtr++] &lt;&lt; 16;
+&nbsp;                int amount;
+<b class="nc">&nbsp;                if (inputPtr &lt; inputEnd) {</b>
+<b class="nc">&nbsp;                    b24 |= (readBuffer[inputPtr] &amp; 255) &lt;&lt; 8;</b>
+&nbsp;                    amount = 2;
+<b class="nc">&nbsp;                } else {</b>
+<b class="nc">&nbsp;                    amount = 1;</b>
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                this._outputTail = b64variant.encodeBase64Partial(b24, amount, this._outputBuffer, this._outputTail);</b>
+<b class="nc">&nbsp;                bytesLeft -= amount;</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return bytesLeft;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected int _writeBinary(Base64Variant b64variant, InputStream data, byte[] readBuffer) throws IOException, JsonGenerationException {</b>
+&nbsp;        int inputPtr = 0;
+&nbsp;        int inputEnd = 0;
+&nbsp;        int lastFullOffset = -3;
+<b class="nc">&nbsp;        int bytesDone = 0;</b>
+<b class="nc">&nbsp;        int safeOutputEnd = this._outputEnd - 6;</b>
+&nbsp;        int chunksBeforeLF = b64variant.getMaxLineLength() &gt;&gt; 2;
+&nbsp;
+&nbsp;        while(true) {
+&nbsp;            if (inputPtr &gt; lastFullOffset) {
+&nbsp;                inputEnd = this._readMore(data, readBuffer, inputPtr, inputEnd, readBuffer.length);
+&nbsp;                inputPtr = 0;
+&nbsp;                if (inputEnd &lt; 3) {
+&nbsp;                    if (inputPtr &lt; inputEnd) {
+&nbsp;                        if (this._outputTail &gt; safeOutputEnd) {
+&nbsp;                            this._flushBuffer();
+&nbsp;                        }
+&nbsp;
+&nbsp;                        int b24 = readBuffer[inputPtr++] &lt;&lt; 16;
+&nbsp;                        int amount = 1;
+&nbsp;                        if (inputPtr &lt; inputEnd) {
+&nbsp;                            b24 |= (readBuffer[inputPtr] &amp; 255) &lt;&lt; 8;
+&nbsp;                            amount = 2;
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                        bytesDone += amount;</b>
+<b class="nc">&nbsp;                        this._outputTail = b64variant.encodeBase64Partial(b24, amount, this._outputBuffer, this._outputTail);</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                    return bytesDone;
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+&nbsp;                lastFullOffset = inputEnd - 3;
+&nbsp;            }
+&nbsp;
+&nbsp;            if (this._outputTail &gt; safeOutputEnd) {
+<b class="nc">&nbsp;                this._flushBuffer();</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            int b24 = readBuffer[inputPtr++] &lt;&lt; 8;</b>
+&nbsp;            b24 |= readBuffer[inputPtr++] &amp; 255;
+&nbsp;            b24 = b24 &lt;&lt; 8 | readBuffer[inputPtr++] &amp; 255;
+<b class="nc">&nbsp;            bytesDone += 3;</b>
+<b class="nc">&nbsp;            this._outputTail = b64variant.encodeBase64Chunk(b24, this._outputBuffer, this._outputTail);</b>
+&nbsp;            --chunksBeforeLF;
+&nbsp;            if (chunksBeforeLF &lt;= 0) {
+<b class="nc">&nbsp;                this._outputBuffer[this._outputTail++] = &#39;\\&#39;;</b>
+<b class="nc">&nbsp;                this._outputBuffer[this._outputTail++] = &#39;n&#39;;</b>
+&nbsp;                chunksBeforeLF = b64variant.getMaxLineLength() &gt;&gt; 2;
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private int _readMore(InputStream in, byte[] readBuffer, int inputPtr, int inputEnd, int maxRead) throws IOException {
+&nbsp;        int i;
+<b class="nc">&nbsp;        for(i = 0; inputPtr &lt; inputEnd; readBuffer[i++] = readBuffer[inputPtr++]) {</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        inputPtr = 0;
+<b class="nc">&nbsp;        inputEnd = i;</b>
+<b class="nc">&nbsp;        maxRead = Math.min(maxRead, readBuffer.length);</b>
+&nbsp;
+&nbsp;        do {
+&nbsp;            int length = maxRead - inputEnd;
+&nbsp;            if (length == 0) {
+&nbsp;                break;
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            int count = in.read(readBuffer, inputEnd, length);</b>
+<b class="nc">&nbsp;            if (count &lt; 0) {</b>
+<b class="nc">&nbsp;                return inputEnd;</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            inputEnd += count;</b>
+<b class="nc">&nbsp;        } while(inputEnd &lt; 3);</b>
+&nbsp;
+&nbsp;        return inputEnd;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private final void _writeNull() throws IOException {
+&nbsp;        if (this._outputTail + 4 &gt;= this._outputEnd) {
+<b class="nc">&nbsp;            this._flushBuffer();</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        int ptr = this._outputTail;</b>
+&nbsp;        char[] buf = this._outputBuffer;
+&nbsp;        buf[ptr] = &#39;n&#39;;
+<b class="nc">&nbsp;        ++ptr;</b>
+<b class="nc">&nbsp;        buf[ptr] = &#39;u&#39;;</b>
+&nbsp;        ++ptr;
+&nbsp;        buf[ptr] = &#39;l&#39;;
+<b class="nc">&nbsp;        ++ptr;</b>
+<b class="nc">&nbsp;        buf[ptr] = &#39;l&#39;;</b>
+&nbsp;        this._outputTail = ptr + 1;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private void _prependOrWriteCharacterEscape(char ch, int escCode) throws IOException, JsonGenerationException {</b>
+&nbsp;        if (escCode &gt;= 0) {
+&nbsp;            if (this._outputTail &gt;= 2) {
+&nbsp;                int ptr = this._outputTail - 2;
+<b class="nc">&nbsp;                this._outputHead = ptr;</b>
+<b class="nc">&nbsp;                this._outputBuffer[ptr++] = &#39;\\&#39;;</b>
+<b class="nc">&nbsp;                this._outputBuffer[ptr] = (char)escCode;</b>
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                char[] buf = this._entityBuffer;
+&nbsp;                if (buf == null) {
+&nbsp;                    buf = this._allocateEntityBuffer();
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                this._outputHead = this._outputTail;
+&nbsp;                buf[1] = (char)escCode;
+&nbsp;                this._writer.write(buf, 0, 2);
+&nbsp;            }
+&nbsp;        } else if (escCode != -2) {
+&nbsp;            char[] HEX_CHARS = this.getHexChars();
+<b class="nc">&nbsp;            if (this._outputTail &gt;= 6) {</b>
+<b class="nc">&nbsp;                char[] buf = this._outputBuffer;</b>
+<b class="nc">&nbsp;                int ptr = this._outputTail - 6;</b>
+<b class="nc">&nbsp;                this._outputHead = ptr;</b>
+<b class="nc">&nbsp;                buf[ptr] = &#39;\\&#39;;</b>
+&nbsp;                ++ptr;
+<b class="nc">&nbsp;                buf[ptr] = &#39;u&#39;;</b>
+&nbsp;                if (ch &gt; 255) {
+<b class="nc">&nbsp;                    int hi = ch &gt;&gt; 8 &amp; 255;</b>
+<b class="nc">&nbsp;                    ++ptr;</b>
+&nbsp;                    buf[ptr] = HEX_CHARS[hi &gt;&gt; 4];
+&nbsp;                    ++ptr;
+&nbsp;                    buf[ptr] = HEX_CHARS[hi &amp; 15];
+<b class="nc">&nbsp;                    ch = (char)(ch &amp; 255);</b>
+<b class="nc">&nbsp;                } else {</b>
+<b class="nc">&nbsp;                    ++ptr;</b>
+<b class="nc">&nbsp;                    buf[ptr] = &#39;0&#39;;</b>
+&nbsp;                    ++ptr;
+&nbsp;                    buf[ptr] = &#39;0&#39;;
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                ++ptr;
+&nbsp;                buf[ptr] = HEX_CHARS[ch &gt;&gt; 4];
+<b class="nc">&nbsp;                ++ptr;</b>
+<b class="nc">&nbsp;                buf[ptr] = HEX_CHARS[ch &amp; 15];</b>
+&nbsp;            } else {
+&nbsp;                char[] buf = this._entityBuffer;
+&nbsp;                if (buf == null) {
+<b class="nc">&nbsp;                    buf = this._allocateEntityBuffer();</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                this._outputHead = this._outputTail;
+&nbsp;                if (ch &gt; 255) {
+&nbsp;                    int hi = ch &gt;&gt; 8 &amp; 255;
+<b class="nc">&nbsp;                    int lo = ch &amp; 255;</b>
+<b class="nc">&nbsp;                    buf[10] = HEX_CHARS[hi &gt;&gt; 4];</b>
+&nbsp;                    buf[11] = HEX_CHARS[hi &amp; 15];
+<b class="nc">&nbsp;                    buf[12] = HEX_CHARS[lo &gt;&gt; 4];</b>
+<b class="nc">&nbsp;                    buf[13] = HEX_CHARS[lo &amp; 15];</b>
+&nbsp;                    this._writer.write(buf, 8, 6);
+<b class="nc">&nbsp;                } else {</b>
+<b class="nc">&nbsp;                    buf[6] = HEX_CHARS[ch &gt;&gt; 4];</b>
+<b class="nc">&nbsp;                    buf[7] = HEX_CHARS[ch &amp; 15];</b>
+&nbsp;                    this._writer.write(buf, 2, 6);
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        } else {
+&nbsp;            String escape;
+<b class="nc">&nbsp;            if (this._currentEscape == null) {</b>
+&nbsp;                escape = this._characterEscapes.getEscapeSequence(ch).getValue();
+&nbsp;            } else {
+&nbsp;                escape = this._currentEscape.getValue();
+<b class="nc">&nbsp;                this._currentEscape = null;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            int len = escape.length();
+&nbsp;            if (this._outputTail &gt;= len) {
+&nbsp;                int ptr = this._outputTail - len;
+&nbsp;                this._outputHead = ptr;
+&nbsp;                escape.getChars(0, len, this._outputBuffer, ptr);
+&nbsp;            } else {
+&nbsp;                this._outputHead = this._outputTail;
+&nbsp;                this._writer.write(escape);
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private int _prependOrWriteCharacterEscape(char[] buffer, int ptr, int end, char ch, int escCode) throws IOException, JsonGenerationException {</b>
+&nbsp;        if (escCode &gt;= 0) {
+<b class="nc">&nbsp;            if (ptr &gt; 1 &amp;&amp; ptr &lt; end) {</b>
+<b class="nc">&nbsp;                ptr -= 2;</b>
+&nbsp;                buffer[ptr] = &#39;\\&#39;;
+&nbsp;                buffer[ptr + 1] = (char)escCode;
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                char[] ent = this._entityBuffer;</b>
+<b class="nc">&nbsp;                if (ent == null) {</b>
+&nbsp;                    ent = this._allocateEntityBuffer();
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                ent[1] = (char)escCode;</b>
+<b class="nc">&nbsp;                this._writer.write(ent, 0, 2);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            return ptr;
+<b class="nc">&nbsp;        } else if (escCode != -2) {</b>
+<b class="nc">&nbsp;            char[] HEX_CHARS = this.getHexChars();</b>
+<b class="nc">&nbsp;            if (ptr &gt; 5 &amp;&amp; ptr &lt; end) {</b>
+&nbsp;                ptr -= 6;
+&nbsp;                buffer[ptr++] = &#39;\\&#39;;
+&nbsp;                buffer[ptr++] = &#39;u&#39;;
+&nbsp;                if (ch &gt; 255) {
+<b class="nc">&nbsp;                    int hi = ch &gt;&gt; 8 &amp; 255;</b>
+<b class="nc">&nbsp;                    buffer[ptr++] = HEX_CHARS[hi &gt;&gt; 4];</b>
+<b class="nc">&nbsp;                    buffer[ptr++] = HEX_CHARS[hi &amp; 15];</b>
+<b class="nc">&nbsp;                    ch = (char)(ch &amp; 255);</b>
+&nbsp;                } else {
+<b class="nc">&nbsp;                    buffer[ptr++] = &#39;0&#39;;</b>
+<b class="nc">&nbsp;                    buffer[ptr++] = &#39;0&#39;;</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+<b class="nc">&nbsp;                buffer[ptr++] = HEX_CHARS[ch &gt;&gt; 4];</b>
+&nbsp;                buffer[ptr] = HEX_CHARS[ch &amp; 15];
+&nbsp;                ptr -= 5;
+&nbsp;            } else {
+&nbsp;                char[] ent = this._entityBuffer;
+&nbsp;                if (ent == null) {
+&nbsp;                    ent = this._allocateEntityBuffer();
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                this._outputHead = this._outputTail;</b>
+<b class="nc">&nbsp;                if (ch &gt; 255) {</b>
+<b class="nc">&nbsp;                    int hi = ch &gt;&gt; 8 &amp; 255;</b>
+&nbsp;                    int lo = ch &amp; 255;
+&nbsp;                    ent[10] = HEX_CHARS[hi &gt;&gt; 4];
+<b class="nc">&nbsp;                    ent[11] = HEX_CHARS[hi &amp; 15];</b>
+<b class="nc">&nbsp;                    ent[12] = HEX_CHARS[lo &gt;&gt; 4];</b>
+&nbsp;                    ent[13] = HEX_CHARS[lo &amp; 15];
+<b class="nc">&nbsp;                    this._writer.write(ent, 8, 6);</b>
+<b class="nc">&nbsp;                } else {</b>
+<b class="nc">&nbsp;                    ent[6] = HEX_CHARS[ch &gt;&gt; 4];</b>
+<b class="nc">&nbsp;                    ent[7] = HEX_CHARS[ch &amp; 15];</b>
+<b class="nc">&nbsp;                    this._writer.write(ent, 2, 6);</b>
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            return ptr;
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            String escape;</b>
+&nbsp;            if (this._currentEscape == null) {
+<b class="nc">&nbsp;                escape = this._characterEscapes.getEscapeSequence(ch).getValue();</b>
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                escape = this._currentEscape.getValue();</b>
+<b class="nc">&nbsp;                this._currentEscape = null;</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            int len = escape.length();</b>
+<b class="nc">&nbsp;            if (ptr &gt;= len &amp;&amp; ptr &lt; end) {</b>
+<b class="nc">&nbsp;                ptr -= len;</b>
+&nbsp;                escape.getChars(0, len, buffer, ptr);
+&nbsp;            } else {
+&nbsp;                this._writer.write(escape);
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            return ptr;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private void _appendCharacterEscape(char ch, int escCode) throws IOException, JsonGenerationException {</b>
+&nbsp;        if (escCode &gt;= 0) {
+<b class="nc">&nbsp;            if (this._outputTail + 2 &gt; this._outputEnd) {</b>
+&nbsp;                this._flushBuffer();
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            this._outputBuffer[this._outputTail++] = &#39;\\&#39;;</b>
+&nbsp;            this._outputBuffer[this._outputTail++] = (char)escCode;
+<b class="nc">&nbsp;        } else if (escCode != -2) {</b>
+&nbsp;            if (this._outputTail + 5 &gt;= this._outputEnd) {
+<b class="nc">&nbsp;                this._flushBuffer();</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            int ptr = this._outputTail;
+<b class="nc">&nbsp;            char[] buf = this._outputBuffer;</b>
+&nbsp;            char[] HEX_CHARS = this.getHexChars();
+&nbsp;            buf[ptr++] = &#39;\\&#39;;
+&nbsp;            buf[ptr++] = &#39;u&#39;;
+&nbsp;            if (ch &gt; 255) {
+&nbsp;                int hi = ch &gt;&gt; 8 &amp; 255;
+&nbsp;                buf[ptr++] = HEX_CHARS[hi &gt;&gt; 4];
+&nbsp;                buf[ptr++] = HEX_CHARS[hi &amp; 15];
+<b class="nc">&nbsp;                ch = (char)(ch &amp; 255);</b>
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                buf[ptr++] = &#39;0&#39;;</b>
+<b class="nc">&nbsp;                buf[ptr++] = &#39;0&#39;;</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            buf[ptr++] = HEX_CHARS[ch &gt;&gt; 4];</b>
+<b class="nc">&nbsp;            buf[ptr++] = HEX_CHARS[ch &amp; 15];</b>
+&nbsp;            this._outputTail = ptr;
+&nbsp;        } else {
+&nbsp;            String escape;
+<b class="nc">&nbsp;            if (this._currentEscape == null) {</b>
+<b class="nc">&nbsp;                escape = this._characterEscapes.getEscapeSequence(ch).getValue();</b>
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                escape = this._currentEscape.getValue();</b>
+&nbsp;                this._currentEscape = null;
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            int len = escape.length();
+<b class="nc">&nbsp;            if (this._outputTail + len &gt; this._outputEnd) {</b>
+<b class="nc">&nbsp;                this._flushBuffer();</b>
+&nbsp;                if (len &gt; this._outputEnd) {
+&nbsp;                    this._writer.write(escape);
+<b class="nc">&nbsp;                    return;</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            escape.getChars(0, len, this._outputBuffer, this._outputTail);</b>
+<b class="nc">&nbsp;            this._outputTail += len;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private char[] _allocateEntityBuffer() {
+&nbsp;        char[] buf = new char[14];
+&nbsp;        buf[0] = &#39;\\&#39;;
+&nbsp;        buf[2] = &#39;\\&#39;;
+<b class="nc">&nbsp;        buf[3] = &#39;u&#39;;</b>
+<b class="nc">&nbsp;        buf[4] = &#39;0&#39;;</b>
+<b class="nc">&nbsp;        buf[5] = &#39;0&#39;;</b>
+&nbsp;        buf[8] = &#39;\\&#39;;
+<b class="nc">&nbsp;        buf[9] = &#39;u&#39;;</b>
+<b class="nc">&nbsp;        this._entityBuffer = buf;</b>
+<b class="nc">&nbsp;        return buf;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private char[] _allocateCopyBuffer() {
+<b class="nc">&nbsp;        if (this._copyBuffer == null) {</b>
+<b class="nc">&nbsp;            this._copyBuffer = this._ioContext.allocNameCopyBuffer(2000);</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        return this._copyBuffer;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void _flushBuffer() throws IOException {
+&nbsp;        int len = this._outputTail - this._outputHead;
+&nbsp;        if (len &gt; 0) {
+&nbsp;            int offset = this._outputHead;
+<b class="nc">&nbsp;            this._outputTail = this._outputHead = 0;</b>
+<b class="nc">&nbsp;            this._writer.write(this._outputBuffer, offset, len);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:54</div>
+</div>
+</body>
+</html>

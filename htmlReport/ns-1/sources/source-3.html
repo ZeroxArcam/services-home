@@ -1,0 +1,755 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > Logger</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">ch.qos.logback.classic</a>
+</div>
+
+<h1>Coverage Summary for Class: Logger (ch.qos.logback.classic)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Logger</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    35.7%
+  </span>
+  <span class="absValue">
+    (35/98)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    46.3%
+  </span>
+  <span class="absValue">
+    (62/134)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    45.9%
+  </span>
+  <span class="absValue">
+    (112/244)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package ch.qos.logback.classic;
+&nbsp;
+&nbsp;import ch.qos.logback.classic.spi.ILoggingEvent;
+&nbsp;import ch.qos.logback.classic.spi.LoggingEvent;
+&nbsp;import ch.qos.logback.classic.util.LoggerNameUtil;
+&nbsp;import ch.qos.logback.core.Appender;
+&nbsp;import ch.qos.logback.core.spi.AppenderAttachable;
+&nbsp;import ch.qos.logback.core.spi.AppenderAttachableImpl;
+&nbsp;import ch.qos.logback.core.spi.FilterReply;
+&nbsp;import java.io.ObjectStreamException;
+&nbsp;import java.io.Serializable;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.Iterator;
+&nbsp;import java.util.List;
+&nbsp;import java.util.concurrent.CopyOnWriteArrayList;
+&nbsp;import org.slf4j.LoggerFactory;
+&nbsp;import org.slf4j.Marker;
+&nbsp;import org.slf4j.spi.DefaultLoggingEventBuilder;
+&nbsp;import org.slf4j.spi.LocationAwareLogger;
+&nbsp;import org.slf4j.spi.LoggingEventAware;
+&nbsp;import org.slf4j.spi.LoggingEventBuilder;
+&nbsp;
+&nbsp;public final class Logger implements org.slf4j.Logger, LocationAwareLogger, LoggingEventAware, AppenderAttachable&lt;ILoggingEvent&gt;, Serializable {
+&nbsp;    private static final long serialVersionUID = 5454405123156820674L;
+&nbsp;    public static final String FQCN = Logger.class.getName();
+&nbsp;    private String name;
+&nbsp;    private transient Level level;
+&nbsp;    private transient int effectiveLevelInt;
+&nbsp;    private transient Logger parent;
+&nbsp;    private transient List&lt;Logger&gt; childrenList;
+&nbsp;    private transient AppenderAttachableImpl&lt;ILoggingEvent&gt; aai;
+&nbsp;    private transient boolean additive = true;
+&nbsp;    final transient LoggerContext loggerContext;
+&nbsp;
+&nbsp;    Logger(String name, Logger parent, LoggerContext loggerContext) {
+&nbsp;        this.name = name;
+&nbsp;        this.parent = parent;
+&nbsp;        this.loggerContext = loggerContext;
+&nbsp;    }
+&nbsp;
+&nbsp;    public Level getEffectiveLevel() {
+<b class="fc">&nbsp;        return Level.toLevel(this.effectiveLevelInt);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    int getEffectiveLevelInt() {
+&nbsp;        return this.effectiveLevelInt;
+&nbsp;    }
+&nbsp;
+&nbsp;    public Level getLevel() {
+&nbsp;        return this.level;
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getName() {
+&nbsp;        return this.name;
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean isRootLogger() {
+&nbsp;        return this.parent == null;
+&nbsp;    }
+&nbsp;
+&nbsp;    Logger getChildByName(String childName) {
+&nbsp;        if (this.childrenList == null) {
+&nbsp;            return null;
+&nbsp;        } else {
+&nbsp;            int len = this.childrenList.size();
+&nbsp;
+&nbsp;            for(int i = 0; i &lt; len; ++i) {
+&nbsp;                Logger childLogger_i = (Logger)this.childrenList.get(i);
+&nbsp;                String childName_i = childLogger_i.getName();
+&nbsp;                if (childName.equals(childName_i)) {
+&nbsp;                    return childLogger_i;
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            return null;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public synchronized void setLevel(Level newLevel) {
+&nbsp;        if (this.level != newLevel) {
+&nbsp;            if (newLevel == null &amp;&amp; this.isRootLogger()) {
+&nbsp;                throw new IllegalArgumentException(&quot;The level of the root logger cannot be set to null&quot;);
+&nbsp;            } else {
+&nbsp;                this.level = newLevel;
+&nbsp;                if (newLevel == null) {
+&nbsp;                    this.effectiveLevelInt = this.parent.effectiveLevelInt;
+&nbsp;                    newLevel = this.parent.getEffectiveLevel();
+&nbsp;                } else {
+&nbsp;                    this.effectiveLevelInt = newLevel.levelInt;
+&nbsp;                }
+&nbsp;
+&nbsp;                if (this.childrenList != null) {
+&nbsp;                    int len = this.childrenList.size();
+&nbsp;
+&nbsp;                    for(int i = 0; i &lt; len; ++i) {
+<b class="fc">&nbsp;                        Logger child = (Logger)this.childrenList.get(i);</b>
+&nbsp;                        child.handleParentLevelChange(this.effectiveLevelInt);
+&nbsp;                    }
+&nbsp;                }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;                this.loggerContext.fireOnLevelChange(this, newLevel);</b>
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private synchronized void handleParentLevelChange(int newParentLevelInt) {
+<b class="nc">&nbsp;        if (this.level == null) {</b>
+&nbsp;            this.effectiveLevelInt = newParentLevelInt;
+&nbsp;            if (this.childrenList != null) {
+&nbsp;                int len = this.childrenList.size();
+<b class="nc">&nbsp;</b>
+&nbsp;                for(int i = 0; i &lt; len; ++i) {
+&nbsp;                    Logger child = (Logger)this.childrenList.get(i);
+&nbsp;                    child.handleParentLevelChange(newParentLevelInt);
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void detachAndStopAllAppenders() {
+&nbsp;        if (this.aai != null) {
+&nbsp;            this.aai.detachAndStopAllAppenders();
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public boolean detachAppender(String name) {</b>
+<b class="fc">&nbsp;        return this.aai == null ? false : this.aai.detachAppender(name);</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public synchronized void addAppender(Appender&lt;ILoggingEvent&gt; newAppender) {</b>
+<b class="fc">&nbsp;        if (this.aai == null) {</b>
+<b class="fc">&nbsp;            this.aai = new AppenderAttachableImpl();</b>
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;        this.aai.addAppender(newAppender);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isAttached(Appender&lt;ILoggingEvent&gt; appender) {
+<b class="fc">&nbsp;        return this.aai == null ? false : this.aai.isAttached(appender);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Iterator&lt;Appender&lt;ILoggingEvent&gt;&gt; iteratorForAppenders() {
+&nbsp;        return this.aai == null ? Collections.EMPTY_LIST.iterator() : this.aai.iteratorForAppenders();
+<b class="pc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public Appender&lt;ILoggingEvent&gt; getAppender(String name) {
+&nbsp;        return this.aai == null ? null : this.aai.getAppender(name);
+<b class="pc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public void callAppenders(ILoggingEvent event) {
+&nbsp;        int writes = 0;
+<b class="fc">&nbsp;</b>
+<b class="pc">&nbsp;        for(Logger l = this; l != null; l = l.parent) {</b>
+<b class="nc">&nbsp;            writes += l.appendLoopOnAppenders(event);</b>
+<b class="nc">&nbsp;            if (!l.additive) {</b>
+&nbsp;                break;
+<b class="fc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if (writes == 0) {</b>
+<b class="fc">&nbsp;            this.loggerContext.noAppenderDefinedWarning(this);</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    private int appendLoopOnAppenders(ILoggingEvent event) {
+&nbsp;        return this.aai != null ? this.aai.appendLoopOnAppenders(event) : 0;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public boolean detachAppender(Appender&lt;ILoggingEvent&gt; appender) {
+&nbsp;        return this.aai == null ? false : this.aai.detachAppender(appender);
+&nbsp;    }
+&nbsp;
+&nbsp;    Logger createChildByLastNamePart(String lastPart) {
+&nbsp;        int i_index = LoggerNameUtil.getFirstSeparatorIndexOf(lastPart);
+&nbsp;        if (i_index != -1) {
+&nbsp;            throw new IllegalArgumentException(&quot;Child name [&quot; + lastPart + &quot; passed as parameter, may not include [.]&quot;);
+&nbsp;        } else {
+&nbsp;            if (this.childrenList == null) {
+&nbsp;                this.childrenList = new CopyOnWriteArrayList();
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;            Logger childLogger;
+&nbsp;            if (this.isRootLogger()) {
+<b class="fc">&nbsp;                childLogger = new Logger(lastPart, this, this.loggerContext);</b>
+<b class="fc">&nbsp;            } else {</b>
+<b class="fc">&nbsp;                childLogger = new Logger(this.name + &quot;.&quot; + lastPart, this, this.loggerContext);</b>
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;            this.childrenList.add(childLogger);
+&nbsp;            childLogger.effectiveLevelInt = this.effectiveLevelInt;
+&nbsp;            return childLogger;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void localLevelReset() {
+&nbsp;        this.effectiveLevelInt = 10000;
+&nbsp;        if (this.isRootLogger()) {
+&nbsp;            this.level = Level.DEBUG;
+&nbsp;        } else {
+<b class="fc">&nbsp;            this.level = null;</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    void recursiveReset() {
+<b class="nc">&nbsp;        this.detachAndStopAllAppenders();</b>
+<b class="nc">&nbsp;        this.localLevelReset();</b>
+&nbsp;        this.additive = true;
+<b class="nc">&nbsp;        if (this.childrenList != null) {</b>
+&nbsp;            for(Logger childLogger : this.childrenList) {
+&nbsp;                childLogger.recursiveReset();
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    Logger createChildByName(String childName) {
+<b class="fc">&nbsp;        int i_index = LoggerNameUtil.getSeparatorIndexOf(childName, this.name.length() + 1);</b>
+&nbsp;        if (i_index != -1) {
+&nbsp;            String var10002 = this.name;
+&nbsp;            throw new IllegalArgumentException(&quot;For logger [&quot; + var10002 + &quot;] child name [&quot; + childName + &quot; passed as parameter, may not include &#39;.&#39; after index&quot; + (this.name.length() + 1));
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            if (this.childrenList == null) {</b>
+&nbsp;                this.childrenList = new CopyOnWriteArrayList();
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            Logger childLogger = new Logger(childName, this, this.loggerContext);
+&nbsp;            this.childrenList.add(childLogger);
+&nbsp;            childLogger.effectiveLevelInt = this.effectiveLevelInt;
+<b class="nc">&nbsp;            return childLogger;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private void filterAndLog_0_Or3Plus(String localFQCN, Marker marker, Level level, String msg, Object[] params, Throwable t) {
+&nbsp;        FilterReply decision = this.loggerContext.getTurboFilterChainDecision_0_3OrMore(marker, this, level, msg, params, t);
+&nbsp;        if (decision == FilterReply.NEUTRAL) {
+<b class="nc">&nbsp;            if (this.effectiveLevelInt &gt; level.levelInt) {</b>
+<b class="nc">&nbsp;                return;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        } else if (decision == FilterReply.DENY) {</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+&nbsp;        this.buildLoggingEventAndAppend(localFQCN, marker, level, msg, params, t);
+&nbsp;    }
+&nbsp;
+&nbsp;    private void filterAndLog_1(String localFQCN, Marker marker, Level level, String msg, Object param, Throwable t) {
+&nbsp;        FilterReply decision = this.loggerContext.getTurboFilterChainDecision_1(marker, this, level, msg, param, t);
+<b class="fc">&nbsp;        if (decision == FilterReply.NEUTRAL) {</b>
+<b class="fc">&nbsp;            if (this.effectiveLevelInt &gt; level.levelInt) {</b>
+<b class="fc">&nbsp;                return;</b>
+<b class="pc">&nbsp;            }</b>
+&nbsp;        } else if (decision == FilterReply.DENY) {
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="pc">&nbsp;        this.buildLoggingEventAndAppend(localFQCN, marker, level, msg, new Object[]{param}, t);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private void filterAndLog_2(String localFQCN, Marker marker, Level level, String msg, Object param1, Object param2, Throwable t) {
+&nbsp;        FilterReply decision = this.loggerContext.getTurboFilterChainDecision_2(marker, this, level, msg, param1, param2, t);
+&nbsp;        if (decision == FilterReply.NEUTRAL) {
+<b class="fc">&nbsp;            if (this.effectiveLevelInt &gt; level.levelInt) {</b>
+<b class="fc">&nbsp;                return;</b>
+&nbsp;            }
+<b class="fc">&nbsp;        } else if (decision == FilterReply.DENY) {</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+&nbsp;        this.buildLoggingEventAndAppend(localFQCN, marker, level, msg, new Object[]{param1, param2}, t);
+&nbsp;    }
+&nbsp;
+&nbsp;    private void buildLoggingEventAndAppend(String localFQCN, Marker marker, Level level, String msg, Object[] params, Throwable t) {
+<b class="nc">&nbsp;        LoggingEvent le = new LoggingEvent(localFQCN, this, level, msg, t, params);</b>
+<b class="nc">&nbsp;        le.addMarker(marker);</b>
+&nbsp;        this.callAppenders(le);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void trace(String msg) {
+&nbsp;        this.filterAndLog_0_Or3Plus(FQCN, (Marker)null, Level.TRACE, msg, (Object[])null, (Throwable)null);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void trace(String format, Object arg) {
+&nbsp;        this.filterAndLog_1(FQCN, (Marker)null, Level.TRACE, format, arg, (Throwable)null);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void trace(String format, Object arg1, Object arg2) {
+&nbsp;        this.filterAndLog_2(FQCN, (Marker)null, Level.TRACE, format, arg1, arg2, (Throwable)null);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void trace(String format, Object... argArray) {
+&nbsp;        this.filterAndLog_0_Or3Plus(FQCN, (Marker)null, Level.TRACE, format, argArray, (Throwable)null);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void trace(String msg, Throwable t) {</b>
+<b class="nc">&nbsp;        this.filterAndLog_0_Or3Plus(FQCN, (Marker)null, Level.TRACE, msg, (Object[])null, t);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void trace(Marker marker, String msg) {
+&nbsp;        this.filterAndLog_0_Or3Plus(FQCN, marker, Level.TRACE, msg, (Object[])null, (Throwable)null);
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public void trace(Marker marker, String format, Object arg) {
+&nbsp;        this.filterAndLog_1(FQCN, marker, Level.TRACE, format, arg, (Throwable)null);
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public void trace(Marker marker, String format, Object arg1, Object arg2) {
+<b class="nc">&nbsp;        this.filterAndLog_2(FQCN, marker, Level.TRACE, format, arg1, arg2, (Throwable)null);</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void trace(Marker marker, String format, Object... argArray) {</b>
+<b class="nc">&nbsp;        this.filterAndLog_0_Or3Plus(FQCN, marker, Level.TRACE, format, argArray, (Throwable)null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void trace(Marker marker, String msg, Throwable t) {
+<b class="fc">&nbsp;        this.filterAndLog_0_Or3Plus(FQCN, marker, Level.TRACE, msg, (Object[])null, t);</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    public boolean isDebugEnabled() {
+<b class="fc">&nbsp;        return this.isDebugEnabled((Marker)null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isDebugEnabled(Marker marker) {
+&nbsp;        FilterReply decision = this.callTurboFilters(marker, Level.DEBUG);
+<b class="fc">&nbsp;        if (decision == FilterReply.NEUTRAL) {</b>
+<b class="fc">&nbsp;            return this.effectiveLevelInt &lt;= 10000;</b>
+<b class="fc">&nbsp;        } else if (decision == FilterReply.DENY) {</b>
+<b class="fc">&nbsp;            return false;</b>
+&nbsp;        } else if (decision == FilterReply.ACCEPT) {
+&nbsp;            return true;
+<b class="fc">&nbsp;        } else {</b>
+<b class="fc">&nbsp;            throw new IllegalStateException(&quot;Unknown FilterReply value: &quot; + String.valueOf(decision));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void debug(String msg) {
+&nbsp;        this.filterAndLog_0_Or3Plus(FQCN, (Marker)null, Level.DEBUG, msg, (Object[])null, (Throwable)null);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void debug(String format, Object arg) {
+&nbsp;        this.filterAndLog_1(FQCN, (Marker)null, Level.DEBUG, format, arg, (Throwable)null);
+<b class="fc">&nbsp;    }</b>
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;    public void debug(String format, Object arg1, Object arg2) {</b>
+<b class="nc">&nbsp;        this.filterAndLog_2(FQCN, (Marker)null, Level.DEBUG, format, arg1, arg2, (Throwable)null);</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public void debug(String format, Object... argArray) {</b>
+<b class="fc">&nbsp;        this.filterAndLog_0_Or3Plus(FQCN, (Marker)null, Level.DEBUG, format, argArray, (Throwable)null);</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public void debug(String msg, Throwable t) {</b>
+<b class="fc">&nbsp;        this.filterAndLog_0_Or3Plus(FQCN, (Marker)null, Level.DEBUG, msg, (Object[])null, t);</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    public void debug(Marker marker, String msg) {
+&nbsp;        this.filterAndLog_0_Or3Plus(FQCN, marker, Level.DEBUG, msg, (Object[])null, (Throwable)null);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void debug(Marker marker, String format, Object arg) {
+&nbsp;        this.filterAndLog_1(FQCN, marker, Level.DEBUG, format, arg, (Throwable)null);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void debug(Marker marker, String format, Object arg1, Object arg2) {
+&nbsp;        this.filterAndLog_2(FQCN, marker, Level.DEBUG, format, arg1, arg2, (Throwable)null);
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public void debug(Marker marker, String format, Object... argArray) {
+&nbsp;        this.filterAndLog_0_Or3Plus(FQCN, marker, Level.DEBUG, format, argArray, (Throwable)null);
+<b class="pc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    public void debug(Marker marker, String msg, Throwable t) {
+&nbsp;        this.filterAndLog_0_Or3Plus(FQCN, marker, Level.DEBUG, msg, (Object[])null, t);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void error(String msg) {
+&nbsp;        this.filterAndLog_0_Or3Plus(FQCN, (Marker)null, Level.ERROR, msg, (Object[])null, (Throwable)null);
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void error(String format, Object arg) {
+&nbsp;        this.filterAndLog_1(FQCN, (Marker)null, Level.ERROR, format, arg, (Throwable)null);
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public void error(String format, Object arg1, Object arg2) {</b>
+&nbsp;        this.filterAndLog_2(FQCN, (Marker)null, Level.ERROR, format, arg1, arg2, (Throwable)null);
+<b class="pc">&nbsp;    }</b>
+<b class="pc">&nbsp;</b>
+&nbsp;    public void error(String format, Object... argArray) {
+&nbsp;        this.filterAndLog_0_Or3Plus(FQCN, (Marker)null, Level.ERROR, format, argArray, (Throwable)null);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void error(String msg, Throwable t) {
+&nbsp;        this.filterAndLog_0_Or3Plus(FQCN, (Marker)null, Level.ERROR, msg, (Object[])null, t);
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void error(Marker marker, String msg) {
+&nbsp;        this.filterAndLog_0_Or3Plus(FQCN, marker, Level.ERROR, msg, (Object[])null, (Throwable)null);
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public void error(Marker marker, String format, Object arg) {</b>
+&nbsp;        this.filterAndLog_1(FQCN, marker, Level.ERROR, format, arg, (Throwable)null);
+&nbsp;    }
+<b class="pc">&nbsp;</b>
+<b class="pc">&nbsp;    public void error(Marker marker, String format, Object arg1, Object arg2) {</b>
+&nbsp;        this.filterAndLog_2(FQCN, marker, Level.ERROR, format, arg1, arg2, (Throwable)null);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void error(Marker marker, String format, Object... argArray) {
+&nbsp;        this.filterAndLog_0_Or3Plus(FQCN, marker, Level.ERROR, format, argArray, (Throwable)null);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void error(Marker marker, String msg, Throwable t) {
+&nbsp;        this.filterAndLog_0_Or3Plus(FQCN, marker, Level.ERROR, msg, (Object[])null, t);
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public boolean isInfoEnabled() {</b>
+<b class="fc">&nbsp;        return this.isInfoEnabled((Marker)null);</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public boolean isInfoEnabled(Marker marker) {
+&nbsp;        FilterReply decision = this.callTurboFilters(marker, Level.INFO);
+<b class="nc">&nbsp;        if (decision == FilterReply.NEUTRAL) {</b>
+&nbsp;            return this.effectiveLevelInt &lt;= 20000;
+&nbsp;        } else if (decision == FilterReply.DENY) {
+&nbsp;            return false;
+<b class="nc">&nbsp;        } else if (decision == FilterReply.ACCEPT) {</b>
+&nbsp;            return true;
+&nbsp;        } else {
+&nbsp;            throw new IllegalStateException(&quot;Unknown FilterReply value: &quot; + String.valueOf(decision));
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void info(String msg) {
+<b class="nc">&nbsp;        this.filterAndLog_0_Or3Plus(FQCN, (Marker)null, Level.INFO, msg, (Object[])null, (Throwable)null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void info(String format, Object arg) {
+<b class="nc">&nbsp;        this.filterAndLog_1(FQCN, (Marker)null, Level.INFO, format, arg, (Throwable)null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void info(String format, Object arg1, Object arg2) {
+<b class="nc">&nbsp;        this.filterAndLog_2(FQCN, (Marker)null, Level.INFO, format, arg1, arg2, (Throwable)null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void info(String format, Object... argArray) {
+<b class="nc">&nbsp;        this.filterAndLog_0_Or3Plus(FQCN, (Marker)null, Level.INFO, format, argArray, (Throwable)null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void info(String msg, Throwable t) {
+<b class="nc">&nbsp;        this.filterAndLog_0_Or3Plus(FQCN, (Marker)null, Level.INFO, msg, (Object[])null, t);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void info(Marker marker, String msg) {
+<b class="nc">&nbsp;        this.filterAndLog_0_Or3Plus(FQCN, marker, Level.INFO, msg, (Object[])null, (Throwable)null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void info(Marker marker, String format, Object arg) {
+<b class="nc">&nbsp;        this.filterAndLog_1(FQCN, marker, Level.INFO, format, arg, (Throwable)null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void info(Marker marker, String format, Object arg1, Object arg2) {
+<b class="fc">&nbsp;        this.filterAndLog_2(FQCN, marker, Level.INFO, format, arg1, arg2, (Throwable)null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void info(Marker marker, String format, Object... argArray) {
+<b class="fc">&nbsp;        this.filterAndLog_0_Or3Plus(FQCN, marker, Level.INFO, format, argArray, (Throwable)null);</b>
+<b class="fc">&nbsp;    }</b>
+<b class="pc">&nbsp;</b>
+<b class="pc">&nbsp;    public void info(Marker marker, String msg, Throwable t) {</b>
+<b class="fc">&nbsp;        this.filterAndLog_0_Or3Plus(FQCN, marker, Level.INFO, msg, (Object[])null, t);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public boolean isTraceEnabled() {
+<b class="nc">&nbsp;        return this.isTraceEnabled((Marker)null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isTraceEnabled(Marker marker) {
+&nbsp;        FilterReply decision = this.callTurboFilters(marker, Level.TRACE);
+<b class="nc">&nbsp;        if (decision == FilterReply.NEUTRAL) {</b>
+&nbsp;            return this.effectiveLevelInt &lt;= 5000;
+&nbsp;        } else if (decision == FilterReply.DENY) {
+&nbsp;            return false;
+<b class="nc">&nbsp;        } else if (decision == FilterReply.ACCEPT) {</b>
+&nbsp;            return true;
+&nbsp;        } else {
+&nbsp;            throw new IllegalStateException(&quot;Unknown FilterReply value: &quot; + String.valueOf(decision));
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isErrorEnabled() {
+<b class="nc">&nbsp;        return this.isErrorEnabled((Marker)null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isErrorEnabled(Marker marker) {
+<b class="nc">&nbsp;        FilterReply decision = this.callTurboFilters(marker, Level.ERROR);</b>
+&nbsp;        if (decision == FilterReply.NEUTRAL) {
+&nbsp;            return this.effectiveLevelInt &lt;= 40000;
+&nbsp;        } else if (decision == FilterReply.DENY) {
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        } else if (decision == FilterReply.ACCEPT) {
+&nbsp;            return true;
+&nbsp;        } else {
+<b class="nc">&nbsp;            throw new IllegalStateException(&quot;Unknown FilterReply value: &quot; + String.valueOf(decision));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public boolean isWarnEnabled() {</b>
+&nbsp;        return this.isWarnEnabled((Marker)null);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public boolean isWarnEnabled(Marker marker) {</b>
+&nbsp;        FilterReply decision = this.callTurboFilters(marker, Level.WARN);
+&nbsp;        if (decision == FilterReply.NEUTRAL) {
+&nbsp;            return this.effectiveLevelInt &lt;= 30000;
+<b class="nc">&nbsp;        } else if (decision == FilterReply.DENY) {</b>
+&nbsp;            return false;
+&nbsp;        } else if (decision == FilterReply.ACCEPT) {
+&nbsp;            return true;
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            throw new IllegalStateException(&quot;Unknown FilterReply value: &quot; + String.valueOf(decision));
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public boolean isEnabledFor(Marker marker, Level level) {
+&nbsp;        FilterReply decision = this.callTurboFilters(marker, level);
+&nbsp;        if (decision == FilterReply.NEUTRAL) {
+<b class="nc">&nbsp;            return this.effectiveLevelInt &lt;= level.levelInt;</b>
+&nbsp;        } else if (decision == FilterReply.DENY) {
+&nbsp;            return false;
+&nbsp;        } else if (decision == FilterReply.ACCEPT) {
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        } else {
+&nbsp;            throw new IllegalStateException(&quot;Unknown FilterReply value: &quot; + String.valueOf(decision));
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public boolean isEnabledFor(Level level) {
+&nbsp;        return this.isEnabledFor((Marker)null, level);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void warn(String msg) {
+&nbsp;        this.filterAndLog_0_Or3Plus(FQCN, (Marker)null, Level.WARN, msg, (Object[])null, (Throwable)null);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void warn(String msg, Throwable t) {
+&nbsp;        this.filterAndLog_0_Or3Plus(FQCN, (Marker)null, Level.WARN, msg, (Object[])null, t);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void warn(String format, Object arg) {
+&nbsp;        this.filterAndLog_1(FQCN, (Marker)null, Level.WARN, format, arg, (Throwable)null);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void warn(String format, Object arg1, Object arg2) {
+&nbsp;        this.filterAndLog_2(FQCN, (Marker)null, Level.WARN, format, arg1, arg2, (Throwable)null);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void warn(String format, Object... argArray) {
+&nbsp;        this.filterAndLog_0_Or3Plus(FQCN, (Marker)null, Level.WARN, format, argArray, (Throwable)null);
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void warn(Marker marker, String msg) {
+&nbsp;        this.filterAndLog_0_Or3Plus(FQCN, marker, Level.WARN, msg, (Object[])null, (Throwable)null);
+<b class="fc">&nbsp;    }</b>
+<b class="pc">&nbsp;</b>
+<b class="fc">&nbsp;    public void warn(Marker marker, String format, Object arg) {</b>
+<b class="nc">&nbsp;        this.filterAndLog_1(FQCN, marker, Level.WARN, format, arg, (Throwable)null);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void warn(Marker marker, String format, Object... argArray) {</b>
+&nbsp;        this.filterAndLog_0_Or3Plus(FQCN, marker, Level.WARN, format, argArray, (Throwable)null);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void warn(Marker marker, String format, Object arg1, Object arg2) {
+&nbsp;        this.filterAndLog_2(FQCN, marker, Level.WARN, format, arg1, arg2, (Throwable)null);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void warn(Marker marker, String msg, Throwable t) {
+&nbsp;        this.filterAndLog_0_Or3Plus(FQCN, marker, Level.WARN, msg, (Object[])null, t);
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public boolean isAdditive() {
+&nbsp;        return this.additive;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void setAdditive(boolean additive) {
+&nbsp;        this.additive = additive;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public String toString() {
+&nbsp;        return &quot;Logger[&quot; + this.name + &quot;]&quot;;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private FilterReply callTurboFilters(Marker marker, Level level) {
+&nbsp;        return this.loggerContext.getTurboFilterChainDecision_0_3OrMore(marker, this, level, (String)null, (Object[])null, (Throwable)null);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public LoggerContext getLoggerContext() {
+&nbsp;        return this.loggerContext;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public LoggingEventBuilder makeLoggingEventBuilder(org.slf4j.event.Level level) {
+&nbsp;        return new DefaultLoggingEventBuilder(this, level);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void log(Marker marker, String fqcn, int levelInt, String message, Object[] argArray, Throwable t) {
+&nbsp;        Level level = Level.fromLocationAwareLoggerInteger(levelInt);
+&nbsp;        this.filterAndLog_0_Or3Plus(fqcn, marker, level, message, argArray, t);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void log(org.slf4j.event.LoggingEvent slf4jEvent) {
+&nbsp;        org.slf4j.event.Level slf4jLevel = slf4jEvent.getLevel();
+<b class="nc">&nbsp;        Level logbackLevel = Level.convertAnSLF4JLevel(slf4jLevel);</b>
+&nbsp;        String callerBoundary = slf4jEvent.getCallerBoundary();
+&nbsp;        if (callerBoundary == null) {
+&nbsp;            callerBoundary = FQCN;
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        LoggingEvent lle = new LoggingEvent(callerBoundary, this, logbackLevel, slf4jEvent.getMessage(), slf4jEvent.getThrowable(), slf4jEvent.getArgumentArray());
+&nbsp;        List&lt;Marker&gt; markers = slf4jEvent.getMarkers();
+<b class="fc">&nbsp;        if (markers != null) {</b>
+<b class="fc">&nbsp;            markers.forEach((m) -&gt; lle.addMarker(m));</b>
+<b class="pc">&nbsp;        }</b>
+<b class="pc">&nbsp;</b>
+<b class="fc">&nbsp;        lle.setKeyValuePairs(slf4jEvent.getKeyValuePairs());</b>
+<b class="nc">&nbsp;        this.callAppenders(lle);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    protected Object readResolve() throws ObjectStreamException {</b>
+&nbsp;        return LoggerFactory.getLogger(this.getName());
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
+</div>
+</body>
+</html>

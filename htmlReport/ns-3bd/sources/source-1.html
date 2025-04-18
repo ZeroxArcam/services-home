@@ -1,0 +1,409 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > NamedParameterJdbcTemplate</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.jdbc.core.namedparam</a>
+</div>
+
+<h1>Coverage Summary for Class: NamedParameterJdbcTemplate (org.springframework.jdbc.core.namedparam)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">NamedParameterJdbcTemplate</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/45)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/85)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.jdbc.core.namedparam;
+&nbsp;
+&nbsp;import java.sql.PreparedStatement;
+&nbsp;import java.sql.SQLException;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.function.Consumer;
+&nbsp;import java.util.stream.Stream;
+&nbsp;import javax.sql.DataSource;
+&nbsp;import org.springframework.dao.DataAccessException;
+&nbsp;import org.springframework.dao.support.DataAccessUtils;
+&nbsp;import org.springframework.jdbc.core.BatchPreparedStatementSetter;
+&nbsp;import org.springframework.jdbc.core.ColumnMapRowMapper;
+&nbsp;import org.springframework.jdbc.core.JdbcOperations;
+&nbsp;import org.springframework.jdbc.core.JdbcTemplate;
+&nbsp;import org.springframework.jdbc.core.PreparedStatementCallback;
+&nbsp;import org.springframework.jdbc.core.PreparedStatementCreator;
+&nbsp;import org.springframework.jdbc.core.PreparedStatementCreatorFactory;
+&nbsp;import org.springframework.jdbc.core.ResultSetExtractor;
+&nbsp;import org.springframework.jdbc.core.RowCallbackHandler;
+&nbsp;import org.springframework.jdbc.core.RowMapper;
+&nbsp;import org.springframework.jdbc.core.SingleColumnRowMapper;
+&nbsp;import org.springframework.jdbc.core.SqlParameter;
+&nbsp;import org.springframework.jdbc.core.SqlRowSetResultSetExtractor;
+&nbsp;import org.springframework.jdbc.support.KeyHolder;
+&nbsp;import org.springframework.jdbc.support.rowset.SqlRowSet;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.ConcurrentLruCache;
+&nbsp;
+&nbsp;public class NamedParameterJdbcTemplate implements NamedParameterJdbcOperations {
+&nbsp;    public static final int DEFAULT_CACHE_LIMIT = 256;
+&nbsp;    private final JdbcOperations classicJdbcTemplate;
+&nbsp;    private volatile ConcurrentLruCache&lt;String, ParsedSql&gt; parsedSqlCache = new ConcurrentLruCache(256, NamedParameterUtils::parseSqlStatement);
+&nbsp;
+&nbsp;    public NamedParameterJdbcTemplate(DataSource dataSource) {
+&nbsp;        Assert.notNull(dataSource, &quot;DataSource must not be null&quot;);
+&nbsp;        this.classicJdbcTemplate = new JdbcTemplate(dataSource);
+&nbsp;    }
+&nbsp;
+&nbsp;    public NamedParameterJdbcTemplate(JdbcOperations classicJdbcTemplate) {
+&nbsp;        Assert.notNull(classicJdbcTemplate, &quot;JdbcTemplate must not be null&quot;);
+&nbsp;        this.classicJdbcTemplate = classicJdbcTemplate;
+&nbsp;    }
+&nbsp;
+&nbsp;    public JdbcOperations getJdbcOperations() {
+&nbsp;        return this.classicJdbcTemplate;
+&nbsp;    }
+&nbsp;
+&nbsp;    public JdbcTemplate getJdbcTemplate() {
+&nbsp;        Assert.state(this.classicJdbcTemplate instanceof JdbcTemplate, &quot;No JdbcTemplate available&quot;);
+&nbsp;        return (JdbcTemplate)this.classicJdbcTemplate;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setCacheLimit(int cacheLimit) {
+&nbsp;        this.parsedSqlCache = new ConcurrentLruCache(cacheLimit, NamedParameterUtils::parseSqlStatement);
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getCacheLimit() {
+&nbsp;        return this.parsedSqlCache.capacity();
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public &lt;T&gt; T execute(String sql, SqlParameterSource paramSource, PreparedStatementCallback&lt;T&gt; action) throws DataAccessException {
+&nbsp;        return (T)this.getJdbcOperations().execute(this.getPreparedStatementCreator(sql, paramSource), action);
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public &lt;T&gt; T execute(String sql, Map&lt;String, ?&gt; paramMap, PreparedStatementCallback&lt;T&gt; action) throws DataAccessException {
+&nbsp;        return (T)this.execute(sql, new MapSqlParameterSource(paramMap), action);
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public &lt;T&gt; T execute(String sql, PreparedStatementCallback&lt;T&gt; action) throws DataAccessException {
+&nbsp;        return (T)this.execute(sql, EmptySqlParameterSource.INSTANCE, action);
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public &lt;T&gt; T query(String sql, SqlParameterSource paramSource, ResultSetExtractor&lt;T&gt; rse) throws DataAccessException {
+&nbsp;        return (T)this.getJdbcOperations().query(this.getPreparedStatementCreator(sql, paramSource), rse);
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+<b class="nc">&nbsp;    public &lt;T&gt; T query(String sql, Map&lt;String, ?&gt; paramMap, ResultSetExtractor&lt;T&gt; rse) throws DataAccessException {</b>
+&nbsp;        return (T)this.query(sql, new MapSqlParameterSource(paramMap), rse);
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public &lt;T&gt; T query(String sql, ResultSetExtractor&lt;T&gt; rse) throws DataAccessException {
+&nbsp;        return (T)this.query(sql, EmptySqlParameterSource.INSTANCE, rse);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void query(String sql, SqlParameterSource paramSource, RowCallbackHandler rch) throws DataAccessException {</b>
+<b class="nc">&nbsp;        this.getJdbcOperations().query(this.getPreparedStatementCreator(sql, paramSource), rch);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void query(String sql, Map&lt;String, ?&gt; paramMap, RowCallbackHandler rch) throws DataAccessException {
+&nbsp;        this.query(sql, new MapSqlParameterSource(paramMap), rch);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void query(String sql, RowCallbackHandler rch) throws DataAccessException {
+&nbsp;        this.query(sql, EmptySqlParameterSource.INSTANCE, rch);
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public &lt;T&gt; List&lt;T&gt; query(String sql, SqlParameterSource paramSource, RowMapper&lt;T&gt; rowMapper) throws DataAccessException {</b>
+&nbsp;        return this.getJdbcOperations().query(this.getPreparedStatementCreator(sql, paramSource), rowMapper);
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;T&gt; List&lt;T&gt; query(String sql, Map&lt;String, ?&gt; paramMap, RowMapper&lt;T&gt; rowMapper) throws DataAccessException {
+&nbsp;        return this.query(sql, new MapSqlParameterSource(paramMap), rowMapper);
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;T&gt; List&lt;T&gt; query(String sql, RowMapper&lt;T&gt; rowMapper) throws DataAccessException {
+&nbsp;        return this.query(sql, EmptySqlParameterSource.INSTANCE, rowMapper);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public &lt;T&gt; Stream&lt;T&gt; queryForStream(String sql, SqlParameterSource paramSource, RowMapper&lt;T&gt; rowMapper) throws DataAccessException {
+&nbsp;        return this.getJdbcOperations().queryForStream(this.getPreparedStatementCreator(sql, paramSource), rowMapper);
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;T&gt; Stream&lt;T&gt; queryForStream(String sql, Map&lt;String, ?&gt; paramMap, RowMapper&lt;T&gt; rowMapper) throws DataAccessException {
+&nbsp;        return this.queryForStream(sql, new MapSqlParameterSource(paramMap), rowMapper);
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+<b class="nc">&nbsp;    public &lt;T&gt; T queryForObject(String sql, SqlParameterSource paramSource, RowMapper&lt;T&gt; rowMapper) throws DataAccessException {</b>
+<b class="nc">&nbsp;        List&lt;T&gt; results = this.getJdbcOperations().query(this.getPreparedStatementCreator(sql, paramSource), rowMapper);</b>
+&nbsp;        return (T)DataAccessUtils.nullableSingleResult(results);
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public &lt;T&gt; T queryForObject(String sql, Map&lt;String, ?&gt; paramMap, RowMapper&lt;T&gt; rowMapper) throws DataAccessException {
+&nbsp;        return (T)this.queryForObject(sql, new MapSqlParameterSource(paramMap), rowMapper);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    @Nullable
+&nbsp;    public &lt;T&gt; T queryForObject(String sql, SqlParameterSource paramSource, Class&lt;T&gt; requiredType) throws DataAccessException {
+&nbsp;        return (T)this.queryForObject(sql, paramSource, new SingleColumnRowMapper(requiredType));
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+<b class="nc">&nbsp;    public &lt;T&gt; T queryForObject(String sql, Map&lt;String, ?&gt; paramMap, Class&lt;T&gt; requiredType) throws DataAccessException {</b>
+&nbsp;        return (T)this.queryForObject(sql, (Map)paramMap, new SingleColumnRowMapper(requiredType));
+&nbsp;    }
+&nbsp;
+&nbsp;    public Map&lt;String, Object&gt; queryForMap(String sql, SqlParameterSource paramSource) throws DataAccessException {
+&nbsp;        Map&lt;String, Object&gt; result = (Map)this.queryForObject(sql, paramSource, new ColumnMapRowMapper());
+&nbsp;        Assert.state(result != null, &quot;No result map&quot;);
+&nbsp;        return result;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public Map&lt;String, Object&gt; queryForMap(String sql, Map&lt;String, ?&gt; paramMap) throws DataAccessException {
+&nbsp;        Map&lt;String, Object&gt; result = (Map)this.queryForObject(sql, (Map)paramMap, new ColumnMapRowMapper());
+&nbsp;        Assert.state(result != null, &quot;No result map&quot;);
+&nbsp;        return result;
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;T&gt; List&lt;T&gt; queryForList(String sql, SqlParameterSource paramSource, Class&lt;T&gt; elementType) throws DataAccessException {
+<b class="nc">&nbsp;        return this.query(sql, paramSource, new SingleColumnRowMapper(elementType));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;T&gt; List&lt;T&gt; queryForList(String sql, Map&lt;String, ?&gt; paramMap, Class&lt;T&gt; elementType) throws DataAccessException {
+&nbsp;        return this.queryForList(sql, new MapSqlParameterSource(paramMap), elementType);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public List&lt;Map&lt;String, Object&gt;&gt; queryForList(String sql, SqlParameterSource paramSource) throws DataAccessException {
+&nbsp;        return this.query(sql, paramSource, new ColumnMapRowMapper());
+&nbsp;    }
+&nbsp;
+&nbsp;    public List&lt;Map&lt;String, Object&gt;&gt; queryForList(String sql, Map&lt;String, ?&gt; paramMap) throws DataAccessException {
+&nbsp;        return this.queryForList(sql, new MapSqlParameterSource(paramMap));
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public SqlRowSet queryForRowSet(String sql, SqlParameterSource paramSource) throws DataAccessException {
+&nbsp;        SqlRowSet result = (SqlRowSet)this.getJdbcOperations().query(this.getPreparedStatementCreator(sql, paramSource), new SqlRowSetResultSetExtractor());
+&nbsp;        Assert.state(result != null, &quot;No result&quot;);
+&nbsp;        return result;
+&nbsp;    }
+&nbsp;
+&nbsp;    public SqlRowSet queryForRowSet(String sql, Map&lt;String, ?&gt; paramMap) throws DataAccessException {
+<b class="nc">&nbsp;        return this.queryForRowSet(sql, new MapSqlParameterSource(paramMap));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int update(String sql, SqlParameterSource paramSource) throws DataAccessException {
+&nbsp;        return this.getJdbcOperations().update(this.getPreparedStatementCreator(sql, paramSource));
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public int update(String sql, Map&lt;String, ?&gt; paramMap) throws DataAccessException {
+&nbsp;        return this.update(sql, new MapSqlParameterSource(paramMap));
+&nbsp;    }
+&nbsp;
+&nbsp;    public int update(String sql, SqlParameterSource paramSource, KeyHolder generatedKeyHolder) throws DataAccessException {
+&nbsp;        return this.update(sql, paramSource, generatedKeyHolder, (String[])null);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public int update(String sql, SqlParameterSource paramSource, KeyHolder generatedKeyHolder, @Nullable String[] keyColumnNames) throws DataAccessException {
+&nbsp;        PreparedStatementCreator psc = this.getPreparedStatementCreator(sql, paramSource, (pscf) -&gt; {
+&nbsp;            if (keyColumnNames != null) {
+&nbsp;                pscf.setGeneratedKeysColumnNames(keyColumnNames);
+&nbsp;            } else {
+<b class="nc">&nbsp;                pscf.setReturnGeneratedKeys(true);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;        });
+&nbsp;        return this.getJdbcOperations().update(psc, generatedKeyHolder);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public int[] batchUpdate(String sql, final SqlParameterSource[] batchArgs) {
+&nbsp;        if (batchArgs.length == 0) {
+&nbsp;            return new int[0];
+&nbsp;        } else {
+&nbsp;            final ParsedSql parsedSql = this.getParsedSql(sql);
+<b class="nc">&nbsp;            final PreparedStatementCreatorFactory pscf = this.getPreparedStatementCreatorFactory(parsedSql, batchArgs[0]);</b>
+&nbsp;            return this.getJdbcOperations().batchUpdate(pscf.getSql(), new BatchPreparedStatementSetter() {
+&nbsp;                public void setValues(PreparedStatement ps, int i) throws SQLException {
+&nbsp;                    Object[] values = NamedParameterUtils.buildValueArray(parsedSql, batchArgs[i], (List)null);
+&nbsp;                    pscf.newPreparedStatementSetter(values).setValues(ps);
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                public int getBatchSize() {</b>
+&nbsp;                    return batchArgs.length;
+&nbsp;                }
+&nbsp;            });
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public int[] batchUpdate(String sql, Map&lt;String, ?&gt;[] batchValues) {
+&nbsp;        return this.batchUpdate(sql, SqlParameterSourceUtils.createBatch(batchValues));
+&nbsp;    }
+&nbsp;
+&nbsp;    public int[] batchUpdate(String sql, SqlParameterSource[] batchArgs, KeyHolder generatedKeyHolder) {
+<b class="nc">&nbsp;        return this.batchUpdate(sql, batchArgs, generatedKeyHolder, (String[])null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int[] batchUpdate(String sql, final SqlParameterSource[] batchArgs, KeyHolder generatedKeyHolder, @Nullable String[] keyColumnNames) {
+&nbsp;        if (batchArgs.length == 0) {
+&nbsp;            return new int[0];
+&nbsp;        } else {
+<b class="nc">&nbsp;            final ParsedSql parsedSql = this.getParsedSql(sql);</b>
+&nbsp;            SqlParameterSource paramSource = batchArgs[0];
+&nbsp;            final PreparedStatementCreatorFactory pscf = this.getPreparedStatementCreatorFactory(parsedSql, paramSource);
+&nbsp;            if (keyColumnNames != null) {
+&nbsp;                pscf.setGeneratedKeysColumnNames(keyColumnNames);
+&nbsp;            } else {
+&nbsp;                pscf.setReturnGeneratedKeys(true);
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            Object[] params = NamedParameterUtils.buildValueArray(parsedSql, paramSource, (List)null);</b>
+&nbsp;            PreparedStatementCreator psc = pscf.newPreparedStatementCreator(params);
+&nbsp;            return this.getJdbcOperations().batchUpdate(psc, new BatchPreparedStatementSetter() {
+&nbsp;                public void setValues(PreparedStatement ps, int i) throws SQLException {
+&nbsp;                    Object[] values = NamedParameterUtils.buildValueArray(parsedSql, batchArgs[i], (List)null);
+&nbsp;                    pscf.newPreparedStatementSetter(values).setValues(ps);
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                public int getBatchSize() {</b>
+&nbsp;                    return batchArgs.length;
+&nbsp;                }
+&nbsp;            }, generatedKeyHolder);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected PreparedStatementCreator getPreparedStatementCreator(String sql, SqlParameterSource paramSource) {
+<b class="nc">&nbsp;        return this.getPreparedStatementCreator(sql, paramSource, (Consumer)null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected PreparedStatementCreator getPreparedStatementCreator(String sql, SqlParameterSource paramSource, @Nullable Consumer&lt;PreparedStatementCreatorFactory&gt; customizer) {
+&nbsp;        ParsedSql parsedSql = this.getParsedSql(sql);
+&nbsp;        PreparedStatementCreatorFactory pscf = this.getPreparedStatementCreatorFactory(parsedSql, paramSource);
+&nbsp;        if (customizer != null) {
+&nbsp;            customizer.accept(pscf);
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        Object[] params = NamedParameterUtils.buildValueArray(parsedSql, paramSource, (List)null);
+&nbsp;        return pscf.newPreparedStatementCreator(params);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected ParsedSql getParsedSql(String sql) {</b>
+<b class="nc">&nbsp;        Assert.notNull(sql, &quot;SQL must not be null&quot;);</b>
+&nbsp;        return (ParsedSql)this.parsedSqlCache.get(sql);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected PreparedStatementCreatorFactory getPreparedStatementCreatorFactory(ParsedSql parsedSql, SqlParameterSource paramSource) {
+<b class="nc">&nbsp;        String sqlToUse = NamedParameterUtils.substituteNamedParameters(parsedSql, paramSource);</b>
+<b class="nc">&nbsp;        List&lt;SqlParameter&gt; declaredParameters = NamedParameterUtils.buildSqlParameterList(parsedSql, paramSource);</b>
+<b class="nc">&nbsp;        return new PreparedStatementCreatorFactory(sqlToUse, declaredParameters);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
+</div>
+</body>
+</html>

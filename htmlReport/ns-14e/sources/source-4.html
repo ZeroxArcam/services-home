@@ -1,0 +1,295 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > IdentifierHelperBuilder</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.engine.jdbc.env.spi</a>
+</div>
+
+<h1>Coverage Summary for Class: IdentifierHelperBuilder (org.hibernate.engine.jdbc.env.spi)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">IdentifierHelperBuilder</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    54.2%
+  </span>
+  <span class="absValue">
+    (13/24)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    14.3%
+  </span>
+  <span class="absValue">
+    (4/28)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    37.9%
+  </span>
+  <span class="absValue">
+    (25/66)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.engine.jdbc.env.spi;
+&nbsp;
+&nbsp;import java.sql.DatabaseMetaData;
+&nbsp;import java.sql.SQLException;
+&nbsp;import java.util.Arrays;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.TreeSet;
+&nbsp;import org.hibernate.engine.jdbc.env.internal.NormalizingIdentifierHelperImpl;
+&nbsp;import org.hibernate.internal.util.StringHelper;
+&nbsp;import org.hibernate.internal.util.collections.ArrayHelper;
+&nbsp;import org.jboss.logging.Logger;
+&nbsp;
+&nbsp;public class IdentifierHelperBuilder {
+&nbsp;    private static final Logger log = Logger.getLogger(IdentifierHelperBuilder.class);
+&nbsp;    private final JdbcEnvironment jdbcEnvironment;
+&nbsp;    private NameQualifierSupport nameQualifierSupport;
+&nbsp;    private final TreeSet&lt;String&gt; reservedWords;
+&nbsp;    private boolean globallyQuoteIdentifiers;
+&nbsp;    private boolean skipGlobalQuotingForColumnDefinitions;
+&nbsp;    private boolean autoQuoteKeywords;
+&nbsp;    private boolean autoQuoteInitialUnderscore;
+&nbsp;    private IdentifierCaseStrategy unquotedCaseStrategy;
+<b class="fc">&nbsp;    private IdentifierCaseStrategy quotedCaseStrategy;</b>
+&nbsp;
+&nbsp;    public static IdentifierHelperBuilder from(JdbcEnvironment jdbcEnvironment) {
+&nbsp;        return new IdentifierHelperBuilder(jdbcEnvironment);
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private IdentifierHelperBuilder(JdbcEnvironment jdbcEnvironment) {
+&nbsp;        this.nameQualifierSupport = NameQualifierSupport.BOTH;
+<b class="fc">&nbsp;        this.reservedWords = new TreeSet(String.CASE_INSENSITIVE_ORDER);</b>
+&nbsp;        this.globallyQuoteIdentifiers = false;
+<b class="fc">&nbsp;        this.skipGlobalQuotingForColumnDefinitions = false;</b>
+<b class="fc">&nbsp;        this.autoQuoteKeywords = true;</b>
+<b class="fc">&nbsp;        this.autoQuoteInitialUnderscore = false;</b>
+<b class="fc">&nbsp;        this.unquotedCaseStrategy = IdentifierCaseStrategy.UPPER;</b>
+<b class="fc">&nbsp;        this.quotedCaseStrategy = IdentifierCaseStrategy.MIXED;</b>
+<b class="fc">&nbsp;        this.jdbcEnvironment = jdbcEnvironment;</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public void applyReservedWords(DatabaseMetaData metaData) throws SQLException {</b>
+&nbsp;        if (metaData != null) {
+&nbsp;            if (this.autoQuoteKeywords) {
+<b class="fc">&nbsp;                this.reservedWords.addAll(parseKeywords(metaData.getSQLKeywords()));</b>
+<b class="fc">&nbsp;            }</b>
+&nbsp;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static List&lt;String&gt; parseKeywords(String extraKeywordsString) {
+&nbsp;        return StringHelper.parseCommaSeparatedString(extraKeywordsString);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void applyIdentifierCasing(DatabaseMetaData metaData) throws SQLException {
+&nbsp;        if (metaData != null) {
+<b class="nc">&nbsp;            int unquotedAffirmatives = ArrayHelper.countTrue(new boolean[]{metaData.storesLowerCaseIdentifiers(), metaData.storesUpperCaseIdentifiers(), metaData.storesMixedCaseIdentifiers()});</b>
+&nbsp;            if (unquotedAffirmatives == 0) {
+&nbsp;                log.debug(&quot;JDBC driver metadata reported database stores unquoted identifiers in neither upper, lower nor mixed case&quot;);
+&nbsp;            } else {
+&nbsp;                if (unquotedAffirmatives &gt; 1) {
+<b class="nc">&nbsp;                    log.debug(&quot;JDBC driver metadata reported database stores unquoted identifiers in more than one case&quot;);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                if (metaData.storesUpperCaseIdentifiers()) {
+&nbsp;                    this.unquotedCaseStrategy = IdentifierCaseStrategy.UPPER;
+&nbsp;                } else if (metaData.storesLowerCaseIdentifiers()) {
+<b class="nc">&nbsp;                    this.unquotedCaseStrategy = IdentifierCaseStrategy.LOWER;</b>
+&nbsp;                } else {
+&nbsp;                    this.unquotedCaseStrategy = IdentifierCaseStrategy.MIXED;
+&nbsp;                }
+<b class="pc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            int quotedAffirmatives = ArrayHelper.countTrue(new boolean[]{metaData.storesLowerCaseQuotedIdentifiers(), metaData.storesUpperCaseQuotedIdentifiers(), metaData.storesMixedCaseQuotedIdentifiers()});
+&nbsp;            if (quotedAffirmatives == 0) {
+<b class="nc">&nbsp;                log.debug(&quot;JDBC driver metadata reported database stores quoted identifiers in neither upper, lower nor mixed case&quot;);</b>
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                if (quotedAffirmatives &gt; 1) {</b>
+<b class="nc">&nbsp;                    log.debug(&quot;JDBC driver metadata reported database stores quoted identifiers in more than one case&quot;);</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                if (metaData.storesMixedCaseQuotedIdentifiers()) {</b>
+<b class="nc">&nbsp;                    this.quotedCaseStrategy = IdentifierCaseStrategy.MIXED;</b>
+&nbsp;                } else if (metaData.storesLowerCaseQuotedIdentifiers()) {
+&nbsp;                    this.quotedCaseStrategy = IdentifierCaseStrategy.LOWER;
+&nbsp;                } else {
+<b class="nc">&nbsp;                    this.quotedCaseStrategy = IdentifierCaseStrategy.UPPER;</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public boolean isGloballyQuoteIdentifiers() {</b>
+<b class="nc">&nbsp;        return this.globallyQuoteIdentifiers;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void setGloballyQuoteIdentifiers(boolean globallyQuoteIdentifiers) {</b>
+&nbsp;        this.globallyQuoteIdentifiers = globallyQuoteIdentifiers;
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isSkipGlobalQuotingForColumnDefinitions() {
+<b class="nc">&nbsp;        return this.skipGlobalQuotingForColumnDefinitions;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void setSkipGlobalQuotingForColumnDefinitions(boolean skipGlobalQuotingForColumnDefinitions) {</b>
+&nbsp;        this.skipGlobalQuotingForColumnDefinitions = skipGlobalQuotingForColumnDefinitions;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void setAutoQuoteKeywords(boolean autoQuoteKeywords) {</b>
+&nbsp;        this.autoQuoteKeywords = autoQuoteKeywords;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void setAutoQuoteInitialUnderscore(boolean autoQuoteInitialUnderscore) {</b>
+<b class="nc">&nbsp;        this.autoQuoteInitialUnderscore = autoQuoteInitialUnderscore;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public NameQualifierSupport getNameQualifierSupport() {</b>
+<b class="nc">&nbsp;        return this.nameQualifierSupport;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void setNameQualifierSupport(NameQualifierSupport nameQualifierSupport) {</b>
+&nbsp;        this.nameQualifierSupport = nameQualifierSupport == null ? NameQualifierSupport.BOTH : nameQualifierSupport;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public IdentifierCaseStrategy getUnquotedCaseStrategy() {
+&nbsp;        return this.unquotedCaseStrategy;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setUnquotedCaseStrategy(IdentifierCaseStrategy unquotedCaseStrategy) {
+<b class="nc">&nbsp;        this.unquotedCaseStrategy = unquotedCaseStrategy;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public IdentifierCaseStrategy getQuotedCaseStrategy() {
+<b class="fc">&nbsp;        return this.quotedCaseStrategy;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setQuotedCaseStrategy(IdentifierCaseStrategy quotedCaseStrategy) {
+<b class="nc">&nbsp;        this.quotedCaseStrategy = quotedCaseStrategy;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void clearReservedWords() {
+<b class="fc">&nbsp;        this.reservedWords.clear();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void applyReservedWords(String... words) {
+<b class="fc">&nbsp;        this.applyReservedWords((Collection)Arrays.asList(words));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void applyReservedWords(Collection&lt;String&gt; words) {
+<b class="nc">&nbsp;        if (this.autoQuoteKeywords) {</b>
+&nbsp;            this.reservedWords.addAll(words);
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void applyReservedWords(Set&lt;String&gt; words) {
+&nbsp;        this.applyReservedWords((Collection)words);
+<b class="pc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void setReservedWords(Set&lt;String&gt; words) {
+&nbsp;        this.clearReservedWords();
+<b class="nc">&nbsp;        this.applyReservedWords(words);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public IdentifierHelper build() {
+<b class="fc">&nbsp;        if (this.unquotedCaseStrategy == this.quotedCaseStrategy) {</b>
+&nbsp;            log.debugf(&quot;IdentifierCaseStrategy for both quoted and unquoted identifiers was set to the same strategy [%s]; that will likely lead to problems in schema update and validation if using quoted identifiers&quot;, this.unquotedCaseStrategy.name());
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return new NormalizingIdentifierHelperImpl(this.jdbcEnvironment, this.nameQualifierSupport, this.globallyQuoteIdentifiers, this.skipGlobalQuotingForColumnDefinitions, this.autoQuoteKeywords, this.autoQuoteInitialUnderscore, this.reservedWords, this.unquotedCaseStrategy, this.quotedCaseStrategy);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

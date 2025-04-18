@@ -1,0 +1,615 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ConnectionUrl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.mysql.cj.conf</a>
+</div>
+
+<h1>Coverage Summary for Class: ConnectionUrl (com.mysql.cj.conf)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ConnectionUrl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    5.6%
+  </span>
+  <span class="absValue">
+    (2/36)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/72)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    1.8%
+  </span>
+  <span class="absValue">
+    (3/166)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package com.mysql.cj.conf;
+&nbsp;
+&nbsp;import com.mysql.cj.Messages;
+&nbsp;import com.mysql.cj.exceptions.CJException;
+&nbsp;import com.mysql.cj.exceptions.ExceptionFactory;
+&nbsp;import com.mysql.cj.exceptions.ExceptionInterceptor;
+&nbsp;import com.mysql.cj.exceptions.InvalidConnectionAttributeException;
+&nbsp;import com.mysql.cj.exceptions.UnsupportedConnectionStringException;
+&nbsp;import com.mysql.cj.exceptions.WrongArgumentException;
+&nbsp;import com.mysql.cj.util.DnsSrv;
+&nbsp;import com.mysql.cj.util.LRUCache;
+&nbsp;import com.mysql.cj.util.StringUtils;
+&nbsp;import com.mysql.cj.util.Util;
+&nbsp;import java.io.IOException;
+&nbsp;import java.io.InputStream;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Properties;
+&nbsp;import java.util.TreeMap;
+&nbsp;import java.util.concurrent.locks.ReadWriteLock;
+&nbsp;import java.util.concurrent.locks.ReentrantReadWriteLock;
+&nbsp;import java.util.stream.Collectors;
+&nbsp;import java.util.stream.Stream;
+&nbsp;import javax.naming.NamingException;
+&nbsp;
+&nbsp;public abstract class ConnectionUrl implements DatabaseUrlContainer {
+&nbsp;    public static final String DEFAULT_HOST = &quot;localhost&quot;;
+&nbsp;    public static final int DEFAULT_PORT = 3306;
+&nbsp;    private static final LRUCache&lt;String, ConnectionUrl&gt; connectionUrlCache = new LRUCache(100);
+&nbsp;    private static final ReadWriteLock rwLock = new ReentrantReadWriteLock();
+&nbsp;    protected Type type;
+&nbsp;    protected String originalConnStr;
+&nbsp;    protected String originalDatabase;
+&nbsp;    protected List&lt;HostInfo&gt; hosts = new ArrayList();
+&nbsp;    protected Map&lt;String, String&gt; properties = new HashMap();
+&nbsp;    ConnectionPropertiesTransform propertiesTransformer;
+&nbsp;
+&nbsp;    public static ConnectionUrl getConnectionUrlInstance(String connString, Properties info) {
+&nbsp;        if (connString == null) {
+&nbsp;            throw (WrongArgumentException)ExceptionFactory.createException(WrongArgumentException.class, Messages.getString(&quot;ConnectionString.0&quot;));
+&nbsp;        } else {
+&nbsp;            String connStringCacheKey = buildConnectionStringCacheKey(connString, info);
+&nbsp;            rwLock.readLock().lock();
+&nbsp;            ConnectionUrl connectionUrl = (ConnectionUrl)connectionUrlCache.get(connStringCacheKey);
+&nbsp;            if (connectionUrl == null) {
+&nbsp;                rwLock.readLock().unlock();
+&nbsp;                rwLock.writeLock().lock();
+&nbsp;
+&nbsp;                try {
+&nbsp;                    connectionUrl = (ConnectionUrl)connectionUrlCache.get(connStringCacheKey);
+&nbsp;                    if (connectionUrl == null) {
+&nbsp;                        ConnectionUrlParser connStrParser = ConnectionUrlParser.parseConnectionString(connString);
+&nbsp;                        connectionUrl = ConnectionUrl.Type.getConnectionUrlInstance(connStrParser, info);
+&nbsp;                        connectionUrlCache.put(connStringCacheKey, connectionUrl);
+<b class="fc">&nbsp;                    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;                    rwLock.readLock().lock();
+&nbsp;                } finally {
+&nbsp;                    rwLock.writeLock().unlock();
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            rwLock.readLock().unlock();
+&nbsp;            return connectionUrl;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static String buildConnectionStringCacheKey(String connString, Properties info) {
+&nbsp;        StringBuilder sbKey = new StringBuilder(connString);
+&nbsp;        sbKey.append(&quot;§&quot;);
+&nbsp;        sbKey.append(info == null ? null : (String)info.stringPropertyNames().stream().map((k) -&gt; k + &quot;=&quot; + info.getProperty(k)).collect(Collectors.joining(&quot;, &quot;, &quot;{&quot;, &quot;}&quot;)));
+&nbsp;        return sbKey.toString();
+&nbsp;    }
+&nbsp;
+&nbsp;    public static boolean acceptsUrl(String connString) {
+&nbsp;        return ConnectionUrlParser.isConnectionStringSupported(connString);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected ConnectionUrl() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public ConnectionUrl(String origUrl) {
+&nbsp;        this.originalConnStr = origUrl;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected ConnectionUrl(ConnectionUrlParser connStrParser, Properties info) {
+&nbsp;        this.originalConnStr = connStrParser.getDatabaseUrl();
+&nbsp;        this.originalDatabase = connStrParser.getPath() == null ? &quot;&quot; : connStrParser.getPath();
+&nbsp;        this.collectProperties(connStrParser, info);
+&nbsp;        this.collectHostsInfo(connStrParser);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void collectProperties(ConnectionUrlParser connStrParser, Properties info) {
+&nbsp;        connStrParser.getProperties().entrySet().stream().forEach((e) -&gt; {
+&nbsp;            String var10000 = (String)this.properties.put(PropertyKey.normalizeCase((String)e.getKey()), e.getValue());
+&nbsp;        });
+&nbsp;        if (info != null) {
+&nbsp;            info.stringPropertyNames().stream().forEach((k) -&gt; {
+&nbsp;                String var10000 = (String)this.properties.put(PropertyKey.normalizeCase(k), info.getProperty(k));
+&nbsp;            });
+&nbsp;        }
+&nbsp;
+&nbsp;        this.setupPropertiesTransformer();
+&nbsp;        this.expandPropertiesFromConfigFiles(this.properties);
+&nbsp;        this.injectPerTypeProperties(this.properties);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void setupPropertiesTransformer() {
+&nbsp;        String propertiesTransformClassName = (String)this.properties.get(PropertyKey.propertiesTransform.getKeyName());
+&nbsp;        if (!StringUtils.isNullOrEmpty(propertiesTransformClassName)) {
+&nbsp;            try {
+&nbsp;                this.propertiesTransformer = (ConnectionPropertiesTransform)Util.getInstance(ConnectionPropertiesTransform.class, propertiesTransformClassName, (Class[])null, (Object[])null, (ExceptionInterceptor)null);
+&nbsp;            } catch (CJException e) {
+&nbsp;                throw (InvalidConnectionAttributeException)ExceptionFactory.createException(InvalidConnectionAttributeException.class, Messages.getString(&quot;ConnectionString.9&quot;), e);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void expandPropertiesFromConfigFiles(Map&lt;String, String&gt; props) {
+&nbsp;        String configFiles = (String)props.get(PropertyKey.useConfigs.getKeyName());
+&nbsp;        if (!StringUtils.isNullOrEmpty(configFiles)) {
+&nbsp;            Properties configProps = getPropertiesFromConfigFiles(configFiles);
+&nbsp;            configProps.stringPropertyNames().stream().map(PropertyKey::normalizeCase).filter((k) -&gt; !props.containsKey(k)).forEach((k) -&gt; {
+&nbsp;                String var10000 = (String)props.put(k, configProps.getProperty(k));
+&nbsp;            });
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Properties getPropertiesFromConfigFiles(String configFiles) {
+&nbsp;        Properties configProps = new Properties();
+&nbsp;
+&nbsp;        for(String configFile : configFiles.split(&quot;,&quot;)) {
+&nbsp;            try (InputStream configAsStream = ConnectionUrl.class.getResourceAsStream(&quot;/com/mysql/cj/configurations/&quot; + configFile + &quot;.properties&quot;)) {
+&nbsp;                if (configAsStream == null) {
+&nbsp;                    throw (InvalidConnectionAttributeException)ExceptionFactory.createException(InvalidConnectionAttributeException.class, Messages.getString(&quot;ConnectionString.10&quot;, new Object[]{configFile}));
+&nbsp;                }
+&nbsp;
+&nbsp;                configProps.load(configAsStream);
+&nbsp;            } catch (IOException e) {
+&nbsp;                throw (InvalidConnectionAttributeException)ExceptionFactory.createException(InvalidConnectionAttributeException.class, Messages.getString(&quot;ConnectionString.11&quot;, new Object[]{configFile}), e);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return configProps;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void injectPerTypeProperties(Map&lt;String, String&gt; props) {
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void replaceLegacyPropertyValues(Map&lt;String, String&gt; props) {
+&nbsp;        String zeroDateTimeBehavior = (String)props.get(PropertyKey.zeroDateTimeBehavior.getKeyName());
+&nbsp;        if (zeroDateTimeBehavior != null &amp;&amp; zeroDateTimeBehavior.equalsIgnoreCase(&quot;convertToNull&quot;)) {
+&nbsp;            props.put(PropertyKey.zeroDateTimeBehavior.getKeyName(), &quot;CONVERT_TO_NULL&quot;);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void collectHostsInfo(ConnectionUrlParser connStrParser) {
+&nbsp;        Stream var10000 = connStrParser.getHosts().stream().map(this::fixHostInfo);
+&nbsp;        List var10001 = this.hosts;
+&nbsp;        var10000.forEach(var10001::add);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected HostInfo fixHostInfo(HostInfo hi) {
+&nbsp;        Map&lt;String, String&gt; hostProps = new HashMap();
+&nbsp;        hostProps.putAll(this.properties);
+&nbsp;        hi.getHostProperties().entrySet().stream().forEach((ex) -&gt; {
+&nbsp;            String var10000 = (String)hostProps.put(PropertyKey.normalizeCase((String)ex.getKey()), ex.getValue());
+&nbsp;        });
+&nbsp;        if (!hostProps.containsKey(PropertyKey.DBNAME.getKeyName())) {
+&nbsp;            hostProps.put(PropertyKey.DBNAME.getKeyName(), this.getDatabase());
+&nbsp;        }
+&nbsp;
+&nbsp;        this.preprocessPerTypeHostProperties(hostProps);
+&nbsp;        String host = (String)hostProps.remove(PropertyKey.HOST.getKeyName());
+&nbsp;        if (!StringUtils.isNullOrEmpty(hi.getHost())) {
+&nbsp;            host = hi.getHost();
+&nbsp;        } else if (StringUtils.isNullOrEmpty(host)) {
+&nbsp;            host = this.getDefaultHost();
+&nbsp;        }
+&nbsp;
+&nbsp;        String portAsString = (String)hostProps.remove(PropertyKey.PORT.getKeyName());
+&nbsp;        int port = hi.getPort();
+&nbsp;        if (port == -1 &amp;&amp; !StringUtils.isNullOrEmpty(portAsString)) {
+&nbsp;            try {
+&nbsp;                port = Integer.parseInt(portAsString);
+&nbsp;            } catch (NumberFormatException e) {
+&nbsp;                throw (WrongArgumentException)ExceptionFactory.createException(WrongArgumentException.class, Messages.getString(&quot;ConnectionString.7&quot;, new Object[]{hostProps.get(PropertyKey.PORT.getKeyName())}), e);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        if (port == -1) {
+&nbsp;            port = this.getDefaultPort();
+&nbsp;        }
+&nbsp;
+&nbsp;        String user = (String)hostProps.remove(PropertyKey.USER.getKeyName());
+&nbsp;        if (!StringUtils.isNullOrEmpty(hi.getUser())) {
+&nbsp;            user = hi.getUser();
+&nbsp;        } else if (StringUtils.isNullOrEmpty(user)) {
+&nbsp;            user = this.getDefaultUser();
+&nbsp;        }
+&nbsp;
+&nbsp;        String password = (String)hostProps.remove(PropertyKey.PASSWORD.getKeyName());
+&nbsp;        if (hi.getPassword() != null) {
+&nbsp;            password = hi.getPassword();
+&nbsp;        } else if (StringUtils.isNullOrEmpty(password)) {
+&nbsp;            password = this.getDefaultPassword();
+&nbsp;        }
+&nbsp;
+&nbsp;        this.expandPropertiesFromConfigFiles(hostProps);
+&nbsp;        this.fixProtocolDependencies(hostProps);
+&nbsp;        this.replaceLegacyPropertyValues(hostProps);
+&nbsp;        return this.buildHostInfo(host, port, user, password, hostProps);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void preprocessPerTypeHostProperties(Map&lt;String, String&gt; hostProps) {
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getDefaultHost() {
+&nbsp;        return &quot;localhost&quot;;
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getDefaultPort() {
+&nbsp;        return 3306;
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getDefaultUser() {
+&nbsp;        return (String)this.properties.get(PropertyKey.USER.getKeyName());
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getDefaultPassword() {
+&nbsp;        return (String)this.properties.get(PropertyKey.PASSWORD.getKeyName());
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void fixProtocolDependencies(Map&lt;String, String&gt; hostProps) {
+&nbsp;        String protocol = (String)hostProps.get(PropertyKey.PROTOCOL.getKeyName());
+&nbsp;        if (!StringUtils.isNullOrEmpty(protocol) &amp;&amp; protocol.equalsIgnoreCase(&quot;PIPE&quot;) &amp;&amp; !hostProps.containsKey(PropertyKey.socketFactory.getKeyName())) {
+&nbsp;            hostProps.put(PropertyKey.socketFactory.getKeyName(), &quot;com.mysql.cj.protocol.NamedPipeSocketFactory&quot;);
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public Type getType() {
+&nbsp;        return this.type;
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getDatabaseUrl() {
+&nbsp;        return this.originalConnStr;
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getDatabase() {
+&nbsp;        return this.properties.containsKey(PropertyKey.DBNAME.getKeyName()) ? (String)this.properties.get(PropertyKey.DBNAME.getKeyName()) : this.originalDatabase;
+&nbsp;    }
+&nbsp;
+&nbsp;    public int hostsCount() {
+<b class="nc">&nbsp;        return this.hosts.size();</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public HostInfo getMainHost() {</b>
+&nbsp;        return this.hosts.isEmpty() ? null : (HostInfo)this.hosts.get(0);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public List&lt;HostInfo&gt; getHostsList() {</b>
+<b class="nc">&nbsp;        return this.getHostsList(HostsListView.ALL);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public List&lt;HostInfo&gt; getHostsList(HostsListView view) {
+&nbsp;        return Collections.unmodifiableList(this.hosts);
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public HostInfo getHostOrSpawnIsolated(String hostPortPair) {</b>
+<b class="nc">&nbsp;        return this.getHostOrSpawnIsolated(hostPortPair, this.hosts);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public HostInfo getHostOrSpawnIsolated(String hostPortPair, List&lt;HostInfo&gt; hostsList) {</b>
+&nbsp;        for(HostInfo hi : hostsList) {
+<b class="nc">&nbsp;            if (hostPortPair.equals(hi.getHostPortPair())) {</b>
+&nbsp;                return hi;
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        ConnectionUrlParser.Pair&lt;String, Integer&gt; hostAndPort = ConnectionUrlParser.parseHostPortPair(hostPortPair);
+&nbsp;        String host = (String)hostAndPort.left;
+&nbsp;        Integer port = (Integer)hostAndPort.right;
+&nbsp;        String user = this.getDefaultUser();
+&nbsp;        String password = this.getDefaultPassword();
+&nbsp;        return this.buildHostInfo(host, port, user, password, this.properties);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected HostInfo buildHostInfo(String host, int port, String user, String password, Map&lt;String, String&gt; hostProps) {
+&nbsp;        if (this.propertiesTransformer != null) {
+&nbsp;            Properties props = new Properties();
+&nbsp;            props.putAll(hostProps);
+<b class="nc">&nbsp;            props.setProperty(PropertyKey.HOST.getKeyName(), host);</b>
+<b class="nc">&nbsp;            props.setProperty(PropertyKey.PORT.getKeyName(), String.valueOf(port));</b>
+<b class="nc">&nbsp;            if (user != null) {</b>
+<b class="nc">&nbsp;                props.setProperty(PropertyKey.USER.getKeyName(), user);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            if (password != null) {
+&nbsp;                props.setProperty(PropertyKey.PASSWORD.getKeyName(), password);
+&nbsp;            }
+&nbsp;
+&nbsp;            Properties transformedProps = this.propertiesTransformer.transformProperties(props);
+&nbsp;            host = transformedProps.getProperty(PropertyKey.HOST.getKeyName());
+&nbsp;
+&nbsp;            try {
+&nbsp;                port = Integer.parseInt(transformedProps.getProperty(PropertyKey.PORT.getKeyName()));
+<b class="fc">&nbsp;            } catch (NumberFormatException e) {</b>
+&nbsp;                throw (WrongArgumentException)ExceptionFactory.createException(WrongArgumentException.class, Messages.getString(&quot;ConnectionString.8&quot;, new Object[]{PropertyKey.PORT.getKeyName(), transformedProps.getProperty(PropertyKey.PORT.getKeyName())}), e);
+&nbsp;            }
+&nbsp;
+&nbsp;            user = transformedProps.getProperty(PropertyKey.USER.getKeyName());
+&nbsp;            password = transformedProps.getProperty(PropertyKey.PASSWORD.getKeyName());
+<b class="nc">&nbsp;            Map&lt;String, String&gt; transformedHostProps = new TreeMap(String.CASE_INSENSITIVE_ORDER);</b>
+&nbsp;            transformedProps.stringPropertyNames().stream().forEach((k) -&gt; {
+&nbsp;                String var10000 = (String)transformedHostProps.put(k, transformedProps.getProperty(k));
+&nbsp;            });
+&nbsp;            transformedHostProps.remove(PropertyKey.HOST.getKeyName());
+&nbsp;            transformedHostProps.remove(PropertyKey.PORT.getKeyName());
+&nbsp;            transformedHostProps.remove(PropertyKey.USER.getKeyName());
+&nbsp;            transformedHostProps.remove(PropertyKey.PASSWORD.getKeyName());
+&nbsp;            hostProps = transformedHostProps;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return new HostInfo(this, host, port, user, password, hostProps);
+&nbsp;    }
+&nbsp;
+&nbsp;    public Map&lt;String, String&gt; getOriginalProperties() {
+&nbsp;        return Collections.unmodifiableMap(this.properties);
+&nbsp;    }
+&nbsp;
+&nbsp;    public Properties getConnectionArgumentsAsProperties() {
+&nbsp;        Properties props = new Properties();
+&nbsp;        if (this.properties != null) {
+<b class="nc">&nbsp;            props.putAll(this.properties);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return this.propertiesTransformer != null ? this.propertiesTransformer.transformProperties(props) : props;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public List&lt;HostInfo&gt; getHostsListFromDnsSrv(HostInfo srvHost) {
+&nbsp;        String srvServiceName = srvHost.getHost();
+&nbsp;        List&lt;DnsSrv.SrvRecord&gt; srvRecords = null;
+&nbsp;
+&nbsp;        try {
+&nbsp;            srvRecords = DnsSrv.lookupSrvRecords(srvServiceName);
+&nbsp;        } catch (NamingException e) {
+&nbsp;            throw ExceptionFactory.createException(Messages.getString(&quot;ConnectionString.26&quot;, new Object[]{srvServiceName}), e);
+&nbsp;        }
+&nbsp;
+&nbsp;        if (srvRecords != null &amp;&amp; srvRecords.size() != 0) {
+&nbsp;            return Collections.unmodifiableList(this.srvRecordsToHostsList(srvRecords, srvHost));
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            throw ExceptionFactory.createException(Messages.getString(&quot;ConnectionString.26&quot;, new Object[]{srvServiceName}));
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private List&lt;HostInfo&gt; srvRecordsToHostsList(List&lt;DnsSrv.SrvRecord&gt; srvRecords, HostInfo baseHostInfo) {
+&nbsp;        return (List)srvRecords.stream().map((s) -&gt; this.buildHostInfo(s.getTarget(), s.getPort(), baseHostInfo.getUser(), baseHostInfo.getPassword(), baseHostInfo.getHostProperties())).collect(Collectors.toList());
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public String toString() {</b>
+<b class="nc">&nbsp;        StringBuilder asStr = new StringBuilder(super.toString());</b>
+&nbsp;        asStr.append(String.format(&quot; :: {type: \&quot;%s\&quot;, hosts: %s, database: \&quot;%s\&quot;, properties: %s, propertiesTransformer: %s}&quot;, this.type, this.hosts, this.originalDatabase, this.properties, this.propertiesTransformer));
+&nbsp;        return asStr.toString();
+&nbsp;    }
+&nbsp;
+&nbsp;    public static enum HostsCardinality {
+&nbsp;        SINGLE {
+<b class="nc">&nbsp;            public boolean assertSize(int n) {</b>
+<b class="nc">&nbsp;                return n == 1;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        },</b>
+&nbsp;        MULTIPLE {
+<b class="nc">&nbsp;            public boolean assertSize(int n) {</b>
+&nbsp;                return n &gt; 1;
+&nbsp;            }
+&nbsp;        },
+&nbsp;        ONE_OR_MORE {
+&nbsp;            public boolean assertSize(int n) {
+&nbsp;                return n &gt;= 1;
+&nbsp;            }
+&nbsp;        };
+&nbsp;
+&nbsp;        private HostsCardinality() {
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        public abstract boolean assertSize(int var1);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public static enum Type {</b>
+<b class="nc">&nbsp;        FAILOVER_DNS_SRV_CONNECTION(&quot;jdbc:mysql+srv:&quot;, ConnectionUrl.HostsCardinality.ONE_OR_MORE, &quot;com.mysql.cj.conf.url.FailoverDnsSrvConnectionUrl&quot;),</b>
+&nbsp;        LOADBALANCE_DNS_SRV_CONNECTION(&quot;jdbc:mysql+srv:loadbalance:&quot;, ConnectionUrl.HostsCardinality.ONE_OR_MORE, &quot;com.mysql.cj.conf.url.LoadBalanceDnsSrvConnectionUrl&quot;),
+&nbsp;        REPLICATION_DNS_SRV_CONNECTION(&quot;jdbc:mysql+srv:replication:&quot;, ConnectionUrl.HostsCardinality.ONE_OR_MORE, &quot;com.mysql.cj.conf.url.ReplicationDnsSrvConnectionUrl&quot;),
+&nbsp;        XDEVAPI_DNS_SRV_SESSION(&quot;mysqlx+srv:&quot;, ConnectionUrl.HostsCardinality.ONE_OR_MORE, &quot;com.mysql.cj.conf.url.XDevApiDnsSrvConnectionUrl&quot;),
+&nbsp;        SINGLE_CONNECTION(&quot;jdbc:mysql:&quot;, ConnectionUrl.HostsCardinality.SINGLE, &quot;com.mysql.cj.conf.url.SingleConnectionUrl&quot;, PropertyKey.dnsSrv, FAILOVER_DNS_SRV_CONNECTION),
+&nbsp;        FAILOVER_CONNECTION(&quot;jdbc:mysql:&quot;, ConnectionUrl.HostsCardinality.MULTIPLE, &quot;com.mysql.cj.conf.url.FailoverConnectionUrl&quot;, PropertyKey.dnsSrv, FAILOVER_DNS_SRV_CONNECTION),
+&nbsp;        LOADBALANCE_CONNECTION(&quot;jdbc:mysql:loadbalance:&quot;, ConnectionUrl.HostsCardinality.ONE_OR_MORE, &quot;com.mysql.cj.conf.url.LoadBalanceConnectionUrl&quot;, PropertyKey.dnsSrv, LOADBALANCE_DNS_SRV_CONNECTION),
+&nbsp;        REPLICATION_CONNECTION(&quot;jdbc:mysql:replication:&quot;, ConnectionUrl.HostsCardinality.ONE_OR_MORE, &quot;com.mysql.cj.conf.url.ReplicationConnectionUrl&quot;, PropertyKey.dnsSrv, REPLICATION_DNS_SRV_CONNECTION),
+&nbsp;        XDEVAPI_SESSION(&quot;mysqlx:&quot;, ConnectionUrl.HostsCardinality.ONE_OR_MORE, &quot;com.mysql.cj.conf.url.XDevApiConnectionUrl&quot;, PropertyKey.xdevapiDnsSrv, XDEVAPI_DNS_SRV_SESSION);
+&nbsp;
+&nbsp;        private String scheme;
+&nbsp;        private HostsCardinality cardinality;
+<b class="nc">&nbsp;        private String implementingClass;</b>
+<b class="nc">&nbsp;        private PropertyKey dnsSrvPropertyKey;</b>
+<b class="nc">&nbsp;        private Type alternateDnsSrvType;</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        private Type(String scheme, HostsCardinality cardinality, String implementingClass) {</b>
+<b class="nc">&nbsp;            this(scheme, cardinality, implementingClass, (PropertyKey)null, (Type)null);</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        private Type(String scheme, HostsCardinality cardinality, String implementingClass, PropertyKey dnsSrvPropertyKey, Type alternateDnsSrvType) {
+<b class="nc">&nbsp;            this.scheme = scheme;</b>
+<b class="nc">&nbsp;            this.cardinality = cardinality;</b>
+&nbsp;            this.implementingClass = implementingClass;
+&nbsp;            this.dnsSrvPropertyKey = dnsSrvPropertyKey;
+<b class="nc">&nbsp;            this.alternateDnsSrvType = alternateDnsSrvType;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public String getScheme() {
+&nbsp;            return this.scheme;
+&nbsp;        }
+&nbsp;
+&nbsp;        public HostsCardinality getCardinality() {
+&nbsp;            return this.cardinality;
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        public String getImplementingClass() {
+&nbsp;            return this.implementingClass;
+&nbsp;        }
+&nbsp;
+&nbsp;        public PropertyKey getDnsSrvPropertyKey() {
+&nbsp;            return this.dnsSrvPropertyKey;
+&nbsp;        }
+&nbsp;
+&nbsp;        public Type getAlternateDnsSrvType() {
+&nbsp;            return this.alternateDnsSrvType;
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        public static Type fromValue(String scheme, int n) {</b>
+<b class="nc">&nbsp;            for(Type t : values()) {</b>
+&nbsp;                if (t.getScheme().equalsIgnoreCase(scheme) &amp;&amp; (n &lt; 0 || t.getCardinality().assertSize(n))) {
+&nbsp;                    return t;
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            if (n &lt; 0) {
+&nbsp;                throw (UnsupportedConnectionStringException)ExceptionFactory.createException(UnsupportedConnectionStringException.class, Messages.getString(&quot;ConnectionString.5&quot;, new Object[]{scheme}));
+&nbsp;            } else {
+&nbsp;                throw (UnsupportedConnectionStringException)ExceptionFactory.createException(UnsupportedConnectionStringException.class, Messages.getString(&quot;ConnectionString.6&quot;, new Object[]{scheme, n}));
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        public static ConnectionUrl getConnectionUrlInstance(ConnectionUrlParser parser, Properties info) {
+&nbsp;            int hostsCount = parser.getHosts().size();
+&nbsp;            Type type = fromValue(parser.getScheme(), hostsCount);
+&nbsp;            PropertyKey dnsSrvPropKey = type.getDnsSrvPropertyKey();
+&nbsp;            if (dnsSrvPropKey != null &amp;&amp; type.getAlternateDnsSrvType() != null) {
+&nbsp;                if (info != null &amp;&amp; info.containsKey(dnsSrvPropKey.getKeyName())) {
+&nbsp;                    if ((Boolean)PropertyDefinitions.getPropertyDefinition(dnsSrvPropKey).parseObject(info.getProperty(dnsSrvPropKey.getKeyName()), (ExceptionInterceptor)null)) {
+&nbsp;                        type = fromValue(type.getAlternateDnsSrvType().getScheme(), hostsCount);
+&nbsp;                    }
+&nbsp;                } else {
+<b class="nc">&nbsp;                    Map&lt;String, String&gt; parsedProperties;</b>
+&nbsp;                    if ((parsedProperties = parser.getProperties()).containsKey(dnsSrvPropKey.getKeyName()) &amp;&amp; (Boolean)PropertyDefinitions.getPropertyDefinition(dnsSrvPropKey).parseObject((String)parsedProperties.get(dnsSrvPropKey.getKeyName()), (ExceptionInterceptor)null)) {
+&nbsp;                        type = fromValue(type.getAlternateDnsSrvType().getScheme(), hostsCount);
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            return type.getImplementingInstance(parser, info);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        public static boolean isSupported(String scheme) {
+<b class="nc">&nbsp;            for(Type t : values()) {</b>
+&nbsp;                if (t.getScheme().equalsIgnoreCase(scheme)) {
+<b class="nc">&nbsp;                    return true;</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        private ConnectionUrl getImplementingInstance(ConnectionUrlParser parser, Properties info) {</b>
+<b class="nc">&nbsp;            return (ConnectionUrl)Util.getInstance(ConnectionUrl.class, this.implementingClass, new Class[]{ConnectionUrlParser.class, Properties.class}, new Object[]{parser, info}, (ExceptionInterceptor)null);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
+</div>
+</body>
+</html>

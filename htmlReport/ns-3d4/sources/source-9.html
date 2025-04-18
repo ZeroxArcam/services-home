@@ -1,0 +1,321 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > TaskSchedulerRouter</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.scheduling.config</a>
+</div>
+
+<h1>Coverage Summary for Class: TaskSchedulerRouter (org.springframework.scheduling.config)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TaskSchedulerRouter</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/40)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/64)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.scheduling.config;
+&nbsp;
+&nbsp;import java.time.Duration;
+&nbsp;import java.time.Instant;
+&nbsp;import java.util.concurrent.Executors;
+&nbsp;import java.util.concurrent.ScheduledExecutorService;
+&nbsp;import java.util.concurrent.ScheduledFuture;
+&nbsp;import java.util.function.Supplier;
+&nbsp;import org.apache.commons.logging.Log;
+&nbsp;import org.apache.commons.logging.LogFactory;
+&nbsp;import org.springframework.beans.factory.BeanFactory;
+&nbsp;import org.springframework.beans.factory.BeanFactoryAware;
+&nbsp;import org.springframework.beans.factory.BeanNameAware;
+&nbsp;import org.springframework.beans.factory.BeanNotOfRequiredTypeException;
+&nbsp;import org.springframework.beans.factory.DisposableBean;
+&nbsp;import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+&nbsp;import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
+&nbsp;import org.springframework.beans.factory.annotation.BeanFactoryAnnotationUtils;
+&nbsp;import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+&nbsp;import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+&nbsp;import org.springframework.beans.factory.config.EmbeddedValueResolver;
+&nbsp;import org.springframework.beans.factory.config.NamedBeanHolder;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.scheduling.SchedulingAwareRunnable;
+&nbsp;import org.springframework.scheduling.TaskScheduler;
+&nbsp;import org.springframework.scheduling.Trigger;
+&nbsp;import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.StringUtils;
+&nbsp;import org.springframework.util.StringValueResolver;
+&nbsp;import org.springframework.util.function.SingletonSupplier;
+&nbsp;
+&nbsp;public class TaskSchedulerRouter implements TaskScheduler, BeanNameAware, BeanFactoryAware, DisposableBean {
+&nbsp;    public static final String DEFAULT_TASK_SCHEDULER_BEAN_NAME = &quot;taskScheduler&quot;;
+&nbsp;    protected static final Log logger = LogFactory.getLog(TaskSchedulerRouter.class);
+&nbsp;    @Nullable
+&nbsp;    private String beanName;
+&nbsp;    @Nullable
+&nbsp;    private BeanFactory beanFactory;
+&nbsp;    @Nullable
+&nbsp;    private StringValueResolver embeddedValueResolver;
+&nbsp;    private final Supplier&lt;TaskScheduler&gt; defaultScheduler = SingletonSupplier.of(this::determineDefaultScheduler);
+&nbsp;    @Nullable
+&nbsp;    private volatile ScheduledExecutorService localExecutor;
+&nbsp;
+&nbsp;    public TaskSchedulerRouter() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setBeanName(@Nullable String name) {
+&nbsp;        this.beanName = name;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setBeanFactory(@Nullable BeanFactory beanFactory) {
+&nbsp;        this.beanFactory = beanFactory;
+<b class="nc">&nbsp;        if (beanFactory instanceof ConfigurableBeanFactory configurableBeanFactory) {</b>
+&nbsp;            this.embeddedValueResolver = new EmbeddedValueResolver(configurableBeanFactory);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public ScheduledFuture&lt;?&gt; schedule(Runnable task, Trigger trigger) {
+&nbsp;        return this.determineTargetScheduler(task).schedule(task, trigger);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public ScheduledFuture&lt;?&gt; schedule(Runnable task, Instant startTime) {
+&nbsp;        return this.determineTargetScheduler(task).schedule(task, startTime);
+&nbsp;    }
+&nbsp;
+&nbsp;    public ScheduledFuture&lt;?&gt; scheduleAtFixedRate(Runnable task, Instant startTime, Duration period) {
+&nbsp;        return this.determineTargetScheduler(task).scheduleAtFixedRate(task, startTime, period);
+&nbsp;    }
+&nbsp;
+&nbsp;    public ScheduledFuture&lt;?&gt; scheduleAtFixedRate(Runnable task, Duration period) {
+&nbsp;        return this.determineTargetScheduler(task).scheduleAtFixedRate(task, period);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public ScheduledFuture&lt;?&gt; scheduleWithFixedDelay(Runnable task, Instant startTime, Duration delay) {
+&nbsp;        return this.determineTargetScheduler(task).scheduleWithFixedDelay(task, startTime, delay);
+&nbsp;    }
+&nbsp;
+&nbsp;    public ScheduledFuture&lt;?&gt; scheduleWithFixedDelay(Runnable task, Duration delay) {
+&nbsp;        return this.determineTargetScheduler(task).scheduleWithFixedDelay(task, delay);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected TaskScheduler determineTargetScheduler(Runnable task) {
+&nbsp;        String qualifier = this.determineQualifier(task);
+<b class="nc">&nbsp;        if (this.embeddedValueResolver != null &amp;&amp; StringUtils.hasLength(qualifier)) {</b>
+&nbsp;            qualifier = this.embeddedValueResolver.resolveStringValue(qualifier);
+&nbsp;        }
+&nbsp;
+&nbsp;        return StringUtils.hasLength(qualifier) ? this.determineQualifiedScheduler(qualifier) : (TaskScheduler)this.defaultScheduler.get();
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+<b class="nc">&nbsp;    protected String determineQualifier(Runnable task) {</b>
+<b class="nc">&nbsp;        String var10000;</b>
+<b class="nc">&nbsp;        if (task instanceof SchedulingAwareRunnable sar) {</b>
+&nbsp;            var10000 = sar.getQualifier();
+&nbsp;        } else {
+&nbsp;            var10000 = null;
+&nbsp;        }
+&nbsp;
+&nbsp;        return var10000;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected TaskScheduler determineQualifiedScheduler(String qualifier) {
+&nbsp;        Assert.state(this.beanFactory != null, &quot;BeanFactory must be set to find qualified scheduler&quot;);
+&nbsp;
+&nbsp;        try {
+<b class="nc">&nbsp;            return (TaskScheduler)BeanFactoryAnnotationUtils.qualifiedBeanOfType(this.beanFactory, TaskScheduler.class, qualifier);</b>
+&nbsp;        } catch (BeanNotOfRequiredTypeException | NoSuchBeanDefinitionException var3) {
+&nbsp;            return new ConcurrentTaskScheduler((ScheduledExecutorService)BeanFactoryAnnotationUtils.qualifiedBeanOfType(this.beanFactory, ScheduledExecutorService.class, qualifier));
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected TaskScheduler determineDefaultScheduler() {
+&nbsp;        Assert.state(this.beanFactory != null, &quot;BeanFactory must be set to find default scheduler&quot;);
+&nbsp;
+&nbsp;        try {
+<b class="nc">&nbsp;            return (TaskScheduler)this.resolveSchedulerBean(this.beanFactory, TaskScheduler.class, false);</b>
+&nbsp;        } catch (NoUniqueBeanDefinitionException var8) {
+&nbsp;            if (logger.isTraceEnabled()) {
+&nbsp;                logger.trace(&quot;Could not find unique TaskScheduler bean - attempting to resolve by name: &quot; + var8.getMessage());
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            try {
+&nbsp;                return (TaskScheduler)this.resolveSchedulerBean(this.beanFactory, TaskScheduler.class, true);
+&nbsp;            } catch (NoSuchBeanDefinitionException var7) {
+&nbsp;                if (logger.isInfoEnabled()) {
+<b class="nc">&nbsp;                    logger.info(&quot;More than one TaskScheduler bean exists within the context, and none is named &#39;taskScheduler&#39;. Mark one of them as primary or name it &#39;taskScheduler&#39; (possibly as an alias); or implement the SchedulingConfigurer interface and call ScheduledTaskRegistrar#setScheduler explicitly within the configureTasks() callback: &quot; + String.valueOf(var8.getBeanNamesFound()));</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        } catch (NoSuchBeanDefinitionException ex) {
+&nbsp;            if (logger.isTraceEnabled()) {
+<b class="nc">&nbsp;                logger.trace(&quot;Could not find default TaskScheduler bean - attempting to find ScheduledExecutorService: &quot; + ex.getMessage());</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            try {
+<b class="nc">&nbsp;                return new ConcurrentTaskScheduler((ScheduledExecutorService)this.resolveSchedulerBean(this.beanFactory, ScheduledExecutorService.class, false));</b>
+<b class="nc">&nbsp;            } catch (NoUniqueBeanDefinitionException var5) {</b>
+&nbsp;                if (logger.isTraceEnabled()) {
+&nbsp;                    logger.trace(&quot;Could not find unique ScheduledExecutorService bean - attempting to resolve by name: &quot; + var5.getMessage());
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                try {
+&nbsp;                    return new ConcurrentTaskScheduler((ScheduledExecutorService)this.resolveSchedulerBean(this.beanFactory, ScheduledExecutorService.class, true));
+&nbsp;                } catch (NoSuchBeanDefinitionException var4) {
+&nbsp;                    if (logger.isInfoEnabled()) {
+<b class="nc">&nbsp;                        logger.info(&quot;More than one ScheduledExecutorService bean exists within the context, and none is named &#39;taskScheduler&#39;. Mark one of them as primary or name it &#39;taskScheduler&#39; (possibly as an alias); or implement the SchedulingConfigurer interface and call ScheduledTaskRegistrar#setScheduler explicitly within the configureTasks() callback: &quot; + String.valueOf(var5.getBeanNamesFound()));</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            } catch (NoSuchBeanDefinitionException ex2) {
+<b class="nc">&nbsp;                if (logger.isTraceEnabled()) {</b>
+&nbsp;                    logger.trace(&quot;Could not find default ScheduledExecutorService bean - falling back to default: &quot; + ex2.getMessage());
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                logger.info(&quot;No TaskScheduler/ScheduledExecutorService bean found for scheduled processing&quot;);
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        ScheduledExecutorService localExecutor = Executors.newSingleThreadScheduledExecutor();
+&nbsp;        this.localExecutor = localExecutor;
+&nbsp;        return new ConcurrentTaskScheduler(localExecutor);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private &lt;T&gt; T resolveSchedulerBean(BeanFactory beanFactory, Class&lt;T&gt; schedulerType, boolean byName) {
+<b class="nc">&nbsp;        if (byName) {</b>
+&nbsp;            T scheduler = (T)beanFactory.getBean(&quot;taskScheduler&quot;, schedulerType);
+&nbsp;            if (this.beanName != null) {
+<b class="nc">&nbsp;                BeanFactory var7 = this.beanFactory;</b>
+<b class="nc">&nbsp;                if (var7 instanceof ConfigurableBeanFactory) {</b>
+<b class="nc">&nbsp;                    ConfigurableBeanFactory cbf = (ConfigurableBeanFactory)var7;</b>
+&nbsp;                    cbf.registerDependentBean(&quot;taskScheduler&quot;, this.beanName);
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            return scheduler;
+<b class="nc">&nbsp;        } else if (beanFactory instanceof AutowireCapableBeanFactory) {</b>
+<b class="nc">&nbsp;            AutowireCapableBeanFactory acbf = (AutowireCapableBeanFactory)beanFactory;</b>
+&nbsp;            NamedBeanHolder&lt;T&gt; holder = acbf.resolveNamedBean(schedulerType);
+&nbsp;            if (this.beanName != null &amp;&amp; beanFactory instanceof ConfigurableBeanFactory) {
+&nbsp;                ConfigurableBeanFactory cbf = (ConfigurableBeanFactory)beanFactory;
+<b class="nc">&nbsp;                cbf.registerDependentBean(holder.getBeanName(), this.beanName);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            return (T)holder.getBeanInstance();
+&nbsp;        } else {
+<b class="nc">&nbsp;            return (T)beanFactory.getBean(schedulerType);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void destroy() {
+&nbsp;        ScheduledExecutorService localExecutor = this.localExecutor;
+<b class="nc">&nbsp;        if (localExecutor != null) {</b>
+&nbsp;            localExecutor.shutdownNow();
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:54</div>
+</div>
+</body>
+</html>

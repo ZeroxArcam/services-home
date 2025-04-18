@@ -1,0 +1,342 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > SqmFunctionRegistry</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.query.sqm.function</a>
+</div>
+
+<h1>Coverage Summary for Class: SqmFunctionRegistry (org.hibernate.query.sqm.function)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SqmFunctionRegistry</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    37.8%
+  </span>
+  <span class="absValue">
+    (14/37)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    27.8%
+  </span>
+  <span class="absValue">
+    (5/18)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    41.1%
+  </span>
+  <span class="absValue">
+    (37/90)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.query.sqm.function;
+&nbsp;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Objects;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.TreeMap;
+&nbsp;import java.util.stream.Stream;
+&nbsp;import org.hibernate.internal.util.collections.CaseInsensitiveDictionary;
+&nbsp;import org.hibernate.query.sqm.produce.function.FunctionParameterType;
+&nbsp;import org.hibernate.query.sqm.produce.function.NamedFunctionDescriptorBuilder;
+&nbsp;import org.hibernate.query.sqm.produce.function.PatternFunctionDescriptorBuilder;
+&nbsp;import org.hibernate.query.sqm.produce.function.StandardFunctionReturnTypeResolvers;
+&nbsp;import org.hibernate.type.BasicType;
+&nbsp;import org.hibernate.type.spi.TypeConfiguration;
+&nbsp;import org.jboss.logging.Logger;
+&nbsp;
+&nbsp;public class SqmFunctionRegistry {
+&nbsp;    private static final Logger log = Logger.getLogger(SqmFunctionRegistry.class);
+&nbsp;    private final CaseInsensitiveDictionary&lt;SqmFunctionDescriptor&gt; functionMap = new CaseInsensitiveDictionary();
+&nbsp;    private final CaseInsensitiveDictionary&lt;String&gt; alternateKeyMap = new CaseInsensitiveDictionary();
+&nbsp;
+&nbsp;    public SqmFunctionRegistry() {
+&nbsp;        log.trace(&quot;SqmFunctionRegistry created&quot;);
+&nbsp;    }
+&nbsp;
+&nbsp;    public Set&lt;String&gt; getValidFunctionKeys() {
+&nbsp;        return this.functionMap.unmodifiableKeySet();
+&nbsp;    }
+&nbsp;
+&nbsp;    public Stream&lt;Map.Entry&lt;String, SqmFunctionDescriptor&gt;&gt; getFunctionsByName() {
+<b class="fc">&nbsp;        Map&lt;String, SqmFunctionDescriptor&gt; sortedFunctionMap = new TreeMap(String.CASE_INSENSITIVE_ORDER);</b>
+<b class="fc">&nbsp;</b>
+&nbsp;        for(Map.Entry&lt;String, SqmFunctionDescriptor&gt; e : this.functionMap.unmodifiableEntrySet()) {
+<b class="fc">&nbsp;            sortedFunctionMap.put((String)e.getKey(), (SqmFunctionDescriptor)e.getValue());</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+<b class="fc">&nbsp;        for(Map.Entry&lt;String, String&gt; e : this.alternateKeyMap.unmodifiableEntrySet()) {</b>
+<b class="fc">&nbsp;            sortedFunctionMap.put((String)e.getKey(), (SqmFunctionDescriptor)this.functionMap.get((String)e.getValue()));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        return sortedFunctionMap.entrySet().stream();
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public SqmFunctionDescriptor findFunctionDescriptor(String functionName) {
+&nbsp;        SqmFunctionDescriptor found = null;
+&nbsp;        String alternateKeyResolution = (String)this.alternateKeyMap.get(functionName);
+&nbsp;        if (alternateKeyResolution != null) {
+&nbsp;            found = (SqmFunctionDescriptor)this.functionMap.get(alternateKeyResolution);
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if (found == null) {</b>
+<b class="nc">&nbsp;            found = (SqmFunctionDescriptor)this.functionMap.get(functionName);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        return found;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public SqmFunctionDescriptor register(String registrationKey, SqmFunctionDescriptor function) {</b>
+&nbsp;        SqmFunctionDescriptor priorRegistration = (SqmFunctionDescriptor)this.functionMap.put(registrationKey, function);
+&nbsp;        log.debugf(&quot;Registered SqmFunctionTemplate [%s] under %s; prior registration was %s&quot;, function, registrationKey, priorRegistration);
+&nbsp;        this.alternateKeyMap.remove(registrationKey);
+&nbsp;        return function;
+&nbsp;    }
+&nbsp;
+&nbsp;    public SqmFunctionDescriptor registerPattern(String name, String pattern) {
+<b class="nc">&nbsp;        return this.patternDescriptorBuilder(name, pattern).register();</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public SqmFunctionDescriptor registerPattern(String name, String pattern, BasicType returnType) {</b>
+<b class="nc">&nbsp;        return this.patternDescriptorBuilder(name, pattern).setInvariantType(returnType).register();</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public PatternFunctionDescriptorBuilder patternDescriptorBuilder(String registrationKey, String pattern) {</b>
+<b class="nc">&nbsp;        return new PatternFunctionDescriptorBuilder(this, registrationKey, FunctionKind.NORMAL, pattern);</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public PatternFunctionDescriptorBuilder patternAggregateDescriptorBuilder(String registrationKey, String pattern) {</b>
+&nbsp;        return new PatternFunctionDescriptorBuilder(this, registrationKey, FunctionKind.AGGREGATE, pattern);
+&nbsp;    }
+&nbsp;
+&nbsp;    public SqmFunctionDescriptor registerNamed(String name) {
+&nbsp;        return this.namedDescriptorBuilder(name).register();
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public SqmFunctionDescriptor registerNamed(String name, BasicType returnType) {</b>
+&nbsp;        return this.namedDescriptorBuilder(name, name).setInvariantType(returnType).register();
+&nbsp;    }
+&nbsp;
+&nbsp;    public NamedFunctionDescriptorBuilder namedDescriptorBuilder(String name) {
+&nbsp;        return this.namedDescriptorBuilder(name, name);
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    public NamedFunctionDescriptorBuilder namedAggregateDescriptorBuilder(String name) {
+&nbsp;        return this.namedAggregateDescriptorBuilder(name, name);
+&nbsp;    }
+&nbsp;
+&nbsp;    public NamedFunctionDescriptorBuilder namedOrderedSetAggregateDescriptorBuilder(String name) {
+&nbsp;        return this.namedOrderedSetAggregateDescriptorBuilder(name, name);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public NamedFunctionDescriptorBuilder namedWindowDescriptorBuilder(String name) {
+&nbsp;        return this.namedWindowDescriptorBuilder(name, name);
+&nbsp;    }
+&nbsp;
+&nbsp;    public NamedFunctionDescriptorBuilder namedDescriptorBuilder(String registrationKey, String name) {
+&nbsp;        return new NamedFunctionDescriptorBuilder(this, registrationKey, FunctionKind.NORMAL, name);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public NamedFunctionDescriptorBuilder namedAggregateDescriptorBuilder(String registrationKey, String name) {</b>
+<b class="nc">&nbsp;        return new NamedFunctionDescriptorBuilder(this, registrationKey, FunctionKind.AGGREGATE, name);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public NamedFunctionDescriptorBuilder namedOrderedSetAggregateDescriptorBuilder(String registrationKey, String name) {
+&nbsp;        return new NamedFunctionDescriptorBuilder(this, registrationKey, FunctionKind.ORDERED_SET_AGGREGATE, name);
+&nbsp;    }
+&nbsp;
+&nbsp;    public NamedFunctionDescriptorBuilder namedWindowDescriptorBuilder(String registrationKey, String name) {
+&nbsp;        return new NamedFunctionDescriptorBuilder(this, registrationKey, FunctionKind.WINDOW, name);
+&nbsp;    }
+&nbsp;
+&nbsp;    public NamedFunctionDescriptorBuilder noArgsBuilder(String name) {
+<b class="fc">&nbsp;        return this.noArgsBuilder(name, name);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public NamedFunctionDescriptorBuilder noArgsBuilder(String registrationKey, String name) {
+&nbsp;        return this.namedDescriptorBuilder(registrationKey, name).setExactArgumentCount(0);
+&nbsp;    }
+&nbsp;
+&nbsp;    public SqmFunctionDescriptor registerNoArgs(String name) {
+&nbsp;        return this.registerNoArgs(name, name);
+&nbsp;    }
+&nbsp;
+&nbsp;    public SqmFunctionDescriptor registerNoArgs(String registrationKey, String name) {
+<b class="nc">&nbsp;        return this.noArgsBuilder(registrationKey, name).register();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public SqmFunctionDescriptor registerNoArgs(String name, BasicType returnType) {
+&nbsp;        return this.registerNoArgs(name, name, returnType);
+&nbsp;    }
+&nbsp;
+&nbsp;    public SqmFunctionDescriptor registerNoArgs(String registrationKey, String name, BasicType returnType) {
+&nbsp;        return this.noArgsBuilder(registrationKey, name).setInvariantType(returnType).register();
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public SqmFunctionDescriptor wrapInJdbcEscape(String name, SqmFunctionDescriptor wrapped) {</b>
+&nbsp;        JdbcEscapeFunctionDescriptor wrapperTemplate = new JdbcEscapeFunctionDescriptor(name, wrapped);
+&nbsp;        this.register(name, wrapperTemplate);
+&nbsp;        return wrapperTemplate;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void registerAlternateKey(String alternateKey, String mappedKey) {
+&nbsp;        assert this.functionMap.containsKey(mappedKey);
+&nbsp;
+&nbsp;        log.debugf(&quot;Registering alternate key : %s -&gt; %s&quot;, alternateKey, mappedKey);
+&nbsp;        this.alternateKeyMap.put(alternateKey, mappedKey);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public MultipatternSqmFunctionDescriptor registerNullaryUnaryPattern(String name, BasicType type, String pattern0, String pattern1, FunctionParameterType parameterType, TypeConfiguration typeConfiguration) {
+&nbsp;        return this.registerPatterns(name, type, new FunctionParameterType[]{parameterType}, typeConfiguration, pattern0, pattern1);
+&nbsp;    }
+&nbsp;
+&nbsp;    public MultipatternSqmFunctionDescriptor registerUnaryBinaryPattern(String name, String pattern1, String pattern2, FunctionParameterType parameterType1, FunctionParameterType parameterType2, TypeConfiguration typeConfiguration) {
+&nbsp;        return this.registerPatterns(name, new FunctionParameterType[]{parameterType1, parameterType2}, typeConfiguration, null, pattern1, pattern2);
+&nbsp;    }
+&nbsp;
+&nbsp;    public MultipatternSqmFunctionDescriptor registerUnaryBinaryPattern(String name, BasicType&lt;?&gt; type, String pattern1, String pattern2, FunctionParameterType parameterType1, FunctionParameterType parameterType2, TypeConfiguration typeConfiguration) {
+&nbsp;        return this.registerPatterns(name, type, new FunctionParameterType[]{parameterType1, parameterType2}, typeConfiguration, null, pattern1, pattern2);
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public MultipatternSqmFunctionDescriptor registerBinaryTernaryPattern(String name, BasicType&lt;?&gt; type, String pattern2, String pattern3, FunctionParameterType parameterType1, FunctionParameterType parameterType2, FunctionParameterType parameterType3, TypeConfiguration typeConfiguration) {
+&nbsp;        return this.registerPatterns(name, type, new FunctionParameterType[]{parameterType1, parameterType2, parameterType3}, typeConfiguration, null, null, pattern2, pattern3);
+&nbsp;    }
+&nbsp;
+&nbsp;    public MultipatternSqmFunctionDescriptor registerTernaryQuaternaryPattern(String name, BasicType&lt;?&gt; type, String pattern3, String pattern4, FunctionParameterType parameterType1, FunctionParameterType parameterType2, FunctionParameterType parameterType3, FunctionParameterType parameterType4, TypeConfiguration typeConfiguration) {
+&nbsp;        return this.registerPatterns(name, type, new FunctionParameterType[]{parameterType1, parameterType2, parameterType3, parameterType4}, typeConfiguration, null, null, null, pattern3, pattern4);
+&nbsp;    }
+&nbsp;
+&nbsp;    private MultipatternSqmFunctionDescriptor registerPatterns(String name, FunctionParameterType[] parameterTypes, TypeConfiguration typeConfiguration, String... patterns) {
+&nbsp;        SqmFunctionDescriptor[] descriptors = new SqmFunctionDescriptor[patterns.length];
+&nbsp;
+&nbsp;        for(int i = 0; i &lt; patterns.length; ++i) {
+<b class="fc">&nbsp;            String pattern = patterns[i];</b>
+&nbsp;            if (pattern != null) {
+&nbsp;                descriptors[i] = this.patternDescriptorBuilder(name, pattern).setExactArgumentCount(i).setParameterTypes(parameterTypes).setReturnTypeResolver(StandardFunctionReturnTypeResolvers.useArgType(1)).descriptor();
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        MultipatternSqmFunctionDescriptor function = new MultipatternSqmFunctionDescriptor(name, descriptors, typeConfiguration, parameterTypes);
+&nbsp;        this.register(name, function);
+&nbsp;        return function;
+&nbsp;    }
+&nbsp;
+&nbsp;    private MultipatternSqmFunctionDescriptor registerPatterns(String name, BasicType&lt;?&gt; type, FunctionParameterType[] parameterTypes, TypeConfiguration typeConfiguration, String... patterns) {
+&nbsp;        SqmFunctionDescriptor[] descriptors = new SqmFunctionDescriptor[patterns.length];
+<b class="nc">&nbsp;</b>
+&nbsp;        for(int i = 0; i &lt; patterns.length; ++i) {
+&nbsp;            String pattern = patterns[i];
+&nbsp;            if (pattern != null) {
+&nbsp;                descriptors[i] = this.patternDescriptorBuilder(name, pattern).setExactArgumentCount(i).setParameterTypes(parameterTypes).setInvariantType(type).descriptor();
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        MultipatternSqmFunctionDescriptor function = new MultipatternSqmFunctionDescriptor(name, descriptors, type, typeConfiguration, parameterTypes);
+&nbsp;        this.register(name, function);
+&nbsp;        return function;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void overlay(SqmFunctionRegistry registryToOverly) {</b>
+&nbsp;        CaseInsensitiveDictionary var10000 = this.functionMap;
+&nbsp;        Objects.requireNonNull(registryToOverly);
+&nbsp;        var10000.forEach(registryToOverly::register);
+&nbsp;        var10000 = this.alternateKeyMap;
+&nbsp;        Objects.requireNonNull(registryToOverly);
+&nbsp;        var10000.forEach(registryToOverly::registerAlternateKey);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void close() {
+&nbsp;        this.functionMap.clear();
+&nbsp;        this.alternateKeyMap.clear();
+<b class="fc">&nbsp;    }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:58</div>
+</div>
+</body>
+</html>

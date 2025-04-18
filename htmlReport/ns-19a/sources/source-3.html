@@ -1,0 +1,293 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > QueryInterpretationCacheStandardImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.query.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: QueryInterpretationCacheStandardImpl (org.hibernate.query.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">QueryInterpretationCacheStandardImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    23.1%
+  </span>
+  <span class="absValue">
+    (3/13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/24)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    14.9%
+  </span>
+  <span class="absValue">
+    (10/67)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.query.internal;
+&nbsp;
+&nbsp;import java.util.concurrent.TimeUnit;
+&nbsp;import java.util.function.Function;
+&nbsp;import java.util.function.Supplier;
+&nbsp;import org.hibernate.internal.util.collections.BoundedConcurrentHashMap;
+&nbsp;import org.hibernate.internal.util.collections.BoundedConcurrentHashMap.Eviction;
+&nbsp;import org.hibernate.query.QueryLogging;
+&nbsp;import org.hibernate.query.hql.HqlTranslator;
+&nbsp;import org.hibernate.query.spi.HqlInterpretation;
+&nbsp;import org.hibernate.query.spi.NonSelectQueryPlan;
+&nbsp;import org.hibernate.query.spi.ParameterMetadataImplementor;
+&nbsp;import org.hibernate.query.spi.QueryInterpretationCache;
+&nbsp;import org.hibernate.query.spi.QueryPlan;
+&nbsp;import org.hibernate.query.spi.SelectQueryPlan;
+&nbsp;import org.hibernate.query.spi.SimpleHqlInterpretationImpl;
+&nbsp;import org.hibernate.query.sql.spi.ParameterInterpretation;
+&nbsp;import org.hibernate.query.sqm.internal.DomainParameterXref;
+&nbsp;import org.hibernate.query.sqm.tree.SqmStatement;
+&nbsp;import org.hibernate.stat.spi.StatisticsImplementor;
+&nbsp;import org.jboss.logging.Logger;
+&nbsp;
+&nbsp;public class QueryInterpretationCacheStandardImpl implements QueryInterpretationCache {
+&nbsp;    private static final Logger log = QueryLogging.subLogger(&quot;plan.cache&quot;);
+&nbsp;    private final BoundedConcurrentHashMap&lt;QueryInterpretationCache.Key, QueryPlan&gt; queryPlanCache;
+&nbsp;    private final BoundedConcurrentHashMap&lt;Object, HqlInterpretation&lt;?&gt;&gt; hqlInterpretationCache;
+&nbsp;    private final BoundedConcurrentHashMap&lt;String, ParameterInterpretation&gt; nativeQueryParamCache;
+&nbsp;    private final Supplier&lt;StatisticsImplementor&gt; statisticsSupplier;
+&nbsp;
+&nbsp;    public QueryInterpretationCacheStandardImpl(int maxQueryPlanCount, Supplier&lt;StatisticsImplementor&gt; statisticsSupplier) {
+<b class="fc">&nbsp;        log.debugf(&quot;Starting QueryInterpretationCache(%s)&quot;, maxQueryPlanCount);</b>
+&nbsp;        this.queryPlanCache = new BoundedConcurrentHashMap(maxQueryPlanCount, 20, Eviction.LIRS);
+&nbsp;        this.hqlInterpretationCache = new BoundedConcurrentHashMap(maxQueryPlanCount, 20, Eviction.LIRS);
+&nbsp;        this.nativeQueryParamCache = new BoundedConcurrentHashMap(maxQueryPlanCount, 20, Eviction.LIRS);
+&nbsp;        this.statisticsSupplier = statisticsSupplier;
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getNumberOfCachedHqlInterpretations() {
+&nbsp;        return this.hqlInterpretationCache.size();
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public int getNumberOfCachedQueryPlans() {</b>
+<b class="fc">&nbsp;        return this.queryPlanCache.size();</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public &lt;R&gt; SelectQueryPlan&lt;R&gt; resolveSelectQueryPlan(QueryInterpretationCache.Key key, Supplier&lt;SelectQueryPlan&lt;R&gt;&gt; creator) {</b>
+<b class="fc">&nbsp;        log.tracef(&quot;QueryPlan#getSelectQueryPlan(%s)&quot;, key);</b>
+<b class="fc">&nbsp;        StatisticsImplementor statistics = (StatisticsImplementor)this.statisticsSupplier.get();</b>
+&nbsp;        boolean stats = statistics.isStatisticsEnabled();
+&nbsp;        SelectQueryPlan&lt;R&gt; cached = (SelectQueryPlan)this.queryPlanCache.get(key);
+&nbsp;        if (cached != null) {
+&nbsp;            if (stats) {
+<b class="nc">&nbsp;                statistics.queryPlanCacheHit(key.getQueryString());</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            return cached;
+&nbsp;        } else {
+<b class="nc">&nbsp;            SelectQueryPlan&lt;R&gt; plan = (SelectQueryPlan)creator.get();</b>
+&nbsp;            this.queryPlanCache.put(key.prepareForStore(), plan);
+&nbsp;            if (stats) {
+&nbsp;                statistics.queryPlanCacheMiss(key.getQueryString());
+&nbsp;            }
+&nbsp;
+&nbsp;            return plan;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public NonSelectQueryPlan getNonSelectQueryPlan(QueryInterpretationCache.Key key) {
+&nbsp;        log.tracef(&quot;QueryPlan#getNonSelectQueryPlan(%s)&quot;, key);
+<b class="nc">&nbsp;        return null;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void cacheNonSelectQueryPlan(QueryInterpretationCache.Key key, NonSelectQueryPlan plan) {</b>
+&nbsp;        log.tracef(&quot;QueryPlan#cacheNonSelectQueryPlan(%s)&quot;, key);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public &lt;R&gt; HqlInterpretation&lt;R&gt; resolveHqlInterpretation(String queryString, Class&lt;R&gt; expectedResultType, HqlTranslator translator) {
+<b class="nc">&nbsp;        log.tracef(&quot;QueryPlan#resolveHqlInterpretation( `%s` )&quot;, queryString);</b>
+<b class="nc">&nbsp;        StatisticsImplementor statistics = (StatisticsImplementor)this.statisticsSupplier.get();</b>
+<b class="nc">&nbsp;        Object cacheKey = expectedResultType != null ? new HqlInterpretationCacheKey(queryString, expectedResultType) : queryString;</b>
+<b class="nc">&nbsp;        HqlInterpretation&lt;?&gt; existing = (HqlInterpretation)this.hqlInterpretationCache.get(cacheKey);</b>
+&nbsp;        if (existing != null) {
+<b class="nc">&nbsp;            if (statistics.isStatisticsEnabled()) {</b>
+&nbsp;                statistics.queryPlanCacheHit(queryString);
+&nbsp;            }
+&nbsp;
+&nbsp;            return existing;
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            if (expectedResultType != null) {</b>
+&nbsp;                HqlInterpretation&lt;?&gt; existingQueryOnly = (HqlInterpretation)this.hqlInterpretationCache.get(queryString);
+&nbsp;                if (existingQueryOnly != null) {
+&nbsp;                    if (statistics.isStatisticsEnabled()) {
+&nbsp;                        statistics.queryPlanCacheHit(queryString);
+<b class="nc">&nbsp;                    }</b>
+&nbsp;
+&nbsp;                    return existingQueryOnly;
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            HqlInterpretation&lt;R&gt; hqlInterpretation = createHqlInterpretation(queryString, expectedResultType, translator, statistics);
+&nbsp;            this.hqlInterpretationCache.put(cacheKey, hqlInterpretation);
+<b class="nc">&nbsp;            return hqlInterpretation;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected static &lt;R&gt; HqlInterpretation&lt;R&gt; createHqlInterpretation(String queryString, Class&lt;R&gt; expectedResultType, HqlTranslator translator, StatisticsImplementor statistics) {</b>
+<b class="nc">&nbsp;        boolean stats = statistics.isStatisticsEnabled();</b>
+&nbsp;        long startTime = stats ? System.nanoTime() : 0L;
+<b class="nc">&nbsp;        SqmStatement&lt;R&gt; sqmStatement = translator.translate(queryString, expectedResultType);</b>
+<b class="nc">&nbsp;        ParameterMetadataImplementor parameterMetadata;</b>
+<b class="nc">&nbsp;        DomainParameterXref domainParameterXref;</b>
+<b class="nc">&nbsp;        if (sqmStatement.getSqmParameters().isEmpty()) {</b>
+&nbsp;            domainParameterXref = DomainParameterXref.EMPTY;
+<b class="nc">&nbsp;            parameterMetadata = ParameterMetadataImpl.EMPTY;</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            domainParameterXref = DomainParameterXref.from(sqmStatement);</b>
+<b class="nc">&nbsp;            parameterMetadata = new ParameterMetadataImpl(domainParameterXref.getQueryParameters());</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if (stats) {</b>
+&nbsp;            long endTime = System.nanoTime();
+<b class="nc">&nbsp;            long microseconds = TimeUnit.MICROSECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);</b>
+&nbsp;            statistics.queryCompiled(queryString, microseconds);
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return new SimpleHqlInterpretationImpl(sqmStatement, parameterMetadata, domainParameterXref);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public ParameterInterpretation resolveNativeQueryParameters(String queryString, Function&lt;String, ParameterInterpretation&gt; creator) {</b>
+&nbsp;        log.tracef(&quot;QueryPlan#resolveNativeQueryParameters(%s)&quot;, queryString);
+&nbsp;        return (ParameterInterpretation)this.nativeQueryParamCache.computeIfAbsent(queryString, (s) -&gt; {
+&nbsp;            ParameterInterpretation interpretation = (ParameterInterpretation)creator.apply(queryString);
+&nbsp;            log.debugf(&quot;Creating and caching NativeQuery ParameterInterpretation - %s&quot;, interpretation);
+&nbsp;            return interpretation;
+&nbsp;        });
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public boolean isEnabled() {</b>
+&nbsp;        return true;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void close() {
+&nbsp;        this.hqlInterpretationCache.clear();
+<b class="nc">&nbsp;        this.nativeQueryParamCache.clear();</b>
+<b class="nc">&nbsp;        this.queryPlanCache.clear();</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private static final class HqlInterpretationCacheKey {
+<b class="nc">&nbsp;        private final String queryString;</b>
+<b class="nc">&nbsp;        private final Class&lt;?&gt; expectedResultType;</b>
+&nbsp;
+&nbsp;        public HqlInterpretationCacheKey(String queryString, Class&lt;?&gt; expectedResultType) {
+<b class="nc">&nbsp;            this.queryString = queryString;</b>
+<b class="nc">&nbsp;            this.expectedResultType = expectedResultType;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        public boolean equals(Object o) {
+&nbsp;            if (o.getClass() != HqlInterpretationCacheKey.class) {
+<b class="nc">&nbsp;                return false;</b>
+&nbsp;            } else {
+&nbsp;                HqlInterpretationCacheKey that = (HqlInterpretationCacheKey)o;
+&nbsp;                return this.queryString.equals(that.queryString) &amp;&amp; this.expectedResultType.equals(that.expectedResultType);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        public int hashCode() {</b>
+<b class="nc">&nbsp;            int result = this.queryString.hashCode();</b>
+&nbsp;            result = 31 * result + this.expectedResultType.hashCode();
+&nbsp;            return result;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

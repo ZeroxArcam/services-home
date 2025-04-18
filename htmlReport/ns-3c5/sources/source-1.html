@@ -1,0 +1,265 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > MBeanRegistrationSupport</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.jmx.support</a>
+</div>
+
+<h1>Coverage Summary for Class: MBeanRegistrationSupport (org.springframework.jmx.support)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MBeanRegistrationSupport</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/32)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/55)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.jmx.support;
+&nbsp;
+&nbsp;import java.util.LinkedHashSet;
+&nbsp;import java.util.Set;
+&nbsp;import javax.management.InstanceAlreadyExistsException;
+&nbsp;import javax.management.InstanceNotFoundException;
+&nbsp;import javax.management.JMException;
+&nbsp;import javax.management.MBeanServer;
+&nbsp;import javax.management.ObjectInstance;
+&nbsp;import javax.management.ObjectName;
+&nbsp;import org.apache.commons.logging.Log;
+&nbsp;import org.apache.commons.logging.LogFactory;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;
+&nbsp;public class MBeanRegistrationSupport {
+&nbsp;    protected final Log logger = LogFactory.getLog(this.getClass());
+&nbsp;    @Nullable
+&nbsp;    protected MBeanServer server;
+&nbsp;    private final Set&lt;ObjectName&gt; registeredBeans = new LinkedHashSet();
+&nbsp;    private RegistrationPolicy registrationPolicy;
+&nbsp;
+&nbsp;    public MBeanRegistrationSupport() {
+&nbsp;        this.registrationPolicy = RegistrationPolicy.FAIL_ON_EXISTING;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setServer(@Nullable MBeanServer server) {
+&nbsp;        this.server = server;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    public final MBeanServer getServer() {
+&nbsp;        return this.server;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setRegistrationPolicy(RegistrationPolicy registrationPolicy) {
+&nbsp;        Assert.notNull(registrationPolicy, &quot;RegistrationPolicy must not be null&quot;);
+&nbsp;        this.registrationPolicy = registrationPolicy;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void doRegister(Object mbean, ObjectName objectName) throws JMException {
+&nbsp;        Assert.state(this.server != null, &quot;No MBeanServer set&quot;);
+&nbsp;        ObjectName actualObjectName;
+&nbsp;        synchronized(this.registeredBeans) {
+&nbsp;            ObjectInstance registeredBean = null;
+&nbsp;
+&nbsp;            try {
+&nbsp;                registeredBean = this.server.registerMBean(mbean, objectName);
+&nbsp;            } catch (InstanceAlreadyExistsException ex) {
+&nbsp;                if (this.registrationPolicy == RegistrationPolicy.IGNORE_EXISTING) {
+&nbsp;                    if (this.logger.isDebugEnabled()) {
+&nbsp;                        this.logger.debug(&quot;Ignoring existing MBean at [&quot; + String.valueOf(objectName) + &quot;]&quot;);
+&nbsp;                    }
+&nbsp;                } else {
+&nbsp;                    if (this.registrationPolicy != RegistrationPolicy.REPLACE_EXISTING) {
+&nbsp;                        throw ex;
+&nbsp;                    }
+&nbsp;
+&nbsp;                    try {
+&nbsp;                        if (this.logger.isDebugEnabled()) {
+&nbsp;                            this.logger.debug(&quot;Replacing existing MBean at [&quot; + String.valueOf(objectName) + &quot;]&quot;);
+&nbsp;                        }
+&nbsp;
+&nbsp;                        this.server.unregisterMBean(objectName);
+<b class="nc">&nbsp;                        registeredBean = this.server.registerMBean(mbean, objectName);</b>
+&nbsp;                    } catch (InstanceNotFoundException ex2) {
+&nbsp;                        if (this.logger.isInfoEnabled()) {
+&nbsp;                            this.logger.info(&quot;Unable to replace existing MBean at [&quot; + String.valueOf(objectName) + &quot;]&quot;, ex2);
+&nbsp;                        }
+<b class="nc">&nbsp;</b>
+&nbsp;                        throw ex;
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            actualObjectName = registeredBean != null ? registeredBean.getObjectName() : null;
+&nbsp;            if (actualObjectName == null) {
+&nbsp;                actualObjectName = objectName;
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            this.registeredBeans.add(actualObjectName);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        this.onRegister(actualObjectName, mbean);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected void unregisterBeans() {</b>
+&nbsp;        Set&lt;ObjectName&gt; snapshot;
+&nbsp;        synchronized(this.registeredBeans) {
+&nbsp;            snapshot = new LinkedHashSet(this.registeredBeans);
+&nbsp;        }
+&nbsp;
+&nbsp;        if (!snapshot.isEmpty()) {
+&nbsp;            this.logger.debug(&quot;Unregistering JMX-exposed beans&quot;);
+&nbsp;
+<b class="nc">&nbsp;            for(ObjectName objectName : snapshot) {</b>
+&nbsp;                this.doUnregister(objectName);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void doUnregister(ObjectName objectName) {
+<b class="nc">&nbsp;        Assert.state(this.server != null, &quot;No MBeanServer set&quot;);</b>
+&nbsp;        boolean actuallyUnregistered = false;
+&nbsp;        synchronized(this.registeredBeans) {
+&nbsp;            if (this.registeredBeans.remove(objectName)) {
+&nbsp;                try {
+&nbsp;                    if (this.server.isRegistered(objectName)) {
+&nbsp;                        this.server.unregisterMBean(objectName);
+&nbsp;                        actuallyUnregistered = true;
+&nbsp;                    } else if (this.logger.isInfoEnabled()) {
+&nbsp;                        this.logger.info(&quot;Could not unregister MBean [&quot; + String.valueOf(objectName) + &quot;] as said MBean is not registered (perhaps already unregistered by an external process)&quot;);
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                } catch (JMException ex) {</b>
+&nbsp;                    if (this.logger.isInfoEnabled()) {
+&nbsp;                        this.logger.info(&quot;Could not unregister MBean [&quot; + String.valueOf(objectName) + &quot;]&quot;, ex);
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        if (actuallyUnregistered) {
+&nbsp;            this.onUnregister(objectName);
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected final ObjectName[] getRegisteredObjectNames() {
+<b class="nc">&nbsp;        synchronized(this.registeredBeans) {</b>
+<b class="nc">&nbsp;            return (ObjectName[])this.registeredBeans.toArray(new ObjectName[0]);</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected void onRegister(ObjectName objectName, Object mbean) {
+<b class="nc">&nbsp;        this.onRegister(objectName);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    protected void onRegister(ObjectName objectName) {
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected void onUnregister(ObjectName objectName) {
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
+</div>
+</body>
+</html>

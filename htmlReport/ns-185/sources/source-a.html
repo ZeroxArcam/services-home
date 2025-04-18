@@ -1,0 +1,813 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > MetadataContext</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.metamodel.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: MetadataContext (org.hibernate.metamodel.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MetadataContext</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    45.8%
+  </span>
+  <span class="absValue">
+    (22/48)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    15.4%
+  </span>
+  <span class="absValue">
+    (33/214)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    28.2%
+  </span>
+  <span class="absValue">
+    (101/358)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.metamodel.internal;
+&nbsp;
+&nbsp;import jakarta.persistence.metamodel.Attribute;
+&nbsp;import jakarta.persistence.metamodel.IdentifiableType;
+&nbsp;import jakarta.persistence.metamodel.SingularAttribute;
+&nbsp;import jakarta.persistence.metamodel.Attribute.PersistentAttributeType;
+&nbsp;import jakarta.persistence.metamodel.Type.PersistenceType;
+&nbsp;import java.lang.reflect.Field;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.HashSet;
+&nbsp;import java.util.Iterator;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Objects;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.function.BiFunction;
+&nbsp;import org.hibernate.AssertionFailure;
+&nbsp;import org.hibernate.Internal;
+&nbsp;import org.hibernate.MappingException;
+&nbsp;import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
+&nbsp;import org.hibernate.boot.registry.classloading.spi.ClassLoadingException;
+&nbsp;import org.hibernate.boot.spi.MetadataImplementor;
+&nbsp;import org.hibernate.internal.EntityManagerMessageLogger;
+&nbsp;import org.hibernate.internal.HEMLogging;
+&nbsp;import org.hibernate.internal.util.ReflectHelper;
+&nbsp;import org.hibernate.internal.util.collections.ArrayHelper;
+&nbsp;import org.hibernate.internal.util.collections.CollectionHelper;
+&nbsp;import org.hibernate.mapping.Component;
+&nbsp;import org.hibernate.mapping.MappedSuperclass;
+&nbsp;import org.hibernate.mapping.PersistentClass;
+&nbsp;import org.hibernate.mapping.Property;
+&nbsp;import org.hibernate.metamodel.MappingMetamodel;
+&nbsp;import org.hibernate.metamodel.model.domain.AbstractIdentifiableType;
+&nbsp;import org.hibernate.metamodel.model.domain.BasicDomainType;
+&nbsp;import org.hibernate.metamodel.model.domain.DomainType;
+&nbsp;import org.hibernate.metamodel.model.domain.EmbeddableDomainType;
+&nbsp;import org.hibernate.metamodel.model.domain.EntityDomainType;
+&nbsp;import org.hibernate.metamodel.model.domain.IdentifiableDomainType;
+&nbsp;import org.hibernate.metamodel.model.domain.ManagedDomainType;
+&nbsp;import org.hibernate.metamodel.model.domain.MappedSuperclassDomainType;
+&nbsp;import org.hibernate.metamodel.model.domain.PersistentAttribute;
+&nbsp;import org.hibernate.metamodel.model.domain.SingularPersistentAttribute;
+&nbsp;import org.hibernate.metamodel.model.domain.internal.AttributeContainer;
+&nbsp;import org.hibernate.metamodel.model.domain.internal.BasicTypeImpl;
+&nbsp;import org.hibernate.metamodel.model.domain.internal.EmbeddableTypeImpl;
+&nbsp;import org.hibernate.metamodel.model.domain.internal.EntityTypeImpl;
+&nbsp;import org.hibernate.metamodel.model.domain.internal.MappedSuperclassTypeImpl;
+&nbsp;import org.hibernate.metamodel.model.domain.internal.PrimitiveBasicTypeImpl;
+&nbsp;import org.hibernate.metamodel.model.domain.spi.JpaMetamodelImplementor;
+&nbsp;import org.hibernate.metamodel.spi.RuntimeModelCreationContext;
+&nbsp;import org.hibernate.type.descriptor.java.JavaType;
+&nbsp;import org.hibernate.type.descriptor.java.spi.EntityJavaType;
+&nbsp;import org.hibernate.type.descriptor.java.spi.JavaTypeRegistry;
+&nbsp;import org.hibernate.type.descriptor.jdbc.JdbcType;
+&nbsp;import org.hibernate.type.spi.TypeConfiguration;
+&nbsp;
+&nbsp;@Internal
+&nbsp;public class MetadataContext {
+&nbsp;    private static final EntityManagerMessageLogger LOG = HEMLogging.messageLogger(MetadataContext.class);
+&nbsp;    private final JpaMetamodelImplementor jpaMetamodel;
+&nbsp;    private final RuntimeModelCreationContext runtimeModelCreationContext;
+&nbsp;    private final Set&lt;MappedSuperclass&gt; knownMappedSuperclasses;
+&nbsp;    private final TypeConfiguration typeConfiguration;
+&nbsp;    private final JpaStaticMetaModelPopulationSetting jpaStaticMetaModelPopulationSetting;
+&nbsp;    private final JpaMetaModelPopulationSetting jpaMetaModelPopulationSetting;
+&nbsp;    private final AttributeFactory attributeFactory = new AttributeFactory(this);
+&nbsp;    private final Map&lt;Class&lt;?&gt;, EntityDomainType&lt;?&gt;&gt; entityTypes = new HashMap();
+&nbsp;    private final Map&lt;String, IdentifiableDomainType&lt;?&gt;&gt; identifiableTypesByName = new HashMap();
+&nbsp;    private final Map&lt;PersistentClass, EntityDomainType&lt;?&gt;&gt; entityTypesByPersistentClass = new HashMap();
+<b class="fc">&nbsp;    private final Map&lt;Class&lt;?&gt;, EmbeddableDomainType&lt;?&gt;&gt; embeddables = new HashMap();</b>
+&nbsp;    private final Map&lt;Class&lt;?&gt;, List&lt;EmbeddableDomainType&lt;?&gt;&gt;&gt; embeddablesToProcess = new HashMap();
+<b class="fc">&nbsp;    private final Map&lt;EmbeddableDomainType&lt;?&gt;, Component&gt; componentByEmbeddable = new HashMap();</b>
+&nbsp;    private final Map&lt;MappedSuperclass, MappedSuperclassDomainType&lt;?&gt;&gt; mappedSuperclassByMappedSuperclassMapping = new HashMap();
+&nbsp;    private final Map&lt;MappedSuperclassDomainType&lt;?&gt;, PersistentClass&gt; mappedSuperClassTypeToPersistentClass = new HashMap();
+&nbsp;    private final List&lt;Object&gt; orderedMappings = new ArrayList();
+&nbsp;    private final List&lt;PersistentClass&gt; stackOfPersistentClassesBeingProcessed = new ArrayList();
+&nbsp;    private final MappingMetamodel metamodel;
+&nbsp;    private final ClassLoaderService classLoaderService;
+&nbsp;    private final Map&lt;Class&lt;?&gt;, BasicDomainType&lt;?&gt;&gt; basicDomainTypeMap = new HashMap();
+&nbsp;
+<b class="fc">&nbsp;    public MetadataContext(JpaMetamodelImplementor jpaMetamodel, MappingMetamodel mappingMetamodel, MetadataImplementor bootMetamodel, JpaStaticMetaModelPopulationSetting jpaStaticMetaModelPopulationSetting, JpaMetaModelPopulationSetting jpaMetaModelPopulationSetting, RuntimeModelCreationContext runtimeModelCreationContext) {</b>
+&nbsp;        this.jpaMetamodel = jpaMetamodel;
+<b class="fc">&nbsp;        this.classLoaderService = (ClassLoaderService)jpaMetamodel.getServiceRegistry().getService(ClassLoaderService.class);</b>
+<b class="fc">&nbsp;        this.metamodel = mappingMetamodel;</b>
+<b class="fc">&nbsp;        this.knownMappedSuperclasses = bootMetamodel.getMappedSuperclassMappingsCopy();</b>
+&nbsp;        this.typeConfiguration = runtimeModelCreationContext.getTypeConfiguration();
+<b class="fc">&nbsp;        this.jpaStaticMetaModelPopulationSetting = jpaStaticMetaModelPopulationSetting;</b>
+<b class="fc">&nbsp;        this.jpaMetaModelPopulationSetting = jpaMetaModelPopulationSetting;</b>
+<b class="fc">&nbsp;        this.runtimeModelCreationContext = runtimeModelCreationContext;</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public RuntimeModelCreationContext getRuntimeModelCreationContext() {</b>
+&nbsp;        return this.runtimeModelCreationContext;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public JpaMetamodelImplementor getJpaMetamodel() {
+&nbsp;        return this.jpaMetamodel;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public TypeConfiguration getTypeConfiguration() {</b>
+&nbsp;        return this.typeConfiguration;
+&nbsp;    }
+&nbsp;
+&nbsp;    public JavaTypeRegistry getJavaTypeRegistry() {
+&nbsp;        return this.typeConfiguration.getJavaTypeRegistry();
+&nbsp;    }
+&nbsp;
+&nbsp;    MappingMetamodel getMetamodel() {
+&nbsp;        return this.metamodel;
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public Map&lt;Class&lt;?&gt;, EntityDomainType&lt;?&gt;&gt; getEntityTypeMap() {</b>
+<b class="fc">&nbsp;        return Collections.unmodifiableMap(this.entityTypes);</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public Set&lt;EmbeddableDomainType&lt;?&gt;&gt; getEmbeddableTypeSet() {</b>
+<b class="fc">&nbsp;        return this.componentByEmbeddable.keySet();</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public Map&lt;Class&lt;?&gt;, MappedSuperclassDomainType&lt;?&gt;&gt; getMappedSuperclassTypeMap() {
+&nbsp;        Map&lt;Class&lt;?&gt;, MappedSuperclassDomainType&lt;?&gt;&gt; mappedSuperClassTypeMap = CollectionHelper.mapOfSize(this.mappedSuperclassByMappedSuperclassMapping.size());
+<b class="nc">&nbsp;</b>
+&nbsp;        for(MappedSuperclassDomainType&lt;?&gt; mappedSuperclassType : this.mappedSuperclassByMappedSuperclassMapping.values()) {
+&nbsp;            mappedSuperClassTypeMap.put(mappedSuperclassType.getJavaType(), mappedSuperclassType);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        return mappedSuperClassTypeMap;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public void registerEntityType(PersistentClass persistentClass, EntityTypeImpl&lt;?&gt; entityType) {</b>
+&nbsp;        if (entityType.getBindableJavaType() != null &amp;&amp; entityType.getBindableJavaType() != Map.class) {
+&nbsp;            this.entityTypes.put(entityType.getBindableJavaType(), entityType);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        this.identifiableTypesByName.put(persistentClass.getEntityName(), entityType);
+&nbsp;        this.entityTypesByPersistentClass.put(persistentClass, entityType);
+&nbsp;        this.orderedMappings.add(persistentClass);
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void registerEmbeddableType(EmbeddableDomainType&lt;?&gt; embeddableType, Component bootDescriptor) {
+&nbsp;        assert embeddableType.getJavaType() != null;
+&nbsp;
+&nbsp;        assert !Map.class.isAssignableFrom(embeddableType.getJavaType());
+&nbsp;
+&nbsp;        ((List)this.embeddablesToProcess.computeIfAbsent(embeddableType.getJavaType(), (k) -&gt; new ArrayList(1))).add(embeddableType);
+&nbsp;        this.registerComponentByEmbeddable(embeddableType, bootDescriptor);
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void registerComponentByEmbeddable(EmbeddableDomainType&lt;?&gt; embeddableType, Component bootDescriptor) {
+&nbsp;        this.componentByEmbeddable.put(embeddableType, bootDescriptor);
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public Component getEmbeddableBootDescriptor(EmbeddableDomainType&lt;?&gt; embeddableType) {
+&nbsp;        return (Component)this.componentByEmbeddable.get(embeddableType);
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public void registerMappedSuperclassType(MappedSuperclass mappedSuperclass, MappedSuperclassDomainType&lt;?&gt; mappedSuperclassType) {</b>
+&nbsp;        this.identifiableTypesByName.put(mappedSuperclassType.getTypeName(), mappedSuperclassType);
+&nbsp;        this.mappedSuperclassByMappedSuperclassMapping.put(mappedSuperclass, mappedSuperclassType);
+<b class="pc">&nbsp;        this.orderedMappings.add(mappedSuperclass);</b>
+<b class="nc">&nbsp;        if (!this.stackOfPersistentClassesBeingProcessed.isEmpty()) {</b>
+<b class="nc">&nbsp;            this.mappedSuperClassTypeToPersistentClass.put(mappedSuperclassType, this.getEntityWorkedOn());</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        this.knownMappedSuperclasses.remove(mappedSuperclass);
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public EntityDomainType&lt;?&gt; locateEntityType(PersistentClass persistentClass) {
+&nbsp;        return (EntityDomainType)this.entityTypesByPersistentClass.get(persistentClass);
+&nbsp;    }
+<b class="pc">&nbsp;</b>
+<b class="fc">&nbsp;    public EntityDomainType&lt;?&gt; locateEntityType(Class&lt;?&gt; javaType) {</b>
+&nbsp;        return (EntityDomainType)this.entityTypes.get(javaType);
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public &lt;E&gt; IdentifiableDomainType&lt;E&gt; locateIdentifiableType(String entityName) {</b>
+<b class="fc">&nbsp;        return (IdentifiableDomainType)this.identifiableTypesByName.get(entityName);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Map&lt;String, IdentifiableDomainType&lt;?&gt;&gt; getIdentifiableTypesByName() {
+&nbsp;        return Collections.unmodifiableMap(this.identifiableTypesByName);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private &lt;X&gt; PersistentAttribute&lt;X, ?&gt; buildAttribute(Property property, IdentifiableDomainType&lt;X&gt; entityType, BiFunction&lt;IdentifiableDomainType&lt;X&gt;, Property, PersistentAttribute&lt;X, ?&gt;&gt; factoryFunction) {</b>
+&nbsp;        Component component = property.getValue() instanceof Component ? (Component)property.getValue() : null;
+<b class="nc">&nbsp;        PersistentAttribute&lt;X, ?&gt; attribute;</b>
+<b class="nc">&nbsp;        if (component != null &amp;&amp; component.isGeneric()) {</b>
+<b class="nc">&nbsp;            Component genericComponent = this.runtimeModelCreationContext.getMetadata().getGenericComponent(component.getComponentClass());</b>
+<b class="nc">&nbsp;            Property genericProperty = property.copy();</b>
+&nbsp;            genericProperty.setValue(genericComponent);
+&nbsp;            genericProperty.setGeneric(true);
+&nbsp;            attribute = (PersistentAttribute)factoryFunction.apply(entityType, genericProperty);
+&nbsp;            if (!property.isGeneric()) {
+&nbsp;                PersistentAttribute&lt;X, ?&gt; concreteAttribute = (PersistentAttribute)factoryFunction.apply(entityType, property);
+<b class="nc">&nbsp;                if (concreteAttribute != null) {</b>
+&nbsp;                    ((AttributeContainer)entityType).getInFlightAccess().addConcreteGenericAttribute(concreteAttribute);
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            attribute = (PersistentAttribute)factoryFunction.apply(entityType, property);
+&nbsp;        }
+&nbsp;
+&nbsp;        return attribute;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void wrapUp() {</b>
+<b class="nc">&nbsp;        if (LOG.isTraceEnabled()) {</b>
+<b class="nc">&nbsp;            LOG.trace(&quot;Wrapping up metadata context...&quot;);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        boolean staticMetamodelScanEnabled = this.jpaStaticMetaModelPopulationSetting != JpaStaticMetaModelPopulationSetting.DISABLED;
+<b class="nc">&nbsp;        Set&lt;String&gt; processedMetamodelClasses = new HashSet();</b>
+&nbsp;
+&nbsp;        for(Object mapping : this.orderedMappings) {
+&nbsp;            if (PersistentClass.class.isAssignableFrom(mapping.getClass())) {
+&nbsp;                PersistentClass safeMapping = (PersistentClass)mapping;
+&nbsp;                if (LOG.isTraceEnabled()) {
+&nbsp;                    LOG.trace(&quot;Starting entity [&quot; + safeMapping.getEntityName() + &quot;]&quot;);
+&nbsp;                }
+&nbsp;
+&nbsp;                try {
+&nbsp;                    EntityDomainType&lt;Object&gt; jpaMapping = (EntityDomainType)this.entityTypesByPersistentClass.get(safeMapping);
+&nbsp;                    this.applyIdMetadata((PersistentClass)safeMapping, jpaMapping);
+<b class="fc">&nbsp;                    this.applyVersionAttribute(safeMapping, jpaMapping);</b>
+&nbsp;                    this.applyGenericProperties(safeMapping, jpaMapping);
+&nbsp;
+&nbsp;                    for(Property property : safeMapping.getDeclaredProperties()) {
+&nbsp;                        if (property.getValue() != safeMapping.getIdentifierMapper() &amp;&amp; (!safeMapping.isVersioned() || property != safeMapping.getVersion())) {
+&nbsp;                            AttributeFactory var32 = this.attributeFactory;
+&nbsp;                            Objects.requireNonNull(var32);
+&nbsp;                            PersistentAttribute&lt;Object, ?&gt; attribute = this.buildAttribute(property, jpaMapping, var32::buildAttribute);
+&nbsp;                            if (attribute != null) {
+&nbsp;                                this.addAttribute(jpaMapping, attribute);
+&nbsp;                                if (property.isNaturalIdentifier()) {
+&nbsp;                                    ((AttributeContainer)jpaMapping).getInFlightAccess().applyNaturalIdAttribute(attribute);
+<b class="nc">&nbsp;                                }</b>
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+&nbsp;                    ((AttributeContainer)jpaMapping).getInFlightAccess().finishUp();
+&nbsp;                    if (staticMetamodelScanEnabled) {
+&nbsp;                        this.populateStaticMetamodel(jpaMapping, processedMetamodelClasses);
+&nbsp;                    }
+&nbsp;                } finally {
+&nbsp;                    if (LOG.isTraceEnabled()) {
+&nbsp;                        LOG.trace(&quot;Completed entity [&quot; + safeMapping.getEntityName() + &quot;]&quot;);
+&nbsp;                    }
+<b class="fc">&nbsp;</b>
+&nbsp;                }
+&nbsp;            } else {
+&nbsp;                if (!MappedSuperclass.class.isAssignableFrom(mapping.getClass())) {
+<b class="fc">&nbsp;                    throw new AssertionFailure(&quot;Unexpected mapping type: &quot; + mapping.getClass());</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                MappedSuperclass safeMapping = (MappedSuperclass)mapping;
+&nbsp;                if (LOG.isTraceEnabled()) {
+&nbsp;                    LOG.trace(&quot;Starting mapped superclass [&quot; + safeMapping.getMappedClass().getName() + &quot;]&quot;);
+&nbsp;                }
+&nbsp;
+<b class="pc">&nbsp;                try {</b>
+<b class="pc">&nbsp;                    MappedSuperclassDomainType&lt;Object&gt; jpaType = (MappedSuperclassDomainType)this.mappedSuperclassByMappedSuperclassMapping.get(safeMapping);</b>
+&nbsp;                    this.applyIdMetadata(safeMapping, jpaType);
+&nbsp;                    this.applyVersionAttribute(safeMapping, jpaType);
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                    for(Property property : safeMapping.getDeclaredProperties()) {</b>
+<b class="nc">&nbsp;                        if (!isIdentifierProperty(property, safeMapping) &amp;&amp; (!safeMapping.isVersioned() || property != safeMapping.getVersion())) {</b>
+<b class="nc">&nbsp;                            AttributeFactory var10003 = this.attributeFactory;</b>
+<b class="nc">&nbsp;                            Objects.requireNonNull(var10003);</b>
+<b class="nc">&nbsp;                            PersistentAttribute&lt;Object, ?&gt; attribute = this.buildAttribute(property, jpaType, var10003::buildAttribute);</b>
+<b class="nc">&nbsp;                            if (attribute != null) {</b>
+<b class="nc">&nbsp;                                this.addAttribute(jpaType, attribute);</b>
+<b class="nc">&nbsp;                                if (property.isNaturalIdentifier()) {</b>
+&nbsp;                                    ((AttributeContainer)jpaType).getInFlightAccess().applyNaturalIdAttribute(attribute);
+<b class="nc">&nbsp;                                }</b>
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+<b class="fc">&nbsp;                    ((AttributeContainer)jpaType).getInFlightAccess().finishUp();</b>
+&nbsp;                    if (staticMetamodelScanEnabled) {
+<b class="fc">&nbsp;                        this.populateStaticMetamodel(jpaType, processedMetamodelClasses);</b>
+&nbsp;                    }
+&nbsp;                } finally {
+&nbsp;                    if (LOG.isTraceEnabled()) {
+&nbsp;                        LOG.trace(&quot;Completed mapped superclass [&quot; + safeMapping.getMappedClass().getName() + &quot;]&quot;);
+<b class="pc">&nbsp;                    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                }
+&nbsp;            }
+<b class="pc">&nbsp;        }</b>
+&nbsp;
+<b class="fc">&nbsp;        while(!this.embeddablesToProcess.isEmpty()) {</b>
+&nbsp;            ArrayList&lt;EmbeddableDomainType&lt;?&gt;&gt; processingEmbeddables = new ArrayList(this.embeddablesToProcess.size());
+&nbsp;
+<b class="fc">&nbsp;            for(List&lt;EmbeddableDomainType&lt;?&gt;&gt; embeddableDomainTypes : this.embeddablesToProcess.values()) {</b>
+<b class="pc">&nbsp;                processingEmbeddables.addAll(embeddableDomainTypes);</b>
+<b class="fc">&nbsp;            }</b>
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;            this.embeddablesToProcess.clear();</b>
+&nbsp;
+&nbsp;            for(EmbeddableDomainType&lt;?&gt; embeddable : processingEmbeddables) {
+<b class="fc">&nbsp;                Component component = (Component)this.componentByEmbeddable.get(embeddable);</b>
+<b class="fc">&nbsp;</b>
+&nbsp;                for(Property property : component.getProperties()) {
+<b class="fc">&nbsp;                    if (!component.isPolymorphic() || embeddable.getTypeName().equals(component.getPropertyDeclaringClass(property))) {</b>
+<b class="fc">&nbsp;                        PersistentAttribute&lt;Object, ?&gt; attribute = this.attributeFactory.buildAttribute(embeddable, property);</b>
+<b class="fc">&nbsp;                        if (attribute != null) {</b>
+&nbsp;                            Property superclassProperty = this.getMappedSuperclassProperty(property.getName(), component.getMappedSuperclass());
+<b class="fc">&nbsp;                            if (superclassProperty != null &amp;&amp; superclassProperty.isGeneric()) {</b>
+<b class="pc">&nbsp;                                ((AttributeContainer)embeddable).getInFlightAccess().addConcreteGenericAttribute(attribute);</b>
+&nbsp;                            } else {
+&nbsp;                                this.addAttribute(embeddable, attribute);
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;                    }
+<b class="pc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                ((AttributeContainer)embeddable).getInFlightAccess().finishUp();
+&nbsp;                if (!component.isGeneric() &amp;&amp; !(embeddable.getExpressibleJavaType() instanceof EntityJavaType)) {
+<b class="fc">&nbsp;                    this.embeddables.put(embeddable.getJavaType(), embeddable);</b>
+&nbsp;                    if (staticMetamodelScanEnabled) {
+&nbsp;                        this.populateStaticMetamodel(embeddable, processedMetamodelClasses);
+<b class="fc">&nbsp;                    }</b>
+&nbsp;                }
+<b class="pc">&nbsp;            }</b>
+<b class="fc">&nbsp;        }</b>
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private static boolean isIdentifierProperty(Property property, MappedSuperclass mappedSuperclass) {
+&nbsp;        Component identifierMapper = mappedSuperclass.getIdentifierMapper();
+&nbsp;        return identifierMapper != null &amp;&amp; ArrayHelper.contains(identifierMapper.getPropertyNames(), property.getName());
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    private void addAttribute(ManagedDomainType&lt;?&gt; type, PersistentAttribute&lt;Object, ?&gt; attribute) {
+<b class="pc">&nbsp;        AttributeContainer&lt;Object&gt; container = (AttributeContainer)type;</b>
+<b class="fc">&nbsp;        AttributeContainer.InFlightAccess&lt;Object&gt; inFlightAccess = container.getInFlightAccess();</b>
+&nbsp;        boolean virtual = attribute.getPersistentAttributeType() == PersistentAttributeType.EMBEDDED &amp;&amp; attribute.getAttributeJavaType() instanceof EntityJavaType;
+&nbsp;        if (virtual) {
+&nbsp;            EmbeddableDomainType&lt;?&gt; embeddableDomainType = (EmbeddableDomainType)attribute.getValueGraphType();
+<b class="pc">&nbsp;            Component component = (Component)this.componentByEmbeddable.get(embeddableDomainType);</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            for(Property property : component.getProperties()) {
+&nbsp;                PersistentAttribute&lt;Object, ?&gt; subAttribute = this.attributeFactory.buildAttribute(embeddableDomainType, property);
+&nbsp;                if (subAttribute != null) {
+<b class="nc">&nbsp;                    inFlightAccess.addAttribute(subAttribute);</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            if (this.jpaMetaModelPopulationSetting != JpaMetaModelPopulationSetting.ENABLED) {
+&nbsp;                return;
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        inFlightAccess.addAttribute(attribute);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private void applyIdMetadata(PersistentClass persistentClass, IdentifiableDomainType&lt;?&gt; identifiableType) {
+<b class="nc">&nbsp;        if (persistentClass.hasIdentifierProperty()) {</b>
+<b class="nc">&nbsp;            Property declaredIdentifierProperty = persistentClass.getDeclaredIdentifierProperty();</b>
+&nbsp;            AttributeContainer attributeContainer = (AttributeContainer)identifiableType;
+&nbsp;            if (declaredIdentifierProperty != null) {
+&nbsp;                AttributeFactory var10003 = this.attributeFactory;
+&nbsp;                Objects.requireNonNull(var10003);
+&nbsp;                SingularPersistentAttribute&lt;?, Object&gt; idAttribute = (SingularPersistentAttribute)this.buildAttribute(declaredIdentifierProperty, identifiableType, var10003::buildIdAttribute);
+<b class="nc">&nbsp;                attributeContainer.getInFlightAccess().applyIdAttribute(idAttribute);</b>
+&nbsp;            } else {
+&nbsp;                Property superclassIdentifier = this.getMappedSuperclassIdentifier(persistentClass);
+&nbsp;                if (superclassIdentifier != null &amp;&amp; superclassIdentifier.isGeneric()) {
+<b class="nc">&nbsp;                    SingularPersistentAttribute&lt;?, Object&gt; concreteIdentifier = this.attributeFactory.buildIdAttribute(identifiableType, persistentClass.getIdentifierProperty());</b>
+&nbsp;                    attributeContainer.getInFlightAccess().addConcreteGenericAttribute(concreteIdentifier);
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            if (!(persistentClass.getIdentifier() instanceof Component)) {</b>
+<b class="nc">&nbsp;                throw new MappingException(&quot;Expecting Component for id mapping with no id-attribute&quot;);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            Component cidValue = (Component)persistentClass.getIdentifier();</b>
+&nbsp;            Component identifierMapper = persistentClass.getIdentifierMapper();
+&nbsp;            List&lt;Property&gt; cidProperties;
+&nbsp;            int propertySpan;
+&nbsp;            EmbeddableTypeImpl&lt;?&gt; idClassType;
+<b class="nc">&nbsp;            if (identifierMapper != null) {</b>
+&nbsp;                cidProperties = identifierMapper.getProperties();
+<b class="nc">&nbsp;                propertySpan = identifierMapper.getPropertySpan();</b>
+<b class="nc">&nbsp;                idClassType = this.applyIdClassMetadata((Component)persistentClass.getIdentifier());</b>
+&nbsp;            } else {
+&nbsp;                cidProperties = cidValue.getProperties();
+&nbsp;                propertySpan = cidValue.getPropertySpan();
+<b class="nc">&nbsp;                idClassType = null;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            assert cidValue.isEmbedded();
+&nbsp;
+&nbsp;            AbstractIdentifiableType&lt;?&gt; idType = (AbstractIdentifiableType)this.identifiableTypesByName.get(cidValue.getOwner().getEntityName());
+<b class="nc">&nbsp;            Set idAttributes = idType.getIdClassAttributesSafely();</b>
+&nbsp;            if (idAttributes == null) {
+&nbsp;                idAttributes = new HashSet(propertySpan);
+&nbsp;
+&nbsp;                for(Property cidSubproperty : cidProperties) {
+<b class="pc">&nbsp;                    SingularPersistentAttribute&lt;?, Object&gt; cidSubAttr = this.attributeFactory.buildIdAttribute(idType, cidSubproperty);</b>
+<b class="nc">&nbsp;                    idAttributes.add(cidSubAttr);</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            AttributeContainer&lt;?&gt; container = (AttributeContainer)identifiableType;
+<b class="nc">&nbsp;            container.getInFlightAccess().applyNonAggregatedIdAttributes(idAttributes, idClassType);</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private Property getMappedSuperclassIdentifier(PersistentClass persistentClass) {</b>
+&nbsp;        for(MappedSuperclass mappedSuperclass = this.getMappedSuperclass(persistentClass); mappedSuperclass != null; mappedSuperclass = this.getMappedSuperclass(mappedSuperclass)) {
+&nbsp;            Property declaredIdentifierProperty = mappedSuperclass.getDeclaredIdentifierProperty();
+<b class="nc">&nbsp;            if (declaredIdentifierProperty != null) {</b>
+<b class="nc">&nbsp;                return declaredIdentifierProperty;</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private &lt;Y&gt; EmbeddableTypeImpl&lt;Y&gt; applyIdClassMetadata(Component idClassComponent) {</b>
+&nbsp;        JavaType&lt;Y&gt; javaType = this.getTypeConfiguration().getJavaTypeRegistry().resolveManagedTypeDescriptor(idClassComponent.getComponentClass());
+&nbsp;        MappedSuperclass mappedSuperclass = idClassComponent.getMappedSuperclass();
+<b class="nc">&nbsp;        MappedSuperclassDomainType&lt;? super Y&gt; superType;</b>
+&nbsp;        if (mappedSuperclass != null) {
+&nbsp;            superType = this.locateMappedSuperclassType(mappedSuperclass);
+&nbsp;        } else {
+&nbsp;            superType = null;
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        EmbeddableTypeImpl&lt;Y&gt; embeddableType = new EmbeddableTypeImpl(javaType, superType, (DomainType)null, false, this.getJpaMetamodel());
+<b class="nc">&nbsp;        this.registerEmbeddableType(embeddableType, idClassComponent);</b>
+<b class="nc">&nbsp;        return embeddableType;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private &lt;X&gt; void applyIdMetadata(MappedSuperclass mappingType, MappedSuperclassDomainType&lt;X&gt; jpaMappingType) {</b>
+&nbsp;        AttributeContainer&lt;X&gt; attributeContainer = (AttributeContainer)jpaMappingType;
+&nbsp;        if (mappingType.hasIdentifierProperty()) {
+&nbsp;            Property declaredIdentifierProperty = mappingType.getDeclaredIdentifierProperty();
+&nbsp;            if (declaredIdentifierProperty != null) {
+&nbsp;                AttributeFactory var10003 = this.attributeFactory;
+&nbsp;                Objects.requireNonNull(var10003);
+&nbsp;                SingularPersistentAttribute&lt;X, ?&gt; attribute = (SingularPersistentAttribute)this.buildAttribute(declaredIdentifierProperty, jpaMappingType, var10003::buildIdAttribute);
+<b class="nc">&nbsp;                attributeContainer.getInFlightAccess().applyIdAttribute(attribute);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        } else if (mappingType.getIdentifierMapper() != null) {</b>
+<b class="nc">&nbsp;            Set&lt;SingularPersistentAttribute&lt;? super X, ?&gt;&gt; attributes = this.buildIdClassAttributes(jpaMappingType, mappingType.getIdentifierMapper().getProperties());</b>
+&nbsp;            attributeContainer.getInFlightAccess().applyIdClassAttributes(attributes);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    private &lt;X&gt; void applyVersionAttribute(PersistentClass persistentClass, EntityDomainType&lt;X&gt; jpaEntityType) {</b>
+<b class="fc">&nbsp;        Property declaredVersion = persistentClass.getDeclaredVersion();</b>
+<b class="pc">&nbsp;        if (declaredVersion != null) {</b>
+<b class="nc">&nbsp;            ((AttributeContainer)jpaEntityType).getInFlightAccess().applyVersionAttribute(this.attributeFactory.buildVersionAttribute(jpaEntityType, declaredVersion));</b>
+<b class="pc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private &lt;X&gt; void applyVersionAttribute(MappedSuperclass mappingType, MappedSuperclassDomainType&lt;X&gt; jpaMappingType) {
+<b class="nc">&nbsp;        Property declaredVersion = mappingType.getDeclaredVersion();</b>
+<b class="nc">&nbsp;        if (declaredVersion != null) {</b>
+<b class="nc">&nbsp;            ((AttributeContainer)jpaMappingType).getInFlightAccess().applyVersionAttribute(this.attributeFactory.buildVersionAttribute(jpaMappingType, declaredVersion));</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private &lt;X&gt; void applyGenericProperties(PersistentClass persistentClass, EntityDomainType&lt;X&gt; entityType) {</b>
+&nbsp;        for(MappedSuperclass mappedSuperclass = this.getMappedSuperclass(persistentClass); mappedSuperclass != null; mappedSuperclass = this.getMappedSuperclass(mappedSuperclass)) {
+&nbsp;            for(Property superclassProperty : mappedSuperclass.getDeclaredProperties()) {
+&nbsp;                if (superclassProperty.isGeneric()) {
+<b class="fc">&nbsp;                    Property property = persistentClass.getProperty(superclassProperty.getName());</b>
+&nbsp;                    PersistentAttribute&lt;X, ?&gt; attribute = this.attributeFactory.buildAttribute(entityType, property);
+&nbsp;                    ((AttributeContainer)entityType).getInFlightAccess().addConcreteGenericAttribute(attribute);
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+<b class="pc">&nbsp;</b>
+<b class="fc">&nbsp;    private MappedSuperclass getMappedSuperclass(PersistentClass persistentClass) {</b>
+&nbsp;        while(persistentClass != null) {
+<b class="fc">&nbsp;            MappedSuperclass mappedSuperclass = persistentClass.getSuperMappedSuperclass();</b>
+<b class="pc">&nbsp;            if (mappedSuperclass != null) {</b>
+&nbsp;                return mappedSuperclass;
+<b class="fc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            persistentClass = persistentClass.getSuperclass();
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return null;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private MappedSuperclass getMappedSuperclass(MappedSuperclass mappedSuperclass) {
+<b class="nc">&nbsp;        return mappedSuperclass.getSuperMappedSuperclass() != null ? mappedSuperclass.getSuperMappedSuperclass() : this.getMappedSuperclass(mappedSuperclass.getSuperPersistentClass());</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private Property getMappedSuperclassProperty(String propertyName, MappedSuperclass mappedSuperclass) {</b>
+&nbsp;        if (mappedSuperclass == null) {
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        } else {
+&nbsp;            for(Property property : mappedSuperclass.getDeclaredProperties()) {
+<b class="nc">&nbsp;                if (property.getName().equals(propertyName)) {</b>
+&nbsp;                    return property;
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            Property property = this.getMappedSuperclassProperty(propertyName, mappedSuperclass.getSuperMappedSuperclass());
+&nbsp;            if (property != null) {
+<b class="nc">&nbsp;                return property;</b>
+<b class="nc">&nbsp;            } else if (mappedSuperclass.getSuperPersistentClass() != null) {</b>
+&nbsp;                return mappedSuperclass.getSuperPersistentClass().getProperty(propertyName);
+&nbsp;            } else {
+&nbsp;                return null;
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private &lt;X&gt; Set&lt;SingularPersistentAttribute&lt;? super X, ?&gt;&gt; buildIdClassAttributes(IdentifiableDomainType&lt;X&gt; ownerType, List&lt;Property&gt; properties) {</b>
+<b class="nc">&nbsp;        if (LOG.isTraceEnabled()) {</b>
+<b class="nc">&nbsp;            LOG.trace(&quot;Building old-school composite identifier [&quot; + ownerType.getJavaType().getName() + &quot;]&quot;);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        Set&lt;SingularPersistentAttribute&lt;? super X, ?&gt;&gt; attributes = new HashSet();
+&nbsp;
+<b class="nc">&nbsp;        for(Property property : properties) {</b>
+<b class="nc">&nbsp;            attributes.add(this.attributeFactory.buildIdAttribute(ownerType, property));</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return attributes;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private &lt;X&gt; void populateStaticMetamodel(ManagedDomainType&lt;X&gt; managedType, Set&lt;String&gt; processedMetamodelClassName) {</b>
+<b class="nc">&nbsp;        Class&lt;X&gt; managedTypeClass = managedType.getJavaType();</b>
+&nbsp;        if (managedTypeClass != null) {
+<b class="nc">&nbsp;            String metamodelClassName = managedTypeClass.getName() + &quot;_&quot;;</b>
+<b class="nc">&nbsp;            if (processedMetamodelClassName.add(metamodelClassName)) {</b>
+<b class="nc">&nbsp;                try {</b>
+<b class="nc">&nbsp;                    Class&lt;?&gt; metamodelClass = this.classLoaderService.classForName(metamodelClassName);</b>
+<b class="nc">&nbsp;                    this.registerAttributes(metamodelClass, managedType);</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                    try {
+<b class="nc">&nbsp;                        injectField(metamodelClass, &quot;class_&quot;, managedType, false);</b>
+&nbsp;                    } catch (NoSuchFieldException var7) {
+&nbsp;                    }
+&nbsp;                } catch (ClassLoadingException var8) {
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+&nbsp;                ManagedDomainType&lt;? super X&gt; superType = managedType.getSuperType();
+<b class="nc">&nbsp;                if (superType != null) {</b>
+&nbsp;                    this.populateStaticMetamodel(superType, processedMetamodelClassName);
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private &lt;X&gt; void registerAttributes(Class&lt;?&gt; metamodelClass, ManagedDomainType&lt;X&gt; managedType) {</b>
+<b class="nc">&nbsp;        for(Attribute&lt;X, ?&gt; attribute : managedType.getDeclaredAttributes()) {</b>
+&nbsp;            this.registerAttribute(metamodelClass, attribute);
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        if (managedType instanceof IdentifiableType) {</b>
+&nbsp;            AbstractIdentifiableType&lt;X&gt; entityType = (AbstractIdentifiableType)managedType;
+&nbsp;            if (entityType.hasDeclaredVersionAttribute()) {
+&nbsp;                this.registerAttribute(metamodelClass, entityType.getDeclaredVersion());
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            if (entityType.hasIdClass()) {</b>
+&nbsp;                Set&lt;SingularPersistentAttribute&lt;? super X, ?&gt;&gt; attributes = entityType.getIdClassAttributesSafely();
+<b class="nc">&nbsp;                if (attributes != null) {</b>
+&nbsp;                    for(SingularAttribute&lt;? super X, ?&gt; attribute : attributes) {
+<b class="nc">&nbsp;                        this.registerAttribute(metamodelClass, attribute);</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private &lt;X&gt; void registerAttribute(Class&lt;?&gt; metamodelClass, Attribute&lt;X, ?&gt; attribute) {</b>
+&nbsp;        String name = attribute.getName();
+&nbsp;
+&nbsp;        try {
+&nbsp;            boolean allowNonDeclaredFieldReference = attribute.getPersistentAttributeType() == PersistentAttributeType.EMBEDDED || attribute.getDeclaringType().getPersistenceType() == PersistenceType.EMBEDDABLE;
+<b class="nc">&nbsp;            injectField(metamodelClass, name, attribute, allowNonDeclaredFieldReference);</b>
+&nbsp;        } catch (NoSuchFieldException var5) {
+<b class="nc">&nbsp;            LOG.unableToLocateStaticMetamodelField(metamodelClass.getName(), name);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private static &lt;X&gt; void injectField(Class&lt;?&gt; metamodelClass, String name, Object model, boolean allowNonDeclaredFieldReference) throws NoSuchFieldException {
+<b class="nc">&nbsp;        Field field = allowNonDeclaredFieldReference ? metamodelClass.getField(name) : metamodelClass.getDeclaredField(name);</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        try {</b>
+<b class="nc">&nbsp;            ReflectHelper.ensureAccessibility(field);</b>
+<b class="nc">&nbsp;            field.set((Object)null, model);</b>
+&nbsp;        } catch (IllegalAccessException e) {
+<b class="nc">&nbsp;            throw new AssertionFailure(&quot;Unable to inject static metamodel attribute : &quot; + metamodelClass.getName() + &quot;#&quot; + name, e);</b>
+&nbsp;        } catch (IllegalArgumentException var7) {
+&nbsp;            if (!isDefaultEnversRevisionType(metamodelClass)) {
+<b class="nc">&nbsp;                LOG.illegalArgumentOnStaticMetamodelFieldInjection(metamodelClass.getName(), name, model.getClass().getName(), field.getType().getName());</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private static boolean isDefaultEnversRevisionType(Class&lt;?&gt; metamodelClass) {</b>
+<b class="nc">&nbsp;        return Set.of(&quot;org.hibernate.envers.DefaultRevisionEntity_&quot;, &quot;org.hibernate.envers.DefaultTrackingModifiedEntitiesRevisionEntity_&quot;, &quot;org.hibernate.envers.enhanced.SequenceIdRevisionEntity_&quot;, &quot;org.hibernate.envers.enhanced.SequenceIdTrackingModifiedEntitiesRevisionEntity_&quot;).contains(metamodelClass.getName());</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public MappedSuperclassDomainType&lt;?&gt; locateMappedSuperclassType(MappedSuperclass mappedSuperclass) {</b>
+&nbsp;        return (MappedSuperclassDomainType)this.mappedSuperclassByMappedSuperclassMapping.get(mappedSuperclass);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void pushEntityWorkedOn(PersistentClass persistentClass) {
+&nbsp;        this.stackOfPersistentClassesBeingProcessed.add(persistentClass);
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="pc">&nbsp;    public void popEntityWorkedOn(PersistentClass persistentClass) {</b>
+&nbsp;        PersistentClass stackTop = (PersistentClass)this.stackOfPersistentClassesBeingProcessed.remove(this.stackOfPersistentClassesBeingProcessed.size() - 1);
+<b class="nc">&nbsp;        if (stackTop != persistentClass) {</b>
+<b class="nc">&nbsp;            String var10002 = persistentClass.getEntityName();</b>
+&nbsp;            throw new AssertionFailure(&quot;Inconsistent popping: &quot; + var10002 + &quot; instead of &quot; + stackTop.getEntityName());
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private PersistentClass getEntityWorkedOn() {
+<b class="nc">&nbsp;        return (PersistentClass)this.stackOfPersistentClassesBeingProcessed.get(this.stackOfPersistentClassesBeingProcessed.size() - 1);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public PersistentClass getPersistentClassHostingProperties(MappedSuperclassTypeImpl&lt;?&gt; mappedSuperclassType) {</b>
+<b class="nc">&nbsp;        return (PersistentClass)this.mappedSuperClassTypeToPersistentClass.get(mappedSuperclassType);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Set&lt;MappedSuperclass&gt; getUnusedMappedSuperclasses() {
+&nbsp;        return new HashSet(this.knownMappedSuperclasses);
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="pc">&nbsp;    public &lt;J&gt; BasicDomainType&lt;J&gt; resolveBasicType(Class&lt;J&gt; javaType) {</b>
+<b class="nc">&nbsp;        return (BasicDomainType)this.basicDomainTypeMap.computeIfAbsent(javaType, (jt) -&gt; {</b>
+<b class="nc">&nbsp;            JavaTypeRegistry registry = this.getTypeConfiguration().getJavaTypeRegistry();</b>
+<b class="nc">&nbsp;            JavaType&lt;J&gt; javaTypeDescriptor = registry.resolveDescriptor(javaType);</b>
+<b class="nc">&nbsp;            JdbcType jdbcType = javaTypeDescriptor.getRecommendedJdbcType(this.typeConfiguration.getCurrentBaseSqlTypeIndicators());</b>
+&nbsp;            return (BasicDomainType)(javaType.isPrimitive() ? new PrimitiveBasicTypeImpl(javaTypeDescriptor, jdbcType, javaType) : new BasicTypeImpl(javaTypeDescriptor, jdbcType));
+<b class="nc">&nbsp;        });</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public &lt;J&gt; EmbeddableDomainType&lt;J&gt; locateEmbeddable(Class&lt;J&gt; embeddableClass, Component component) {</b>
+&nbsp;        EmbeddableDomainType&lt;J&gt; domainType = (EmbeddableDomainType)this.embeddables.get(embeddableClass);
+&nbsp;        if (domainType == null) {
+&nbsp;            List&lt;EmbeddableDomainType&lt;?&gt;&gt; embeddableDomainTypes = (List)this.embeddablesToProcess.get(embeddableClass);
+&nbsp;            if (embeddableDomainTypes != null) {
+<b class="fc">&nbsp;                Iterator var5 = embeddableDomainTypes.iterator();</b>
+<b class="fc">&nbsp;                if (var5.hasNext()) {</b>
+<b class="pc">&nbsp;                    EmbeddableDomainType&lt;?&gt; embeddableDomainType = (EmbeddableDomainType)var5.next();</b>
+<b class="nc">&nbsp;                    Component cachedComponent = (Component)this.componentByEmbeddable.get(embeddableDomainType);</b>
+&nbsp;                    if (cachedComponent.isSame(component)) {
+<b class="fc">&nbsp;                        domainType = embeddableDomainType;</b>
+&nbsp;                    } else {
+<b class="fc">&nbsp;                        if (!cachedComponent.getComponentClass().equals(component.getComponentClass())) {</b>
+&nbsp;                            throw new MappingException(&quot;Encountered multiple component mappings for the same java class &quot; + embeddableClass.getName() + &quot; with different property mappings. Every property mapping combination should have its own java class&quot;);
+&nbsp;                        }
+&nbsp;
+<b class="nc">&nbsp;                        int cachedComponentPropertySpan = cachedComponent.getPropertySpan();</b>
+<b class="nc">&nbsp;                        if (cachedComponentPropertySpan != component.getPropertySpan()) {</b>
+<b class="nc">&nbsp;                            throw new MappingException(&quot;Encountered multiple component mappings for the same java class &quot; + embeddableClass.getName() + &quot; with different property mappings. Every property mapping combination should have its own java class&quot;);</b>
+&nbsp;                        }
+&nbsp;
+&nbsp;                        for(int i = 0; i &lt; cachedComponentPropertySpan; ++i) {
+<b class="nc">&nbsp;                            if (!cachedComponent.getProperty(i).getName().equals(component.getProperty(i).getName())) {</b>
+<b class="nc">&nbsp;                                throw new MappingException(&quot;Encountered multiple component mappings for the same java class &quot; + embeddableClass.getName() + &quot; with different property mappings. Every property mapping combination should have its own java class&quot;);</b>
+&nbsp;                            }
+&nbsp;                        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                        domainType = embeddableDomainType;</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        return domainType;
+<b class="nc">&nbsp;    }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:54</div>
+</div>
+</body>
+</html>

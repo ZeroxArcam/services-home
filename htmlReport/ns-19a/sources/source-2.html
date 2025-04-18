@@ -1,0 +1,362 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > QueryEngineImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.query.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: QueryEngineImpl (org.hibernate.query.internal)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">QueryEngineImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    65%
+  </span>
+  <span class="absValue">
+    (13/20)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    42.9%
+  </span>
+  <span class="absValue">
+    (12/28)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    80.5%
+  </span>
+  <span class="absValue">
+    (66/82)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">QueryEngineImpl$FunctionContributionsImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    75%
+  </span>
+  <span class="absValue">
+    (3/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    85.7%
+  </span>
+  <span class="absValue">
+    (6/7)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (16/24)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    42.9%
+  </span>
+  <span class="absValue">
+    (12/28)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    80.9%
+  </span>
+  <span class="absValue">
+    (72/89)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.query.internal;
+&nbsp;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.Comparator;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Objects;
+&nbsp;import java.util.function.Supplier;
+&nbsp;import org.hibernate.boot.model.FunctionContributions;
+&nbsp;import org.hibernate.boot.model.FunctionContributor;
+&nbsp;import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
+&nbsp;import org.hibernate.boot.spi.MetadataImplementor;
+&nbsp;import org.hibernate.boot.spi.SessionFactoryOptions;
+&nbsp;import org.hibernate.dialect.Dialect;
+&nbsp;import org.hibernate.engine.query.spi.NativeQueryInterpreter;
+&nbsp;import org.hibernate.engine.spi.SessionFactoryImplementor;
+&nbsp;import org.hibernate.internal.CoreLogging;
+&nbsp;import org.hibernate.internal.util.config.ConfigurationHelper;
+&nbsp;import org.hibernate.query.hql.HqlTranslator;
+&nbsp;import org.hibernate.query.hql.internal.StandardHqlTranslator;
+&nbsp;import org.hibernate.query.hql.spi.SqmCreationOptions;
+&nbsp;import org.hibernate.query.named.NamedObjectRepository;
+&nbsp;import org.hibernate.query.spi.QueryEngine;
+&nbsp;import org.hibernate.query.spi.QueryEngineOptions;
+&nbsp;import org.hibernate.query.spi.QueryInterpretationCache;
+&nbsp;import org.hibernate.query.sqm.NodeBuilder;
+&nbsp;import org.hibernate.query.sqm.function.SqmFunctionDescriptor;
+&nbsp;import org.hibernate.query.sqm.function.SqmFunctionRegistry;
+&nbsp;import org.hibernate.query.sqm.internal.SqmCreationOptionsStandard;
+&nbsp;import org.hibernate.query.sqm.internal.SqmCriteriaNodeBuilder;
+&nbsp;import org.hibernate.query.sqm.spi.SqmCreationContext;
+&nbsp;import org.hibernate.query.sqm.sql.SqmTranslatorFactory;
+&nbsp;import org.hibernate.query.sqm.sql.StandardSqmTranslatorFactory;
+&nbsp;import org.hibernate.service.ServiceRegistry;
+&nbsp;import org.hibernate.stat.spi.StatisticsImplementor;
+&nbsp;import org.hibernate.type.spi.TypeConfiguration;
+&nbsp;import org.jboss.logging.Logger;
+&nbsp;
+&nbsp;public class QueryEngineImpl implements QueryEngine {
+&nbsp;    private static final Logger LOG_HQL_FUNCTIONS = CoreLogging.logger(&quot;org.hibernate.HQL_FUNCTIONS&quot;);
+&nbsp;    private final TypeConfiguration typeConfiguration;
+&nbsp;    private final NamedObjectRepository namedObjectRepository;
+&nbsp;    private final NativeQueryInterpreter nativeQueryInterpreter;
+&nbsp;    private final QueryInterpretationCache interpretationCache;
+&nbsp;    private final NodeBuilder criteriaBuilder;
+&nbsp;    private final HqlTranslator hqlTranslator;
+&nbsp;    private final SqmTranslatorFactory sqmTranslatorFactory;
+&nbsp;    private final SqmFunctionRegistry sqmFunctionRegistry;
+<b class="fc">&nbsp;</b>
+&nbsp;    public static QueryEngine from(SessionFactoryImplementor sessionFactory, MetadataImplementor metadata) {
+&nbsp;        QueryEngineOptions options = sessionFactory.getSessionFactoryOptions();
+<b class="fc">&nbsp;        Dialect dialect = sessionFactory.getJdbcServices().getDialect();</b>
+<b class="fc">&nbsp;        TypeConfiguration var10003 = metadata.getTypeConfiguration();</b>
+<b class="fc">&nbsp;        HqlTranslator var10004 = resolveHqlTranslator(options, dialect, sessionFactory, new SqmCreationOptionsStandard(options));</b>
+&nbsp;        SqmTranslatorFactory var10005 = resolveSqmTranslatorFactory(options, dialect);
+<b class="fc">&nbsp;        SqmFunctionRegistry var10006 = createFunctionRegistry(sessionFactory, metadata, options, dialect);</b>
+<b class="fc">&nbsp;        NamedObjectRepository var10007 = metadata.buildNamedQueryRepository(sessionFactory);</b>
+<b class="fc">&nbsp;        Objects.requireNonNull(sessionFactory);</b>
+<b class="fc">&nbsp;        return new QueryEngineImpl(sessionFactory, var10003, var10004, var10005, var10006, var10007, buildInterpretationCache(sessionFactory::getStatistics, sessionFactory.getProperties()), (NativeQueryInterpreter)sessionFactory.getServiceRegistry().getService(NativeQueryInterpreter.class));</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private static SqmFunctionRegistry createFunctionRegistry(SessionFactoryImplementor sessionFactory, MetadataImplementor metadata, QueryEngineOptions queryEngineOptions, Dialect dialect) {</b>
+&nbsp;        SqmFunctionRegistry sqmFunctionRegistry = metadata.getFunctionRegistry();
+&nbsp;        Map var10000 = queryEngineOptions.getCustomSqlFunctionMap();
+&nbsp;        Objects.requireNonNull(sqmFunctionRegistry);
+&nbsp;        var10000.forEach(sqmFunctionRegistry::register);
+&nbsp;        SqmFunctionRegistry customSqmFunctionRegistry = queryEngineOptions.getCustomSqmFunctionRegistry();
+&nbsp;        if (customSqmFunctionRegistry != null) {
+&nbsp;            customSqmFunctionRegistry.overlay(sqmFunctionRegistry);
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+&nbsp;        FunctionContributions functionContributions = new FunctionContributionsImpl(sessionFactory.getServiceRegistry(), metadata.getTypeConfiguration(), sqmFunctionRegistry);
+<b class="fc">&nbsp;</b>
+&nbsp;        for(FunctionContributor contributor : sortedFunctionContributors(sessionFactory.getServiceRegistry())) {
+<b class="fc">&nbsp;            contributor.contributeFunctions(functionContributions);</b>
+<b class="pc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        dialect.initializeFunctionRegistry(functionContributions);
+&nbsp;        if (LOG_HQL_FUNCTIONS.isDebugEnabled()) {
+&nbsp;            sqmFunctionRegistry.getFunctionsByName().forEach((entry) -&gt; LOG_HQL_FUNCTIONS.debug(((SqmFunctionDescriptor)entry.getValue()).getSignature((String)entry.getKey())));
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;        return sqmFunctionRegistry;</b>
+&nbsp;    }
+&nbsp;
+<b class="pc">&nbsp;    private QueryEngineImpl(SessionFactoryImplementor sessionFactory, TypeConfiguration typeConfiguration, HqlTranslator hqlTranslator, SqmTranslatorFactory sqmTranslatorFactory, SqmFunctionRegistry functionRegistry, NamedObjectRepository namedObjectRepository, QueryInterpretationCache interpretationCache, NativeQueryInterpreter nativeQueryInterpreter) {</b>
+<b class="nc">&nbsp;        this.typeConfiguration = typeConfiguration;</b>
+&nbsp;        this.sqmFunctionRegistry = functionRegistry;
+&nbsp;        this.sqmTranslatorFactory = sqmTranslatorFactory;
+<b class="fc">&nbsp;        this.hqlTranslator = hqlTranslator;</b>
+&nbsp;        this.namedObjectRepository = namedObjectRepository;
+<b class="pc">&nbsp;        this.interpretationCache = interpretationCache;</b>
+<b class="nc">&nbsp;        this.nativeQueryInterpreter = nativeQueryInterpreter;</b>
+<b class="nc">&nbsp;        SessionFactoryOptions sessionFactoryOptions = sessionFactory.getSessionFactoryOptions();</b>
+&nbsp;        this.criteriaBuilder = new SqmCriteriaNodeBuilder(sessionFactory.getUuid(), sessionFactory.getName(), this, sessionFactoryOptions.getJpaCompliance().isJpaQueryComplianceEnabled(), sessionFactoryOptions.getCriteriaValueHandlingMode(), () -&gt; sessionFactory);
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    private static HqlTranslator resolveHqlTranslator(QueryEngineOptions runtimeOptions, Dialect dialect, SqmCreationContext sqmCreationContext, SqmCreationOptions sqmCreationOptions) {</b>
+&nbsp;        if (runtimeOptions.getCustomHqlTranslator() != null) {
+&nbsp;            return runtimeOptions.getCustomHqlTranslator();
+&nbsp;        } else {
+&nbsp;            return (HqlTranslator)(dialect.getHqlTranslator() != null ? dialect.getHqlTranslator() : new StandardHqlTranslator(sqmCreationContext, sqmCreationOptions));
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static SqmTranslatorFactory resolveSqmTranslatorFactory(QueryEngineOptions runtimeOptions, Dialect dialect) {
+&nbsp;        if (runtimeOptions.getCustomSqmTranslatorFactory() != null) {
+&nbsp;            return runtimeOptions.getCustomSqmTranslatorFactory();
+&nbsp;        } else {
+&nbsp;            return (SqmTranslatorFactory)(dialect.getSqmTranslatorFactory() != null ? dialect.getSqmTranslatorFactory() : new StandardSqmTranslatorFactory());
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static List&lt;FunctionContributor&gt; sortedFunctionContributors(ServiceRegistry serviceRegistry) {
+&nbsp;        Collection&lt;FunctionContributor&gt; functionContributors = ((ClassLoaderService)serviceRegistry.requireService(ClassLoaderService.class)).loadJavaServices(FunctionContributor.class);
+&nbsp;        List&lt;FunctionContributor&gt; contributors = new ArrayList(functionContributors);
+&nbsp;        contributors.sort(Comparator.comparingInt(FunctionContributor::ordinal).thenComparing((a) -&gt; a.getClass().getCanonicalName()));
+<b class="fc">&nbsp;        return contributors;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private static QueryInterpretationCache buildInterpretationCache(Supplier&lt;StatisticsImplementor&gt; statisticsSupplier, Map&lt;String, Object&gt; properties) {</b>
+<b class="fc">&nbsp;        boolean explicitUseCache = ConfigurationHelper.getBoolean(&quot;hibernate.query.plan_cache_enabled&quot;, properties, true);</b>
+<b class="fc">&nbsp;        Integer explicitMaxPlanSize = ConfigurationHelper.getInteger(&quot;hibernate.query.plan_cache_max_size&quot;, properties);</b>
+<b class="fc">&nbsp;        if (explicitUseCache || explicitMaxPlanSize != null &amp;&amp; explicitMaxPlanSize &gt; 0) {</b>
+<b class="fc">&nbsp;            int size = explicitMaxPlanSize != null ? explicitMaxPlanSize : 2048;</b>
+<b class="fc">&nbsp;            return new QueryInterpretationCacheStandardImpl(size, statisticsSupplier);</b>
+<b class="fc">&nbsp;        } else {</b>
+<b class="fc">&nbsp;            return new QueryInterpretationCacheDisabledImpl(statisticsSupplier);</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public void validateNamedQueries() {</b>
+<b class="nc">&nbsp;        this.namedObjectRepository.validateNamedQueries(this);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public NamedObjectRepository getNamedObjectRepository() {
+&nbsp;        return this.namedObjectRepository;
+&nbsp;    }
+&nbsp;
+&nbsp;    public TypeConfiguration getTypeConfiguration() {
+&nbsp;        return this.typeConfiguration;
+<b class="pc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public NodeBuilder getCriteriaBuilder() {
+<b class="pc">&nbsp;        return this.criteriaBuilder;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public HqlTranslator getHqlTranslator() {
+<b class="fc">&nbsp;        return this.hqlTranslator;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public SqmTranslatorFactory getSqmTranslatorFactory() {
+&nbsp;        return this.sqmTranslatorFactory;
+&nbsp;    }
+&nbsp;
+<b class="pc">&nbsp;    public NativeQueryInterpreter getNativeQueryInterpreter() {</b>
+<b class="nc">&nbsp;        return this.nativeQueryInterpreter;</b>
+&nbsp;    }
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;    public QueryInterpretationCache getInterpretationCache() {</b>
+&nbsp;        return this.interpretationCache;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public SqmFunctionRegistry getSqmFunctionRegistry() {
+&nbsp;        return this.sqmFunctionRegistry;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public void close() {</b>
+<b class="fc">&nbsp;        if (this.namedObjectRepository != null) {</b>
+<b class="fc">&nbsp;            this.namedObjectRepository.close();</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;        if (this.interpretationCache != null) {</b>
+<b class="fc">&nbsp;            this.interpretationCache.close();</b>
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+&nbsp;        if (this.sqmFunctionRegistry != null) {
+&nbsp;            this.sqmFunctionRegistry.close();
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    private static class FunctionContributionsImpl implements FunctionContributions {
+&nbsp;        private final ServiceRegistry serviceRegistry;
+&nbsp;        private final TypeConfiguration typeConfiguration;
+&nbsp;        private final SqmFunctionRegistry functionRegistry;
+&nbsp;
+&nbsp;        public FunctionContributionsImpl(ServiceRegistry serviceRegistry, TypeConfiguration typeConfiguration, SqmFunctionRegistry functionRegistry) {
+<b class="fc">&nbsp;            this.serviceRegistry = serviceRegistry;</b>
+&nbsp;            this.typeConfiguration = typeConfiguration;
+&nbsp;            this.functionRegistry = functionRegistry;
+&nbsp;        }
+&nbsp;
+<b class="pc">&nbsp;        public TypeConfiguration getTypeConfiguration() {</b>
+<b class="pc">&nbsp;            return this.typeConfiguration;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;        public SqmFunctionRegistry getFunctionRegistry() {
+<b class="fc">&nbsp;            return this.functionRegistry;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public ServiceRegistry getServiceRegistry() {
+<b class="nc">&nbsp;            return this.serviceRegistry;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

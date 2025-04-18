@@ -1,0 +1,182 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > NoUniqueBeanDefinitionFailureAnalyzer</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.boot.diagnostics.analyzer</a>
+</div>
+
+<h1>Coverage Summary for Class: NoUniqueBeanDefinitionFailureAnalyzer (org.springframework.boot.diagnostics.analyzer)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">NoUniqueBeanDefinitionFailureAnalyzer</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    16.7%
+  </span>
+  <span class="absValue">
+    (1/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    10.7%
+  </span>
+  <span class="absValue">
+    (3/28)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.boot.diagnostics.analyzer;
+&nbsp;
+&nbsp;import org.springframework.beans.factory.BeanFactory;
+&nbsp;import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+&nbsp;import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
+&nbsp;import org.springframework.beans.factory.config.BeanDefinition;
+&nbsp;import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+&nbsp;import org.springframework.boot.diagnostics.FailureAnalysis;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.StringUtils;
+&nbsp;
+&nbsp;class NoUniqueBeanDefinitionFailureAnalyzer extends AbstractInjectionFailureAnalyzer&lt;NoUniqueBeanDefinitionException&gt; {
+&nbsp;    private final ConfigurableBeanFactory beanFactory;
+&nbsp;
+&nbsp;    NoUniqueBeanDefinitionFailureAnalyzer(BeanFactory beanFactory) {
+&nbsp;        Assert.isInstanceOf(ConfigurableBeanFactory.class, beanFactory);
+&nbsp;        this.beanFactory = (ConfigurableBeanFactory)beanFactory;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected FailureAnalysis analyze(Throwable rootFailure, NoUniqueBeanDefinitionException cause, String description) {
+&nbsp;        String[] beanNames = this.extractBeanNames(cause);
+&nbsp;        if (beanNames == null) {
+&nbsp;            return null;
+&nbsp;        } else {
+&nbsp;            StringBuilder message = new StringBuilder();
+&nbsp;            message.append(String.format(&quot;%s required a single bean, but %d were found:%n&quot;, description != null ? description : &quot;A component&quot;, beanNames.length));
+&nbsp;
+&nbsp;            for(String beanName : beanNames) {
+&nbsp;                this.buildMessage(message, beanName);
+&nbsp;            }
+&nbsp;
+&nbsp;            MissingParameterNamesFailureAnalyzer.appendPossibility(message);
+&nbsp;            StringBuilder action = new StringBuilder(&quot;Consider marking one of the beans as @Primary, updating the consumer to accept multiple beans, or using @Qualifier to identify the bean that should be consumed&quot;);
+<b class="fc">&nbsp;            action.append(&quot;%n%n%s&quot;.formatted(&quot;Ensure that your compiler is configured to use the &#39;-parameters&#39; flag.\nYou may need to update both your build tool settings as well as your IDE.\n(See https://github.com/spring-projects/spring-framework/wiki/Upgrading-to-Spring-Framework-6.x#parameter-name-retention)\n&quot;));</b>
+<b class="fc">&nbsp;            return new FailureAnalysis(message.toString(), action.toString(), cause);</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void buildMessage(StringBuilder message, String beanName) {
+&nbsp;        try {
+&nbsp;            BeanDefinition definition = this.beanFactory.getMergedBeanDefinition(beanName);
+<b class="nc">&nbsp;            message.append(this.getDefinitionDescription(beanName, definition));</b>
+<b class="nc">&nbsp;        } catch (NoSuchBeanDefinitionException var4) {</b>
+<b class="nc">&nbsp;            message.append(String.format(&quot;\t- %s: a programmatically registered singleton%n&quot;, beanName));</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private String getDefinitionDescription(String beanName, BeanDefinition definition) {</b>
+<b class="nc">&nbsp;        return StringUtils.hasText(definition.getFactoryMethodName()) ? String.format(&quot;\t- %s: defined by method &#39;%s&#39; in %s%n&quot;, beanName, definition.getFactoryMethodName(), this.getResourceDescription(definition)) : String.format(&quot;\t- %s: defined in %s%n&quot;, beanName, this.getResourceDescription(definition));</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private String getResourceDescription(BeanDefinition definition) {</b>
+&nbsp;        String resourceDescription = definition.getResourceDescription();
+&nbsp;        return resourceDescription != null ? resourceDescription : &quot;unknown location&quot;;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private String[] extractBeanNames(NoUniqueBeanDefinitionException cause) {
+&nbsp;        return cause.getMessage().contains(&quot;but found&quot;) ? StringUtils.commaDelimitedListToStringArray(cause.getMessage().substring(cause.getMessage().lastIndexOf(58) + 1).trim()) : null;
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:54</div>
+</div>
+</body>
+</html>

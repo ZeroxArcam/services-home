@@ -1,0 +1,196 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > DefaultMeterObservationHandler</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">io.micrometer.core.instrument.observation</a>
+</div>
+
+<h1>Coverage Summary for Class: DefaultMeterObservationHandler (io.micrometer.core.instrument.observation)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DefaultMeterObservationHandler</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/32)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package io.micrometer.core.instrument.observation;
+&nbsp;
+&nbsp;import io.micrometer.common.KeyValue;
+&nbsp;import io.micrometer.core.instrument.Counter;
+&nbsp;import io.micrometer.core.instrument.LongTaskTimer;
+&nbsp;import io.micrometer.core.instrument.MeterRegistry;
+&nbsp;import io.micrometer.core.instrument.Tag;
+&nbsp;import io.micrometer.core.instrument.Timer;
+&nbsp;import io.micrometer.observation.Observation;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Arrays;
+&nbsp;import java.util.List;
+&nbsp;
+&nbsp;public class DefaultMeterObservationHandler implements MeterObservationHandler&lt;Observation.Context&gt; {
+&nbsp;    private final MeterRegistry meterRegistry;
+&nbsp;    private final boolean shouldCreateLongTaskTimer;
+&nbsp;
+&nbsp;    public DefaultMeterObservationHandler(MeterRegistry meterRegistry) {
+&nbsp;        this.meterRegistry = meterRegistry;
+&nbsp;        this.shouldCreateLongTaskTimer = true;
+&nbsp;    }
+&nbsp;
+&nbsp;    public DefaultMeterObservationHandler(MeterRegistry meterRegistry, IgnoredMeters... metersToIgnore) {
+&nbsp;        this.meterRegistry = meterRegistry;
+&nbsp;        this.shouldCreateLongTaskTimer = Arrays.stream(metersToIgnore).noneMatch((ignored) -&gt; ignored == DefaultMeterObservationHandler.IgnoredMeters.LONG_TASK_TIMER);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void onStart(Observation.Context context) {
+&nbsp;        if (this.shouldCreateLongTaskTimer) {
+&nbsp;            LongTaskTimer.Sample longTaskSample = LongTaskTimer.builder(context.getName() + &quot;.active&quot;).tags(this.createTags(context)).register(this.meterRegistry).start();
+&nbsp;            context.put(LongTaskTimer.Sample.class, longTaskSample);
+&nbsp;        }
+&nbsp;
+&nbsp;        Timer.Sample sample = Timer.start(this.meterRegistry);
+&nbsp;        context.put(Timer.Sample.class, sample);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void onStop(Observation.Context context) {
+&nbsp;        List&lt;Tag&gt; tags = this.createTags(context);
+&nbsp;        tags.add(Tag.of(&quot;error&quot;, this.getErrorValue(context)));
+&nbsp;        Timer.Sample sample = (Timer.Sample)context.getRequired(Timer.Sample.class);
+&nbsp;        sample.stop(Timer.builder(context.getName()).tags(tags).register(this.meterRegistry));
+&nbsp;        if (this.shouldCreateLongTaskTimer) {
+&nbsp;            LongTaskTimer.Sample longTaskSample = (LongTaskTimer.Sample)context.getRequired(LongTaskTimer.Sample.class);
+&nbsp;            longTaskSample.stop();
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public void onEvent(Observation.Event event, Observation.Context context) {
+&nbsp;        Counter.builder(context.getName() + &quot;.&quot; + event.getName()).tags(this.createTags(context)).register(this.meterRegistry).increment();
+&nbsp;    }
+&nbsp;
+&nbsp;    private String getErrorValue(Observation.Context context) {
+&nbsp;        Throwable error = context.getError();
+&nbsp;        return error != null ? error.getClass().getSimpleName() : &quot;none&quot;;
+&nbsp;    }
+&nbsp;
+&nbsp;    private List&lt;Tag&gt; createTags(Observation.Context context) {
+<b class="nc">&nbsp;        List&lt;Tag&gt; tags = new ArrayList();</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        for(KeyValue keyValue : context.getLowCardinalityKeyValues()) {</b>
+<b class="nc">&nbsp;            tags.add(Tag.of(keyValue.getKey(), keyValue.getValue()));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        return tags;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public static enum IgnoredMeters {</b>
+<b class="nc">&nbsp;        LONG_TASK_TIMER;</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        private IgnoredMeters() {</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:58</div>
+</div>
+</body>
+</html>

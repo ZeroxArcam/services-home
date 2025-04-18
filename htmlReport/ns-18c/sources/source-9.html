@@ -1,0 +1,643 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > SingleTableEntityPersister</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.persister.entity</a>
+</div>
+
+<h1>Coverage Summary for Class: SingleTableEntityPersister (org.hibernate.persister.entity)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SingleTableEntityPersister</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    38.2%
+  </span>
+  <span class="absValue">
+    (21/55)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    20%
+  </span>
+  <span class="absValue">
+    (16/80)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    47.1%
+  </span>
+  <span class="absValue">
+    (113/240)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.persister.entity;
+&nbsp;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Objects;
+&nbsp;import org.hibernate.HibernateException;
+&nbsp;import org.hibernate.Internal;
+&nbsp;import org.hibernate.MappingException;
+&nbsp;import org.hibernate.Remove;
+&nbsp;import org.hibernate.cache.spi.access.EntityDataAccess;
+&nbsp;import org.hibernate.cache.spi.access.NaturalIdDataAccess;
+&nbsp;import org.hibernate.dialect.Dialect;
+&nbsp;import org.hibernate.internal.DynamicFilterAliasGenerator;
+&nbsp;import org.hibernate.internal.FilterAliasGenerator;
+&nbsp;import org.hibernate.internal.util.collections.ArrayHelper;
+&nbsp;import org.hibernate.internal.util.collections.CollectionHelper;
+&nbsp;import org.hibernate.jdbc.Expectation;
+&nbsp;import org.hibernate.jdbc.Expectations;
+&nbsp;import org.hibernate.mapping.Column;
+&nbsp;import org.hibernate.mapping.Formula;
+&nbsp;import org.hibernate.mapping.Join;
+&nbsp;import org.hibernate.mapping.PersistentClass;
+&nbsp;import org.hibernate.mapping.Property;
+&nbsp;import org.hibernate.mapping.Selectable;
+&nbsp;import org.hibernate.mapping.Subclass;
+&nbsp;import org.hibernate.mapping.Table;
+&nbsp;import org.hibernate.mapping.Value;
+&nbsp;import org.hibernate.metamodel.mapping.EntityIdentifierMapping;
+&nbsp;import org.hibernate.metamodel.mapping.EntityMappingType;
+&nbsp;import org.hibernate.metamodel.mapping.TableDetails;
+&nbsp;import org.hibernate.metamodel.spi.MappingMetamodelImplementor;
+&nbsp;import org.hibernate.metamodel.spi.RuntimeModelCreationContext;
+&nbsp;import org.hibernate.persister.entity.EntityNameUse.UseKind;
+&nbsp;import org.hibernate.persister.spi.PersisterCreationContext;
+&nbsp;import org.hibernate.query.sqm.function.SqmFunctionRegistry;
+&nbsp;import org.hibernate.sql.ast.tree.from.NamedTableReference;
+&nbsp;import org.hibernate.sql.ast.tree.from.TableGroup;
+&nbsp;import org.hibernate.sql.model.ast.builder.MutationGroupBuilder;
+&nbsp;import org.hibernate.sql.model.ast.builder.TableInsertBuilder;
+&nbsp;import org.hibernate.type.BasicType;
+&nbsp;import org.hibernate.type.spi.TypeConfiguration;
+&nbsp;
+&nbsp;@Internal
+&nbsp;public class SingleTableEntityPersister extends AbstractEntityPersister {
+&nbsp;    private final int joinSpan;
+&nbsp;    private final boolean hasDuplicateTables;
+&nbsp;    private final String[] qualifiedTableNames;
+&nbsp;    private final boolean[] isInverseTable;
+&nbsp;    private final boolean[] isNullableTable;
+&nbsp;    private final String[][] keyColumnNames;
+&nbsp;    private final boolean[] cascadeDeleteEnabled;
+&nbsp;    private final String[] spaces;
+&nbsp;    private final String[] subclassClosure;
+&nbsp;    private final String[] subclassTableNameClosure;
+&nbsp;    private final boolean[] isInverseSubclassTable;
+&nbsp;    private final boolean[] isNullableSubclassTable;
+&nbsp;    private final String[][] subclassTableKeyColumnClosure;
+&nbsp;    private final boolean[] isClassOrSuperclassTable;
+&nbsp;    private final boolean[] isClassOrSuperclassJoin;
+&nbsp;    private final int[] propertyTableNumbers;
+&nbsp;    private final int[] subclassPropertyTableNumberClosure;
+&nbsp;    private final Map&lt;Object, String&gt; subclassesByDiscriminatorValue;
+&nbsp;    private final boolean forceDiscriminator;
+&nbsp;    private final String discriminatorColumnName;
+&nbsp;    private final String discriminatorColumnReaders;
+&nbsp;    private final String discriminatorColumnReaderTemplate;
+&nbsp;    private final String discriminatorFormulaTemplate;
+&nbsp;    private final BasicType&lt;?&gt; discriminatorType;
+&nbsp;    private final Object discriminatorValue;
+&nbsp;    private final String discriminatorSQLValue;
+&nbsp;    private final boolean discriminatorInsertable;
+&nbsp;    private final String[] constraintOrderedTableNames;
+&nbsp;    private final String[][] constraintOrderedKeyColumnNames;
+&nbsp;    /** @deprecated */
+&nbsp;    @Deprecated
+&nbsp;    private final String discriminatorAlias;
+&nbsp;
+&nbsp;    /** @deprecated */
+&nbsp;    @Deprecated(
+&nbsp;        since = &quot;6.0&quot;
+&nbsp;    )
+&nbsp;    public SingleTableEntityPersister(PersistentClass persistentClass, EntityDataAccess cacheAccessStrategy, NaturalIdDataAccess naturalIdRegionAccessStrategy, PersisterCreationContext creationContext) throws HibernateException {
+&nbsp;        this(persistentClass, cacheAccessStrategy, naturalIdRegionAccessStrategy, (RuntimeModelCreationContext)creationContext);
+&nbsp;    }
+&nbsp;
+&nbsp;    public SingleTableEntityPersister(PersistentClass persistentClass, EntityDataAccess cacheAccessStrategy, NaturalIdDataAccess naturalIdRegionAccessStrategy, RuntimeModelCreationContext creationContext) throws HibernateException {
+&nbsp;        super(persistentClass, cacheAccessStrategy, naturalIdRegionAccessStrategy, creationContext);
+&nbsp;        Dialect dialect = creationContext.getDialect();
+&nbsp;        SqmFunctionRegistry functionRegistry = creationContext.getFunctionRegistry();
+&nbsp;        TypeConfiguration typeConfiguration = creationContext.getTypeConfiguration();
+&nbsp;        this.joinSpan = persistentClass.getJoinClosureSpan() + 1;
+&nbsp;        this.qualifiedTableNames = new String[this.joinSpan];
+&nbsp;        Table table = persistentClass.getRootTable();
+&nbsp;        String rootTableName = this.determineTableName(table);
+&nbsp;        this.qualifiedTableNames[0] = rootTableName;
+&nbsp;        this.isInverseTable = new boolean[this.joinSpan];
+&nbsp;        this.isNullableTable = new boolean[this.joinSpan];
+&nbsp;        this.keyColumnNames = new String[this.joinSpan][];
+&nbsp;        this.isInverseTable[0] = false;
+&nbsp;        this.isNullableTable[0] = false;
+&nbsp;        this.keyColumnNames[0] = this.getIdentifierColumnNames();
+&nbsp;        this.cascadeDeleteEnabled = new boolean[this.joinSpan];
+&nbsp;        this.customSQLInsert = new String[this.joinSpan];
+&nbsp;        this.customSQLUpdate = new String[this.joinSpan];
+&nbsp;        this.customSQLDelete = new String[this.joinSpan];
+&nbsp;        this.insertCallable = new boolean[this.joinSpan];
+&nbsp;        this.updateCallable = new boolean[this.joinSpan];
+&nbsp;        this.deleteCallable = new boolean[this.joinSpan];
+&nbsp;        this.insertExpectations = new Expectation[this.joinSpan];
+&nbsp;        this.updateExpectations = new Expectation[this.joinSpan];
+&nbsp;        this.deleteExpectations = new Expectation[this.joinSpan];
+&nbsp;        this.customSQLInsert[0] = persistentClass.getCustomSQLInsert();
+&nbsp;        this.insertCallable[0] = persistentClass.isCustomInsertCallable();
+&nbsp;        this.insertExpectations[0] = Expectations.createExpectation(persistentClass.getInsertExpectation(), this.insertCallable[0]);
+&nbsp;        this.customSQLUpdate[0] = persistentClass.getCustomSQLUpdate();
+&nbsp;        this.updateCallable[0] = persistentClass.isCustomUpdateCallable();
+&nbsp;        this.updateExpectations[0] = Expectations.createExpectation(persistentClass.getUpdateExpectation(), this.updateCallable[0]);
+<b class="nc">&nbsp;        this.customSQLDelete[0] = persistentClass.getCustomSQLDelete();</b>
+&nbsp;        this.deleteCallable[0] = persistentClass.isCustomDeleteCallable();
+&nbsp;        this.deleteExpectations[0] = Expectations.createExpectation(persistentClass.getDeleteExpectation(), this.deleteCallable[0]);
+&nbsp;        List&lt;Join&gt; joinClosure = persistentClass.getJoinClosure();
+&nbsp;        boolean hasDuplicateTableName = false;
+&nbsp;
+&nbsp;        for(int j = 1; j - 1 &lt; joinClosure.size(); ++j) {
+&nbsp;            Join join = (Join)joinClosure.get(j - 1);
+&nbsp;            this.qualifiedTableNames[j] = this.determineTableName(join.getTable());
+<b class="fc">&nbsp;            hasDuplicateTableName = hasDuplicateTableName || ArrayHelper.indexOf(this.qualifiedTableNames, j, this.qualifiedTableNames[j]) != -1;</b>
+&nbsp;            this.isInverseTable[j] = join.isInverse();
+<b class="fc">&nbsp;            this.isNullableTable[j] = join.isOptional();</b>
+<b class="fc">&nbsp;            this.cascadeDeleteEnabled[j] = join.getKey().isCascadeDeleteEnabled() &amp;&amp; dialect.supportsCascadeDelete();</b>
+<b class="fc">&nbsp;            this.customSQLInsert[j] = join.getCustomSQLInsert();</b>
+&nbsp;            this.insertCallable[j] = join.isCustomInsertCallable();
+&nbsp;            this.insertExpectations[j] = Expectations.createExpectation(join.getInsertExpectation(), this.insertCallable[j]);
+&nbsp;            this.customSQLUpdate[j] = join.getCustomSQLUpdate();
+<b class="fc">&nbsp;            this.updateCallable[j] = join.isCustomUpdateCallable();</b>
+&nbsp;            this.updateExpectations[j] = Expectations.createExpectation(join.getUpdateExpectation(), this.updateCallable[j]);
+<b class="fc">&nbsp;            this.customSQLDelete[j] = join.getCustomSQLDelete();</b>
+&nbsp;            this.deleteCallable[j] = join.isCustomDeleteCallable();
+<b class="fc">&nbsp;            this.deleteExpectations[j] = Expectations.createExpectation(join.getDeleteExpectation(), this.deleteCallable[j]);</b>
+<b class="fc">&nbsp;            this.keyColumnNames[j] = new String[join.getKey().getColumnSpan()];</b>
+<b class="fc">&nbsp;            List&lt;Column&gt; columns = join.getKey().getColumns();</b>
+&nbsp;
+<b class="fc">&nbsp;            for(int i = 0; i &lt; columns.size(); ++i) {</b>
+<b class="fc">&nbsp;                this.keyColumnNames[j][i] = ((Column)columns.get(i)).getQuotedName(dialect);</b>
+<b class="fc">&nbsp;            }</b>
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;        this.hasDuplicateTables = hasDuplicateTableName;</b>
+<b class="fc">&nbsp;        this.constraintOrderedTableNames = new String[this.qualifiedTableNames.length];</b>
+<b class="fc">&nbsp;        this.constraintOrderedKeyColumnNames = new String[this.qualifiedTableNames.length][];</b>
+&nbsp;        int i = this.qualifiedTableNames.length - 1;
+&nbsp;
+<b class="fc">&nbsp;        for(int position = 0; i &gt;= 0; ++position) {</b>
+<b class="fc">&nbsp;            this.constraintOrderedTableNames[position] = this.qualifiedTableNames[i];</b>
+<b class="fc">&nbsp;            this.constraintOrderedKeyColumnNames[position] = this.keyColumnNames[i];</b>
+<b class="fc">&nbsp;            --i;</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;        this.spaces = ArrayHelper.join(this.qualifiedTableNames, ArrayHelper.toStringArray(persistentClass.getSynchronizedTables()));
+<b class="fc">&nbsp;        ArrayList&lt;String&gt; subclassTables = new ArrayList();</b>
+<b class="fc">&nbsp;        ArrayList&lt;String[]&gt; joinKeyColumns = new ArrayList();</b>
+<b class="fc">&nbsp;        ArrayList&lt;Boolean&gt; isConcretes = new ArrayList();</b>
+&nbsp;        ArrayList&lt;Boolean&gt; isClassOrSuperclassJoins = new ArrayList();
+<b class="fc">&nbsp;        ArrayList&lt;Boolean&gt; isInverses = new ArrayList();</b>
+<b class="fc">&nbsp;        ArrayList&lt;Boolean&gt; isNullables = new ArrayList();</b>
+<b class="fc">&nbsp;        subclassTables.add(this.qualifiedTableNames[0]);</b>
+&nbsp;        joinKeyColumns.add(this.getIdentifierColumnNames());
+<b class="fc">&nbsp;        isConcretes.add(true);</b>
+<b class="fc">&nbsp;        isClassOrSuperclassJoins.add(true);</b>
+<b class="fc">&nbsp;        isInverses.add(false);</b>
+&nbsp;        isNullables.add(false);
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;        for(Join join : persistentClass.getSubclassJoinClosure()) {</b>
+<b class="fc">&nbsp;            isConcretes.add(persistentClass.isClassOrSuperclassTable(join.getTable()));</b>
+&nbsp;            isClassOrSuperclassJoins.add(persistentClass.isClassOrSuperclassJoin(join));
+&nbsp;            isInverses.add(join.isInverse());
+&nbsp;            isNullables.add(join.isOptional());
+<b class="fc">&nbsp;            String joinTableName = this.determineTableName(join.getTable());</b>
+<b class="fc">&nbsp;            subclassTables.add(joinTableName);</b>
+<b class="pc">&nbsp;            String[] keyCols = new String[join.getKey().getColumnSpan()];</b>
+<b class="nc">&nbsp;            List&lt;Column&gt; columns = join.getKey().getColumns();</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; columns.size(); ++i) {</b>
+<b class="nc">&nbsp;                keyCols[i] = ((Column)columns.get(i)).getQuotedName(dialect);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            joinKeyColumns.add(keyCols);</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        this.subclassTableNameClosure = ArrayHelper.toStringArray(subclassTables);</b>
+<b class="nc">&nbsp;        this.subclassTableKeyColumnClosure = ArrayHelper.to2DStringArray(joinKeyColumns);</b>
+&nbsp;        this.isClassOrSuperclassTable = ArrayHelper.toBooleanArray(isConcretes);
+<b class="nc">&nbsp;        this.isClassOrSuperclassJoin = ArrayHelper.toBooleanArray(isClassOrSuperclassJoins);</b>
+<b class="nc">&nbsp;        this.isInverseSubclassTable = ArrayHelper.toBooleanArray(isInverses);</b>
+<b class="nc">&nbsp;        this.isNullableSubclassTable = ArrayHelper.toBooleanArray(isNullables);</b>
+&nbsp;        if (persistentClass.isPolymorphic()) {
+<b class="nc">&nbsp;            Value discriminator = persistentClass.getDiscriminator();</b>
+<b class="nc">&nbsp;            if (discriminator == null) {</b>
+<b class="nc">&nbsp;                throw new MappingException(&quot;discriminator mapping required for single table polymorphic persistence&quot;);</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            this.forceDiscriminator = persistentClass.isForceDiscriminator();
+<b class="nc">&nbsp;            Selectable selectable = (Selectable)discriminator.getSelectables().get(0);</b>
+<b class="nc">&nbsp;            this.discriminatorType = DiscriminatorHelper.getDiscriminatorType(persistentClass);</b>
+<b class="nc">&nbsp;            this.discriminatorValue = DiscriminatorHelper.getDiscriminatorValue(persistentClass);</b>
+&nbsp;            this.discriminatorSQLValue = DiscriminatorHelper.getDiscriminatorSQLValue(persistentClass, dialect);
+&nbsp;            this.discriminatorInsertable = isDiscriminatorInsertable(persistentClass);
+&nbsp;            if (discriminator.hasFormula()) {
+<b class="fc">&nbsp;                Formula formula = (Formula)selectable;</b>
+<b class="fc">&nbsp;                this.discriminatorFormulaTemplate = formula.getTemplate(dialect, typeConfiguration, functionRegistry);</b>
+<b class="fc">&nbsp;                this.discriminatorColumnName = null;</b>
+<b class="fc">&nbsp;                this.discriminatorColumnReaders = null;</b>
+<b class="fc">&nbsp;                this.discriminatorColumnReaderTemplate = null;</b>
+<b class="fc">&nbsp;                this.discriminatorAlias = &quot;clazz_&quot;;</b>
+&nbsp;            } else {
+&nbsp;                Column column = (Column)selectable;
+<b class="fc">&nbsp;                this.discriminatorColumnName = column.getQuotedName(dialect);</b>
+&nbsp;                this.discriminatorColumnReaders = column.getReadExpr(dialect);
+&nbsp;                this.discriminatorColumnReaderTemplate = column.getTemplate(dialect, typeConfiguration, functionRegistry);
+&nbsp;                this.discriminatorAlias = column.getAlias(dialect, persistentClass.getRootTable());
+<b class="fc">&nbsp;                this.discriminatorFormulaTemplate = null;</b>
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;        } else {</b>
+<b class="fc">&nbsp;            this.forceDiscriminator = false;</b>
+&nbsp;            this.discriminatorInsertable = false;
+<b class="fc">&nbsp;            this.discriminatorColumnName = null;</b>
+<b class="fc">&nbsp;            this.discriminatorColumnReaders = null;</b>
+&nbsp;            this.discriminatorColumnReaderTemplate = null;
+<b class="fc">&nbsp;            this.discriminatorAlias = null;</b>
+<b class="fc">&nbsp;            this.discriminatorType = null;</b>
+<b class="fc">&nbsp;            this.discriminatorValue = null;</b>
+<b class="fc">&nbsp;            this.discriminatorSQLValue = null;</b>
+&nbsp;            this.discriminatorFormulaTemplate = null;
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;        this.propertyTableNumbers = new int[this.getPropertySpan()];
+<b class="pc">&nbsp;        List&lt;Property&gt; propertyClosure = persistentClass.getPropertyClosure();</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        for(int k = 0; k &lt; propertyClosure.size(); ++k) {</b>
+<b class="nc">&nbsp;            this.propertyTableNumbers[k] = persistentClass.getJoinNumber((Property)propertyClosure.get(k));</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        ArrayList&lt;Integer&gt; propertyJoinNumbers = new ArrayList();
+&nbsp;        Map&lt;Object, String&gt; subclassesByDiscriminatorValueLocal = new HashMap();
+&nbsp;
+&nbsp;        for(Property property : persistentClass.getSubclassPropertyClosure()) {
+<b class="nc">&nbsp;            propertyJoinNumbers.add(persistentClass.getJoinNumber(property));</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        this.subclassPropertyTableNumberClosure = ArrayHelper.toIntArray(propertyJoinNumbers);</b>
+<b class="nc">&nbsp;        int subclassSpan = persistentClass.getSubclassSpan() + 1;</b>
+<b class="nc">&nbsp;        this.subclassClosure = new String[subclassSpan];</b>
+<b class="nc">&nbsp;        this.subclassClosure[0] = this.getEntityName();</b>
+&nbsp;        if (persistentClass.isPolymorphic()) {
+<b class="nc">&nbsp;            addSubclassByDiscriminatorValue(subclassesByDiscriminatorValueLocal, this.discriminatorValue, this.getEntityName());</b>
+&nbsp;            List&lt;Subclass&gt; subclasses = persistentClass.getSubclasses();
+&nbsp;
+&nbsp;            for(int k = 0; k &lt; subclasses.size(); ++k) {
+<b class="fc">&nbsp;                Subclass subclass = (Subclass)subclasses.get(k);</b>
+&nbsp;                this.subclassClosure[k] = subclass.getEntityName();
+<b class="fc">&nbsp;                Object subclassDiscriminatorValue = DiscriminatorHelper.getDiscriminatorValue(subclass);</b>
+<b class="fc">&nbsp;                addSubclassByDiscriminatorValue(subclassesByDiscriminatorValueLocal, subclassDiscriminatorValue, subclass.getEntityName());</b>
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;        this.subclassesByDiscriminatorValue = CollectionHelper.toSmallMap(subclassesByDiscriminatorValueLocal);
+&nbsp;        this.initSubclassPropertyAliasesMap(persistentClass);
+&nbsp;        this.postConstruct(creationContext.getMetadata());
+<b class="pc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private static boolean isDiscriminatorInsertable(PersistentClass persistentClass) {</b>
+<b class="nc">&nbsp;        return !persistentClass.isDiscriminatorValueNull() &amp;&amp; !persistentClass.isDiscriminatorValueNotNull() &amp;&amp; persistentClass.isDiscriminatorInsertable() &amp;&amp; !persistentClass.getDiscriminator().hasFormula();</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private static void addSubclassByDiscriminatorValue(Map&lt;Object, String&gt; subclassesByDiscriminatorValue, Object discriminatorValue, String entityName) {</b>
+<b class="nc">&nbsp;        String mappedEntityName = (String)subclassesByDiscriminatorValue.put(discriminatorValue, entityName);</b>
+<b class="nc">&nbsp;        if (mappedEntityName != null) {</b>
+<b class="nc">&nbsp;            throw new MappingException(&quot;Entities [&quot; + entityName + &quot;] and [&quot; + mappedEntityName + &quot;] are mapped with the same discriminator value &#39;&quot; + discriminatorValue + &quot;&#39;.&quot;);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public boolean isInverseTable(int j) {</b>
+<b class="nc">&nbsp;        return this.isInverseTable[j];</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected boolean isInverseSubclassTable(int j) {</b>
+&nbsp;        return this.isInverseSubclassTable[j];
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public String getDiscriminatorColumnName() {</b>
+<b class="nc">&nbsp;        return this.discriminatorColumnName;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public String getDiscriminatorColumnReaders() {</b>
+&nbsp;        return this.discriminatorColumnReaders;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public String getDiscriminatorColumnReaderTemplate() {</b>
+<b class="fc">&nbsp;        return this.discriminatorColumnReaderTemplate;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public String getDiscriminatorFormulaTemplate() {</b>
+<b class="fc">&nbsp;        return this.discriminatorFormulaTemplate;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public String getTableName() {</b>
+&nbsp;        return this.qualifiedTableNames[0];
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public BasicType&lt;?&gt; getDiscriminatorType() {
+&nbsp;        return this.discriminatorType;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public Map&lt;Object, String&gt; getSubclassByDiscriminatorValue() {</b>
+<b class="fc">&nbsp;        return this.subclassesByDiscriminatorValue;</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public TableDetails getMappedTableDetails() {
+&nbsp;        return this.getTableMapping(0);
+&nbsp;    }
+&nbsp;
+&nbsp;    public TableDetails getIdentifierTableDetails() {
+<b class="fc">&nbsp;        return this.getTableMapping(0);</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public Object getDiscriminatorValue() {</b>
+&nbsp;        return this.discriminatorValue;
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    public String getDiscriminatorSQLValue() {
+&nbsp;        return this.discriminatorSQLValue;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+<b class="fc">&nbsp;    /** @deprecated */</b>
+<b class="fc">&nbsp;    @Deprecated(</b>
+<b class="fc">&nbsp;        forRemoval = true</b>
+<b class="pc">&nbsp;    )</b>
+<b class="nc">&nbsp;    public @Remove String[] getSubclassClosure() {</b>
+&nbsp;        return this.subclassClosure;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public String getSubclassForDiscriminatorValue(Object value) {
+&nbsp;        if (value == null) {
+&nbsp;            return (String)this.subclassesByDiscriminatorValue.get(DiscriminatorHelper.NULL_DISCRIMINATOR);
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            String result = (String)this.subclassesByDiscriminatorValue.get(value);</b>
+<b class="nc">&nbsp;            return result == null ? (String)this.subclassesByDiscriminatorValue.get(DiscriminatorHelper.NOT_NULL_DISCRIMINATOR) : result;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public String[] getPropertySpaces() {
+&nbsp;        return this.spaces;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected boolean isDiscriminatorFormula() {
+&nbsp;        return this.discriminatorColumnName == null;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public boolean hasDuplicateTables() {</b>
+&nbsp;        return this.hasDuplicateTables;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+<b class="fc">&nbsp;    public String getTableName(int j) {</b>
+&nbsp;        return this.qualifiedTableNames[j];
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public String[] getKeyColumns(int j) {</b>
+<b class="nc">&nbsp;        return this.keyColumnNames[j];</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public boolean isTableCascadeDeleteEnabled(int j) {
+&nbsp;        return this.cascadeDeleteEnabled[j];
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isPropertyOfTable(int property, int j) {
+&nbsp;        return this.propertyTableNumbers[property] == j;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public String fromTableFragment(String name) {</b>
+&nbsp;        String var10000 = this.getTableName();
+&nbsp;        return var10000 + &quot; &quot; + name;
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean needsDiscriminator() {
+&nbsp;        return this.forceDiscriminator || this.isInherited();
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public String getSubclassPropertyTableName(int i) {</b>
+&nbsp;        return this.subclassTableNameClosure[this.subclassPropertyTableNumberClosure[i]];
+&nbsp;    }
+&nbsp;
+&nbsp;    protected int getSubclassPropertyTableNumber(int i) {
+<b class="nc">&nbsp;        return this.subclassPropertyTableNumberClosure[i];</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getTableSpan() {
+&nbsp;        return this.joinSpan;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void addDiscriminatorToInsertGroup(MutationGroupBuilder insertGroupBuilder) {
+&nbsp;        if (this.discriminatorInsertable) {
+&nbsp;            TableInsertBuilder tableInsertBuilder = (TableInsertBuilder)insertGroupBuilder.getTableDetailsBuilder(this.getRootTableName());
+<b class="nc">&nbsp;            tableInsertBuilder.addValueColumn(this.discriminatorColumnName, this.discriminatorValue == DiscriminatorHelper.NULL_DISCRIMINATOR ? &quot;null&quot; : this.discriminatorSQLValue, this.getDiscriminatorMapping().getJdbcMapping());</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected int[] getPropertyTableNumbers() {</b>
+&nbsp;        return this.propertyTableNumbers;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected String[] getSubclassTableKeyColumns(int j) {
+<b class="nc">&nbsp;        return this.subclassTableKeyColumnClosure[j];</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getSubclassTableName(int j) {
+&nbsp;        return this.subclassTableNameClosure[j];
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected String[] getSubclassTableNames() {
+&nbsp;        return this.subclassTableNameClosure;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public int getSubclassTableSpan() {
+&nbsp;        return this.subclassTableNameClosure.length;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected boolean isClassOrSuperclassTable(int j) {</b>
+&nbsp;        return this.isClassOrSuperclassTable[j];
+&nbsp;    }
+&nbsp;
+&nbsp;    protected boolean isClassOrSuperclassJoin(int j) {
+<b class="nc">&nbsp;        return this.isClassOrSuperclassJoin[j];</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isNullableTable(int j) {
+&nbsp;        return this.isNullableTable[j];
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected boolean isIdentifierTable(String tableExpression) {
+&nbsp;        return tableExpression.equals(this.getRootTableName());
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public boolean hasSkippableTables() {
+&nbsp;        return this.hasAnySkippableTables(this.isNullableTable, this.isInverseTable);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected boolean isNullableSubclassTable(int j) {</b>
+&nbsp;        return this.isNullableSubclassTable[j];
+&nbsp;    }
+&nbsp;
+&nbsp;    protected boolean hasMultipleTables() {
+&nbsp;        return this.getTableSpan() &gt; 1;
+&nbsp;    }
+&nbsp;
+&nbsp;    public String[] getConstraintOrderedTableNameClosure() {
+<b class="nc">&nbsp;        return this.constraintOrderedTableNames;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String[][] getContraintOrderedTableKeyColumnClosure() {
+&nbsp;        return this.constraintOrderedKeyColumnNames;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public FilterAliasGenerator getFilterAliasGenerator(String rootAlias) {
+&nbsp;        return new DynamicFilterAliasGenerator(this.qualifiedTableNames, rootAlias);
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public void pruneForSubclasses(TableGroup tableGroup, Map&lt;String, EntityNameUse&gt; entityNameUses) {
+&nbsp;        if (this.needsDiscriminator() || !entityNameUses.isEmpty()) {
+&nbsp;            MappingMetamodelImplementor mappingMetamodel = this.getFactory().getRuntimeMetamodels().getMappingMetamodel();
+&nbsp;            boolean containsTreatUse = false;
+&nbsp;
+<b class="fc">&nbsp;            for(Map.Entry&lt;String, EntityNameUse&gt; entry : entityNameUses.entrySet()) {</b>
+&nbsp;                EntityNameUse.UseKind useKind = ((EntityNameUse)entry.getValue()).getKind();
+&nbsp;                if (useKind != UseKind.PROJECTION &amp;&amp; useKind != UseKind.EXPRESSION) {
+&nbsp;                    EntityPersister persister = mappingMetamodel.getEntityDescriptor((String)entry.getKey());
+&nbsp;                    if (useKind == UseKind.TREAT &amp;&amp; !persister.isAbstract() &amp;&amp; (this.getSuperMappingType() == null || !this.getSuperMappingType().isTypeOrSuperType(persister))) {
+<b class="nc">&nbsp;                        containsTreatUse = true;</b>
+&nbsp;                        break;
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            if (containsTreatUse) {
+&nbsp;                String discriminatorPredicate = this.getPrunedDiscriminatorPredicate(entityNameUses, mappingMetamodel, &quot;t&quot;);
+&nbsp;                if (discriminatorPredicate != null) {
+&nbsp;                    NamedTableReference tableReference = (NamedTableReference)tableGroup.getPrimaryTableReference();
+<b class="fc">&nbsp;                    String var10001 = this.getTableName();</b>
+&nbsp;                    tableReference.setPrunedTableExpression(&quot;(select * from &quot; + var10001 + &quot; t where &quot; + discriminatorPredicate + &quot;)&quot;);
+&nbsp;                }
+&nbsp;
+&nbsp;            }
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void visitConstraintOrderedTables(EntityMappingType.ConstraintOrderedTableConsumer consumer) {
+&nbsp;        for(int i = 0; i &lt; this.constraintOrderedTableNames.length; ++i) {
+<b class="fc">&nbsp;            String tableName = this.constraintOrderedTableNames[i];</b>
+&nbsp;            consumer.consume(tableName, () -&gt; (columnConsumer) -&gt; {
+&nbsp;                    String[] var10002 = this.constraintOrderedKeyColumnNames[i];
+&nbsp;                    EntityIdentifierMapping var10003 = this.getIdentifierMapping();
+&nbsp;                    Objects.requireNonNull(var10003);
+<b class="pc">&nbsp;                    columnConsumer.accept(tableName, var10002, var10003::getJdbcMapping);</b>
+&nbsp;                });
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void visitMutabilityOrderedTables(AbstractEntityPersister.MutabilityOrderedTableConsumer consumer) {
+&nbsp;        for(int i = 0; i &lt; this.qualifiedTableNames.length; ++i) {
+&nbsp;            String tableName = this.qualifiedTableNames[i];
+&nbsp;            consumer.consume(tableName, i, () -&gt; (columnConsumer) -&gt; columnConsumer.accept(tableName, this.getIdentifierMapping(), this.keyColumnNames[i]));
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public String getDiscriminatorAlias() {
+&nbsp;        return this.discriminatorAlias;
+&nbsp;    }
+<b class="pc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:58</div>
+</div>
+</body>
+</html>

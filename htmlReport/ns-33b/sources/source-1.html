@@ -1,0 +1,302 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > AbstractLoggingSystem</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.boot.logging</a>
+</div>
+
+<h1>Coverage Summary for Class: AbstractLoggingSystem (org.springframework.boot.logging)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AbstractLoggingSystem</td>
+<td class="coverageStat">
+  <span class="percent">
+    70.6%
+  </span>
+  <span class="absValue">
+    (12/17)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    59.1%
+  </span>
+  <span class="absValue">
+    (13/22)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (30/45)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">AbstractLoggingSystem$LogLevels</td>
+<td class="coverageStat">
+  <span class="percent">
+    40%
+  </span>
+  <span class="absValue">
+    (2/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    62.5%
+  </span>
+  <span class="absValue">
+    (5/8)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    63.6%
+  </span>
+  <span class="absValue">
+    (14/22)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    59.1%
+  </span>
+  <span class="absValue">
+    (13/22)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    66%
+  </span>
+  <span class="absValue">
+    (35/53)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.boot.logging;
+&nbsp;
+&nbsp;import java.util.Comparator;
+&nbsp;import java.util.EnumMap;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.LinkedHashSet;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.function.BiConsumer;
+&nbsp;import java.util.function.Function;
+&nbsp;import org.springframework.core.env.Environment;
+&nbsp;import org.springframework.core.io.ClassPathResource;
+&nbsp;import org.springframework.util.ClassUtils;
+&nbsp;import org.springframework.util.StringUtils;
+&nbsp;import org.springframework.util.SystemPropertyUtils;
+&nbsp;
+&nbsp;public abstract class AbstractLoggingSystem extends LoggingSystem {
+&nbsp;    protected static final Comparator&lt;LoggerConfiguration&gt; CONFIGURATION_COMPARATOR = new LoggerConfigurationComparator(&quot;ROOT&quot;);
+&nbsp;    private final ClassLoader classLoader;
+&nbsp;
+&nbsp;    public AbstractLoggingSystem(ClassLoader classLoader) {
+&nbsp;        this.classLoader = classLoader;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void beforeInitialize() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public void initialize(LoggingInitializationContext initializationContext, String configLocation, LogFile logFile) {
+&nbsp;        if (StringUtils.hasLength(configLocation)) {
+&nbsp;            this.initializeWithSpecificConfig(initializationContext, configLocation, logFile);
+&nbsp;        } else {
+&nbsp;            this.initializeWithConventions(initializationContext, logFile);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void initializeWithSpecificConfig(LoggingInitializationContext initializationContext, String configLocation, LogFile logFile) {
+<b class="fc">&nbsp;        configLocation = SystemPropertyUtils.resolvePlaceholders(configLocation);</b>
+&nbsp;        this.loadConfiguration(initializationContext, configLocation, logFile);
+&nbsp;    }
+&nbsp;
+&nbsp;    private void initializeWithConventions(LoggingInitializationContext initializationContext, LogFile logFile) {
+<b class="fc">&nbsp;        String config = this.getSelfInitializationConfig();</b>
+<b class="fc">&nbsp;        if (config != null &amp;&amp; logFile == null) {</b>
+&nbsp;            this.reinitialize(initializationContext);
+&nbsp;        } else {
+&nbsp;            if (config == null) {
+&nbsp;                config = this.getSpringInitializationConfig();
+<b class="fc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            if (config != null) {
+&nbsp;                this.loadConfiguration(initializationContext, config, logFile);
+<b class="pc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                this.loadDefaults(initializationContext, logFile);</b>
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected String getSelfInitializationConfig() {
+&nbsp;        return this.findConfig(this.getStandardConfigLocations());
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected String getSpringInitializationConfig() {</b>
+&nbsp;        return this.findConfig(this.getSpringConfigLocations());
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    private String findConfig(String[] locations) {</b>
+<b class="pc">&nbsp;        for(String location : locations) {</b>
+&nbsp;            ClassPathResource resource = new ClassPathResource(location, this.classLoader);
+<b class="nc">&nbsp;            if (resource.exists()) {</b>
+&nbsp;                return &quot;classpath:&quot; + location;
+&nbsp;            }
+<b class="pc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;        return null;
+<b class="pc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    protected abstract String[] getStandardConfigLocations();
+&nbsp;
+<b class="fc">&nbsp;    protected String[] getSpringConfigLocations() {</b>
+&nbsp;        String[] locations = this.getStandardConfigLocations();
+&nbsp;
+&nbsp;        for(int i = 0; i &lt; locations.length; ++i) {
+&nbsp;            String extension = StringUtils.getFilenameExtension(locations[i]);
+&nbsp;            String var10002 = locations[i].substring(0, locations[i].length() - extension.length() - 1);
+&nbsp;            locations[i] = var10002 + &quot;-spring.&quot; + extension;
+&nbsp;        }
+&nbsp;
+&nbsp;        return locations;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected abstract void loadDefaults(LoggingInitializationContext initializationContext, LogFile logFile);
+&nbsp;
+&nbsp;    protected abstract void loadConfiguration(LoggingInitializationContext initializationContext, String location, LogFile logFile);
+&nbsp;
+&nbsp;    protected void reinitialize(LoggingInitializationContext initializationContext) {
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    protected final ClassLoader getClassLoader() {</b>
+&nbsp;        return this.classLoader;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    protected final String getPackagedConfigFile(String fileName) {</b>
+<b class="fc">&nbsp;        String defaultPath = ClassUtils.getPackageName(this.getClass());</b>
+<b class="pc">&nbsp;        defaultPath = defaultPath.replace(&#39;.&#39;, &#39;/&#39;);</b>
+<b class="nc">&nbsp;        defaultPath = defaultPath + &quot;/&quot; + fileName;</b>
+&nbsp;        defaultPath = &quot;classpath:&quot; + defaultPath;
+&nbsp;        return defaultPath;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected final void applySystemProperties(Environment environment, LogFile logFile) {
+&nbsp;        (new LoggingSystemProperties(environment, this.getDefaultValueResolver(environment), (BiConsumer)null)).apply(logFile);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Function&lt;String, String&gt; getDefaultValueResolver(Environment environment) {
+&nbsp;        String defaultLogCorrelationPattern = this.getDefaultLogCorrelationPattern();
+&nbsp;        return (name) -&gt; StringUtils.hasLength(defaultLogCorrelationPattern) &amp;&amp; LoggingSystemProperty.CORRELATION_PATTERN.getApplicationPropertyName().equals(name) &amp;&amp; (Boolean)environment.getProperty(&quot;logging.expect-correlation-id&quot;, Boolean.class, false) ? defaultLogCorrelationPattern : null;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected String getDefaultLogCorrelationPattern() {
+&nbsp;        return null;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected static class LogLevels&lt;T&gt; {
+&nbsp;        private final Map&lt;LogLevel, T&gt; systemToNative = new EnumMap(LogLevel.class);
+<b class="fc">&nbsp;        private final Map&lt;T, LogLevel&gt; nativeToSystem = new HashMap();</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;        public LogLevels() {</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        public void map(LogLevel system, T nativeLevel) {
+<b class="fc">&nbsp;            this.systemToNative.putIfAbsent(system, nativeLevel);</b>
+&nbsp;            this.nativeToSystem.putIfAbsent(nativeLevel, system);
+&nbsp;        }
+&nbsp;
+&nbsp;        public LogLevel convertNativeToSystem(T level) {
+&nbsp;            return (LogLevel)this.nativeToSystem.get(level);
+&nbsp;        }
+&nbsp;
+&nbsp;        public T convertSystemToNative(LogLevel level) {
+&nbsp;            return (T)this.systemToNative.get(level);
+&nbsp;        }
+&nbsp;
+&nbsp;        public Set&lt;LogLevel&gt; getSupported() {
+&nbsp;            return new LinkedHashSet(this.nativeToSystem.values());
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:57</div>
+</div>
+</body>
+</html>

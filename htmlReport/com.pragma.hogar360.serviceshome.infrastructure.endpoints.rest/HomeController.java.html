@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HomeController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Tests in 'services-home.test' Coverage Results</a> &gt; <a href="index.source.html" class="el_package">com.pragma.hogar360.serviceshome.infrastructure.endpoints.rest</a> &gt; <span class="el_source">HomeController.java</span></div><h1>HomeController.java</h1><pre class="source lang-java linenums">package com.pragma.hogar360.serviceshome.infrastructure.endpoints.rest;
+
+import com.pragma.hogar360.serviceshome.application.dto.request.SaveHomeRequest;
+import com.pragma.hogar360.serviceshome.application.dto.response.PagedHomeResponse;
+import com.pragma.hogar360.serviceshome.application.dto.response.SaveHomeResponse;
+import com.pragma.hogar360.serviceshome.application.services.HomeService;
+import com.pragma.hogar360.serviceshome.domain.model.HomeQueryModel;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+@RestController
+@RequestMapping(&quot;/api/v1/home&quot;)
+@RequiredArgsConstructor
+@Tag(name = &quot;Home&quot;, description = &quot;Operations related to home&quot;)
+public class HomeController {
+
+    private final HomeService homeService;
+
+    @PostMapping(&quot;/&quot;)
+    @Operation(summary = &quot;Save a new home&quot;, description = &quot;Saves a new home in the system.&quot;)
+    @ApiResponse(responseCode = &quot;201&quot;, description = &quot;Home created&quot;, content = @Content(schema = @Schema(implementation = SaveHomeResponse.class), examples = @ExampleObject(value = &quot;{\&quot;id\&quot;: 1, \&quot;message\&quot;: \&quot;Home created successfully\&quot;}&quot;)))
+    @ApiResponse(responseCode = &quot;400&quot;, description = &quot;Bad request&quot;, content = @Content(schema = @Schema(implementation = String.class), examples = @ExampleObject(value = &quot;\&quot;Invalid input data\&quot;&quot;)))
+    public ResponseEntity&lt;SaveHomeResponse&gt; save(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = &quot;Home data to save&quot;,
+                    required = true,
+                    content = @Content(
+                            examples = @ExampleObject(
+                                    value = &quot;{\&quot;name\&quot;: \&quot;Mi Casa\&quot;, \&quot;address\&quot;: \&quot;Calle 123\&quot;, \&quot;description\&quot;: \&quot;Una hermosa casa\&quot;, \&quot;category\&quot;: \&quot;Apartamento\&quot;, \&quot;numberOfRooms\&quot;: 3, \&quot;numberOfBathrooms\&quot;: 2, \&quot;price\&quot;: 150000.0, \&quot;cityId\&quot;: 1, \&quot;activePublicationDate\&quot;: \&quot;2025-03-25\&quot;, \&quot;publicationDate\&quot;: \&quot;2025-03-25\&quot;}&quot;
+                            )
+                    )
+            )
+            @RequestBody SaveHomeRequest saveHomeRequest) {
+<span class="nc" id="L46">        return ResponseEntity.status(HttpStatus.CREATED).body(homeService.save(saveHomeRequest));</span>
+    }
+
+    @GetMapping(&quot;/search&quot;)
+    @Operation(summary = &quot;Search homes&quot;, description = &quot;Searches homes with pagination, sorting, and filtering.&quot;)
+    @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Search results&quot;, content = @Content(schema = @Schema(implementation = PagedHomeResponse.class)))
+    @ApiResponse(responseCode = &quot;400&quot;, description = &quot;Bad request&quot;, content = @Content(schema = @Schema(implementation = String.class)))
+    public ResponseEntity&lt;PagedHomeResponse&gt; searchHomes(
+            @Parameter(description = &quot;Page number (0-based)&quot;) @RequestParam(defaultValue = &quot;0&quot;) Integer page,
+            @Parameter(description = &quot;Number of homes per page&quot;) @RequestParam(defaultValue = &quot;10&quot;) Integer size,
+            @Parameter(description = &quot;Field to sort by (price, numberOfRooms, numberOfBathrooms, locationId, categoryId)&quot;) @RequestParam(defaultValue = &quot;price&quot;) String sortBy,
+            @Parameter(description = &quot;Sorting direction (ASC or DESC)&quot;) @RequestParam(defaultValue = &quot;ASC&quot;) String sortDirection,
+            @Parameter(description = &quot;Location ID for filtering homes&quot;) @RequestParam(required = false) Long locationId,
+            @Parameter(description = &quot;Category ID for filtering homes&quot;) @RequestParam(required = false) Long categoryId,
+            @Parameter(description = &quot;Minimum number of rooms&quot;) @RequestParam(required = false) Integer minRooms,
+            @Parameter(description = &quot;Maximum number of rooms&quot;) @RequestParam(required = false) Integer maxRooms,
+            @Parameter(description = &quot;Minimum number of bathrooms&quot;) @RequestParam(required = false) Integer minBathrooms,
+            @Parameter(description = &quot;Maximum number of bathrooms&quot;) @RequestParam(required = false) Integer maxBathrooms,
+            @Parameter(description = &quot;Minimum price&quot;) @RequestParam(required = false) BigDecimal minPrice,
+            @Parameter(description = &quot;Maximum price&quot;) @RequestParam(required = false) BigDecimal maxPrice,
+            @Parameter(description = &quot;Current date for active publication&quot;) @RequestParam(required = false) LocalDate currentDate
+    ) {
+<span class="nc" id="L68">        HomeQueryModel queryModel = new HomeQueryModel();</span>
+<span class="nc" id="L69">        queryModel.setLocationId(locationId);</span>
+<span class="nc" id="L70">        queryModel.setCategoryId(categoryId);</span>
+<span class="nc" id="L71">        queryModel.setMinRooms(minRooms);</span>
+<span class="nc" id="L72">        queryModel.setMaxRooms(maxRooms);</span>
+<span class="nc" id="L73">        queryModel.setMinBathrooms(minBathrooms);</span>
+<span class="nc" id="L74">        queryModel.setMaxBathrooms(maxBathrooms);</span>
+<span class="nc" id="L75">        queryModel.setMinPrice(minPrice);</span>
+<span class="nc" id="L76">        queryModel.setMaxPrice(maxPrice);</span>
+<span class="nc" id="L77">        queryModel.setCurrentDate(currentDate);</span>
+
+<span class="nc" id="L79">        return ResponseEntity.ok(homeService.findHomesByFilters(queryModel, page, size, sortBy, sortDirection));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

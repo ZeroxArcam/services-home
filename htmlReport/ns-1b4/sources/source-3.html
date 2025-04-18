@@ -1,0 +1,237 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > LogicalConnectionProvidedImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.resource.jdbc.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: LogicalConnectionProvidedImpl (org.hibernate.resource.jdbc.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LogicalConnectionProvidedImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/43)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.resource.jdbc.internal;
+&nbsp;
+&nbsp;import java.io.IOException;
+&nbsp;import java.io.ObjectInputStream;
+&nbsp;import java.io.ObjectOutputStream;
+&nbsp;import java.sql.Connection;
+&nbsp;import org.hibernate.resource.jdbc.LogicalConnection;
+&nbsp;import org.hibernate.resource.jdbc.ResourceRegistry;
+&nbsp;import org.hibernate.resource.jdbc.spi.PhysicalConnectionHandlingMode;
+&nbsp;import org.jboss.logging.Logger;
+&nbsp;
+&nbsp;public class LogicalConnectionProvidedImpl extends AbstractLogicalConnectionImplementor {
+&nbsp;    private static final Logger log = Logger.getLogger(LogicalConnection.class);
+&nbsp;    private transient Connection providedConnection;
+&nbsp;    private final boolean initiallyAutoCommit;
+&nbsp;    private boolean closed;
+&nbsp;
+&nbsp;    public LogicalConnectionProvidedImpl(Connection providedConnection, ResourceRegistry resourceRegistry) {
+<b class="nc">&nbsp;        this.resourceRegistry = resourceRegistry;</b>
+&nbsp;        if (providedConnection == null) {
+&nbsp;            throw new IllegalArgumentException(&quot;Provided Connection cannot be null&quot;);
+&nbsp;        } else {
+&nbsp;            this.providedConnection = providedConnection;
+&nbsp;            this.initiallyAutoCommit = determineInitialAutoCommitMode(providedConnection);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private LogicalConnectionProvidedImpl(boolean closed, boolean initiallyAutoCommit) {</b>
+&nbsp;        this.resourceRegistry = new ResourceRegistryStandardImpl();
+&nbsp;        this.closed = closed;
+<b class="nc">&nbsp;        this.initiallyAutoCommit = initiallyAutoCommit;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public PhysicalConnectionHandlingMode getConnectionHandlingMode() {
+<b class="nc">&nbsp;        return PhysicalConnectionHandlingMode.IMMEDIATE_ACQUISITION_AND_HOLD;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public boolean isOpen() {</b>
+&nbsp;        return !this.closed;
+&nbsp;    }
+&nbsp;
+&nbsp;    public Connection close() {
+<b class="nc">&nbsp;        log.trace(&quot;Closing logical connection&quot;);</b>
+&nbsp;        this.getResourceRegistry().releaseResources();
+&nbsp;
+&nbsp;        Connection var1;
+&nbsp;        try {
+<b class="nc">&nbsp;            var1 = this.providedConnection;</b>
+&nbsp;        } finally {
+&nbsp;            this.providedConnection = null;
+&nbsp;            this.closed = true;
+&nbsp;            log.trace(&quot;Logical connection closed&quot;);
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        return var1;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public boolean isPhysicallyConnected() {</b>
+&nbsp;        return this.providedConnection != null;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public Connection getPhysicalConnection() {</b>
+<b class="nc">&nbsp;        this.errorIfClosed();</b>
+&nbsp;        return this.providedConnection;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void serialize(ObjectOutputStream oos) throws IOException {
+&nbsp;        oos.writeBoolean(this.closed);
+<b class="nc">&nbsp;        oos.writeBoolean(this.initiallyAutoCommit);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static LogicalConnectionProvidedImpl deserialize(ObjectInputStream ois) throws IOException, ClassNotFoundException {
+&nbsp;        boolean isClosed = ois.readBoolean();
+<b class="nc">&nbsp;        boolean initiallyAutoCommit = ois.readBoolean();</b>
+<b class="nc">&nbsp;        return new LogicalConnectionProvidedImpl(isClosed, initiallyAutoCommit);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Connection manualDisconnect() {
+&nbsp;        this.errorIfClosed();
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        Connection var1;</b>
+&nbsp;        try {
+&nbsp;            this.resourceRegistry.releaseResources();
+&nbsp;            var1 = this.providedConnection;
+&nbsp;        } finally {
+<b class="nc">&nbsp;            this.providedConnection = null;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return var1;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void manualReconnect(Connection connection) {
+<b class="nc">&nbsp;        this.errorIfClosed();</b>
+&nbsp;        if (connection == null) {
+<b class="nc">&nbsp;            throw new IllegalArgumentException(&quot;cannot reconnect using a null connection&quot;);</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            if (connection == this.providedConnection) {
+&nbsp;                log.debug(&quot;reconnecting the same connection that is already connected; should this connection have been disconnected?&quot;);
+<b class="nc">&nbsp;            } else if (this.providedConnection != null) {</b>
+&nbsp;                throw new IllegalArgumentException(&quot;cannot reconnect to a new user-supplied connection because currently connected; must disconnect before reconnecting.&quot;);
+&nbsp;            }
+&nbsp;
+&nbsp;            this.providedConnection = connection;
+&nbsp;            log.debug(&quot;Manually reconnected logical connection&quot;);
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected Connection getConnectionForTransactionManagement() {</b>
+&nbsp;        return this.providedConnection;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    protected void afterCompletion() {</b>
+&nbsp;        this.afterTransaction();
+<b class="nc">&nbsp;        this.resetConnection(this.initiallyAutoCommit);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

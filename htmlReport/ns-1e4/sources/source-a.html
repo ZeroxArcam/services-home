@@ -1,0 +1,553 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > SchemaDropperImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.tool.schema.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: SchemaDropperImpl (org.hibernate.tool.schema.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SchemaDropperImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    8%
+  </span>
+  <span class="absValue">
+    (2/25)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    3.8%
+  </span>
+  <span class="absValue">
+    (4/104)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    4.2%
+  </span>
+  <span class="absValue">
+    (6/144)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.tool.schema.internal;
+&nbsp;
+&nbsp;import java.io.Serializable;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.HashSet;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Set;
+&nbsp;import org.hibernate.Internal;
+&nbsp;import org.hibernate.boot.Metadata;
+&nbsp;import org.hibernate.boot.model.naming.Identifier;
+&nbsp;import org.hibernate.boot.model.relational.AuxiliaryDatabaseObject;
+&nbsp;import org.hibernate.boot.model.relational.Exportable;
+&nbsp;import org.hibernate.boot.model.relational.Namespace;
+&nbsp;import org.hibernate.boot.model.relational.Sequence;
+&nbsp;import org.hibernate.boot.model.relational.SqlStringGenerationContext;
+&nbsp;import org.hibernate.boot.spi.MetadataImplementor;
+&nbsp;import org.hibernate.dialect.Dialect;
+&nbsp;import org.hibernate.engine.config.spi.ConfigurationService;
+&nbsp;import org.hibernate.engine.jdbc.connections.spi.JdbcConnectionAccess;
+&nbsp;import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
+&nbsp;import org.hibernate.engine.jdbc.internal.FormatStyle;
+&nbsp;import org.hibernate.engine.jdbc.internal.Formatter;
+&nbsp;import org.hibernate.engine.jdbc.spi.JdbcServices;
+&nbsp;import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;
+&nbsp;import org.hibernate.engine.jdbc.spi.SqlStatementLogger;
+&nbsp;import org.hibernate.internal.CoreLogging;
+&nbsp;import org.hibernate.internal.CoreMessageLogger;
+&nbsp;import org.hibernate.internal.util.collections.CollectionHelper;
+&nbsp;import org.hibernate.mapping.ForeignKey;
+&nbsp;import org.hibernate.mapping.Table;
+&nbsp;import org.hibernate.mapping.UserDefinedType;
+&nbsp;import org.hibernate.resource.transaction.spi.TransactionCoordinatorBuilder;
+&nbsp;import org.hibernate.service.ServiceRegistry;
+&nbsp;import org.hibernate.service.spi.ServiceRegistryImplementor;
+&nbsp;import org.hibernate.tool.schema.SourceType;
+&nbsp;import org.hibernate.tool.schema.internal.exec.GenerationTarget;
+&nbsp;import org.hibernate.tool.schema.internal.exec.GenerationTargetToDatabase;
+&nbsp;import org.hibernate.tool.schema.internal.exec.JdbcContext;
+&nbsp;import org.hibernate.tool.schema.spi.CommandAcceptanceException;
+&nbsp;import org.hibernate.tool.schema.spi.ContributableMatcher;
+&nbsp;import org.hibernate.tool.schema.spi.DelayedDropAction;
+&nbsp;import org.hibernate.tool.schema.spi.ExceptionHandler;
+&nbsp;import org.hibernate.tool.schema.spi.ExecutionOptions;
+&nbsp;import org.hibernate.tool.schema.spi.SchemaDropper;
+&nbsp;import org.hibernate.tool.schema.spi.SchemaFilter;
+&nbsp;import org.hibernate.tool.schema.spi.SchemaManagementException;
+&nbsp;import org.hibernate.tool.schema.spi.SchemaManagementTool;
+&nbsp;import org.hibernate.tool.schema.spi.ScriptSourceInput;
+&nbsp;import org.hibernate.tool.schema.spi.SourceDescriptor;
+&nbsp;import org.hibernate.tool.schema.spi.SqlScriptCommandExtractor;
+&nbsp;import org.hibernate.tool.schema.spi.TargetDescriptor;
+&nbsp;import org.jboss.logging.Logger;
+&nbsp;
+&nbsp;public class SchemaDropperImpl implements SchemaDropper {
+&nbsp;    private static final Logger log = Logger.getLogger(SchemaDropperImpl.class);
+&nbsp;    private final HibernateSchemaManagementTool tool;
+&nbsp;    private final SchemaFilter schemaFilter;
+&nbsp;
+&nbsp;    public SchemaDropperImpl(HibernateSchemaManagementTool tool) {
+&nbsp;        this((HibernateSchemaManagementTool)tool, DefaultSchemaFilter.INSTANCE);
+&nbsp;    }
+&nbsp;
+&nbsp;    public SchemaDropperImpl(HibernateSchemaManagementTool tool, SchemaFilter schemaFilter) {
+&nbsp;        this.tool = tool;
+&nbsp;        this.schemaFilter = schemaFilter;
+&nbsp;    }
+&nbsp;
+&nbsp;    public SchemaDropperImpl(ServiceRegistry serviceRegistry) {
+<b class="fc">&nbsp;        this((ServiceRegistry)serviceRegistry, DefaultSchemaFilter.INSTANCE);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public SchemaDropperImpl(ServiceRegistry serviceRegistry, SchemaFilter schemaFilter) {
+&nbsp;        SchemaManagementTool smt = (SchemaManagementTool)serviceRegistry.getService(SchemaManagementTool.class);
+&nbsp;        if (!(smt instanceof HibernateSchemaManagementTool)) {
+<b class="nc">&nbsp;            smt = new HibernateSchemaManagementTool();</b>
+&nbsp;            ((HibernateSchemaManagementTool)smt).injectServices((ServiceRegistryImplementor)serviceRegistry);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        this.tool = (HibernateSchemaManagementTool)smt;</b>
+<b class="nc">&nbsp;        this.schemaFilter = schemaFilter;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void doDrop(Metadata metadata, ExecutionOptions options, ContributableMatcher inclusionFilter, SourceDescriptor sourceDescriptor, TargetDescriptor targetDescriptor) {
+<b class="nc">&nbsp;        if (!targetDescriptor.getTargetTypes().isEmpty()) {</b>
+&nbsp;            Map&lt;String, Object&gt; configuration = options.getConfigurationValues();
+&nbsp;            JdbcContext jdbcContext = this.tool.resolveJdbcContext(configuration);
+<b class="nc">&nbsp;            this.doDrop(metadata, options, inclusionFilter, jdbcContext.getDialect(), sourceDescriptor, this.tool.buildGenerationTargets(targetDescriptor, jdbcContext, configuration, true));</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    @Internal
+&nbsp;    public void doDrop(Metadata metadata, ExecutionOptions options, Dialect dialect, SourceDescriptor sourceDescriptor, GenerationTarget... targets) {
+<b class="nc">&nbsp;        this.doDrop(metadata, options, (contributed) -&gt; true, dialect, sourceDescriptor, targets);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    @Internal
+&nbsp;    public void doDrop(Metadata metadata, ExecutionOptions options, ContributableMatcher inclusionFilter, Dialect dialect, SourceDescriptor sourceDescriptor, GenerationTarget... targets) {
+&nbsp;        for(GenerationTarget target : targets) {
+&nbsp;            target.prepare();
+&nbsp;        }
+&nbsp;
+&nbsp;        boolean var21 = false;
+&nbsp;
+<b class="nc">&nbsp;        try {</b>
+<b class="nc">&nbsp;            var21 = true;</b>
+<b class="nc">&nbsp;            this.performDrop(metadata, options, inclusionFilter, dialect, sourceDescriptor, targets);</b>
+<b class="nc">&nbsp;            var21 = false;</b>
+&nbsp;        } finally {
+&nbsp;            if (var21) {
+&nbsp;                for(GenerationTarget target : targets) {
+<b class="nc">&nbsp;                    try {</b>
+&nbsp;                        target.release();
+<b class="nc">&nbsp;                    } catch (Exception e) {</b>
+&nbsp;                        log.debugf(&quot;Problem releasing GenerationTarget [%s] : %s&quot;, target, e.getMessage());
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        for(GenerationTarget target : targets) {
+&nbsp;            try {
+&nbsp;                target.release();
+&nbsp;            } catch (Exception e) {
+&nbsp;                log.debugf(&quot;Problem releasing GenerationTarget [%s] : %s&quot;, target, e.getMessage());
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void performDrop(Metadata metadata, ExecutionOptions options, ContributableMatcher inclusionFilter, Dialect dialect, SourceDescriptor sourceDescriptor, GenerationTarget... targets) {
+&nbsp;        SqlScriptCommandExtractor commandExtractor = this.getCommandExtractor();
+&nbsp;        boolean format = Helper.interpretFormattingEnabled(options.getConfigurationValues());
+&nbsp;        Formatter formatter = format ? FormatStyle.DDL.getFormatter() : FormatStyle.NONE.getFormatter();
+&nbsp;        switch (sourceDescriptor.getSourceType()) {
+&nbsp;            case SCRIPT:
+&nbsp;                Helper.applyScript(options, commandExtractor, dialect, sourceDescriptor.getScriptSourceInput(), formatter, targets);
+&nbsp;                break;
+&nbsp;            case METADATA:
+&nbsp;                this.dropFromMetadata(metadata, options, inclusionFilter, dialect, formatter, targets);
+&nbsp;                break;
+<b class="nc">&nbsp;            case METADATA_THEN_SCRIPT:</b>
+<b class="nc">&nbsp;                this.dropFromMetadata(metadata, options, inclusionFilter, dialect, formatter, targets);</b>
+&nbsp;                Helper.applyScript(options, commandExtractor, dialect, sourceDescriptor.getScriptSourceInput(), formatter, targets);
+&nbsp;                break;
+&nbsp;            case SCRIPT_THEN_METADATA:
+<b class="nc">&nbsp;                Helper.applyScript(options, commandExtractor, dialect, sourceDescriptor.getScriptSourceInput(), formatter, targets);</b>
+&nbsp;                this.dropFromMetadata(metadata, options, inclusionFilter, dialect, formatter, targets);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private SqlScriptCommandExtractor getCommandExtractor() {
+&nbsp;        return (SqlScriptCommandExtractor)this.tool.getServiceRegistry().getService(SqlScriptCommandExtractor.class);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private void dropFromMetadata(Metadata metadata, ExecutionOptions options, ContributableMatcher inclusionFilter, Dialect dialect, Formatter formatter, GenerationTarget... targets) {
+&nbsp;        Helper.applySqlString(dialect.getBeforeDropStatement(), formatter, options, targets);
+&nbsp;        SqlStringGenerationContext context = Helper.createSqlStringGenerationContext(options, metadata);
+&nbsp;        dropAuxiliaryObjectsBeforeTables(metadata, options, dialect, formatter, context, targets);
+&nbsp;        this.dropConstraintsTablesSequences(metadata, options, inclusionFilter, dialect, formatter, context, targets);
+&nbsp;        dropAuxiliaryObjectsAfterTables(metadata, options, dialect, formatter, context, targets);
+&nbsp;        dropUserDefinedTypes(metadata, options, this.schemaFilter, dialect, formatter, context, targets);
+&nbsp;        dropSchemasAndCatalogs(metadata, options, this.schemaFilter, dialect, formatter, context, targets);
+&nbsp;    }
+&nbsp;
+&nbsp;    private void dropConstraintsTablesSequences(Metadata metadata, ExecutionOptions options, ContributableMatcher inclusionFilter, Dialect dialect, Formatter formatter, SqlStringGenerationContext context, GenerationTarget[] targets) {
+<b class="nc">&nbsp;        Set&lt;String&gt; exportIdentifiers = CollectionHelper.setOfSize(50);</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        for(Namespace namespace : metadata.getDatabase().getNamespaces()) {</b>
+&nbsp;            if (this.schemaFilter.includeNamespace(namespace)) {
+<b class="nc">&nbsp;                this.applyConstraintDropping(namespace, metadata, formatter, options, context, inclusionFilter, targets);</b>
+&nbsp;                dropTables(metadata, options, this.schemaFilter, inclusionFilter, dialect, formatter, exportIdentifiers, context, namespace, targets);
+<b class="nc">&nbsp;                dropSequences(metadata, options, this.schemaFilter, inclusionFilter, dialect, formatter, exportIdentifiers, context, namespace, targets);</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private static void dropAuxiliaryObjectsBeforeTables(Metadata metadata, ExecutionOptions options, Dialect dialect, Formatter formatter, SqlStringGenerationContext context, GenerationTarget[] targets) {</b>
+<b class="nc">&nbsp;        for(AuxiliaryDatabaseObject auxiliaryDatabaseObject : reverse(metadata.getDatabase().getAuxiliaryDatabaseObjects())) {</b>
+&nbsp;            if (!auxiliaryDatabaseObject.beforeTablesOnCreation() &amp;&amp; auxiliaryDatabaseObject.appliesToDialect(dialect)) {
+&nbsp;                Helper.applySqlStrings(dialect.getAuxiliaryDatabaseObjectExporter().getSqlDropStrings(auxiliaryDatabaseObject, metadata, context), formatter, options, targets);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private static void dropAuxiliaryObjectsAfterTables(Metadata metadata, ExecutionOptions options, Dialect dialect, Formatter formatter, SqlStringGenerationContext context, GenerationTarget[] targets) {
+&nbsp;        for(AuxiliaryDatabaseObject auxiliaryDatabaseObject : reverse(metadata.getDatabase().getAuxiliaryDatabaseObjects())) {
+<b class="nc">&nbsp;            if (auxiliaryDatabaseObject.beforeTablesOnCreation() &amp;&amp; auxiliaryDatabaseObject.appliesToDialect(dialect)) {</b>
+&nbsp;                Helper.applySqlStrings(auxiliaryDatabaseObject.sqlDropStrings(context), formatter, options, targets);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private static void dropSequences(Metadata metadata, ExecutionOptions options, SchemaFilter schemaFilter, ContributableMatcher inclusionFilter, Dialect dialect, Formatter formatter, Set&lt;String&gt; exportIdentifiers, SqlStringGenerationContext context, Namespace namespace, GenerationTarget[] targets) {
+&nbsp;        for(Sequence sequence : namespace.getSequences()) {
+&nbsp;            if (schemaFilter.includeSequence(sequence) &amp;&amp; inclusionFilter.matches(sequence)) {
+&nbsp;                checkExportIdentifier(sequence, exportIdentifiers);
+&nbsp;                Helper.applySqlStrings(dialect.getSequenceExporter().getSqlDropStrings(sequence, metadata, context), formatter, options, targets);
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private static void dropTables(Metadata metadata, ExecutionOptions options, SchemaFilter schemaFilter, ContributableMatcher inclusionFilter, Dialect dialect, Formatter formatter, Set&lt;String&gt; exportIdentifiers, SqlStringGenerationContext context, Namespace namespace, GenerationTarget[] targets) {</b>
+<b class="nc">&nbsp;        for(Table table : namespace.getTables()) {</b>
+&nbsp;            if (table.isPhysicalTable() &amp;&amp; table.isView() &amp;&amp; schemaFilter.includeTable(table) &amp;&amp; inclusionFilter.matches(table)) {
+&nbsp;                checkExportIdentifier(table, exportIdentifiers);
+&nbsp;                Helper.applySqlStrings(dialect.getTableExporter().getSqlDropStrings(table, metadata, context), formatter, options, targets);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        for(Table table : namespace.getTables()) {
+&nbsp;            if (table.isPhysicalTable() &amp;&amp; !table.isView() &amp;&amp; schemaFilter.includeTable(table) &amp;&amp; inclusionFilter.matches(table)) {
+<b class="nc">&nbsp;                checkExportIdentifier(table, exportIdentifiers);</b>
+<b class="nc">&nbsp;                Helper.applySqlStrings(dialect.getTableExporter().getSqlDropStrings(table, metadata, context), formatter, options, targets);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    static void dropUserDefinedTypes(Metadata metadata, ExecutionOptions options, SchemaFilter schemaFilter, Dialect dialect, Formatter formatter, SqlStringGenerationContext context, GenerationTarget[] targets) {
+&nbsp;        for(Namespace namespace : metadata.getDatabase().getNamespaces()) {
+&nbsp;            if (schemaFilter.includeNamespace(namespace)) {
+&nbsp;                List&lt;UserDefinedType&gt; dependencyOrderedUserDefinedTypes = namespace.getDependencyOrderedUserDefinedTypes();
+&nbsp;                Collections.reverse(dependencyOrderedUserDefinedTypes);
+&nbsp;
+<b class="nc">&nbsp;                for(UserDefinedType userDefinedType : dependencyOrderedUserDefinedTypes) {</b>
+<b class="nc">&nbsp;                    Helper.applySqlStrings(dialect.getUserDefinedTypeExporter().getSqlDropStrings(userDefinedType, metadata, context), formatter, options, targets);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static void dropSchemasAndCatalogs(Metadata metadata, ExecutionOptions options, SchemaFilter schemaFilter, Dialect dialect, Formatter formatter, SqlStringGenerationContext context, GenerationTarget[] targets) {
+&nbsp;        boolean tryToDropCatalogs = options.shouldManageNamespaces() &amp;&amp; dialect.canCreateCatalog();
+&nbsp;        boolean tryToDropSchemas = options.shouldManageNamespaces() &amp;&amp; dialect.canCreateSchema();
+&nbsp;        if (tryToDropCatalogs || tryToDropSchemas) {
+&nbsp;            Set&lt;Identifier&gt; exportedCatalogs = new HashSet();
+&nbsp;
+&nbsp;            for(Namespace namespace : metadata.getDatabase().getNamespaces()) {
+&nbsp;                if (schemaFilter.includeNamespace(namespace)) {
+<b class="nc">&nbsp;                    Namespace.Name logicalName = namespace.getName();</b>
+&nbsp;                    Namespace.Name physicalName = namespace.getPhysicalName();
+&nbsp;                    if (tryToDropSchemas) {
+&nbsp;                        Identifier schemaPhysicalName = context.schemaWithDefault(physicalName.getSchema());
+&nbsp;                        if (schemaPhysicalName != null) {
+&nbsp;                            String schemaName = schemaPhysicalName.render(dialect);
+&nbsp;                            Helper.applySqlStrings(dialect.getDropSchemaCommand(schemaName), formatter, options, targets);
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;
+&nbsp;                    if (tryToDropCatalogs) {
+&nbsp;                        Identifier catalogLogicalName = logicalName.getCatalog();
+&nbsp;                        Identifier catalogPhysicalName = context.catalogWithDefault(physicalName.getCatalog());
+<b class="nc">&nbsp;                        if (catalogPhysicalName != null &amp;&amp; !exportedCatalogs.contains(catalogLogicalName)) {</b>
+&nbsp;                            String catalogName = catalogPhysicalName.render(dialect);
+&nbsp;                            Helper.applySqlStrings(dialect.getDropCatalogCommand(catalogName), formatter, options, targets);
+&nbsp;                            exportedCatalogs.add(catalogLogicalName);
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private static Collection&lt;AuxiliaryDatabaseObject&gt; reverse(Collection&lt;AuxiliaryDatabaseObject&gt; auxiliaryDatabaseObjects) {
+&nbsp;        List&lt;AuxiliaryDatabaseObject&gt; list = new ArrayList(auxiliaryDatabaseObjects);
+&nbsp;        Collections.reverse(list);
+&nbsp;        return list;
+&nbsp;    }
+&nbsp;
+&nbsp;    private void applyConstraintDropping(Namespace namespace, Metadata metadata, Formatter formatter, ExecutionOptions options, SqlStringGenerationContext context, ContributableMatcher inclusionFilter, GenerationTarget... targets) {
+&nbsp;        Dialect dialect = metadata.getDatabase().getJdbcEnvironment().getDialect();
+&nbsp;        if (dialect.dropConstraints()) {
+&nbsp;            for(Table table : namespace.getTables()) {
+&nbsp;                if (table.isPhysicalTable() &amp;&amp; this.schemaFilter.includeTable(table) &amp;&amp; inclusionFilter.matches(table)) {
+&nbsp;                    for(ForeignKey foreignKey : table.getForeignKeys().values()) {
+<b class="nc">&nbsp;                        Helper.applySqlStrings(dialect.getForeignKeyExporter().getSqlDropStrings(foreignKey, metadata, context), formatter, options, targets);</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static void checkExportIdentifier(Exportable exportable, Set&lt;String&gt; exportIdentifiers) {
+&nbsp;        String exportIdentifier = exportable.getExportIdentifier();
+&nbsp;        if (exportIdentifiers.contains(exportIdentifier)) {
+&nbsp;            throw new SchemaManagementException(&quot;SQL strings added more than once for: &quot; + exportIdentifier);
+&nbsp;        } else {
+&nbsp;            exportIdentifiers.add(exportIdentifier);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public DelayedDropAction buildDelayedAction(Metadata metadata, ExecutionOptions options, ContributableMatcher inclusionFilter, SourceDescriptor sourceDescriptor) {
+&nbsp;        JournalingGenerationTarget target = new JournalingGenerationTarget();
+&nbsp;        Dialect dialect = ((JdbcEnvironment)this.tool.getServiceRegistry().requireService(JdbcEnvironment.class)).getDialect();
+&nbsp;        this.doDrop(metadata, options, inclusionFilter, dialect, sourceDescriptor, target);
+&nbsp;        return new DelayedDropActionImpl(target.commands, this.tool.getCustomDatabaseGenerationTarget());
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void doDrop(Metadata metadata, boolean manageNamespaces, GenerationTarget... targets) {</b>
+<b class="nc">&nbsp;        ServiceRegistry serviceRegistry = ((MetadataImplementor)metadata).getMetadataBuildingOptions().getServiceRegistry();</b>
+<b class="nc">&nbsp;        this.doDrop(metadata, serviceRegistry, ((ConfigurationService)serviceRegistry.requireService(ConfigurationService.class)).getSettings(), manageNamespaces, targets);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void doDrop(Metadata metadata, ServiceRegistry serviceRegistry, final Map&lt;String, Object&gt; settings, final boolean manageNamespaces, GenerationTarget... targets) {
+&nbsp;        if (targets == null || targets.length == 0) {
+&nbsp;            JdbcContext jdbcContext = this.tool.resolveJdbcContext(settings);
+&nbsp;            targets = new GenerationTarget[]{new GenerationTargetToDatabase(((TransactionCoordinatorBuilder)serviceRegistry.requireService(TransactionCoordinatorBuilder.class)).buildDdlTransactionIsolator(jdbcContext), true)};
+&nbsp;        }
+&nbsp;
+&nbsp;        this.doDrop(metadata, new ExecutionOptions() {
+&nbsp;            public boolean shouldManageNamespaces() {
+&nbsp;                return manageNamespaces;
+&nbsp;            }
+&nbsp;
+&nbsp;            public Map&lt;String, Object&gt; getConfigurationValues() {
+&nbsp;                return settings;
+&nbsp;            }
+&nbsp;
+&nbsp;            public ExceptionHandler getExceptionHandler() {
+&nbsp;                return ExceptionHandlerLoggedImpl.INSTANCE;
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }, (contributed) -&gt; true, ((JdbcEnvironment)serviceRegistry.requireService(JdbcEnvironment.class)).getDialect(), new SourceDescriptor() {</b>
+<b class="nc">&nbsp;            public SourceType getSourceType() {</b>
+<b class="nc">&nbsp;                return SourceType.METADATA;</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            public ScriptSourceInput getScriptSourceInput() {
+&nbsp;                return null;
+&nbsp;            }
+&nbsp;        }, targets);
+&nbsp;    }
+&nbsp;
+&nbsp;    private static class JournalingGenerationTarget implements GenerationTarget {
+&nbsp;        private final ArrayList&lt;String&gt; commands = new ArrayList();
+&nbsp;
+&nbsp;        private JournalingGenerationTarget() {
+&nbsp;        }
+&nbsp;
+&nbsp;        public void prepare() {
+&nbsp;        }
+&nbsp;
+&nbsp;        public void accept(String command) {
+&nbsp;            this.commands.add(command);
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        public void release() {</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private static class DelayedDropActionImpl implements DelayedDropAction, Serializable {</b>
+<b class="nc">&nbsp;        private static final CoreMessageLogger log = CoreLogging.messageLogger(DelayedDropActionImpl.class);</b>
+<b class="nc">&nbsp;        private final ArrayList&lt;String&gt; commands;</b>
+<b class="nc">&nbsp;        private GenerationTarget target;</b>
+&nbsp;
+&nbsp;        public DelayedDropActionImpl(ArrayList&lt;String&gt; commands, GenerationTarget target) {
+&nbsp;            this.commands = commands;
+&nbsp;            this.target = target;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        public void perform(ServiceRegistry serviceRegistry) {</b>
+<b class="nc">&nbsp;            log.startingDelayedSchemaDrop();</b>
+<b class="nc">&nbsp;            JdbcContext jdbcContext = new JdbcContextDelayedDropImpl(serviceRegistry);</b>
+<b class="nc">&nbsp;            if (this.target == null) {</b>
+<b class="nc">&nbsp;                this.target = new GenerationTargetToDatabase(((TransactionCoordinatorBuilder)serviceRegistry.requireService(TransactionCoordinatorBuilder.class)).buildDdlTransactionIsolator(jdbcContext), true);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            this.target.prepare();</b>
+&nbsp;
+&nbsp;            try {
+&nbsp;                for(String command : this.commands) {
+&nbsp;                    try {
+&nbsp;                        this.target.accept(command);
+&nbsp;                    } catch (CommandAcceptanceException e) {
+&nbsp;                        log.unsuccessfulSchemaManagementCommand(command);
+&nbsp;                        log.debugf(e, &quot;Error performing delayed DROP command [%s]&quot;, command);
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            } finally {
+&nbsp;                this.target.release();
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        private static class JdbcContextDelayedDropImpl implements JdbcContext {</b>
+<b class="pc">&nbsp;            private final ServiceRegistry serviceRegistry;</b>
+<b class="fc">&nbsp;            private final JdbcServices jdbcServices;</b>
+<b class="fc">&nbsp;            private final JdbcConnectionAccess jdbcConnectionAccess;</b>
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;            public JdbcContextDelayedDropImpl(ServiceRegistry serviceRegistry) {</b>
+<b class="nc">&nbsp;                this.serviceRegistry = serviceRegistry;</b>
+<b class="nc">&nbsp;                this.jdbcServices = (JdbcServices)serviceRegistry.requireService(JdbcServices.class);</b>
+&nbsp;                this.jdbcConnectionAccess = this.jdbcServices.getBootstrapJdbcConnectionAccess();
+&nbsp;                if (this.jdbcConnectionAccess == null) {
+&nbsp;                    throw new SchemaManagementException(&quot;Could not build JDBC Connection context to drop schema on SessionFactory close&quot;);
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            public JdbcConnectionAccess getJdbcConnectionAccess() {
+&nbsp;                return this.jdbcConnectionAccess;
+&nbsp;            }
+&nbsp;
+&nbsp;            public Dialect getDialect() {
+&nbsp;                return this.jdbcServices.getJdbcEnvironment().getDialect();
+&nbsp;            }
+&nbsp;
+&nbsp;            public SqlStatementLogger getSqlStatementLogger() {
+&nbsp;                return this.jdbcServices.getSqlStatementLogger();
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            public SqlExceptionHelper getSqlExceptionHelper() {</b>
+<b class="nc">&nbsp;                return this.jdbcServices.getSqlExceptionHelper();</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            public ServiceRegistry getServiceRegistry() {</b>
+<b class="nc">&nbsp;                return this.serviceRegistry;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 21:00</div>
+</div>
+</body>
+</html>

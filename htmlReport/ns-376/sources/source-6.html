@@ -1,0 +1,619 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > DefaultLifecycleProcessor</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.context.support</a>
+</div>
+
+<h1>Coverage Summary for Class: DefaultLifecycleProcessor (org.springframework.context.support)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DefaultLifecycleProcessor</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/29)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/96)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/133)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.context.support;
+&nbsp;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.Comparator;
+&nbsp;import java.util.HashSet;
+&nbsp;import java.util.LinkedHashMap;
+&nbsp;import java.util.LinkedHashSet;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.TreeMap;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import java.util.concurrent.CountDownLatch;
+&nbsp;import java.util.concurrent.CyclicBarrier;
+&nbsp;import java.util.concurrent.TimeUnit;
+&nbsp;import org.apache.commons.logging.Log;
+&nbsp;import org.apache.commons.logging.LogFactory;
+&nbsp;import org.crac.CheckpointException;
+&nbsp;import org.crac.Context;
+&nbsp;import org.crac.Core;
+&nbsp;import org.crac.Resource;
+&nbsp;import org.crac.RestoreException;
+&nbsp;import org.crac.management.CRaCMXBean;
+&nbsp;import org.springframework.beans.factory.BeanFactory;
+&nbsp;import org.springframework.beans.factory.BeanFactoryAware;
+&nbsp;import org.springframework.beans.factory.BeanFactoryUtils;
+&nbsp;import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+&nbsp;import org.springframework.context.ApplicationContextException;
+&nbsp;import org.springframework.context.Lifecycle;
+&nbsp;import org.springframework.context.LifecycleProcessor;
+&nbsp;import org.springframework.context.Phased;
+&nbsp;import org.springframework.context.SmartLifecycle;
+&nbsp;import org.springframework.core.NativeDetector;
+&nbsp;import org.springframework.core.SpringProperties;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.ClassUtils;
+&nbsp;
+&nbsp;public class DefaultLifecycleProcessor implements LifecycleProcessor, BeanFactoryAware {
+&nbsp;    public static final String CHECKPOINT_PROPERTY_NAME = &quot;spring.context.checkpoint&quot;;
+&nbsp;    public static final String EXIT_PROPERTY_NAME = &quot;spring.context.exit&quot;;
+&nbsp;    public static final String ON_REFRESH_VALUE = &quot;onRefresh&quot;;
+&nbsp;    private static boolean checkpointOnRefresh = &quot;onRefresh&quot;.equalsIgnoreCase(SpringProperties.getProperty(&quot;spring.context.checkpoint&quot;));
+&nbsp;    private static final boolean exitOnRefresh = &quot;onRefresh&quot;.equalsIgnoreCase(SpringProperties.getProperty(&quot;spring.context.exit&quot;));
+&nbsp;    private final Log logger = LogFactory.getLog(this.getClass());
+&nbsp;    private final Map&lt;Integer, Long&gt; timeoutsForShutdownPhases = new ConcurrentHashMap();
+&nbsp;    private volatile long timeoutPerShutdownPhase = 10000L;
+&nbsp;    private volatile boolean running;
+&nbsp;    @Nullable
+&nbsp;    private volatile ConfigurableListableBeanFactory beanFactory;
+&nbsp;    @Nullable
+&nbsp;    private volatile Set&lt;String&gt; stoppedBeans;
+&nbsp;    @Nullable
+&nbsp;    private Object cracResource;
+&nbsp;
+&nbsp;    public DefaultLifecycleProcessor() {
+&nbsp;        if (!NativeDetector.inNativeImage() &amp;&amp; ClassUtils.isPresent(&quot;org.crac.Core&quot;, this.getClass().getClassLoader())) {
+&nbsp;            this.cracResource = (new CracDelegate()).registerResource();
+&nbsp;        } else if (checkpointOnRefresh) {
+&nbsp;            throw new IllegalStateException(&quot;Checkpoint on refresh requires a CRaC-enabled JVM and &#39;org.crac:crac&#39; on the classpath&quot;);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setTimeoutsForShutdownPhases(Map&lt;Integer, Long&gt; timeoutsForShutdownPhases) {
+&nbsp;        this.timeoutsForShutdownPhases.putAll(timeoutsForShutdownPhases);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setTimeoutForShutdownPhase(int phase, long timeout) {
+&nbsp;        this.timeoutsForShutdownPhases.put(phase, timeout);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setTimeoutPerShutdownPhase(long timeoutPerShutdownPhase) {
+&nbsp;        this.timeoutPerShutdownPhase = timeoutPerShutdownPhase;
+&nbsp;    }
+&nbsp;
+&nbsp;    private long determineTimeout(int phase) {
+&nbsp;        Long timeout = (Long)this.timeoutsForShutdownPhases.get(phase);
+&nbsp;        return timeout != null ? timeout : this.timeoutPerShutdownPhase;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setBeanFactory(BeanFactory beanFactory) {
+&nbsp;        if (beanFactory instanceof ConfigurableListableBeanFactory clbf) {
+&nbsp;            this.beanFactory = clbf;
+&nbsp;        } else {
+&nbsp;            throw new IllegalArgumentException(&quot;DefaultLifecycleProcessor requires a ConfigurableListableBeanFactory: &quot; + String.valueOf(beanFactory));
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private ConfigurableListableBeanFactory getBeanFactory() {
+<b class="nc">&nbsp;        ConfigurableListableBeanFactory beanFactory = this.beanFactory;</b>
+<b class="nc">&nbsp;        Assert.state(beanFactory != null, &quot;No BeanFactory available&quot;);</b>
+&nbsp;        return beanFactory;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public void start() {
+<b class="nc">&nbsp;        this.stoppedBeans = null;</b>
+&nbsp;        this.startBeans(false);
+<b class="nc">&nbsp;        this.running = true;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void stop() {
+&nbsp;        this.stopBeans();
+&nbsp;        this.running = false;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void onRefresh() {
+&nbsp;        if (checkpointOnRefresh) {
+&nbsp;            checkpointOnRefresh = false;
+&nbsp;            (new CracDelegate()).checkpointRestore();
+&nbsp;        }
+&nbsp;
+&nbsp;        if (exitOnRefresh) {
+&nbsp;            Runtime.getRuntime().halt(0);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        this.stoppedBeans = null;</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        try {
+<b class="nc">&nbsp;            this.startBeans(true);</b>
+<b class="nc">&nbsp;        } catch (ApplicationContextException ex) {</b>
+&nbsp;            this.stopBeans();
+&nbsp;            throw ex;
+&nbsp;        }
+&nbsp;
+&nbsp;        this.running = true;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void onClose() {
+&nbsp;        this.stopBeans();
+&nbsp;        this.running = false;
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isRunning() {
+&nbsp;        return this.running;
+&nbsp;    }
+&nbsp;
+&nbsp;    void stopForRestart() {
+&nbsp;        if (this.running) {
+<b class="nc">&nbsp;            this.stoppedBeans = ConcurrentHashMap.newKeySet();</b>
+&nbsp;            this.stopBeans();
+&nbsp;            this.running = false;
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    void restartAfterStop() {
+&nbsp;        if (this.stoppedBeans != null) {
+&nbsp;            this.startBeans(true);
+&nbsp;            this.stoppedBeans = null;
+&nbsp;            this.running = true;
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private void startBeans(boolean autoStartupOnly) {
+&nbsp;        Map&lt;String, Lifecycle&gt; lifecycleBeans = this.getLifecycleBeans();
+&nbsp;        Map&lt;Integer, LifecycleGroup&gt; phases = new TreeMap();
+&nbsp;        lifecycleBeans.forEach((beanName, bean) -&gt; {
+&nbsp;            if (!autoStartupOnly || this.isAutoStartupCandidate(beanName, bean)) {
+&nbsp;                int startupPhase = this.getPhase(bean);
+&nbsp;                ((LifecycleGroup)phases.computeIfAbsent(startupPhase, (phase) -&gt; new LifecycleGroup(phase, this.determineTimeout(phase), lifecycleBeans, autoStartupOnly))).add(beanName, bean);
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;        });</b>
+&nbsp;        if (!phases.isEmpty()) {
+&nbsp;            phases.values().forEach(LifecycleGroup::start);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private boolean isAutoStartupCandidate(String beanName, Lifecycle bean) {
+&nbsp;        Set&lt;String&gt; stoppedBeans = this.stoppedBeans;
+&nbsp;        boolean var10000;
+<b class="nc">&nbsp;        if (stoppedBeans != null) {</b>
+<b class="nc">&nbsp;            var10000 = stoppedBeans.contains(beanName);</b>
+&nbsp;        } else {
+&nbsp;            if (bean instanceof SmartLifecycle) {
+<b class="nc">&nbsp;                SmartLifecycle smartLifecycle = (SmartLifecycle)bean;</b>
+&nbsp;                if (smartLifecycle.isAutoStartup()) {
+&nbsp;                    var10000 = true;
+&nbsp;                    return var10000;
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            var10000 = false;
+&nbsp;        }
+&nbsp;
+&nbsp;        return var10000;
+&nbsp;    }
+&nbsp;
+&nbsp;    private void doStart(Map&lt;String, ? extends Lifecycle&gt; lifecycleBeans, String beanName, boolean autoStartupOnly) {
+&nbsp;        Lifecycle bean = (Lifecycle)lifecycleBeans.remove(beanName);
+&nbsp;        if (bean != null &amp;&amp; bean != this) {
+&nbsp;            String[] dependenciesForBean = this.getBeanFactory().getDependenciesForBean(beanName);
+&nbsp;
+&nbsp;            for(String dependency : dependenciesForBean) {
+&nbsp;                this.doStart(lifecycleBeans, dependency, autoStartupOnly);
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if (!bean.isRunning() &amp;&amp; (!autoStartupOnly || this.toBeStarted(beanName, bean))) {</b>
+<b class="nc">&nbsp;                if (this.logger.isTraceEnabled()) {</b>
+&nbsp;                    this.logger.trace(&quot;Starting bean &#39;&quot; + beanName + &quot;&#39; of type [&quot; + bean.getClass().getName() + &quot;]&quot;);
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+&nbsp;                try {
+&nbsp;                    bean.start();
+&nbsp;                } catch (Throwable ex) {
+&nbsp;                    throw new ApplicationContextException(&quot;Failed to start bean &#39;&quot; + beanName + &quot;&#39;&quot;, ex);
+&nbsp;                }
+&nbsp;
+&nbsp;                if (this.logger.isDebugEnabled()) {
+&nbsp;                    this.logger.debug(&quot;Successfully started bean &#39;&quot; + beanName + &quot;&#39;&quot;);
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private boolean toBeStarted(String beanName, Lifecycle bean) {
+&nbsp;        Set&lt;String&gt; stoppedBeans = this.stoppedBeans;
+&nbsp;        boolean var10000;
+&nbsp;        if (stoppedBeans != null) {
+<b class="nc">&nbsp;            var10000 = stoppedBeans.contains(beanName);</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            if (bean instanceof SmartLifecycle) {</b>
+&nbsp;                SmartLifecycle smartLifecycle = (SmartLifecycle)bean;
+<b class="nc">&nbsp;                if (!smartLifecycle.isAutoStartup()) {</b>
+<b class="nc">&nbsp;                    var10000 = false;</b>
+&nbsp;                    return var10000;
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            var10000 = true;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        return var10000;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private void stopBeans() {
+&nbsp;        Map&lt;String, Lifecycle&gt; lifecycleBeans = this.getLifecycleBeans();
+<b class="nc">&nbsp;        Map&lt;Integer, LifecycleGroup&gt; phases = new TreeMap(Comparator.reverseOrder());</b>
+&nbsp;        lifecycleBeans.forEach((beanName, bean) -&gt; {
+&nbsp;            int shutdownPhase = this.getPhase(bean);
+&nbsp;            ((LifecycleGroup)phases.computeIfAbsent(shutdownPhase, (phase) -&gt; new LifecycleGroup(phase, this.determineTimeout(phase), lifecycleBeans, false))).add(beanName, bean);
+&nbsp;        });
+<b class="nc">&nbsp;        if (!phases.isEmpty()) {</b>
+<b class="nc">&nbsp;            phases.values().forEach(LifecycleGroup::stop);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private void doStop(Map&lt;String, ? extends Lifecycle&gt; lifecycleBeans, final String beanName, final CountDownLatch latch, final Set&lt;String&gt; countDownBeanNames) {</b>
+&nbsp;        Lifecycle bean = (Lifecycle)lifecycleBeans.remove(beanName);
+&nbsp;        if (bean != null) {
+&nbsp;            String[] dependentBeans = this.getBeanFactory().getDependentBeans(beanName);
+&nbsp;
+&nbsp;            for(String dependentBean : dependentBeans) {
+&nbsp;                this.doStop(lifecycleBeans, dependentBean, latch, countDownBeanNames);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            try {</b>
+<b class="nc">&nbsp;                if (bean.isRunning()) {</b>
+&nbsp;                    Set&lt;String&gt; stoppedBeans = this.stoppedBeans;
+&nbsp;                    if (stoppedBeans != null) {
+&nbsp;                        stoppedBeans.add(beanName);
+&nbsp;                    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                    if (bean instanceof SmartLifecycle) {</b>
+<b class="nc">&nbsp;                        SmartLifecycle smartLifecycle = (SmartLifecycle)bean;</b>
+<b class="nc">&nbsp;                        if (this.logger.isTraceEnabled()) {</b>
+&nbsp;                            this.logger.trace(&quot;Asking bean &#39;&quot; + beanName + &quot;&#39; of type [&quot; + bean.getClass().getName() + &quot;] to stop&quot;);
+&nbsp;                        }
+&nbsp;
+&nbsp;                        countDownBeanNames.add(beanName);
+<b class="nc">&nbsp;                        smartLifecycle.stop(() -&gt; {</b>
+<b class="nc">&nbsp;                            latch.countDown();</b>
+&nbsp;                            countDownBeanNames.remove(beanName);
+<b class="nc">&nbsp;                            if (this.logger.isDebugEnabled()) {</b>
+<b class="nc">&nbsp;                                this.logger.debug(&quot;Bean &#39;&quot; + beanName + &quot;&#39; completed its stop procedure&quot;);</b>
+<b class="nc">&nbsp;                            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                        });</b>
+<b class="nc">&nbsp;                    } else {</b>
+&nbsp;                        if (this.logger.isTraceEnabled()) {
+&nbsp;                            this.logger.trace(&quot;Stopping bean &#39;&quot; + beanName + &quot;&#39; of type [&quot; + bean.getClass().getName() + &quot;]&quot;);
+&nbsp;                        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                        bean.stop();</b>
+&nbsp;                        if (this.logger.isDebugEnabled()) {
+&nbsp;                            this.logger.debug(&quot;Successfully stopped bean &#39;&quot; + beanName + &quot;&#39;&quot;);
+&nbsp;                        }
+&nbsp;                    }
+<b class="nc">&nbsp;                } else if (bean instanceof SmartLifecycle) {</b>
+<b class="nc">&nbsp;                    latch.countDown();</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            } catch (Throwable ex) {
+&nbsp;                if (this.logger.isWarnEnabled()) {
+&nbsp;                    this.logger.warn(&quot;Failed to stop bean &#39;&quot; + beanName + &quot;&#39;&quot;, ex);
+&nbsp;                }
+&nbsp;
+&nbsp;                if (bean instanceof SmartLifecycle) {
+&nbsp;                    latch.countDown();
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected Map&lt;String, Lifecycle&gt; getLifecycleBeans() {</b>
+&nbsp;        ConfigurableListableBeanFactory beanFactory = this.getBeanFactory();
+<b class="nc">&nbsp;        Map&lt;String, Lifecycle&gt; beans = new LinkedHashMap();</b>
+<b class="nc">&nbsp;        String[] beanNames = beanFactory.getBeanNamesForType(Lifecycle.class, false, false);</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        for(String beanName : beanNames) {
+&nbsp;            String beanNameToRegister = BeanFactoryUtils.transformedBeanName(beanName);
+<b class="nc">&nbsp;            boolean isFactoryBean = beanFactory.isFactoryBean(beanNameToRegister);</b>
+&nbsp;            String beanNameToCheck = isFactoryBean ? &quot;&amp;&quot; + beanName : beanName;
+&nbsp;            if (beanFactory.containsSingleton(beanNameToRegister) &amp;&amp; (!isFactoryBean || this.matchesBeanType(Lifecycle.class, beanNameToCheck, beanFactory)) || this.matchesBeanType(SmartLifecycle.class, beanNameToCheck, beanFactory)) {
+<b class="nc">&nbsp;                Object bean = beanFactory.getBean(beanNameToCheck);</b>
+&nbsp;                if (bean != this &amp;&amp; bean instanceof Lifecycle) {
+<b class="nc">&nbsp;                    Lifecycle lifecycle = (Lifecycle)bean;</b>
+<b class="nc">&nbsp;                    beans.put(beanNameToRegister, lifecycle);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return beans;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private boolean matchesBeanType(Class&lt;?&gt; targetType, String beanName, BeanFactory beanFactory) {</b>
+<b class="nc">&nbsp;        Class&lt;?&gt; beanType = beanFactory.getType(beanName);</b>
+&nbsp;        return beanType != null &amp;&amp; targetType.isAssignableFrom(beanType);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected int getPhase(Lifecycle bean) {</b>
+<b class="nc">&nbsp;        int var10000;</b>
+&nbsp;        if (bean instanceof Phased phased) {
+<b class="nc">&nbsp;            var10000 = phased.getPhase();</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            var10000 = 0;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return var10000;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private class LifecycleGroup {</b>
+&nbsp;        private final int phase;
+&nbsp;        private final long timeout;
+&nbsp;        private final Map&lt;String, ? extends Lifecycle&gt; lifecycleBeans;
+&nbsp;        private final boolean autoStartupOnly;
+&nbsp;        private final List&lt;LifecycleGroupMember&gt; members = new ArrayList();
+&nbsp;        private int smartMemberCount;
+&nbsp;
+&nbsp;        public LifecycleGroup(int phase, long timeout, Map&lt;String, ? extends Lifecycle&gt; lifecycleBeans, boolean autoStartupOnly) {
+&nbsp;            this.phase = phase;
+&nbsp;            this.timeout = timeout;
+&nbsp;            this.lifecycleBeans = lifecycleBeans;
+&nbsp;            this.autoStartupOnly = autoStartupOnly;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        public void add(String name, Lifecycle bean) {</b>
+<b class="nc">&nbsp;            this.members.add(new LifecycleGroupMember(name, bean));</b>
+<b class="nc">&nbsp;            if (bean instanceof SmartLifecycle) {</b>
+&nbsp;                ++this.smartMemberCount;
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        public void start() {</b>
+&nbsp;            if (!this.members.isEmpty()) {
+<b class="nc">&nbsp;                if (DefaultLifecycleProcessor.this.logger.isDebugEnabled()) {</b>
+<b class="nc">&nbsp;                    DefaultLifecycleProcessor.this.logger.debug(&quot;Starting beans in phase &quot; + this.phase);</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                for(LifecycleGroupMember member : this.members) {
+<b class="nc">&nbsp;                    DefaultLifecycleProcessor.this.doStart(this.lifecycleBeans, member.name, this.autoStartupOnly);</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        public void stop() {
+&nbsp;            if (!this.members.isEmpty()) {
+&nbsp;                if (DefaultLifecycleProcessor.this.logger.isDebugEnabled()) {
+&nbsp;                    DefaultLifecycleProcessor.this.logger.debug(&quot;Stopping beans in phase &quot; + this.phase);
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                CountDownLatch latch = new CountDownLatch(this.smartMemberCount);</b>
+&nbsp;                Set&lt;String&gt; countDownBeanNames = Collections.synchronizedSet(new LinkedHashSet());
+<b class="nc">&nbsp;                Set&lt;String&gt; lifecycleBeanNames = new HashSet(this.lifecycleBeans.keySet());</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                for(LifecycleGroupMember member : this.members) {</b>
+&nbsp;                    if (lifecycleBeanNames.contains(member.name)) {
+&nbsp;                        DefaultLifecycleProcessor.this.doStop(this.lifecycleBeans, member.name, latch, countDownBeanNames);
+&nbsp;                    } else if (member.bean instanceof SmartLifecycle) {
+<b class="nc">&nbsp;                        latch.countDown();</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                try {
+&nbsp;                    latch.await(this.timeout, TimeUnit.MILLISECONDS);
+<b class="nc">&nbsp;                    if (latch.getCount() &gt; 0L &amp;&amp; !countDownBeanNames.isEmpty() &amp;&amp; DefaultLifecycleProcessor.this.logger.isInfoEnabled()) {</b>
+<b class="nc">&nbsp;                        int var10001 = this.phase;</b>
+&nbsp;                        DefaultLifecycleProcessor.this.logger.info(&quot;Shutdown phase &quot; + var10001 + &quot; ends with &quot; + countDownBeanNames.size() + &quot; bean&quot; + (countDownBeanNames.size() &gt; 1 ? &quot;s&quot; : &quot;&quot;) + &quot; still running after timeout of &quot; + this.timeout + &quot;ms: &quot; + String.valueOf(countDownBeanNames));
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                } catch (InterruptedException var6) {</b>
+&nbsp;                    Thread.currentThread().interrupt();
+&nbsp;                }
+&nbsp;
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private static record LifecycleGroupMember(String name, Lifecycle bean) {
+&nbsp;        private LifecycleGroupMember(String name, Lifecycle bean) {
+&nbsp;            this.name = name;
+&nbsp;            this.bean = bean;
+&nbsp;        }
+&nbsp;
+&nbsp;        public String name() {
+<b class="nc">&nbsp;            return this.name;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        public Lifecycle bean() {</b>
+<b class="nc">&nbsp;            return this.bean;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private class CracDelegate {</b>
+<b class="nc">&nbsp;        private CracDelegate() {</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        public Object registerResource() {</b>
+&nbsp;            DefaultLifecycleProcessor.this.logger.debug(&quot;Registering JVM checkpoint/restore callback for Spring-managed lifecycle beans&quot;);
+&nbsp;            CracResourceAdapter resourceAdapter = DefaultLifecycleProcessor.this.new CracResourceAdapter();
+&nbsp;            Core.getGlobalContext().register(resourceAdapter);
+<b class="nc">&nbsp;            return resourceAdapter;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void checkpointRestore() {
+<b class="nc">&nbsp;            DefaultLifecycleProcessor.this.logger.info(&quot;Triggering JVM checkpoint/restore&quot;);</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            try {
+&nbsp;                Core.checkpointRestore();
+&nbsp;            } catch (UnsupportedOperationException ex) {
+&nbsp;                throw new ApplicationContextException(&quot;CRaC checkpoint not supported on current JVM&quot;, ex);
+&nbsp;            } catch (CheckpointException ex) {
+&nbsp;                throw new ApplicationContextException(&quot;Failed to take CRaC checkpoint on refresh&quot;, ex);
+&nbsp;            } catch (RestoreException ex) {
+&nbsp;                throw new ApplicationContextException(&quot;Failed to restore CRaC checkpoint on refresh&quot;, ex);
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private class CracResourceAdapter implements Resource {</b>
+&nbsp;        @Nullable
+&nbsp;        private CyclicBarrier barrier;
+&nbsp;
+&nbsp;        private CracResourceAdapter() {
+&nbsp;        }
+&nbsp;
+&nbsp;        public void beforeCheckpoint(Context&lt;? extends Resource&gt; context) {
+&nbsp;            this.barrier = new CyclicBarrier(2);
+&nbsp;            Thread thread = new Thread(() -&gt; {
+&nbsp;                this.awaitPreventShutdownBarrier();
+&nbsp;                this.awaitPreventShutdownBarrier();
+&nbsp;            }, &quot;prevent-shutdown&quot;);
+&nbsp;            thread.setDaemon(false);
+&nbsp;            thread.start();
+&nbsp;            this.awaitPreventShutdownBarrier();
+&nbsp;            DefaultLifecycleProcessor.this.logger.debug(&quot;Stopping Spring-managed lifecycle beans before JVM checkpoint&quot;);
+&nbsp;            DefaultLifecycleProcessor.this.stopForRestart();
+&nbsp;        }
+&nbsp;
+&nbsp;        public void afterRestore(Context&lt;? extends Resource&gt; context) {
+&nbsp;            DefaultLifecycleProcessor.this.logger.info(&quot;Restarting Spring-managed lifecycle beans after JVM restore&quot;);
+&nbsp;            DefaultLifecycleProcessor.this.restartAfterStop();
+&nbsp;            this.barrier = null;
+&nbsp;            if (!DefaultLifecycleProcessor.checkpointOnRefresh) {
+&nbsp;                DefaultLifecycleProcessor.this.logger.info(&quot;Spring-managed lifecycle restart completed (restored JVM running for &quot; + CRaCMXBean.getCRaCMXBean().getUptimeSinceRestore() + &quot; ms)&quot;);
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;
+&nbsp;        private void awaitPreventShutdownBarrier() {
+&nbsp;            try {
+&nbsp;                if (this.barrier != null) {
+&nbsp;                    this.barrier.await();
+&nbsp;                }
+&nbsp;            } catch (Exception ex) {
+&nbsp;                DefaultLifecycleProcessor.this.logger.trace(&quot;Exception from prevent-shutdown barrier&quot;, ex);
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:57</div>
+</div>
+</body>
+</html>

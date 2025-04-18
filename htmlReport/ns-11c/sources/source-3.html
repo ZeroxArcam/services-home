@@ -1,0 +1,274 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > Identifier</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.boot.model.naming</a>
+</div>
+
+<h1>Coverage Summary for Class: Identifier (org.hibernate.boot.model.naming)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Identifier</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    71.4%
+  </span>
+  <span class="absValue">
+    (15/21)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    37.7%
+  </span>
+  <span class="absValue">
+    (23/61)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    54.3%
+  </span>
+  <span class="absValue">
+    (38/70)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.boot.model.naming;
+&nbsp;
+&nbsp;import java.util.Locale;
+&nbsp;import org.hibernate.dialect.Dialect;
+&nbsp;import org.hibernate.internal.util.StringHelper;
+&nbsp;
+&nbsp;public class Identifier implements Comparable&lt;Identifier&gt; {
+&nbsp;    private final String text;
+&nbsp;    private final boolean isQuoted;
+&nbsp;
+&nbsp;    public static Identifier toIdentifier(String text) {
+&nbsp;        return toIdentifier(text, false);
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public static Identifier toIdentifier(String text, boolean quote) {
+&nbsp;        return toIdentifier(text, quote, true);
+&nbsp;    }
+&nbsp;
+&nbsp;    public static Identifier toIdentifier(String text, boolean quote, boolean quoteOnNonIdentifierChar) {
+&nbsp;        if (StringHelper.isEmpty(text)) {
+&nbsp;            return null;
+&nbsp;        } else {
+&nbsp;            int start = 0;
+&nbsp;
+&nbsp;            int end;
+&nbsp;            for(end = text.length(); start &lt; end &amp;&amp; Character.isWhitespace(text.charAt(start)); ++start) {
+&nbsp;            }
+&nbsp;
+&nbsp;            while(start &lt; end &amp;&amp; Character.isWhitespace(text.charAt(end - 1))) {
+&nbsp;                --end;
+&nbsp;            }
+&nbsp;
+&nbsp;            if (isQuoted(text, start, end)) {
+&nbsp;                ++start;
+<b class="fc">&nbsp;                --end;</b>
+&nbsp;                quote = true;
+&nbsp;            } else if (quoteOnNonIdentifierChar &amp;&amp; !quote) {
+&nbsp;                char c = text.charAt(start);
+&nbsp;                if (!Character.isLetter(c) &amp;&amp; c != &#39;_&#39;) {
+&nbsp;                    quote = true;
+&nbsp;                } else {
+&nbsp;                    for(int i = start + 1; i &lt; end; ++i) {
+&nbsp;                        c = text.charAt(i);
+&nbsp;                        if (!Character.isLetterOrDigit(c) &amp;&amp; c != &#39;_&#39;) {
+&nbsp;                            quote = true;
+&nbsp;                            break;
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            return new Identifier(text.substring(start, end), quote);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public static boolean isQuoted(String name) {</b>
+&nbsp;        return isQuoted(name, 0, name.length());
+&nbsp;    }
+&nbsp;
+&nbsp;    public static boolean isQuoted(String name, int start, int end) {
+&nbsp;        if (start + 2 &lt; end) {
+&nbsp;            switch (name.charAt(start)) {
+&nbsp;                case &#39;&quot;&#39;:
+&nbsp;                    return name.charAt(end - 1) == &#39;&quot;&#39;;
+&nbsp;                case &#39;[&#39;:
+&nbsp;                    return name.charAt(end - 1) == &#39;]&#39;;
+&nbsp;                case &#39;`&#39;:
+&nbsp;                    return name.charAt(end - 1) == &#39;`&#39;;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return false;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public static String unQuote(String name) {</b>
+<b class="fc">&nbsp;        assert isQuoted(name);</b>
+&nbsp;
+<b class="fc">&nbsp;        return name.substring(1, name.length() - 1);</b>
+<b class="fc">&nbsp;    }</b>
+<b class="pc">&nbsp;</b>
+<b class="pc">&nbsp;    public Identifier(String text, boolean quoted) {</b>
+&nbsp;        if (StringHelper.isEmpty(text)) {
+&nbsp;            throw new IllegalIdentifierException(&quot;Identifier text cannot be null&quot;);
+<b class="nc">&nbsp;        } else if (isQuoted(text)) {</b>
+&nbsp;            throw new IllegalIdentifierException(&quot;Identifier text should not contain quote markers (` or \&quot;)&quot;);
+<b class="pc">&nbsp;        } else {</b>
+<b class="pc">&nbsp;            this.text = text;</b>
+&nbsp;            this.isQuoted = quoted;
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="pc">&nbsp;    protected Identifier(String text) {</b>
+<b class="nc">&nbsp;        this.text = text;</b>
+<b class="nc">&nbsp;        this.isQuoted = false;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="pc">&nbsp;    public String getText() {</b>
+&nbsp;        return this.text;
+<b class="fc">&nbsp;    }</b>
+<b class="pc">&nbsp;</b>
+&nbsp;    public boolean isQuoted() {
+<b class="nc">&nbsp;        return this.isQuoted;</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public String render(Dialect dialect) {</b>
+<b class="fc">&nbsp;        return this.isQuoted ? dialect.toQuotedIdentifier(this.getText()) : this.getText();</b>
+<b class="pc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public String render() {
+&nbsp;        return this.isQuoted ? &quot;`&quot; + this.getText() + &quot;`&quot; : this.getText();
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getCanonicalName() {
+<b class="fc">&nbsp;        return this.isQuoted ? this.text : this.text.toLowerCase(Locale.ENGLISH);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String toString() {
+&nbsp;        return this.render();
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean equals(Object o) {
+&nbsp;        if (!(o instanceof Identifier)) {
+&nbsp;            return false;
+&nbsp;        } else {
+&nbsp;            Identifier that = (Identifier)o;
+&nbsp;            return this.getCanonicalName().equals(that.getCanonicalName());
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean matches(String name) {
+<b class="fc">&nbsp;        return this.isQuoted() ? this.text.equals(name) : this.text.equalsIgnoreCase(name);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int hashCode() {
+<b class="fc">&nbsp;        return this.isQuoted ? this.text.hashCode() : this.text.toLowerCase(Locale.ENGLISH).hashCode();</b>
+<b class="pc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public static boolean areEqual(Identifier id1, Identifier id2) {</b>
+&nbsp;        if (id1 == null) {
+<b class="nc">&nbsp;            return id2 == null;</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            return id1.equals(id2);</b>
+&nbsp;        }
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public static Identifier quote(Identifier identifier) {
+&nbsp;        return identifier.isQuoted() ? identifier : toIdentifier(identifier.getText(), true);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public int compareTo(Identifier o) {
+<b class="nc">&nbsp;        return this.getCanonicalName().compareTo(o.getCanonicalName());</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 21:00</div>
+</div>
+</body>
+</html>

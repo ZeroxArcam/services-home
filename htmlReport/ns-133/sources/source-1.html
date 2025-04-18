@@ -1,0 +1,282 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > CollectionCacheInvalidator</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.cache.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: CollectionCacheInvalidator (org.hibernate.cache.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">CollectionCacheInvalidator</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    38.5%
+  </span>
+  <span class="absValue">
+    (5/13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    2.4%
+  </span>
+  <span class="absValue">
+    (1/42)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    11.1%
+  </span>
+  <span class="absValue">
+    (7/63)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.cache.internal;
+&nbsp;
+&nbsp;import java.util.Set;
+&nbsp;import org.hibernate.HibernateException;
+&nbsp;import org.hibernate.action.internal.CollectionAction;
+&nbsp;import org.hibernate.boot.Metadata;
+&nbsp;import org.hibernate.boot.spi.SessionFactoryOptions;
+&nbsp;import org.hibernate.cache.spi.access.CollectionDataAccess;
+&nbsp;import org.hibernate.cache.spi.access.SoftLock;
+&nbsp;import org.hibernate.collection.spi.PersistentCollection;
+&nbsp;import org.hibernate.engine.spi.SessionFactoryImplementor;
+&nbsp;import org.hibernate.event.service.spi.EventListenerRegistry;
+&nbsp;import org.hibernate.event.spi.EventSource;
+&nbsp;import org.hibernate.event.spi.EventType;
+&nbsp;import org.hibernate.event.spi.PostDeleteEvent;
+&nbsp;import org.hibernate.event.spi.PostDeleteEventListener;
+&nbsp;import org.hibernate.event.spi.PostInsertEvent;
+&nbsp;import org.hibernate.event.spi.PostInsertEventListener;
+&nbsp;import org.hibernate.event.spi.PostUpdateEvent;
+&nbsp;import org.hibernate.event.spi.PostUpdateEventListener;
+&nbsp;import org.hibernate.integrator.spi.Integrator;
+&nbsp;import org.hibernate.metamodel.spi.MappingMetamodelImplementor;
+&nbsp;import org.hibernate.persister.collection.CollectionPersister;
+&nbsp;import org.hibernate.persister.entity.EntityPersister;
+&nbsp;import org.hibernate.service.spi.SessionFactoryServiceRegistry;
+&nbsp;import org.hibernate.tuple.entity.EntityMetamodel;
+&nbsp;import org.jboss.logging.Logger;
+&nbsp;
+&nbsp;public class CollectionCacheInvalidator implements Integrator, PostInsertEventListener, PostDeleteEventListener, PostUpdateEventListener {
+&nbsp;    private static final Logger LOG = Logger.getLogger(CollectionCacheInvalidator.class.getName());
+&nbsp;    public static boolean PROPAGATE_EXCEPTION = false;
+&nbsp;
+&nbsp;    public CollectionCacheInvalidator() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public void integrate(Metadata metadata, SessionFactoryImplementor sessionFactory, SessionFactoryServiceRegistry serviceRegistry) {
+&nbsp;        this.integrate(serviceRegistry, sessionFactory);
+&nbsp;    }
+&nbsp;
+&nbsp;    public void disintegrate(SessionFactoryImplementor sessionFactory, SessionFactoryServiceRegistry serviceRegistry) {
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+<b class="fc">&nbsp;    public void onPostInsert(PostInsertEvent event) {</b>
+&nbsp;        this.evictCache(event.getEntity(), event.getPersister(), event.getSession(), (Object[])null);
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean requiresPostCommitHandling(EntityPersister persister) {
+<b class="fc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void onPostDelete(PostDeleteEvent event) {
+&nbsp;        this.evictCache(event.getEntity(), event.getPersister(), event.getSession(), (Object[])null);
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void onPostUpdate(PostUpdateEvent event) {
+&nbsp;        this.evictCache(event.getEntity(), event.getPersister(), event.getSession(), event.getOldState());
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    private void integrate(SessionFactoryServiceRegistry serviceRegistry, SessionFactoryImplementor sessionFactory) {
+&nbsp;        SessionFactoryOptions sessionFactoryOptions = sessionFactory.getSessionFactoryOptions();
+&nbsp;        if (sessionFactoryOptions.isAutoEvictCollectionCache()) {
+<b class="nc">&nbsp;            if (sessionFactoryOptions.isSecondLevelCacheEnabled()) {</b>
+&nbsp;                EventListenerRegistry eventListenerRegistry = (EventListenerRegistry)serviceRegistry.requireService(EventListenerRegistry.class);
+&nbsp;                eventListenerRegistry.appendListeners(EventType.POST_INSERT, new PostInsertEventListener[]{this});
+&nbsp;                eventListenerRegistry.appendListeners(EventType.POST_DELETE, new PostDeleteEventListener[]{this});
+&nbsp;                eventListenerRegistry.appendListeners(EventType.POST_UPDATE, new PostUpdateEventListener[]{this});
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void evictCache(Object entity, EntityPersister persister, EventSource session, Object[] oldState) {
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            SessionFactoryImplementor factory = persister.getFactory();
+&nbsp;            MappingMetamodelImplementor metamodel = factory.getRuntimeMetamodels().getMappingMetamodel();
+&nbsp;            Set&lt;String&gt; collectionRoles = metamodel.getCollectionRolesByEntityParticipant(persister.getEntityName());
+&nbsp;            if (collectionRoles == null || collectionRoles.isEmpty()) {
+<b class="nc">&nbsp;                return;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            EntityMetamodel entityMetamodel = persister.getEntityMetamodel();
+<b class="fc">&nbsp;            boolean debugEnabled = LOG.isDebugEnabled();</b>
+<b class="pc">&nbsp;</b>
+&nbsp;            for(String role : collectionRoles) {
+&nbsp;                CollectionPersister collectionPersister = metamodel.getCollectionDescriptor(role);
+&nbsp;                if (collectionPersister.hasCache()) {
+<b class="nc">&nbsp;                    String mappedBy = collectionPersister.getMappedByProperty();</b>
+&nbsp;                    if (!collectionPersister.isManyToMany() &amp;&amp; mappedBy != null &amp;&amp; !mappedBy.isEmpty()) {
+&nbsp;                        int i = entityMetamodel.getPropertyIndex(mappedBy);
+&nbsp;                        Object oldId = null;
+<b class="nc">&nbsp;                        if (oldState != null) {</b>
+<b class="nc">&nbsp;                            oldId = this.getIdentifier(session, oldState[i]);</b>
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                        Object ref = persister.getValue(entity, i);
+&nbsp;                        Object id = this.getIdentifier(session, ref);
+&nbsp;                        if (id != null &amp;&amp; !id.equals(oldId) || oldId != null &amp;&amp; !oldId.equals(id)) {
+&nbsp;                            if (id != null) {
+<b class="nc">&nbsp;                                this.evict(id, collectionPersister, session);</b>
+&nbsp;                            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                            if (oldId != null) {</b>
+<b class="nc">&nbsp;                                this.evict(oldId, collectionPersister, session);</b>
+&nbsp;                            }
+&nbsp;                        }
+<b class="nc">&nbsp;                    } else {</b>
+<b class="nc">&nbsp;                        if (debugEnabled) {</b>
+<b class="nc">&nbsp;                            LOG.debug(&quot;Evict CollectionRegion &quot; + role);</b>
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                        CollectionDataAccess cacheAccessStrategy = collectionPersister.getCacheAccessStrategy();
+&nbsp;                        SoftLock softLock = cacheAccessStrategy.lockRegion();
+&nbsp;                        session.getActionQueue().registerProcess((success, session1) -&gt; cacheAccessStrategy.unlockRegion(softLock));
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        } catch (Exception e) {</b>
+<b class="nc">&nbsp;            if (PROPAGATE_EXCEPTION) {</b>
+<b class="nc">&nbsp;                throw new IllegalStateException(e);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            LOG.error(&quot;&quot;, e);
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private Object getIdentifier(EventSource session, Object obj) {
+&nbsp;        Object id = null;
+<b class="nc">&nbsp;        if (obj != null) {</b>
+<b class="nc">&nbsp;            id = session.getContextEntityIdentifier(obj);</b>
+<b class="nc">&nbsp;            if (id == null) {</b>
+&nbsp;                EntityPersister persister = session.getFactory().getRuntimeMetamodels().getMappingMetamodel().getEntityDescriptor(obj.getClass());
+<b class="nc">&nbsp;                id = persister.getIdentifier(obj, session);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        return id;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private void evict(Object id, CollectionPersister collectionPersister, EventSource session) {</b>
+&nbsp;        if (LOG.isDebugEnabled()) {
+<b class="nc">&nbsp;            Logger var10000 = LOG;</b>
+<b class="nc">&nbsp;            String var10001 = collectionPersister.getRole();</b>
+<b class="nc">&nbsp;            var10000.debug(&quot;Evict CollectionRegion &quot; + var10001 + &quot; for id &quot; + id);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        CollectionEvictCacheAction evictCacheAction = new CollectionEvictCacheAction(collectionPersister, (PersistentCollection)null, id, session);
+&nbsp;        evictCacheAction.execute();
+&nbsp;        session.getActionQueue().registerProcess(evictCacheAction.getAfterTransactionCompletionProcess());
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private static final class CollectionEvictCacheAction extends CollectionAction {</b>
+&nbsp;        CollectionEvictCacheAction(CollectionPersister persister, PersistentCollection&lt;?&gt; collection, Object key, EventSource session) {
+&nbsp;            super(persister, collection, key, session);
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        public void execute() throws HibernateException {
+&nbsp;            this.beforeExecutions();
+&nbsp;            this.evict();
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

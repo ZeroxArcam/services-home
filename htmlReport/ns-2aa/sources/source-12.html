@@ -1,0 +1,265 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > SpringApplicationBannerPrinter</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.boot</a>
+</div>
+
+<h1>Coverage Summary for Class: SpringApplicationBannerPrinter (org.springframework.boot)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SpringApplicationBannerPrinter</td>
+<td class="coverageStat">
+  <span class="percent">
+    71.4%
+  </span>
+  <span class="absValue">
+    (5/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    37.5%
+  </span>
+  <span class="absValue">
+    (3/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    55.6%
+  </span>
+  <span class="absValue">
+    (15/27)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">SpringApplicationBannerPrinter$PrintedBanner</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    60%
+  </span>
+  <span class="absValue">
+    (3/5)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (6/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    30%
+  </span>
+  <span class="absValue">
+    (3/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    56.2%
+  </span>
+  <span class="absValue">
+    (18/32)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.boot;
+&nbsp;
+&nbsp;import java.io.ByteArrayOutputStream;
+&nbsp;import java.io.IOException;
+&nbsp;import java.io.PrintStream;
+&nbsp;import java.io.UnsupportedEncodingException;
+&nbsp;import java.nio.charset.StandardCharsets;
+&nbsp;import org.apache.commons.logging.Log;
+&nbsp;import org.springframework.aot.hint.RuntimeHints;
+&nbsp;import org.springframework.aot.hint.RuntimeHintsRegistrar;
+&nbsp;import org.springframework.core.env.Environment;
+&nbsp;import org.springframework.core.io.Resource;
+&nbsp;import org.springframework.core.io.ResourceLoader;
+&nbsp;
+&nbsp;class SpringApplicationBannerPrinter {
+&nbsp;    static final String BANNER_LOCATION_PROPERTY = &quot;spring.banner.location&quot;;
+&nbsp;    static final String DEFAULT_BANNER_LOCATION = &quot;banner.txt&quot;;
+&nbsp;    private static final Banner DEFAULT_BANNER = new SpringBootBanner();
+&nbsp;    private final ResourceLoader resourceLoader;
+&nbsp;    private final Banner fallbackBanner;
+&nbsp;
+&nbsp;    SpringApplicationBannerPrinter(ResourceLoader resourceLoader, Banner fallbackBanner) {
+&nbsp;        this.resourceLoader = resourceLoader;
+&nbsp;        this.fallbackBanner = fallbackBanner;
+&nbsp;    }
+&nbsp;
+&nbsp;    Banner print(Environment environment, Class&lt;?&gt; sourceClass, Log logger) {
+&nbsp;        Banner banner = this.getBanner(environment);
+&nbsp;
+&nbsp;        try {
+&nbsp;            logger.info(this.createStringFromBanner(banner, environment, sourceClass));
+&nbsp;        } catch (UnsupportedEncodingException ex) {
+&nbsp;            logger.warn(&quot;Failed to create String for banner&quot;, ex);
+&nbsp;        }
+&nbsp;
+&nbsp;        return new PrintedBanner(banner, sourceClass);
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    Banner print(Environment environment, Class&lt;?&gt; sourceClass, PrintStream out) {</b>
+&nbsp;        Banner banner = this.getBanner(environment);
+&nbsp;        banner.printBanner(environment, sourceClass, out);
+&nbsp;        return new PrintedBanner(banner, sourceClass);
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    private Banner getBanner(Environment environment) {</b>
+<b class="fc">&nbsp;        Banner textBanner = this.getTextBanner(environment);</b>
+<b class="fc">&nbsp;        if (textBanner != null) {</b>
+&nbsp;            return textBanner;
+&nbsp;        } else {
+&nbsp;            return this.fallbackBanner != null ? this.fallbackBanner : DEFAULT_BANNER;
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private Banner getTextBanner(Environment environment) {
+&nbsp;        String location = environment.getProperty(&quot;spring.banner.location&quot;, &quot;banner.txt&quot;);
+<b class="nc">&nbsp;        Resource resource = this.resourceLoader.getResource(location);</b>
+&nbsp;
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            if (resource.exists() &amp;&amp; !resource.getURL().toExternalForm().contains(&quot;liquibase-core&quot;)) {
+&nbsp;                return new ResourceBanner(resource);
+&nbsp;            }
+<b class="fc">&nbsp;        } catch (IOException var5) {</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;        return null;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    private String createStringFromBanner(Banner banner, Environment environment, Class&lt;?&gt; mainApplicationClass) throws UnsupportedEncodingException {</b>
+<b class="pc">&nbsp;        String charset = environment.getProperty(&quot;spring.banner.charset&quot;, StandardCharsets.UTF_8.name());</b>
+<b class="nc">&nbsp;        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();</b>
+&nbsp;
+<b class="pc">&nbsp;        try (PrintStream out = new PrintStream(byteArrayOutputStream, false, charset)) {</b>
+<b class="nc">&nbsp;            banner.printBanner(environment, mainApplicationClass, out);</b>
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+&nbsp;        return byteArrayOutputStream.toString(charset);
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    private static class PrintedBanner implements Banner {</b>
+<b class="fc">&nbsp;        private final Banner banner;</b>
+&nbsp;        private final Class&lt;?&gt; sourceClass;
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;        PrintedBanner(Banner banner, Class&lt;?&gt; sourceClass) {</b>
+&nbsp;            this.banner = banner;
+&nbsp;            this.sourceClass = sourceClass;
+&nbsp;        }
+&nbsp;
+&nbsp;        public void printBanner(Environment environment, Class&lt;?&gt; sourceClass, PrintStream out) {
+<b class="fc">&nbsp;            sourceClass = sourceClass != null ? sourceClass : this.sourceClass;</b>
+&nbsp;            this.banner.printBanner(environment, sourceClass, out);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    static class SpringApplicationBannerPrinterRuntimeHints implements RuntimeHintsRegistrar {</b>
+<b class="nc">&nbsp;        SpringApplicationBannerPrinterRuntimeHints() {</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        public void registerHints(RuntimeHints hints, ClassLoader classLoader) {
+<b class="nc">&nbsp;            hints.resources().registerPattern(&quot;banner.txt&quot;);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:58</div>
+</div>
+</body>
+</html>

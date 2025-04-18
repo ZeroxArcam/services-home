@@ -1,0 +1,286 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > NonRegisteringDriver</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.mysql.cj.jdbc</a>
+</div>
+
+<h1>Coverage Summary for Class: NonRegisteringDriver (com.mysql.cj.jdbc)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">NonRegisteringDriver</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    23.1%
+  </span>
+  <span class="absValue">
+    (3/13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/15)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    4.6%
+  </span>
+  <span class="absValue">
+    (3/65)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package com.mysql.cj.jdbc;
+&nbsp;
+&nbsp;import com.mysql.cj.Constants;
+&nbsp;import com.mysql.cj.Messages;
+&nbsp;import com.mysql.cj.conf.ConnectionUrl;
+&nbsp;import com.mysql.cj.conf.HostInfo;
+&nbsp;import com.mysql.cj.conf.PropertyKey;
+&nbsp;import com.mysql.cj.conf.ConnectionUrl.Type;
+&nbsp;import com.mysql.cj.exceptions.CJException;
+&nbsp;import com.mysql.cj.exceptions.ExceptionFactory;
+&nbsp;import com.mysql.cj.exceptions.UnableToConnectException;
+&nbsp;import com.mysql.cj.exceptions.UnsupportedConnectionStringException;
+&nbsp;import com.mysql.cj.jdbc.exceptions.SQLExceptionsMapping;
+&nbsp;import com.mysql.cj.jdbc.ha.FailoverConnectionProxy;
+&nbsp;import com.mysql.cj.jdbc.ha.LoadBalancedConnectionProxy;
+&nbsp;import com.mysql.cj.jdbc.ha.ReplicationConnectionProxy;
+&nbsp;import com.mysql.cj.util.StringUtils;
+&nbsp;import java.sql.Connection;
+&nbsp;import java.sql.Driver;
+&nbsp;import java.sql.DriverPropertyInfo;
+&nbsp;import java.sql.SQLException;
+&nbsp;import java.sql.SQLFeatureNotSupportedException;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Properties;
+&nbsp;import java.util.logging.Logger;
+&nbsp;
+&nbsp;public class NonRegisteringDriver implements Driver {
+&nbsp;    public NonRegisteringDriver() throws SQLException {
+&nbsp;    }
+&nbsp;
+&nbsp;    public static String getOSName() {
+&nbsp;        return Constants.OS_NAME;
+&nbsp;    }
+&nbsp;
+&nbsp;    public static String getPlatform() {
+&nbsp;        return Constants.OS_ARCH;
+&nbsp;    }
+&nbsp;
+&nbsp;    static int getMajorVersionInternal() {
+&nbsp;        return StringUtils.safeIntParse(&quot;9&quot;);
+&nbsp;    }
+&nbsp;
+&nbsp;    static int getMinorVersionInternal() {
+&nbsp;        return StringUtils.safeIntParse(&quot;1&quot;);
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean acceptsURL(String url) throws SQLException {
+&nbsp;        try {
+&nbsp;            return ConnectionUrl.acceptsUrl(url);
+&nbsp;        } catch (CJException var3) {
+&nbsp;            throw SQLExceptionsMapping.translateException(var3);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public Connection connect(String url, Properties info) throws SQLException {
+&nbsp;        try {
+&nbsp;            try {
+&nbsp;                if (!ConnectionUrl.acceptsUrl(url)) {
+&nbsp;                    return null;
+&nbsp;                } else {
+&nbsp;                    ConnectionUrl conStr = ConnectionUrl.getConnectionUrlInstance(url, info);
+&nbsp;                    switch (conStr.getType()) {
+&nbsp;                        case SINGLE_CONNECTION:
+<b class="fc">&nbsp;                            return ConnectionImpl.getInstance(conStr.getMainHost());</b>
+&nbsp;                        case FAILOVER_CONNECTION:
+&nbsp;                        case FAILOVER_DNS_SRV_CONNECTION:
+&nbsp;                            return FailoverConnectionProxy.createProxyInstance(conStr);
+&nbsp;                        case LOADBALANCE_CONNECTION:
+&nbsp;                        case LOADBALANCE_DNS_SRV_CONNECTION:
+&nbsp;                            return LoadBalancedConnectionProxy.createProxyInstance(conStr);
+&nbsp;                        case REPLICATION_CONNECTION:
+&nbsp;                        case REPLICATION_DNS_SRV_CONNECTION:
+&nbsp;                            return ReplicationConnectionProxy.createProxyInstance(conStr);
+&nbsp;                        default:
+<b class="fc">&nbsp;                            return null;</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            } catch (UnsupportedConnectionStringException var5) {
+&nbsp;                return null;
+&nbsp;            } catch (CJException ex) {
+&nbsp;                throw (UnableToConnectException)ExceptionFactory.createException(UnableToConnectException.class, Messages.getString(&quot;NonRegisteringDriver.17&quot;, new Object[]{ex.toString()}), ex);
+&nbsp;            }
+&nbsp;        } catch (CJException var7) {
+&nbsp;            throw SQLExceptionsMapping.translateException(var7);
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getMajorVersion() {
+&nbsp;        return getMajorVersionInternal();
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getMinorVersion() {
+&nbsp;        return getMinorVersionInternal();
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public DriverPropertyInfo[] getPropertyInfo(String url, Properties info) throws SQLException {
+&nbsp;        try {
+&nbsp;            String host = &quot;&quot;;
+&nbsp;            String port = &quot;&quot;;
+&nbsp;            String database = &quot;&quot;;
+&nbsp;            String user = &quot;&quot;;
+&nbsp;            String password = &quot;&quot;;
+<b class="nc">&nbsp;            if (!StringUtils.isNullOrEmpty(url)) {</b>
+&nbsp;                ConnectionUrl connStr = ConnectionUrl.getConnectionUrlInstance(url, info);
+&nbsp;                if (connStr.getType() == Type.SINGLE_CONNECTION) {
+&nbsp;                    HostInfo hostInfo = connStr.getMainHost();
+&nbsp;                    info = hostInfo.exposeAsProperties();
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            if (info != null) {
+<b class="nc">&nbsp;                host = info.getProperty(PropertyKey.HOST.getKeyName());</b>
+&nbsp;                port = info.getProperty(PropertyKey.PORT.getKeyName());
+&nbsp;                database = info.getProperty(PropertyKey.DBNAME.getKeyName());
+&nbsp;                user = info.getProperty(PropertyKey.USER.getKeyName());
+&nbsp;                password = info.getProperty(PropertyKey.PASSWORD.getKeyName());
+&nbsp;            }
+&nbsp;
+&nbsp;            DriverPropertyInfo hostProp = new DriverPropertyInfo(PropertyKey.HOST.getKeyName(), host);
+&nbsp;            hostProp.required = true;
+&nbsp;            hostProp.description = Messages.getString(&quot;NonRegisteringDriver.3&quot;);
+&nbsp;            DriverPropertyInfo portProp = new DriverPropertyInfo(PropertyKey.PORT.getKeyName(), port);
+&nbsp;            portProp.required = false;
+&nbsp;            portProp.description = Messages.getString(&quot;NonRegisteringDriver.7&quot;);
+&nbsp;            DriverPropertyInfo dbProp = new DriverPropertyInfo(PropertyKey.DBNAME.getKeyName(), database);
+&nbsp;            dbProp.required = false;
+&nbsp;            dbProp.description = Messages.getString(&quot;NonRegisteringDriver.10&quot;);
+&nbsp;            DriverPropertyInfo userProp = new DriverPropertyInfo(PropertyKey.USER.getKeyName(), user);
+<b class="fc">&nbsp;            userProp.required = true;</b>
+&nbsp;            userProp.description = Messages.getString(&quot;NonRegisteringDriver.13&quot;);
+&nbsp;            DriverPropertyInfo passwordProp = new DriverPropertyInfo(PropertyKey.PASSWORD.getKeyName(), password);
+&nbsp;            passwordProp.required = true;
+&nbsp;            passwordProp.description = Messages.getString(&quot;NonRegisteringDriver.16&quot;);
+&nbsp;            JdbcPropertySet propSet = new JdbcPropertySetImpl();
+&nbsp;            propSet.initializeProperties(info);
+&nbsp;            List&lt;DriverPropertyInfo&gt; driverPropInfo = propSet.exposeAsDriverPropertyInfo();
+&nbsp;            DriverPropertyInfo[] dpi = new DriverPropertyInfo[5 + driverPropInfo.size()];
+&nbsp;            dpi[0] = hostProp;
+&nbsp;            dpi[1] = portProp;
+&nbsp;            dpi[2] = dbProp;
+&nbsp;            dpi[3] = userProp;
+&nbsp;            dpi[4] = passwordProp;
+&nbsp;            System.arraycopy(driverPropInfo.toArray(new DriverPropertyInfo[0]), 0, dpi, 5, driverPropInfo.size());
+&nbsp;            return dpi;
+&nbsp;        } catch (CJException var17) {
+&nbsp;            throw SQLExceptionsMapping.translateException(var17);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean jdbcCompliant() {
+&nbsp;        return false;
+&nbsp;    }
+&nbsp;
+&nbsp;    public Logger getParentLogger() throws SQLFeatureNotSupportedException {
+&nbsp;        throw new SQLFeatureNotSupportedException();
+&nbsp;    }
+&nbsp;
+&nbsp;    static {
+&nbsp;        try {
+&nbsp;            Class.forName(AbandonedConnectionCleanupThread.class.getName());
+&nbsp;        } catch (ClassNotFoundException var1) {
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,876 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ComponentType</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.type</a>
+</div>
+
+<h1>Coverage Summary for Class: ComponentType (org.hibernate.type)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ComponentType</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/65)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/192)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/349)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.type;
+&nbsp;
+&nbsp;import java.io.Serializable;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;import java.sql.CallableStatement;
+&nbsp;import java.sql.PreparedStatement;
+&nbsp;import java.sql.SQLException;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.Map;
+&nbsp;import org.hibernate.FetchMode;
+&nbsp;import org.hibernate.HibernateException;
+&nbsp;import org.hibernate.MappingException;
+&nbsp;import org.hibernate.PropertyNotFoundException;
+&nbsp;import org.hibernate.Remove;
+&nbsp;import org.hibernate.boot.spi.MetadataBuildingContext;
+&nbsp;import org.hibernate.bytecode.enhance.spi.LazyPropertyInitializer;
+&nbsp;import org.hibernate.engine.spi.CascadeStyle;
+&nbsp;import org.hibernate.engine.spi.CascadeStyles;
+&nbsp;import org.hibernate.engine.spi.Mapping;
+&nbsp;import org.hibernate.engine.spi.SessionFactoryImplementor;
+&nbsp;import org.hibernate.engine.spi.SharedSessionContractImplementor;
+&nbsp;import org.hibernate.generator.Generator;
+&nbsp;import org.hibernate.internal.util.ReflectHelper;
+&nbsp;import org.hibernate.internal.util.StringHelper;
+&nbsp;import org.hibernate.internal.util.collections.ArrayHelper;
+&nbsp;import org.hibernate.mapping.Component;
+&nbsp;import org.hibernate.mapping.Property;
+&nbsp;import org.hibernate.mapping.Value;
+&nbsp;import org.hibernate.metamodel.mapping.EmbeddableDiscriminatorMapping;
+&nbsp;import org.hibernate.metamodel.mapping.EmbeddableMappingType;
+&nbsp;import org.hibernate.metamodel.mapping.EmbeddableValuedModelPart;
+&nbsp;import org.hibernate.metamodel.mapping.SelectableMapping;
+&nbsp;import org.hibernate.metamodel.mapping.internal.MappingModelCreationProcess;
+&nbsp;import org.hibernate.metamodel.spi.EmbeddableInstantiator;
+&nbsp;import org.hibernate.metamodel.spi.EmbeddableRepresentationStrategy;
+&nbsp;import org.hibernate.property.access.spi.PropertyAccess;
+&nbsp;import org.hibernate.query.sqm.SqmExpressible;
+&nbsp;import org.hibernate.type.descriptor.ValueExtractor;
+&nbsp;import org.hibernate.type.descriptor.jdbc.JdbcType;
+&nbsp;import org.hibernate.type.spi.CompositeTypeImplementor;
+&nbsp;
+&nbsp;public class ComponentType extends AbstractType implements CompositeTypeImplementor, ProcedureParameterExtractionAware {
+&nbsp;    private final Class&lt;?&gt; componentClass;
+&nbsp;    private final boolean mutable;
+&nbsp;    private final String[] propertyNames;
+&nbsp;    private final Type[] propertyTypes;
+&nbsp;    private final boolean[] propertyNullability;
+&nbsp;    private final int[] originalPropertyOrder;
+&nbsp;    protected final int propertySpan;
+&nbsp;    private final CascadeStyle[] cascade;
+<b class="nc">&nbsp;    private final FetchMode[] joinedFetch;</b>
+&nbsp;    private final int discriminatorColumnSpan;
+&nbsp;    private final boolean isAggregate;
+&nbsp;    private final boolean isKey;
+&nbsp;    private boolean hasNotNullProperty;
+&nbsp;    private boolean hasNullProperty;
+&nbsp;    private EmbeddableValuedModelPart mappingModelPart;
+&nbsp;    private Boolean canDoExtraction;
+&nbsp;
+&nbsp;    /** @deprecated */
+&nbsp;    @Deprecated(
+&nbsp;        forRemoval = true
+&nbsp;    )
+&nbsp;    public ComponentType(Component component, int[] originalPropertyOrder, MetadataBuildingContext context) {
+&nbsp;        this(component, originalPropertyOrder);
+&nbsp;    }
+&nbsp;
+&nbsp;    public ComponentType(Component component, int[] originalPropertyOrder) {
+&nbsp;        this(component, originalPropertyOrder, component.getComponentClassName() != null &amp;&amp; !ReflectHelper.isRecord(component.getComponentClass()));
+&nbsp;    }
+&nbsp;
+&nbsp;    public ComponentType(Component component, int[] originalPropertyOrder, boolean mutable) {
+<b class="nc">&nbsp;        this.componentClass = component.isDynamic() ? Map.class : component.getComponentClass();</b>
+&nbsp;        this.mutable = mutable;
+&nbsp;        this.isAggregate = component.getAggregateColumn() != null;
+&nbsp;        this.isKey = component.isKey();
+<b class="nc">&nbsp;        this.propertySpan = component.getPropertySpan();</b>
+<b class="nc">&nbsp;        this.originalPropertyOrder = originalPropertyOrder;</b>
+<b class="nc">&nbsp;        Value discriminator = component.getDiscriminator();</b>
+&nbsp;        this.propertyNames = new String[this.propertySpan + (component.isPolymorphic() ? 1 : 0)];
+&nbsp;        this.propertyTypes = new Type[this.propertySpan + (component.isPolymorphic() ? 1 : 0)];
+<b class="nc">&nbsp;        this.propertyNullability = new boolean[this.propertySpan + (component.isPolymorphic() ? 1 : 0)];</b>
+<b class="nc">&nbsp;        this.cascade = new CascadeStyle[this.propertySpan + (component.isPolymorphic() ? 1 : 0)];</b>
+<b class="nc">&nbsp;        this.joinedFetch = new FetchMode[this.propertySpan + (component.isPolymorphic() ? 1 : 0)];</b>
+<b class="nc">&nbsp;        int i = 0;</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        for(Property property : component.getProperties()) {</b>
+<b class="nc">&nbsp;            this.propertyNames[i] = property.getName();</b>
+<b class="nc">&nbsp;            this.propertyTypes[i] = property.getValue().getType();</b>
+<b class="nc">&nbsp;            this.propertyNullability[i] = property.isOptional();</b>
+<b class="nc">&nbsp;            this.cascade[i] = property.getCascadeStyle();</b>
+<b class="nc">&nbsp;            this.joinedFetch[i] = property.getValue().getFetchMode();</b>
+<b class="nc">&nbsp;            if (!property.isOptional()) {</b>
+<b class="nc">&nbsp;                this.hasNotNullProperty = true;</b>
+&nbsp;            } else {
+<b class="nc">&nbsp;                this.hasNullProperty = true;</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            ++i;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if (discriminator != null) {</b>
+<b class="nc">&nbsp;            this.discriminatorColumnSpan = discriminator.getColumnSpan();</b>
+<b class="nc">&nbsp;            this.propertyNames[i] = &quot;{discriminator}&quot;;</b>
+&nbsp;            this.propertyTypes[i] = discriminator.getType();
+&nbsp;            this.propertyNullability[i] = false;
+<b class="nc">&nbsp;            this.cascade[i] = CascadeStyles.NONE;</b>
+&nbsp;            this.joinedFetch[i] = FetchMode.SELECT;
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            this.discriminatorColumnSpan = 0;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private boolean isAggregate() {</b>
+<b class="nc">&nbsp;        return this.isAggregate;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public boolean isKey() {
+<b class="nc">&nbsp;        return this.isKey;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int getColumnSpan(Mapping mapping) throws MappingException {
+&nbsp;        int span = 0;
+<b class="nc">&nbsp;</b>
+&nbsp;        for(int i = 0; i &lt; this.propertySpan; ++i) {
+&nbsp;            span += this.propertyTypes[i].getColumnSpan(mapping);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        span += this.discriminatorColumnSpan;
+&nbsp;        return span;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public int[] getSqlTypeCodes(Mapping mapping) throws MappingException {</b>
+<b class="nc">&nbsp;        int[] sqlTypes = new int[this.getColumnSpan(mapping)];</b>
+<b class="nc">&nbsp;        int n = 0;</b>
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; this.propertySpan; ++i) {</b>
+<b class="nc">&nbsp;            int[] subtypes = this.propertyTypes[i].getSqlTypeCodes(mapping);</b>
+&nbsp;
+&nbsp;            for(int subtype : subtypes) {
+&nbsp;                sqlTypes[n++] = subtype;
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return sqlTypes;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public final boolean isComponentType() {</b>
+<b class="nc">&nbsp;        return true;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public Class&lt;?&gt; getReturnedClass() {</b>
+&nbsp;        return this.componentClass;
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isSame(Object x, Object y) throws HibernateException {
+&nbsp;        if (x == y) {
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        } else {
+&nbsp;            Object[] xvalues = this.getPropertyValues(x);
+&nbsp;            Object[] yvalues = this.getPropertyValues(y);
+<b class="nc">&nbsp;</b>
+&nbsp;            for(int i = 0; i &lt; this.propertySpan; ++i) {
+&nbsp;                if (!this.propertyTypes[i].isSame(xvalues[i], yvalues[i])) {
+&nbsp;                    return false;
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            return true;
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public boolean isEqual(Object x, Object y) throws HibernateException {</b>
+<b class="nc">&nbsp;        if (x == y) {</b>
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        } else {
+&nbsp;            for(int i = 0; i &lt; this.propertySpan; ++i) {
+<b class="nc">&nbsp;                if (!this.propertyTypes[i].isEqual(this.getPropertyValue(x, i), this.getPropertyValue(y, i))) {</b>
+&nbsp;                    return false;
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            return true;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public boolean isEqual(Object x, Object y, SessionFactoryImplementor factory) throws HibernateException {</b>
+<b class="nc">&nbsp;        if (x == y) {</b>
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        } else {
+&nbsp;            for(int i = 0; i &lt; this.propertySpan; ++i) {
+<b class="nc">&nbsp;                if (!this.propertyTypes[i].isEqual(this.getPropertyValue(x, i), this.getPropertyValue(y, i), factory)) {</b>
+&nbsp;                    return false;
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            return true;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public int compare(Object x, Object y) {
+<b class="nc">&nbsp;        if (x == y) {</b>
+<b class="nc">&nbsp;            return 0;</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            for(int i = 0; i &lt; this.propertySpan; ++i) {
+&nbsp;                int propertyCompare = this.propertyTypes[i].compare(this.getPropertyValue(x, i), this.getPropertyValue(y, i));
+<b class="nc">&nbsp;                if (propertyCompare != 0) {</b>
+&nbsp;                    return propertyCompare;
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            return 0;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public int compare(Object x, Object y, SessionFactoryImplementor sessionFactory) {</b>
+<b class="nc">&nbsp;        if (x == y) {</b>
+<b class="nc">&nbsp;            return 0;</b>
+&nbsp;        } else {
+&nbsp;            for(int i = 0; i &lt; this.propertySpan; ++i) {
+<b class="nc">&nbsp;                int propertyCompare = this.propertyTypes[i].compare(this.getPropertyValue(x, i), this.getPropertyValue(y, i), sessionFactory);</b>
+&nbsp;                if (propertyCompare != 0) {
+&nbsp;                    return propertyCompare;
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            return 0;</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public boolean isMethodOf(Method method) {</b>
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public int getHashCode(Object x) {</b>
+&nbsp;        int result = 17;
+&nbsp;
+&nbsp;        for(int i = 0; i &lt; this.propertySpan; ++i) {
+<b class="nc">&nbsp;            Object y = this.getPropertyValue(x, i);</b>
+&nbsp;            result *= 37;
+&nbsp;            if (y != null) {
+&nbsp;                result += this.propertyTypes[i].getHashCode(y);
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return result;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public int getHashCode(Object x, SessionFactoryImplementor factory) {</b>
+&nbsp;        int result = 17;
+&nbsp;
+<b class="nc">&nbsp;        for(int i = 0; i &lt; this.propertySpan; ++i) {</b>
+&nbsp;            Object y = this.getPropertyValue(x, i);
+&nbsp;            result *= 37;
+&nbsp;            if (y != null) {
+&nbsp;                result += this.propertyTypes[i].getHashCode(y, factory);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return result;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public boolean isDirty(Object x, Object y, SharedSessionContractImplementor session) throws HibernateException {
+&nbsp;        if (x == y) {
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        } else {
+&nbsp;            for(int i = 0; i &lt; this.propertySpan; ++i) {
+&nbsp;                if (this.propertyTypes[i].isDirty(this.getPropertyValue(x, i), this.getPropertyValue(y, i), session)) {
+&nbsp;                    return true;
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            return false;
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public boolean isDirty(Object x, Object y, boolean[] checkable, SharedSessionContractImplementor session) throws HibernateException {</b>
+&nbsp;        if (x == y) {
+&nbsp;            return false;
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            int loc = 0;
+&nbsp;
+&nbsp;            for(int i = 0; i &lt; this.propertySpan; ++i) {
+&nbsp;                int len = this.propertyTypes[i].getColumnSpan(session.getFactory());
+<b class="nc">&nbsp;                if (len &lt;= 1) {</b>
+<b class="nc">&nbsp;                    boolean dirty = (len == 0 || checkable[loc]) &amp;&amp; this.propertyTypes[i].isDirty(this.getPropertyValue(x, i), this.getPropertyValue(y, i), session);</b>
+&nbsp;                    if (dirty) {
+&nbsp;                        return true;
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                } else {</b>
+<b class="nc">&nbsp;                    boolean[] subcheckable = new boolean[len];</b>
+<b class="nc">&nbsp;                    System.arraycopy(checkable, loc, subcheckable, 0, len);</b>
+<b class="nc">&nbsp;                    boolean dirty = this.propertyTypes[i].isDirty(this.getPropertyValue(x, i), this.getPropertyValue(y, i), subcheckable, session);</b>
+<b class="nc">&nbsp;                    if (dirty) {</b>
+<b class="nc">&nbsp;                        return true;</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;
+&nbsp;                loc += len;
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            return false;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public boolean isModified(Object old, Object current, boolean[] checkable, SharedSessionContractImplementor session) throws HibernateException {
+&nbsp;        if (old == current) {
+<b class="nc">&nbsp;            return false;</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            int loc = 0;
+&nbsp;
+<b class="nc">&nbsp;            for(int i = 0; i &lt; this.propertySpan; ++i) {</b>
+&nbsp;                int len = this.propertyTypes[i].getColumnSpan(session.getFactory());
+<b class="nc">&nbsp;                boolean[] subcheckable = new boolean[len];</b>
+&nbsp;                System.arraycopy(checkable, loc, subcheckable, 0, len);
+&nbsp;                if (this.propertyTypes[i].isModified(this.getPropertyValue(old, i), this.getPropertyValue(current, i), subcheckable, session)) {
+&nbsp;                    return true;
+&nbsp;                }
+&nbsp;
+&nbsp;                loc += len;
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            return false;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void nullSafeSet(PreparedStatement st, Object value, int begin, SharedSessionContractImplementor session) throws HibernateException, SQLException {</b>
+<b class="nc">&nbsp;        Object[] subvalues = this.nullSafeGetValues(value);</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        for(int i = 0; i &lt; this.propertySpan; ++i) {</b>
+<b class="nc">&nbsp;            this.propertyTypes[i].nullSafeSet(st, subvalues[i], begin, session);</b>
+<b class="nc">&nbsp;            begin += this.propertyTypes[i].getColumnSpan(session.getFactory());</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public void nullSafeSet(PreparedStatement st, Object value, int begin, boolean[] settable, SharedSessionContractImplementor session) throws HibernateException, SQLException {
+<b class="nc">&nbsp;        Object[] subvalues = this.nullSafeGetValues(value);</b>
+&nbsp;        int loc = 0;
+&nbsp;
+&nbsp;        for(int i = 0; i &lt; this.propertySpan; ++i) {
+&nbsp;            int len = this.propertyTypes[i].getColumnSpan(session.getFactory());
+&nbsp;            if (len != 0) {
+&nbsp;                if (len == 1) {
+&nbsp;                    if (settable[loc]) {
+<b class="nc">&nbsp;                        this.propertyTypes[i].nullSafeSet(st, subvalues[i], begin, session);</b>
+&nbsp;                        ++begin;
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                } else {</b>
+<b class="nc">&nbsp;                    boolean[] subsettable = new boolean[len];</b>
+&nbsp;                    System.arraycopy(settable, loc, subsettable, 0, len);
+&nbsp;                    this.propertyTypes[i].nullSafeSet(st, subvalues[i], begin, subsettable, session);
+&nbsp;                    begin += ArrayHelper.countTrue(subsettable);
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            loc += len;
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private Object[] nullSafeGetValues(Object value) {
+<b class="nc">&nbsp;        return value == null ? new Object[this.propertySpan] : this.getPropertyValues(value);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public Object getPropertyValue(Object component, int i, SharedSessionContractImplementor session) throws HibernateException {</b>
+&nbsp;        return this.getPropertyValue(component, i);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public Object getPropertyValue(Object component, int i) {
+<b class="nc">&nbsp;        if (component == null) {</b>
+<b class="nc">&nbsp;            return null;</b>
+<b class="nc">&nbsp;        } else if (component instanceof Object[]) {</b>
+<b class="nc">&nbsp;            return ((Object[])component)[i];</b>
+&nbsp;        } else {
+&nbsp;            EmbeddableMappingType embeddableMappingType = this.embeddableTypeDescriptor();
+&nbsp;            if (embeddableMappingType.isPolymorphic()) {
+<b class="nc">&nbsp;                EmbeddableMappingType.ConcreteEmbeddableType concreteEmbeddableType = embeddableMappingType.findSubtypeBySubclass(component.getClass().getName());</b>
+<b class="nc">&nbsp;                return concreteEmbeddableType.declaresAttribute(i) ? embeddableMappingType.getValue(component, i) : null;</b>
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                return embeddableMappingType.getValue(component, i);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Object[] getPropertyValues(Object component, SharedSessionContractImplementor session) {
+&nbsp;        return this.getPropertyValues(component);
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public Object[] getPropertyValues(Object component) {
+&nbsp;        if (component == null) {
+<b class="nc">&nbsp;            return new Object[this.propertySpan + this.discriminatorColumnSpan];</b>
+&nbsp;        } else {
+&nbsp;            return component instanceof Object[] ? (Object[])component : this.embeddableTypeDescriptor().getValues(component);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setPropertyValues(Object component, Object[] values) {
+<b class="nc">&nbsp;        this.embeddableTypeDescriptor().setValues(component, values);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Type[] getSubtypes() {
+<b class="nc">&nbsp;        return this.propertyTypes;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    /** @deprecated */</b>
+&nbsp;    @Deprecated(
+&nbsp;        since = &quot;6.2&quot;
+&nbsp;    )
+&nbsp;    public @Remove Generator[] getPropertyValueGenerationStrategies() {
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public String getName() {</b>
+<b class="nc">&nbsp;        return &quot;component&quot; + ArrayHelper.toString(this.propertyNames);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public String toLoggableString(Object value, SessionFactoryImplementor factory) throws HibernateException {
+<b class="nc">&nbsp;        if (value == null) {</b>
+<b class="nc">&nbsp;            return &quot;null&quot;;</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            Map&lt;String, String&gt; result = new HashMap();
+&nbsp;            Object[] values = this.getPropertyValues(value);
+<b class="nc">&nbsp;</b>
+&nbsp;            for(int i = 0; i &lt; this.propertyTypes.length; ++i) {
+&nbsp;                if (values[i] == LazyPropertyInitializer.UNFETCHED_PROPERTY) {
+&nbsp;                    result.put(this.propertyNames[i], &quot;&lt;uninitialized&gt;&quot;);
+&nbsp;                } else {
+&nbsp;                    result.put(this.propertyNames[i], this.propertyTypes[i].toLoggableString(values[i], factory));
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            String var10000 = StringHelper.unqualify(this.getName());
+&nbsp;            return var10000 + result;
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public String[] getPropertyNames() {
+<b class="nc">&nbsp;        return this.propertyNames;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Object deepCopy(Object component, SessionFactoryImplementor factory) {
+&nbsp;        if (component == null) {
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        } else {
+&nbsp;            Object[] values = this.getPropertyValues(component);
+<b class="nc">&nbsp;</b>
+&nbsp;            for(int i = 0; i &lt; this.propertySpan; ++i) {
+&nbsp;                values[i] = this.propertyTypes[i].deepCopy(values[i], factory);
+&nbsp;            }
+&nbsp;
+&nbsp;            Object result = this.instantiator(component).instantiate(() -&gt; values, factory);
+<b class="nc">&nbsp;            PropertyAccess parentAccess = this.mappingModelPart().getParentInjectionAttributePropertyAccess();</b>
+&nbsp;            if (parentAccess != null) {
+&nbsp;                parentAccess.getSetter().set(result, parentAccess.getGetter().get(component));
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            return result;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public Object replace(Object original, Object target, SharedSessionContractImplementor session, Object owner, Map&lt;Object, Object&gt; copyCache) {
+<b class="nc">&nbsp;        if (original == null) {</b>
+&nbsp;            return null;
+&nbsp;        } else {
+&nbsp;            Object[] originalValues = this.getPropertyValues(original);
+&nbsp;            Object[] resultValues = this.getPropertyValues(target);
+<b class="nc">&nbsp;            Object[] replacedValues = TypeHelper.replace(originalValues, resultValues, this.propertyTypes, session, owner, copyCache);</b>
+&nbsp;            if (target != null &amp;&amp; this.isMutable()) {
+&nbsp;                this.setPropertyValues(target, replacedValues);
+&nbsp;                return target;
+&nbsp;            } else {
+&nbsp;                return this.instantiator(original).instantiate(() -&gt; replacedValues, session.getSessionFactory());
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public Object replace(Object original, Object target, SharedSessionContractImplementor session, Object owner, Map&lt;Object, Object&gt; copyCache, ForeignKeyDirection foreignKeyDirection) {</b>
+<b class="nc">&nbsp;        if (original == null) {</b>
+<b class="nc">&nbsp;            return null;</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            Object[] originalValues = this.getPropertyValues(original);</b>
+&nbsp;            Object[] resultValues = this.getPropertyValues(target);
+&nbsp;            Object[] replacedValues = TypeHelper.replace(originalValues, resultValues, this.propertyTypes, session, owner, copyCache, foreignKeyDirection);
+<b class="nc">&nbsp;            if (target != null &amp;&amp; this.isMutable()) {</b>
+&nbsp;                this.setPropertyValues(target, replacedValues);
+&nbsp;                return target;
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                return this.instantiator(original).instantiate(() -&gt; replacedValues, session.getSessionFactory());
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public CascadeStyle getCascadeStyle(int i) {
+&nbsp;        return this.cascade[i];
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public boolean isMutable() {</b>
+<b class="nc">&nbsp;        return this.mutable;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public Serializable disassemble(Object value, SharedSessionContractImplementor session, Object owner) throws HibernateException {</b>
+<b class="nc">&nbsp;        if (value == null) {</b>
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        } else {
+&nbsp;            boolean polymorphic = this.embeddableTypeDescriptor().isPolymorphic();
+<b class="nc">&nbsp;            Object[] values = new Object[this.propertySpan + (polymorphic ? 1 : 0)];</b>
+&nbsp;            Object[] propertyValues = this.getPropertyValues(value);
+&nbsp;
+&nbsp;            int i;
+<b class="nc">&nbsp;            for(i = 0; i &lt; this.propertySpan; ++i) {</b>
+<b class="nc">&nbsp;                values[i] = this.propertyTypes[i].disassemble(propertyValues[i], session, owner);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            if (polymorphic) {
+<b class="nc">&nbsp;                EmbeddableDiscriminatorMapping discriminatorMapping = this.embeddableTypeDescriptor().getDiscriminatorMapping();</b>
+&nbsp;                Object discriminatorValue = discriminatorMapping.getDiscriminatorValue(value.getClass().getName());
+&nbsp;                values[i] = discriminatorMapping.disassemble(discriminatorValue, session);
+&nbsp;            }
+&nbsp;
+&nbsp;            return values;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public Serializable disassemble(Object value, SessionFactoryImplementor sessionFactory) throws HibernateException {
+&nbsp;        if (value == null) {
+<b class="nc">&nbsp;            return null;</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            boolean polymorphic = this.embeddableTypeDescriptor().isPolymorphic();
+&nbsp;            Object[] values = new Object[this.propertySpan + (polymorphic ? 1 : 0)];
+<b class="nc">&nbsp;            Object[] propertyValues = this.getPropertyValues(value);</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            int i;</b>
+&nbsp;            for(i = 0; i &lt; this.propertyTypes.length; ++i) {
+&nbsp;                values[i] = this.propertyTypes[i].disassemble(propertyValues[i], sessionFactory);
+&nbsp;            }
+&nbsp;
+&nbsp;            if (polymorphic) {
+&nbsp;                EmbeddableDiscriminatorMapping discriminatorMapping = this.embeddableTypeDescriptor().getDiscriminatorMapping();
+&nbsp;                Object discriminatorValue = discriminatorMapping.getDiscriminatorValue(value.getClass().getName());
+&nbsp;                values[i] = discriminatorMapping.disassemble(discriminatorValue, (SharedSessionContractImplementor)null);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            return values;
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public Object assemble(Serializable object, SharedSessionContractImplementor session, Object owner) throws HibernateException {
+&nbsp;        if (object == null) {
+&nbsp;            return null;
+&nbsp;        } else {
+&nbsp;            Object[] values = (Object[])object;
+&nbsp;            boolean polymorphic = this.embeddableTypeDescriptor().isPolymorphic();
+&nbsp;            Object[] assembled = new Object[values.length - (polymorphic ? 1 : 0)];
+&nbsp;
+&nbsp;            int i;
+&nbsp;            for(i = 0; i &lt; assembled.length; ++i) {
+&nbsp;                assembled[i] = this.propertyTypes[i].assemble((Serializable)values[i], session, owner);
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            EmbeddableRepresentationStrategy representationStrategy = this.embeddableTypeDescriptor().getRepresentationStrategy();</b>
+&nbsp;            EmbeddableInstantiator instantiator = polymorphic ? representationStrategy.getInstantiatorForDiscriminator(values[i]) : representationStrategy.getInstantiator();
+<b class="nc">&nbsp;            Object instance = instantiator.instantiate(() -&gt; assembled, session.getFactory());</b>
+<b class="nc">&nbsp;            PropertyAccess parentInjectionAccess = this.mappingModelPart.getParentInjectionAttributePropertyAccess();</b>
+<b class="nc">&nbsp;            if (parentInjectionAccess != null) {</b>
+&nbsp;                parentInjectionAccess.getSetter().set(instance, owner);
+&nbsp;            }
+&nbsp;
+&nbsp;            return instance;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public FetchMode getFetchMode(int i) {
+&nbsp;        return this.joinedFetch[i];
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public boolean[] getPropertyNullability() {
+&nbsp;        return this.propertyNullability;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public boolean[] toColumnNullness(Object value, Mapping mapping) {
+&nbsp;        boolean[] result = new boolean[this.getColumnSpan(mapping)];
+&nbsp;        if (value != null) {
+&nbsp;            Object[] values = this.getPropertyValues(value);
+&nbsp;            int loc = 0;
+&nbsp;
+&nbsp;            for(int i = 0; i &lt; this.propertyTypes.length; ++i) {
+<b class="nc">&nbsp;                boolean[] propertyNullness = this.propertyTypes[i].toColumnNullness(values[i], mapping);</b>
+&nbsp;                System.arraycopy(propertyNullness, 0, result, loc, propertyNullness.length);
+&nbsp;                loc += propertyNullness.length;
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        return result;
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isEmbedded() {
+&nbsp;        return false;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public int getPropertyIndex(String name) {
+&nbsp;        String[] names = this.getPropertyNames();
+<b class="nc">&nbsp;        int i = 0;</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        for(int max = names.length; i &lt; max; ++i) {</b>
+<b class="nc">&nbsp;            if (names[i].equals(name)) {</b>
+<b class="nc">&nbsp;                return i;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        throw new PropertyNotFoundException(&quot;Could not resolve attribute &#39;&quot; + name + &quot;&#39; of &#39;&quot; + this.getReturnedClassName() + &quot;&#39; (must be one of &#39;&quot; + StringHelper.join(&quot;&#39;, &#39;&quot;, names) + &quot;&#39;)&quot;);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public int[] getOriginalPropertyOrder() {
+<b class="nc">&nbsp;        return this.originalPropertyOrder;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean canDoExtraction() {
+&nbsp;        if (this.canDoExtraction == null) {
+&nbsp;            this.canDoExtraction = this.determineIfProcedureParamExtractionCanBePerformed();
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return this.canDoExtraction;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public JdbcType getJdbcType() {</b>
+<b class="nc">&nbsp;        SelectableMapping aggregateMapping = this.embeddableTypeDescriptor().getAggregateMapping();</b>
+<b class="nc">&nbsp;        return aggregateMapping == null ? null : aggregateMapping.getJdbcMapping().getJdbcType();</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private boolean determineIfProcedureParamExtractionCanBePerformed() {</b>
+&nbsp;        for(Type propertyType : this.propertyTypes) {
+<b class="nc">&nbsp;            if (!(propertyType instanceof ProcedureParameterExtractionAware)) {</b>
+<b class="nc">&nbsp;                return false;</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            if (!((ProcedureParameterExtractionAware)propertyType).canDoExtraction()) {
+<b class="nc">&nbsp;                return false;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return true;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public Object extract(CallableStatement statement, int startIndex, SharedSessionContractImplementor session) throws SQLException {</b>
+<b class="nc">&nbsp;        Object[] values;</b>
+&nbsp;        if (this.isAggregate()) {
+&nbsp;            values = this.jdbcValueExtractor().extract(statement, startIndex, session);
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            boolean polymorphic = this.embeddableTypeDescriptor().isPolymorphic();</b>
+<b class="nc">&nbsp;            values = new Object[this.propertySpan + (polymorphic ? 1 : 0)];</b>
+<b class="nc">&nbsp;            int currentIndex = startIndex;</b>
+<b class="nc">&nbsp;            boolean notNull = false;</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            for(int i = 0; i &lt; this.propertySpan; ++i) {
+&nbsp;                Type propertyType = this.propertyTypes[i];
+<b class="nc">&nbsp;                ProcedureParameterExtractionAware&lt;?&gt; extractionAware = (ProcedureParameterExtractionAware)propertyType;</b>
+<b class="nc">&nbsp;                Object value = extractionAware.extract(statement, currentIndex, session);</b>
+<b class="nc">&nbsp;                if (value == null) {</b>
+<b class="nc">&nbsp;                    if (this.isKey) {</b>
+<b class="nc">&nbsp;                        return null;</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                } else {</b>
+<b class="nc">&nbsp;                    notNull = true;</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                values[i] = value;
+<b class="nc">&nbsp;                currentIndex += propertyType.getColumnSpan(session.getFactory());</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            if (polymorphic) {
+&nbsp;                values[currentIndex] = this.embeddableTypeDescriptor().getDiscriminatorMapping().getJdbcMapping().getJdbcValueExtractor().extract(statement, currentIndex, session);
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            if (!notNull) {
+&nbsp;                values = null;
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        return this.resolve(values, session);
+&nbsp;    }
+&nbsp;
+&nbsp;    public Object extract(CallableStatement statement, String paramName, SharedSessionContractImplementor session) throws SQLException {
+<b class="nc">&nbsp;        assert this.isAggregate();</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return this.resolve(this.jdbcValueExtractor().extract(statement, paramName, session), session);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private Object resolve(Object[] value, SharedSessionContractImplementor session) throws HibernateException {</b>
+<b class="nc">&nbsp;        EmbeddableRepresentationStrategy representationStrategy = this.embeddableTypeDescriptor().getRepresentationStrategy();</b>
+<b class="nc">&nbsp;        EmbeddableInstantiator instantiator;</b>
+&nbsp;        if (this.embeddableTypeDescriptor().isPolymorphic()) {
+&nbsp;            instantiator = representationStrategy.getInstantiatorForClass(((Class)value[value.length - 1]).getName());
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            instantiator = representationStrategy.getInstantiator();
+&nbsp;        }
+&nbsp;
+&nbsp;        return instantiator.instantiate(() -&gt; value, session.getFactory());
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private EmbeddableMappingType embeddableTypeDescriptor() {
+&nbsp;        return this.mappingModelPart.getEmbeddableTypeDescriptor();
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private ValueExtractor&lt;?&gt; jdbcValueExtractor() {</b>
+<b class="nc">&nbsp;        return this.embeddableTypeDescriptor().getAggregateMapping().getJdbcMapping().getJdbcValueExtractor();</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected final EmbeddableInstantiator instantiator(Object compositeInstance) {
+<b class="nc">&nbsp;        EmbeddableRepresentationStrategy representationStrategy = this.embeddableTypeDescriptor().getRepresentationStrategy();</b>
+<b class="nc">&nbsp;        if (this.embeddableTypeDescriptor().isPolymorphic()) {</b>
+<b class="nc">&nbsp;            String compositeClassName = compositeInstance != null ? compositeInstance.getClass().getName() : this.componentClass.getName();</b>
+&nbsp;            return representationStrategy.getInstantiatorForClass(compositeClassName);
+&nbsp;        } else {
+&nbsp;            return representationStrategy.getInstantiator();
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public boolean hasNotNullProperty() {
+&nbsp;        return this.hasNotNullProperty;
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean hasNullProperty() {
+<b class="nc">&nbsp;        return this.hasNullProperty;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public Class&lt;?&gt; getBindableJavaType() {</b>
+&nbsp;        return this.getReturnedClass();
+&nbsp;    }
+&nbsp;
+&nbsp;    public SqmExpressible&lt;?&gt; resolveExpressible(SessionFactoryImplementor sessionFactory) {
+<b class="nc">&nbsp;        return sessionFactory.getJpaMetamodel().embeddable(this.getReturnedClass());</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void injectMappingModelPart(EmbeddableValuedModelPart part, MappingModelCreationProcess process) {
+&nbsp;        this.mappingModelPart = part;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public EmbeddableValuedModelPart getMappingModelPart() {</b>
+&nbsp;        return this.mappingModelPart;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public EmbeddableValuedModelPart mappingModelPart() {
+&nbsp;        if (this.mappingModelPart == null) {
+<b class="nc">&nbsp;            throw new IllegalStateException(&quot;Attempt to access EmbeddableValuedModelPart prior to its injection&quot;);</b>
+&nbsp;        } else {
+&nbsp;            return this.mappingModelPart;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public Object replacePropertyValues(Object component, Object[] values, SharedSessionContractImplementor session) throws HibernateException {
+<b class="nc">&nbsp;        return !this.isMutable() ? this.instantiator(component).instantiate(() -&gt; values, session.getSessionFactory()) : super.replacePropertyValues(component, values, session);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
+</div>
+</body>
+</html>

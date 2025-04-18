@@ -1,0 +1,400 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > Operator</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.expression.spel.ast</a>
+</div>
+
+<h1>Coverage Summary for Class: Operator (org.springframework.expression.spel.ast)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Operator</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (4/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    4.3%
+  </span>
+  <span class="absValue">
+    (4/94)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    6.2%
+  </span>
+  <span class="absValue">
+    (8/130)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.expression.spel.ast;
+&nbsp;
+&nbsp;import java.math.BigDecimal;
+&nbsp;import java.math.BigInteger;
+&nbsp;import org.springframework.asm.Label;
+&nbsp;import org.springframework.asm.MethodVisitor;
+&nbsp;import org.springframework.expression.EvaluationContext;
+&nbsp;import org.springframework.expression.spel.CodeFlow;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.NumberUtils;
+&nbsp;import org.springframework.util.ObjectUtils;
+&nbsp;
+&nbsp;public abstract class Operator extends SpelNodeImpl {
+&nbsp;    private final String operatorName;
+&nbsp;    @Nullable
+&nbsp;    protected String leftActualDescriptor;
+&nbsp;    @Nullable
+&nbsp;    protected String rightActualDescriptor;
+&nbsp;
+&nbsp;    public Operator(String payload, int startPos, int endPos, SpelNodeImpl... operands) {
+&nbsp;        super(startPos, endPos, operands);
+&nbsp;        this.operatorName = payload;
+&nbsp;    }
+&nbsp;
+&nbsp;    public SpelNodeImpl getLeftOperand() {
+&nbsp;        return this.children[0];
+&nbsp;    }
+&nbsp;
+&nbsp;    public SpelNodeImpl getRightOperand() {
+&nbsp;        return this.children[1];
+&nbsp;    }
+&nbsp;
+&nbsp;    public final String getOperatorName() {
+&nbsp;        return this.operatorName;
+&nbsp;    }
+&nbsp;
+&nbsp;    public String toStringAST() {
+&nbsp;        StringBuilder sb = new StringBuilder(&quot;(&quot;);
+&nbsp;        sb.append(this.getChild(0).toStringAST());
+&nbsp;
+&nbsp;        for(int i = 1; i &lt; this.getChildCount(); ++i) {
+&nbsp;            sb.append(&#39; &#39;).append(this.getOperatorName()).append(&#39; &#39;);
+&nbsp;            sb.append(this.getChild(i).toStringAST());
+&nbsp;        }
+&nbsp;
+&nbsp;        sb.append(&#39;)&#39;);
+&nbsp;        return sb.toString();
+&nbsp;    }
+&nbsp;
+&nbsp;    protected boolean isCompilableOperatorUsingNumerics() {
+&nbsp;        SpelNodeImpl left = this.getLeftOperand();
+&nbsp;        SpelNodeImpl right = this.getRightOperand();
+<b class="fc">&nbsp;        if (left.isCompilable() &amp;&amp; right.isCompilable()) {</b>
+<b class="fc">&nbsp;            String leftDesc = left.exitTypeDescriptor;</b>
+&nbsp;            String rightDesc = right.exitTypeDescriptor;
+&nbsp;            DescriptorComparison dc = Operator.DescriptorComparison.checkNumericCompatibility(leftDesc, rightDesc, this.leftActualDescriptor, this.rightActualDescriptor);
+&nbsp;            return dc.areNumbers &amp;&amp; dc.areCompatible;
+&nbsp;        } else {
+<b class="fc">&nbsp;            return false;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    protected void generateComparisonCode(MethodVisitor mv, CodeFlow cf, int compInstruction1, int compInstruction2) {</b>
+&nbsp;        SpelNodeImpl left = this.getLeftOperand();
+&nbsp;        SpelNodeImpl right = this.getRightOperand();
+&nbsp;        String leftDesc = left.exitTypeDescriptor;
+<b class="nc">&nbsp;        String rightDesc = right.exitTypeDescriptor;</b>
+&nbsp;        Label elseTarget = new Label();
+&nbsp;        Label endOfIf = new Label();
+&nbsp;        boolean unboxLeft = !CodeFlow.isPrimitive(leftDesc);
+&nbsp;        boolean unboxRight = !CodeFlow.isPrimitive(rightDesc);
+&nbsp;        DescriptorComparison dc = Operator.DescriptorComparison.checkNumericCompatibility(leftDesc, rightDesc, this.leftActualDescriptor, this.rightActualDescriptor);
+&nbsp;        char targetType = dc.compatibleType;
+&nbsp;        cf.enterCompilationScope();
+&nbsp;        left.generateCode(mv, cf);
+<b class="nc">&nbsp;        cf.exitCompilationScope();</b>
+<b class="nc">&nbsp;        if (CodeFlow.isPrimitive(leftDesc)) {</b>
+<b class="nc">&nbsp;            CodeFlow.insertBoxIfNecessary(mv, leftDesc);</b>
+<b class="nc">&nbsp;            unboxLeft = true;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        cf.enterCompilationScope();</b>
+<b class="nc">&nbsp;        right.generateCode(mv, cf);</b>
+&nbsp;        cf.exitCompilationScope();
+&nbsp;        if (CodeFlow.isPrimitive(rightDesc)) {
+&nbsp;            CodeFlow.insertBoxIfNecessary(mv, rightDesc);
+&nbsp;            unboxRight = true;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        Label rightIsNonNull = new Label();</b>
+<b class="nc">&nbsp;        mv.visitInsn(89);</b>
+&nbsp;        mv.visitJumpInsn(199, rightIsNonNull);
+&nbsp;        mv.visitInsn(95);
+&nbsp;        Label leftNotNullRightIsNull = new Label();
+<b class="nc">&nbsp;        mv.visitJumpInsn(199, leftNotNullRightIsNull);</b>
+<b class="nc">&nbsp;        mv.visitInsn(87);</b>
+<b class="nc">&nbsp;        switch (compInstruction1) {</b>
+&nbsp;            case 155:
+<b class="nc">&nbsp;            case 157:</b>
+&nbsp;                mv.visitInsn(4);
+&nbsp;                break;
+&nbsp;            case 156:
+&nbsp;            case 158:
+&nbsp;                mv.visitInsn(3);
+&nbsp;                break;
+&nbsp;            default:
+<b class="nc">&nbsp;                throw new IllegalStateException(&quot;Unsupported: &quot; + compInstruction1);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        mv.visitJumpInsn(167, endOfIf);</b>
+<b class="nc">&nbsp;        mv.visitLabel(leftNotNullRightIsNull);</b>
+<b class="nc">&nbsp;        mv.visitInsn(87);</b>
+<b class="nc">&nbsp;        switch (compInstruction1) {</b>
+<b class="nc">&nbsp;            case 155:</b>
+<b class="nc">&nbsp;            case 158:</b>
+&nbsp;                mv.visitInsn(4);
+<b class="nc">&nbsp;                break;</b>
+&nbsp;            case 156:
+<b class="nc">&nbsp;            case 157:</b>
+<b class="nc">&nbsp;                mv.visitInsn(3);</b>
+<b class="nc">&nbsp;                break;</b>
+<b class="nc">&nbsp;            default:</b>
+<b class="nc">&nbsp;                throw new IllegalStateException(&quot;Unsupported: &quot; + compInstruction1);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        mv.visitJumpInsn(167, endOfIf);
+<b class="nc">&nbsp;        mv.visitLabel(rightIsNonNull);</b>
+<b class="nc">&nbsp;        mv.visitInsn(95);</b>
+<b class="nc">&nbsp;        mv.visitInsn(89);</b>
+<b class="nc">&nbsp;        Label neitherRightNorLeftAreNull = new Label();</b>
+<b class="nc">&nbsp;        mv.visitJumpInsn(199, neitherRightNorLeftAreNull);</b>
+<b class="nc">&nbsp;        mv.visitInsn(88);</b>
+&nbsp;        switch (compInstruction1) {
+&nbsp;            case 155:
+&nbsp;            case 158:
+&nbsp;                mv.visitInsn(3);
+<b class="nc">&nbsp;                break;</b>
+<b class="nc">&nbsp;            case 156:</b>
+<b class="nc">&nbsp;            case 157:</b>
+&nbsp;                mv.visitInsn(4);
+<b class="nc">&nbsp;                break;</b>
+<b class="nc">&nbsp;            default:</b>
+<b class="nc">&nbsp;                throw new IllegalStateException(&quot;Unsupported: &quot; + compInstruction1);</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        mv.visitJumpInsn(167, endOfIf);
+<b class="nc">&nbsp;        mv.visitLabel(neitherRightNorLeftAreNull);</b>
+&nbsp;        if (unboxLeft) {
+&nbsp;            CodeFlow.insertUnboxInsns(mv, targetType, leftDesc);
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        if (targetType != &#39;D&#39; &amp;&amp; targetType != &#39;J&#39;) {
+&nbsp;            mv.visitInsn(95);
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            mv.visitInsn(93);
+&nbsp;            mv.visitInsn(88);
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        if (unboxRight) {</b>
+<b class="nc">&nbsp;            CodeFlow.insertUnboxInsns(mv, targetType, rightDesc);</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        if (targetType == &#39;D&#39;) {
+<b class="nc">&nbsp;            mv.visitInsn(152);</b>
+&nbsp;            mv.visitJumpInsn(compInstruction1, elseTarget);
+&nbsp;        } else if (targetType == &#39;F&#39;) {
+<b class="nc">&nbsp;            mv.visitInsn(150);</b>
+&nbsp;            mv.visitJumpInsn(compInstruction1, elseTarget);
+&nbsp;        } else if (targetType == &#39;J&#39;) {
+&nbsp;            mv.visitInsn(148);
+<b class="nc">&nbsp;            mv.visitJumpInsn(compInstruction1, elseTarget);</b>
+&nbsp;        } else {
+&nbsp;            if (targetType != &#39;I&#39;) {
+<b class="nc">&nbsp;                throw new IllegalStateException(&quot;Unexpected descriptor &quot; + leftDesc);</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            mv.visitJumpInsn(compInstruction2, elseTarget);
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        mv.visitInsn(4);</b>
+<b class="nc">&nbsp;        mv.visitJumpInsn(167, endOfIf);</b>
+<b class="nc">&nbsp;        mv.visitLabel(elseTarget);</b>
+<b class="nc">&nbsp;        mv.visitInsn(3);</b>
+&nbsp;        mv.visitLabel(endOfIf);
+<b class="nc">&nbsp;        cf.pushDescriptor(&quot;Z&quot;);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public static boolean equalityCheck(EvaluationContext context, @Nullable Object left, @Nullable Object right) {
+<b class="nc">&nbsp;        if (left instanceof Number leftNumber) {</b>
+&nbsp;            if (right instanceof Number rightNumber) {
+&nbsp;                if (!(leftNumber instanceof BigDecimal) &amp;&amp; !(rightNumber instanceof BigDecimal)) {
+&nbsp;                    if (!(leftNumber instanceof Double) &amp;&amp; !(rightNumber instanceof Double)) {
+<b class="nc">&nbsp;                        if (!(leftNumber instanceof Float) &amp;&amp; !(rightNumber instanceof Float)) {</b>
+&nbsp;                            if (!(leftNumber instanceof BigInteger) &amp;&amp; !(rightNumber instanceof BigInteger)) {
+&nbsp;                                if (!(leftNumber instanceof Long) &amp;&amp; !(rightNumber instanceof Long)) {
+<b class="nc">&nbsp;                                    if (!(leftNumber instanceof Integer) &amp;&amp; !(rightNumber instanceof Integer)) {</b>
+&nbsp;                                        if (!(leftNumber instanceof Short) &amp;&amp; !(rightNumber instanceof Short)) {
+<b class="nc">&nbsp;                                            if (!(leftNumber instanceof Byte) &amp;&amp; !(rightNumber instanceof Byte)) {</b>
+<b class="nc">&nbsp;                                                return leftNumber.doubleValue() == rightNumber.doubleValue();</b>
+&nbsp;                                            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                                            return leftNumber.byteValue() == rightNumber.byteValue();</b>
+&nbsp;                                        }
+&nbsp;
+&nbsp;                                        return leftNumber.shortValue() == rightNumber.shortValue();
+&nbsp;                                    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                                    return leftNumber.intValue() == rightNumber.intValue();</b>
+<b class="nc">&nbsp;                                }</b>
+&nbsp;
+&nbsp;                                return leftNumber.longValue() == rightNumber.longValue();
+<b class="nc">&nbsp;                            }</b>
+&nbsp;
+&nbsp;                            BigInteger leftBigInteger = (BigInteger)NumberUtils.convertNumberToTargetClass(leftNumber, BigInteger.class);
+<b class="nc">&nbsp;                            BigInteger rightBigInteger = (BigInteger)NumberUtils.convertNumberToTargetClass(rightNumber, BigInteger.class);</b>
+<b class="nc">&nbsp;                            return leftBigInteger.compareTo(rightBigInteger) == 0;</b>
+&nbsp;                        }
+&nbsp;
+&nbsp;                        return leftNumber.floatValue() == rightNumber.floatValue();
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                    return leftNumber.doubleValue() == rightNumber.doubleValue();</b>
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                BigDecimal leftBigDecimal = (BigDecimal)NumberUtils.convertNumberToTargetClass(leftNumber, BigDecimal.class);</b>
+<b class="nc">&nbsp;                BigDecimal rightBigDecimal = (BigDecimal)NumberUtils.convertNumberToTargetClass(rightNumber, BigDecimal.class);</b>
+&nbsp;                return leftBigDecimal.compareTo(rightBigDecimal) == 0;
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        if (left instanceof CharSequence &amp;&amp; right instanceof CharSequence) {
+<b class="nc">&nbsp;            return left.toString().equals(right.toString());</b>
+<b class="nc">&nbsp;        } else if (left instanceof Boolean &amp;&amp; right instanceof Boolean) {</b>
+&nbsp;            return left.equals(right);
+&nbsp;        } else if (ObjectUtils.nullSafeEquals(left, right)) {
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        } else if (context.getTypeComparator().canCompare(left, right)) {
+&nbsp;            return context.getTypeComparator().compare(left, right) == 0;
+&nbsp;        } else {
+<b class="nc">&nbsp;            return false;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected static final class DescriptorComparison {</b>
+<b class="nc">&nbsp;        static final DescriptorComparison NOT_NUMBERS = new DescriptorComparison(false, false, &#39; &#39;);</b>
+&nbsp;        static final DescriptorComparison INCOMPATIBLE_NUMBERS = new DescriptorComparison(true, false, &#39; &#39;);
+&nbsp;        final boolean areNumbers;
+&nbsp;        final boolean areCompatible;
+&nbsp;        final char compatibleType;
+&nbsp;
+&nbsp;        private DescriptorComparison(boolean areNumbers, boolean areCompatible, char compatibleType) {
+&nbsp;            this.areNumbers = areNumbers;
+&nbsp;            this.areCompatible = areCompatible;
+&nbsp;            this.compatibleType = compatibleType;
+&nbsp;        }
+&nbsp;
+&nbsp;        public static DescriptorComparison checkNumericCompatibility(@Nullable String leftDeclaredDescriptor, @Nullable String rightDeclaredDescriptor, @Nullable String leftActualDescriptor, @Nullable String rightActualDescriptor) {
+&nbsp;            String ld = leftDeclaredDescriptor;
+<b class="pc">&nbsp;            String rd = rightDeclaredDescriptor;</b>
+<b class="nc">&nbsp;            boolean leftNumeric = CodeFlow.isPrimitiveOrUnboxableSupportedNumberOrBoolean(leftDeclaredDescriptor);</b>
+<b class="nc">&nbsp;            boolean rightNumeric = CodeFlow.isPrimitiveOrUnboxableSupportedNumberOrBoolean(rightDeclaredDescriptor);</b>
+<b class="nc">&nbsp;            if (!leftNumeric &amp;&amp; !ObjectUtils.nullSafeEquals(leftDeclaredDescriptor, leftActualDescriptor)) {</b>
+<b class="nc">&nbsp;                ld = leftActualDescriptor;</b>
+&nbsp;                leftNumeric = CodeFlow.isPrimitiveOrUnboxableSupportedNumberOrBoolean(leftActualDescriptor);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            if (!rightNumeric &amp;&amp; !ObjectUtils.nullSafeEquals(rightDeclaredDescriptor, rightActualDescriptor)) {
+<b class="nc">&nbsp;                rd = rightActualDescriptor;</b>
+<b class="nc">&nbsp;                rightNumeric = CodeFlow.isPrimitiveOrUnboxableSupportedNumberOrBoolean(rightActualDescriptor);</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            if (leftNumeric &amp;&amp; rightNumeric) {</b>
+<b class="nc">&nbsp;                return CodeFlow.areBoxingCompatible(ld, rd) ? new DescriptorComparison(true, true, CodeFlow.toPrimitiveTargetDesc(ld)) : INCOMPATIBLE_NUMBERS;</b>
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                return NOT_NUMBERS;
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

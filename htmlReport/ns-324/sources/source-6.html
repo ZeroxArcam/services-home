@@ -1,0 +1,198 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ConfigDataEnvironmentContributorPlaceholdersResolver</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.boot.context.config</a>
+</div>
+
+<h1>Coverage Summary for Class: ConfigDataEnvironmentContributorPlaceholdersResolver (org.springframework.boot.context.config)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ConfigDataEnvironmentContributorPlaceholdersResolver</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    20%
+  </span>
+  <span class="absValue">
+    (1/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/22)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    24.1%
+  </span>
+  <span class="absValue">
+    (7/29)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.boot.context.config;
+&nbsp;
+&nbsp;import org.springframework.boot.context.config.ConfigDataEnvironmentContributor.Kind;
+&nbsp;import org.springframework.boot.context.properties.bind.PlaceholdersResolver;
+&nbsp;import org.springframework.boot.origin.Origin;
+&nbsp;import org.springframework.boot.origin.OriginLookup;
+&nbsp;import org.springframework.core.convert.ConversionService;
+&nbsp;import org.springframework.core.env.PropertySource;
+&nbsp;import org.springframework.util.PropertyPlaceholderHelper;
+&nbsp;import org.springframework.util.SystemPropertyUtils;
+&nbsp;
+&nbsp;class ConfigDataEnvironmentContributorPlaceholdersResolver implements PlaceholdersResolver {
+&nbsp;    private final Iterable&lt;ConfigDataEnvironmentContributor&gt; contributors;
+&nbsp;    private final ConfigDataActivationContext activationContext;
+&nbsp;    private final boolean failOnResolveFromInactiveContributor;
+&nbsp;    private final PropertyPlaceholderHelper helper;
+&nbsp;    private final ConfigDataEnvironmentContributor activeContributor;
+&nbsp;    private final ConversionService conversionService;
+&nbsp;
+&nbsp;    ConfigDataEnvironmentContributorPlaceholdersResolver(Iterable&lt;ConfigDataEnvironmentContributor&gt; contributors, ConfigDataActivationContext activationContext, ConfigDataEnvironmentContributor activeContributor, boolean failOnResolveFromInactiveContributor, ConversionService conversionService) {
+&nbsp;        this.contributors = contributors;
+&nbsp;        this.activationContext = activationContext;
+&nbsp;        this.activeContributor = activeContributor;
+&nbsp;        this.failOnResolveFromInactiveContributor = failOnResolveFromInactiveContributor;
+&nbsp;        this.conversionService = conversionService;
+&nbsp;        this.helper = new PropertyPlaceholderHelper(&quot;${&quot;, &quot;}&quot;, &quot;:&quot;, SystemPropertyUtils.ESCAPE_CHARACTER, true);
+&nbsp;    }
+&nbsp;
+&nbsp;    public Object resolvePlaceholders(Object value) {
+&nbsp;        if (value instanceof String string) {
+&nbsp;            return this.helper.replacePlaceholders(string, this::resolvePlaceholder);
+&nbsp;        } else {
+&nbsp;            return value;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private String resolvePlaceholder(String placeholder) {
+&nbsp;        Object result = null;
+&nbsp;
+&nbsp;        for(ConfigDataEnvironmentContributor contributor : this.contributors) {
+&nbsp;            PropertySource&lt;?&gt; propertySource = contributor.getPropertySource();
+&nbsp;            Object value = propertySource != null ? propertySource.getProperty(placeholder) : null;
+&nbsp;            if (value != null &amp;&amp; !this.isActive(contributor)) {
+&nbsp;                if (this.failOnResolveFromInactiveContributor) {
+&nbsp;                    ConfigDataResource resource = contributor.getResource();
+&nbsp;                    Origin origin = OriginLookup.getOrigin(propertySource, placeholder);
+<b class="fc">&nbsp;                    throw new InactiveConfigDataAccessException(propertySource, resource, placeholder, origin);</b>
+<b class="fc">&nbsp;                }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;                value = null;</b>
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;            result = result != null ? result : value;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        return result != null ? this.convertValueIfNecessary(result) : null;
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean isActive(ConfigDataEnvironmentContributor contributor) {
+<b class="nc">&nbsp;        if (contributor == this.activeContributor) {</b>
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            return contributor.getKind() != Kind.UNBOUND_IMPORT ? contributor.isActive(this.activationContext) : contributor.withBoundProperties(this.contributors, this.activationContext).isActive(this.activationContext);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private String convertValueIfNecessary(Object value) {</b>
+<b class="nc">&nbsp;        String var10000;</b>
+<b class="nc">&nbsp;        if (value instanceof String string) {</b>
+<b class="nc">&nbsp;            var10000 = string;</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            var10000 = (String)this.conversionService.convert(value, String.class);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return var10000;</b>
+&nbsp;    }
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:54</div>
+</div>
+</body>
+</html>

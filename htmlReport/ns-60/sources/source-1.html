@@ -1,0 +1,267 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > DriverDataSource</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.zaxxer.hikari.util</a>
+</div>
+
+<h1>Coverage Summary for Class: DriverDataSource (com.zaxxer.hikari.util)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DriverDataSource</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    18.2%
+  </span>
+  <span class="absValue">
+    (2/11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    30%
+  </span>
+  <span class="absValue">
+    (9/30)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    36.4%
+  </span>
+  <span class="absValue">
+    (20/55)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package com.zaxxer.hikari.util;
+&nbsp;
+&nbsp;import java.io.PrintWriter;
+&nbsp;import java.sql.Connection;
+&nbsp;import java.sql.Driver;
+&nbsp;import java.sql.DriverManager;
+&nbsp;import java.sql.SQLException;
+&nbsp;import java.sql.SQLFeatureNotSupportedException;
+&nbsp;import java.util.Enumeration;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Properties;
+&nbsp;import javax.sql.DataSource;
+&nbsp;import org.slf4j.Logger;
+&nbsp;import org.slf4j.LoggerFactory;
+&nbsp;
+&nbsp;public final class DriverDataSource implements DataSource {
+&nbsp;    private static final Logger LOGGER = LoggerFactory.getLogger(DriverDataSource.class);
+&nbsp;    private static final String PASSWORD = &quot;password&quot;;
+&nbsp;    private static final String USER = &quot;user&quot;;
+&nbsp;    private final String jdbcUrl;
+&nbsp;    private final Properties driverProperties;
+&nbsp;    private Driver driver;
+&nbsp;
+&nbsp;    public DriverDataSource(String jdbcUrl, String driverClassName, Properties properties, String username, String password) {
+&nbsp;        this.jdbcUrl = jdbcUrl;
+&nbsp;        this.driverProperties = new Properties();
+&nbsp;
+<b class="fc">&nbsp;        for(Map.Entry&lt;Object, Object&gt; entry : properties.entrySet()) {</b>
+&nbsp;            this.driverProperties.setProperty(entry.getKey().toString(), entry.getValue().toString());
+&nbsp;        }
+&nbsp;
+&nbsp;        if (username != null) {
+&nbsp;            this.driverProperties.put(&quot;user&quot;, this.driverProperties.getProperty(&quot;user&quot;, username));
+&nbsp;        }
+&nbsp;
+&nbsp;        if (password != null) {
+<b class="fc">&nbsp;            this.driverProperties.put(&quot;password&quot;, this.driverProperties.getProperty(&quot;password&quot;, password));</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;        if (driverClassName != null) {
+<b class="pc">&nbsp;            Enumeration&lt;Driver&gt; drivers = DriverManager.getDrivers();</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            while(drivers.hasMoreElements()) {
+&nbsp;                Driver d = (Driver)drivers.nextElement();
+<b class="pc">&nbsp;                if (d.getClass().getName().equals(driverClassName)) {</b>
+<b class="fc">&nbsp;                    this.driver = d;</b>
+&nbsp;                    break;
+<b class="pc">&nbsp;                }</b>
+<b class="fc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            if (this.driver == null) {
+<b class="pc">&nbsp;                LOGGER.warn(&quot;Registered driver with driverClassName={} was not found, trying direct instantiation.&quot;, driverClassName);</b>
+<b class="fc">&nbsp;                Class&lt;?&gt; driverClass = null;</b>
+<b class="pc">&nbsp;                ClassLoader threadContextClassLoader = Thread.currentThread().getContextClassLoader();</b>
+<b class="fc">&nbsp;</b>
+<b class="pc">&nbsp;                try {</b>
+<b class="fc">&nbsp;                    if (threadContextClassLoader != null) {</b>
+&nbsp;                        try {
+&nbsp;                            driverClass = threadContextClassLoader.loadClass(driverClassName);
+&nbsp;                            LOGGER.debug(&quot;Driver class {} found in Thread context class loader {}&quot;, driverClassName, threadContextClassLoader);
+&nbsp;                        } catch (ClassNotFoundException var12) {
+<b class="pc">&nbsp;                            LOGGER.debug(&quot;Driver class {} not found in Thread context class loader {}, trying classloader {}&quot;, new Object[]{driverClassName, threadContextClassLoader, this.getClass().getClassLoader()});</b>
+<b class="nc">&nbsp;                        }</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                    if (driverClass == null) {
+<b class="nc">&nbsp;                        driverClass = this.getClass().getClassLoader().loadClass(driverClassName);</b>
+&nbsp;                        LOGGER.debug(&quot;Driver class {} found in the HikariConfig class classloader {}&quot;, driverClassName, this.getClass().getClassLoader());
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                } catch (ClassNotFoundException var13) {</b>
+&nbsp;                    LOGGER.debug(&quot;Failed to load driver class {} from HikariConfig class classloader {}&quot;, driverClassName, this.getClass().getClassLoader());
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                if (driverClass != null) {</b>
+&nbsp;                    try {
+&nbsp;                        this.driver = (Driver)driverClass.getDeclaredConstructor().newInstance();
+&nbsp;                    } catch (Exception e) {
+<b class="nc">&nbsp;                        LOGGER.warn(&quot;Failed to create instance of driver class {}, trying jdbcUrl resolution&quot;, driverClassName, e);</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        String sanitizedUrl = jdbcUrl.replaceAll(&quot;([?&amp;;][^&amp;#;=]*[pP]assword=)[^&amp;#;]*&quot;, &quot;$1&lt;masked&gt;&quot;);
+&nbsp;
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            if (this.driver == null) {
+<b class="nc">&nbsp;                this.driver = DriverManager.getDriver(jdbcUrl);</b>
+&nbsp;                LOGGER.debug(&quot;Loaded driver with class name {} for jdbcUrl={}&quot;, this.driver.getClass().getName(), sanitizedUrl);
+<b class="nc">&nbsp;            } else if (!this.driver.acceptsURL(jdbcUrl)) {</b>
+&nbsp;                throw new RuntimeException(&quot;Driver &quot; + driverClassName + &quot; claims to not accept jdbcUrl, &quot; + sanitizedUrl);
+&nbsp;            }
+&nbsp;
+&nbsp;        } catch (SQLException e) {
+&nbsp;            throw new RuntimeException(&quot;Failed to get driver instance for jdbcUrl=&quot; + sanitizedUrl, e);
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+<b class="pc">&nbsp;    public Connection getConnection() throws SQLException {</b>
+<b class="nc">&nbsp;        return this.driver.connect(this.jdbcUrl, this.driverProperties);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="pc">&nbsp;    public Connection getConnection(String username, String password) throws SQLException {</b>
+<b class="fc">&nbsp;        Properties cloned = (Properties)this.driverProperties.clone();</b>
+&nbsp;        if (username != null) {
+&nbsp;            cloned.put(&quot;user&quot;, username);
+&nbsp;            if (cloned.containsKey(&quot;username&quot;)) {
+<b class="nc">&nbsp;                cloned.put(&quot;username&quot;, username);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        if (password != null) {
+&nbsp;            cloned.put(&quot;password&quot;, password);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        return this.driver.connect(this.jdbcUrl, cloned);
+&nbsp;    }
+&nbsp;
+&nbsp;    public PrintWriter getLogWriter() throws SQLException {
+&nbsp;        throw new SQLFeatureNotSupportedException();
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void setLogWriter(PrintWriter logWriter) throws SQLException {</b>
+<b class="nc">&nbsp;        throw new SQLFeatureNotSupportedException();</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void setLoginTimeout(int seconds) throws SQLException {
+<b class="nc">&nbsp;        DriverManager.setLoginTimeout(seconds);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public int getLoginTimeout() throws SQLException {
+<b class="nc">&nbsp;        return DriverManager.getLoginTimeout();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public java.util.logging.Logger getParentLogger() throws SQLFeatureNotSupportedException {
+&nbsp;        return this.driver.getParentLogger();
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public &lt;T&gt; T unwrap(Class&lt;T&gt; iface) throws SQLException {
+&nbsp;        throw new SQLFeatureNotSupportedException();
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isWrapperFor(Class&lt;?&gt; iface) throws SQLException {
+<b class="nc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:57</div>
+</div>
+</body>
+</html>

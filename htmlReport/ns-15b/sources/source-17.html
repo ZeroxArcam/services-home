@@ -1,0 +1,334 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > DefaultSaveOrUpdateEventListener</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.event.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: DefaultSaveOrUpdateEventListener (org.hibernate.event.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DefaultSaveOrUpdateEventListener</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    15.4%
+  </span>
+  <span class="absValue">
+    (2/13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/44)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    1.9%
+  </span>
+  <span class="absValue">
+    (2/108)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.event.internal;
+&nbsp;
+&nbsp;import org.hibernate.AssertionFailure;
+&nbsp;import org.hibernate.HibernateException;
+&nbsp;import org.hibernate.LockMode;
+&nbsp;import org.hibernate.PersistentObjectException;
+&nbsp;import org.hibernate.TransientObjectException;
+&nbsp;import org.hibernate.classic.Lifecycle;
+&nbsp;import org.hibernate.engine.internal.Cascade;
+&nbsp;import org.hibernate.engine.internal.CascadePoint;
+&nbsp;import org.hibernate.engine.spi.CascadingAction;
+&nbsp;import org.hibernate.engine.spi.CascadingActions;
+&nbsp;import org.hibernate.engine.spi.EntityEntry;
+&nbsp;import org.hibernate.engine.spi.EntityKey;
+&nbsp;import org.hibernate.engine.spi.PersistenceContext;
+&nbsp;import org.hibernate.engine.spi.SessionFactoryImplementor;
+&nbsp;import org.hibernate.engine.spi.SessionImplementor;
+&nbsp;import org.hibernate.engine.spi.Status;
+&nbsp;import org.hibernate.event.spi.EventSource;
+&nbsp;import org.hibernate.event.spi.PersistContext;
+&nbsp;import org.hibernate.event.spi.SaveOrUpdateEvent;
+&nbsp;import org.hibernate.event.spi.SaveOrUpdateEventListener;
+&nbsp;import org.hibernate.internal.CoreLogging;
+&nbsp;import org.hibernate.internal.CoreMessageLogger;
+&nbsp;import org.hibernate.persister.entity.EntityPersister;
+&nbsp;import org.hibernate.pretty.MessageHelper;
+&nbsp;import org.hibernate.proxy.HibernateProxy;
+&nbsp;import org.hibernate.proxy.LazyInitializer;
+&nbsp;
+&nbsp;/** @deprecated */
+&nbsp;@Deprecated(
+&nbsp;    since = &quot;6&quot;
+&nbsp;)
+&nbsp;public class DefaultSaveOrUpdateEventListener extends AbstractSaveEventListener&lt;PersistContext&gt; implements SaveOrUpdateEventListener {
+&nbsp;    private static final CoreMessageLogger LOG = CoreLogging.messageLogger(DefaultSaveOrUpdateEventListener.class);
+&nbsp;
+&nbsp;    public DefaultSaveOrUpdateEventListener() {
+&nbsp;    }
+&nbsp;
+&nbsp;    public void onSaveOrUpdate(SaveOrUpdateEvent event) {
+<b class="fc">&nbsp;        Object object = event.getObject();</b>
+&nbsp;        Object requestedId = event.getRequestedId();
+&nbsp;        if (requestedId != null) {
+<b class="fc">&nbsp;            LazyInitializer lazyInitializer = HibernateProxy.extractLazyInitializer(object);</b>
+&nbsp;            if (lazyInitializer != null) {
+&nbsp;                lazyInitializer.setIdentifier(requestedId);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        SessionImplementor source = event.getSession();
+&nbsp;        if (this.reassociateIfUninitializedProxy(object, source)) {
+&nbsp;            LOG.trace(&quot;Reassociated uninitialized proxy&quot;);
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            PersistenceContext persistenceContext = source.getPersistenceContextInternal();</b>
+&nbsp;            Object entity = persistenceContext.unproxyAndReassociate(object);
+<b class="nc">&nbsp;            event.setEntity(entity);</b>
+&nbsp;            event.setEntry(persistenceContext.getEntry(entity));
+&nbsp;            event.setResultId(this.performSaveOrUpdate(event));
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected boolean reassociateIfUninitializedProxy(Object object, SessionImplementor source) {
+&nbsp;        return source.getPersistenceContextInternal().reassociateIfUninitializedProxy(object);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    protected Object performSaveOrUpdate(SaveOrUpdateEvent event) {</b>
+<b class="nc">&nbsp;        EntityState entityState = EntityState.getEntityState(event.getEntity(), event.getEntityName(), event.getEntry(), event.getSession(), (Boolean)null);</b>
+&nbsp;        switch (entityState) {
+&nbsp;            case DETACHED:
+&nbsp;                this.entityIsDetached(event);
+<b class="nc">&nbsp;                return null;</b>
+<b class="nc">&nbsp;            case PERSISTENT:</b>
+<b class="nc">&nbsp;                return this.entityIsPersistent(event);</b>
+<b class="nc">&nbsp;            default:</b>
+&nbsp;                return this.entityIsTransient(event);
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Object entityIsPersistent(SaveOrUpdateEvent event) throws HibernateException {
+&nbsp;        if (LOG.isTraceEnabled()) {
+<b class="nc">&nbsp;            LOG.trace(&quot;Ignoring persistent instance&quot;);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        EntityEntry entityEntry = event.getEntry();
+<b class="nc">&nbsp;        if (entityEntry == null) {</b>
+<b class="nc">&nbsp;            throw new AssertionFailure(&quot;entity was transient or detached&quot;);</b>
+<b class="nc">&nbsp;        } else if (entityEntry.getStatus() == Status.DELETED) {</b>
+<b class="nc">&nbsp;            throw new AssertionFailure(&quot;entity was deleted&quot;);</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            SessionFactoryImplementor factory = event.getFactory();
+&nbsp;            Object requestedId = event.getRequestedId();
+&nbsp;            Object savedId;
+<b class="nc">&nbsp;            if (requestedId == null) {</b>
+&nbsp;                savedId = entityEntry.getId();
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                boolean isEqual = entityEntry.getPersister().getIdentifierType().isEqual(requestedId, entityEntry.getId(), factory);</b>
+&nbsp;                if (isEqual) {
+<b class="nc">&nbsp;                    String var10002 = MessageHelper.infoString(entityEntry.getPersister(), requestedId, factory);</b>
+&nbsp;                    throw new PersistentObjectException(&quot;object passed to save() was already persistent: &quot; + var10002);
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                savedId = requestedId;
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            if (LOG.isTraceEnabled()) {</b>
+<b class="nc">&nbsp;                LOG.tracev(&quot;Object already associated with session: {0}&quot;, MessageHelper.infoString(entityEntry.getPersister(), savedId, factory));</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            return savedId;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Object entityIsTransient(SaveOrUpdateEvent event) {
+<b class="nc">&nbsp;        LOG.trace(&quot;Saving transient instance&quot;);</b>
+<b class="nc">&nbsp;        EventSource source = event.getSession();</b>
+&nbsp;        EntityEntry entityEntry = event.getEntry();
+&nbsp;        if (entityEntry != null) {
+<b class="nc">&nbsp;            if (entityEntry.getStatus() != Status.DELETED) {</b>
+&nbsp;                throw new AssertionFailure(&quot;entity was persistent&quot;);
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            source.forceFlush(entityEntry);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        if (event.getRequestedId() != null) {
+<b class="nc">&nbsp;            throw new AssertionFailure(&quot;requested id should be null in save&quot;);</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            Object id = this.saveWithGeneratedId(event.getEntity(), event.getEntityName(), (Object)null, event.getSession(), true);</b>
+<b class="nc">&nbsp;            source.getPersistenceContextInternal().reassociateProxy(event.getObject(), id);</b>
+&nbsp;            return id;
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected void entityIsDetached(SaveOrUpdateEvent event) {</b>
+&nbsp;        LOG.trace(&quot;Updating detached instance&quot;);
+&nbsp;        EventSource session = event.getSession();
+<b class="nc">&nbsp;        if (session.getPersistenceContextInternal().isEntryFor(event.getEntity())) {</b>
+<b class="nc">&nbsp;            throw new AssertionFailure(&quot;entity was persistent&quot;);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            Object entity = event.getEntity();</b>
+&nbsp;            EntityPersister persister = session.getEntityPersister(event.getEntityName(), entity);
+&nbsp;            event.setRequestedId(this.getUpdateId(entity, persister, event.getRequestedId(), session));
+&nbsp;            this.performUpdate(event, entity, persister);
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Object getUpdateId(Object entity, EntityPersister persister, Object requestedId, SessionImplementor session) {
+&nbsp;        Object id = persister.getIdentifier(entity, session);
+&nbsp;        if (id == null) {
+&nbsp;            throw new TransientObjectException(&quot;The given object has a null identifier: &quot; + persister.getEntityName());
+&nbsp;        } else {
+&nbsp;            return id;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void performUpdate(SaveOrUpdateEvent event, Object entity, EntityPersister persister) throws HibernateException {
+&nbsp;        EventSource source = event.getSession();
+&nbsp;        if (LOG.isTraceEnabled()) {
+&nbsp;            if (!persister.isMutable()) {
+<b class="nc">&nbsp;                LOG.trace(&quot;Immutable instance passed to performUpdate()&quot;);</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            LOG.tracev(&quot;Updating {0}&quot;, MessageHelper.infoString(persister, event.getRequestedId(), event.getFactory()));
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        PersistenceContext persistenceContext = source.getPersistenceContextInternal();</b>
+<b class="nc">&nbsp;        EntityKey key = source.generateEntityKey(event.getRequestedId(), persister);</b>
+&nbsp;        persistenceContext.checkUniqueness(key, entity);
+&nbsp;        if (this.invokeUpdateLifecycle(entity, persister, source)) {
+<b class="nc">&nbsp;            this.reassociate(event, event.getObject(), event.getRequestedId(), persister);</b>
+&nbsp;        } else {
+&nbsp;            (new OnUpdateVisitor(source, event.getRequestedId(), entity)).process(entity, persister);
+&nbsp;            persistenceContext.addEntity(entity, persister.isMutable() ? Status.MANAGED : Status.READ_ONLY, (Object[])null, key, persister.getVersion(entity), LockMode.NONE, true, persister, false);
+<b class="nc">&nbsp;            persister.afterReassociate(entity, source);</b>
+<b class="nc">&nbsp;            if (LOG.isTraceEnabled()) {</b>
+&nbsp;                LOG.tracev(&quot;Updating {0}&quot;, MessageHelper.infoString(persister, event.getRequestedId(), event.getFactory()));
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            this.cascadeOnUpdate(event, persister, entity);</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected boolean invokeUpdateLifecycle(Object entity, EntityPersister persister, EventSource source) {
+<b class="nc">&nbsp;        if (persister.implementsLifecycle()) {</b>
+&nbsp;            LOG.debug(&quot;Calling onUpdate()&quot;);
+<b class="nc">&nbsp;            if (((Lifecycle)entity).onUpdate(source)) {</b>
+&nbsp;                LOG.debug(&quot;Update vetoed by onUpdate()&quot;);
+&nbsp;                return true;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return false;
+&nbsp;    }
+&nbsp;
+&nbsp;    private void cascadeOnUpdate(SaveOrUpdateEvent event, EntityPersister persister, Object entity) {
+&nbsp;        EventSource source = event.getSession();
+<b class="nc">&nbsp;        PersistenceContext persistenceContext = source.getPersistenceContextInternal();</b>
+&nbsp;        persistenceContext.incrementCascadeLevel();
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            Cascade.cascade(CascadingActions.SAVE_UPDATE, CascadePoint.AFTER_UPDATE, source, persister, entity);
+<b class="nc">&nbsp;        } finally {</b>
+&nbsp;            persistenceContext.decrementCascadeLevel();
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected CascadingAction&lt;PersistContext&gt; getCascadeAction() {</b>
+&nbsp;        return CascadingActions.SAVE_UPDATE;
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:57</div>
+</div>
+</body>
+</html>

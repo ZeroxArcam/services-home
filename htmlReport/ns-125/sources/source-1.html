@@ -1,0 +1,387 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > AggregatedClassLoader</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.boot.registry.classloading.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: AggregatedClassLoader (org.hibernate.boot.registry.classloading.internal)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AggregatedClassLoader</td>
+<td class="coverageStat">
+  <span class="percent">
+    80%
+  </span>
+  <span class="absValue">
+    (8/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    57.7%
+  </span>
+  <span class="absValue">
+    (15/26)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    72.7%
+  </span>
+  <span class="absValue">
+    (32/44)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">AggregatedClassLoader$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (3/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    81.2%
+  </span>
+  <span class="absValue">
+    (13/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    95.2%
+  </span>
+  <span class="absValue">
+    (20/21)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">AggregatedClassLoader$4</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (3/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/4)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    87.5%
+  </span>
+  <span class="absValue">
+    (14/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (28/42)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    81.2%
+  </span>
+  <span class="absValue">
+    (56/69)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.boot.registry.classloading.internal;
+&nbsp;
+&nbsp;import java.io.IOException;
+&nbsp;import java.net.URL;
+&nbsp;import java.util.Enumeration;
+&nbsp;import java.util.Iterator;
+&nbsp;import java.util.LinkedHashSet;
+&nbsp;import org.hibernate.internal.util.ExceptionHelper;
+&nbsp;
+&nbsp;public class AggregatedClassLoader extends ClassLoader {
+&nbsp;    private final ClassLoader[] individualClassLoaders;
+&nbsp;    private final TcclLookupPrecedence tcclLookupPrecedence;
+&nbsp;
+&nbsp;    public AggregatedClassLoader(LinkedHashSet&lt;ClassLoader&gt; orderedClassLoaderSet, TcclLookupPrecedence precedence) {
+&nbsp;        super((ClassLoader)null);
+&nbsp;        this.individualClassLoaders = (ClassLoader[])orderedClassLoaderSet.toArray(new ClassLoader[orderedClassLoaderSet.size()]);
+&nbsp;        this.tcclLookupPrecedence = precedence;
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    Iterator&lt;ClassLoader&gt; newClassLoaderIterator() {</b>
+&nbsp;        ClassLoader threadClassLoader = locateTCCL();
+&nbsp;        if (this.tcclLookupPrecedence != TcclLookupPrecedence.NEVER &amp;&amp; threadClassLoader != null) {
+&nbsp;            if (this.tcclLookupPrecedence == TcclLookupPrecedence.AFTER) {
+<b class="fc">&nbsp;                return this.newTcclAfterIterator(threadClassLoader);</b>
+<b class="pc">&nbsp;            } else if (this.tcclLookupPrecedence == TcclLookupPrecedence.BEFORE) {</b>
+<b class="nc">&nbsp;                return this.newTcclBeforeIterator(threadClassLoader);</b>
+&nbsp;            } else {
+<b class="pc">&nbsp;                throw new RuntimeException(&quot;Unknown precedence: &quot; + this.tcclLookupPrecedence);</b>
+<b class="fc">&nbsp;            }</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            return this.newTcclNeverIterator();</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private Iterator&lt;ClassLoader&gt; newTcclBeforeIterator(final ClassLoader threadContextClassLoader) {</b>
+&nbsp;        final ClassLoader systemClassLoader = locateSystemClassLoader();
+&nbsp;        return new Iterator&lt;ClassLoader&gt;() {
+&nbsp;            private int currentIndex = 0;
+&nbsp;            private boolean tcCLReturned = false;
+<b class="nc">&nbsp;            private boolean sysCLReturned = false;</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            public boolean hasNext() {
+&nbsp;                if (!this.tcCLReturned) {
+&nbsp;                    return true;
+&nbsp;                } else if (this.currentIndex &lt; AggregatedClassLoader.this.individualClassLoaders.length) {
+&nbsp;                    return true;
+&nbsp;                } else {
+&nbsp;                    return !this.sysCLReturned &amp;&amp; systemClassLoader != null;
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            public ClassLoader next() {
+&nbsp;                if (!this.tcCLReturned) {
+&nbsp;                    this.tcCLReturned = true;
+&nbsp;                    return threadContextClassLoader;
+&nbsp;                } else if (this.currentIndex &lt; AggregatedClassLoader.this.individualClassLoaders.length) {
+&nbsp;                    ++this.currentIndex;
+&nbsp;                    return AggregatedClassLoader.this.individualClassLoaders[this.currentIndex - 1];
+&nbsp;                } else if (!this.sysCLReturned &amp;&amp; systemClassLoader != null) {
+&nbsp;                    this.sysCLReturned = true;
+&nbsp;                    return systemClassLoader;
+&nbsp;                } else {
+&nbsp;                    throw new IllegalStateException(&quot;No more item&quot;);
+&nbsp;                }
+&nbsp;            }
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    private Iterator&lt;ClassLoader&gt; newTcclAfterIterator(final ClassLoader threadContextClassLoader) {
+&nbsp;        final ClassLoader systemClassLoader = locateSystemClassLoader();
+&nbsp;        return new Iterator&lt;ClassLoader&gt;() {
+&nbsp;            private int currentIndex = 0;
+&nbsp;            private boolean tcCLReturned = false;
+&nbsp;            private boolean sysCLReturned = false;
+&nbsp;
+&nbsp;            public boolean hasNext() {
+&nbsp;                if (this.currentIndex &lt; AggregatedClassLoader.this.individualClassLoaders.length) {
+&nbsp;                    return true;
+&nbsp;                } else if (!this.tcCLReturned) {
+&nbsp;                    return true;
+<b class="fc">&nbsp;                } else {</b>
+<b class="fc">&nbsp;                    return !this.sysCLReturned &amp;&amp; systemClassLoader != null;</b>
+<b class="fc">&nbsp;                }</b>
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;            public ClassLoader next() {
+&nbsp;                if (this.currentIndex &lt; AggregatedClassLoader.this.individualClassLoaders.length) {
+&nbsp;                    ++this.currentIndex;
+<b class="fc">&nbsp;                    return AggregatedClassLoader.this.individualClassLoaders[this.currentIndex - 1];</b>
+<b class="fc">&nbsp;                } else if (!this.tcCLReturned) {</b>
+&nbsp;                    this.tcCLReturned = true;
+<b class="fc">&nbsp;                    return threadContextClassLoader;</b>
+<b class="fc">&nbsp;                } else if (!this.sysCLReturned &amp;&amp; systemClassLoader != null) {</b>
+&nbsp;                    this.sysCLReturned = true;
+<b class="pc">&nbsp;                    return systemClassLoader;</b>
+<b class="fc">&nbsp;                } else {</b>
+&nbsp;                    throw new IllegalStateException(&quot;No more item&quot;);
+&nbsp;                }
+<b class="fc">&nbsp;            }</b>
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    private Iterator&lt;ClassLoader&gt; newTcclNeverIterator() {
+<b class="fc">&nbsp;        final ClassLoader systemClassLoader = locateSystemClassLoader();</b>
+<b class="fc">&nbsp;        return new Iterator&lt;ClassLoader&gt;() {</b>
+<b class="fc">&nbsp;            private int currentIndex = 0;</b>
+&nbsp;            private boolean sysCLReturned = false;
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;            public boolean hasNext() {</b>
+<b class="fc">&nbsp;                if (this.currentIndex &lt; AggregatedClassLoader.this.individualClassLoaders.length) {</b>
+&nbsp;                    return true;
+<b class="pc">&nbsp;                } else {</b>
+<b class="fc">&nbsp;                    return !this.sysCLReturned &amp;&amp; systemClassLoader != null;</b>
+<b class="fc">&nbsp;                }</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            public ClassLoader next() {
+&nbsp;                if (this.currentIndex &lt; AggregatedClassLoader.this.individualClassLoaders.length) {
+&nbsp;                    ++this.currentIndex;
+&nbsp;                    return AggregatedClassLoader.this.individualClassLoaders[this.currentIndex - 1];
+&nbsp;                } else if (!this.sysCLReturned &amp;&amp; systemClassLoader != null) {
+<b class="nc">&nbsp;                    this.sysCLReturned = true;</b>
+<b class="nc">&nbsp;                    return systemClassLoader;</b>
+&nbsp;                } else {
+&nbsp;                    throw new IllegalStateException(&quot;No more item&quot;);
+&nbsp;                }
+&nbsp;            }
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    public Enumeration&lt;URL&gt; getResources(String name) throws IOException {
+&nbsp;        final LinkedHashSet&lt;URL&gt; resourceUrls = new LinkedHashSet();
+&nbsp;        Iterator&lt;ClassLoader&gt; clIterator = this.newClassLoaderIterator();
+&nbsp;
+&nbsp;        while(clIterator.hasNext()) {
+&nbsp;            ClassLoader classLoader = (ClassLoader)clIterator.next();
+&nbsp;            Enumeration&lt;URL&gt; urls = classLoader.getResources(name);
+&nbsp;
+&nbsp;            while(urls.hasMoreElements()) {
+&nbsp;                resourceUrls.add((URL)urls.nextElement());
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return new Enumeration&lt;URL&gt;() {
+&nbsp;            final Iterator&lt;URL&gt; resourceUrlIterator = resourceUrls.iterator();
+&nbsp;
+&nbsp;            public boolean hasMoreElements() {
+&nbsp;                return this.resourceUrlIterator.hasNext();
+&nbsp;            }
+&nbsp;
+&nbsp;            public URL nextElement() {
+&nbsp;                return (URL)this.resourceUrlIterator.next();
+&nbsp;            }
+&nbsp;        };
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    protected URL findResource(String name) {</b>
+<b class="fc">&nbsp;        Iterator&lt;ClassLoader&gt; clIterator = this.newClassLoaderIterator();</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;        while(clIterator.hasNext()) {</b>
+<b class="fc">&nbsp;            ClassLoader classLoader = (ClassLoader)clIterator.next();</b>
+<b class="fc">&nbsp;            URL resource = classLoader.getResource(name);</b>
+&nbsp;            if (resource != null) {
+&nbsp;                return resource;
+&nbsp;            }
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;        return super.findResource(name);
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    protected Class&lt;?&gt; findClass(String name) throws ClassNotFoundException {</b>
+&nbsp;        Iterator&lt;ClassLoader&gt; clIterator = this.newClassLoaderIterator();
+&nbsp;        Throwable t = null;
+&nbsp;
+&nbsp;        while(clIterator.hasNext()) {
+<b class="fc">&nbsp;            ClassLoader classLoader = (ClassLoader)clIterator.next();</b>
+&nbsp;
+&nbsp;            try {
+&nbsp;                return classLoader.loadClass(name);
+&nbsp;            } catch (Exception ex) {
+&nbsp;                ExceptionHelper.combine(t == null ? (t = new Throwable()) : t, ex);
+&nbsp;            } catch (LinkageError le) {
+<b class="fc">&nbsp;                ExceptionHelper.combine(t == null ? (t = new Throwable()) : t, le);</b>
+<b class="pc">&nbsp;            }</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+<b class="pc">&nbsp;        throw new ClassNotFoundException(&quot;Could not load requested class : &quot; + name, t != null &amp;&amp; t.getSuppressed().length &gt; 0 ? t : null);</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private static ClassLoader locateSystemClassLoader() {
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            return ClassLoader.getSystemClassLoader();
+&nbsp;        } catch (Exception var1) {
+&nbsp;            return null;
+&nbsp;        }
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private static ClassLoader locateTCCL() {</b>
+<b class="fc">&nbsp;        try {</b>
+&nbsp;            return Thread.currentThread().getContextClassLoader();
+<b class="fc">&nbsp;        } catch (Exception var1) {</b>
+&nbsp;            return null;
+&nbsp;        }
+<b class="fc">&nbsp;    }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
+</div>
+</body>
+</html>

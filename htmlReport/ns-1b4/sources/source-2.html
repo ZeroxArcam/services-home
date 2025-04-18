@@ -1,0 +1,330 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > LogicalConnectionManagedImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.resource.jdbc.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: LogicalConnectionManagedImpl (org.hibernate.resource.jdbc.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LogicalConnectionManagedImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    13%
+  </span>
+  <span class="absValue">
+    (3/23)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    9.4%
+  </span>
+  <span class="absValue">
+    (3/32)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    15.9%
+  </span>
+  <span class="absValue">
+    (13/82)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.resource.jdbc.internal;
+&nbsp;
+&nbsp;import java.io.IOException;
+&nbsp;import java.io.ObjectInputStream;
+&nbsp;import java.io.ObjectOutputStream;
+&nbsp;import java.sql.Connection;
+&nbsp;import java.sql.SQLException;
+&nbsp;import org.hibernate.ConnectionAcquisitionMode;
+&nbsp;import org.hibernate.ConnectionReleaseMode;
+&nbsp;import org.hibernate.ResourceClosedException;
+&nbsp;import org.hibernate.engine.jdbc.connections.spi.JdbcConnectionAccess;
+&nbsp;import org.hibernate.engine.jdbc.spi.JdbcServices;
+&nbsp;import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;
+&nbsp;import org.hibernate.resource.jdbc.ResourceRegistry;
+&nbsp;import org.hibernate.resource.jdbc.spi.JdbcObserver;
+&nbsp;import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
+&nbsp;import org.hibernate.resource.jdbc.spi.PhysicalConnectionHandlingMode;
+&nbsp;import org.jboss.logging.Logger;
+&nbsp;
+&nbsp;public class LogicalConnectionManagedImpl extends AbstractLogicalConnectionImplementor {
+&nbsp;    private static final Logger log = Logger.getLogger(LogicalConnectionManagedImpl.class);
+&nbsp;    private final transient JdbcConnectionAccess jdbcConnectionAccess;
+&nbsp;    private final transient JdbcObserver observer;
+&nbsp;    private final transient SqlExceptionHelper sqlExceptionHelper;
+&nbsp;    private final transient PhysicalConnectionHandlingMode connectionHandlingMode;
+&nbsp;    private transient Connection physicalConnection;
+&nbsp;    private boolean closed;
+&nbsp;    private final boolean providerDisablesAutoCommit;
+&nbsp;    boolean initiallyAutoCommit;
+&nbsp;
+&nbsp;    public LogicalConnectionManagedImpl(JdbcConnectionAccess jdbcConnectionAccess, JdbcSessionContext jdbcSessionContext, SqlExceptionHelper sqlExceptionHelper, ResourceRegistry resourceRegistry) {
+&nbsp;        this.jdbcConnectionAccess = jdbcConnectionAccess;
+&nbsp;        this.observer = jdbcSessionContext.getObserver();
+&nbsp;        this.resourceRegistry = resourceRegistry;
+&nbsp;        this.connectionHandlingMode = this.determineConnectionHandlingMode(jdbcSessionContext.getPhysicalConnectionHandlingMode(), jdbcConnectionAccess);
+<b class="fc">&nbsp;        this.sqlExceptionHelper = sqlExceptionHelper;</b>
+&nbsp;        if (this.connectionHandlingMode.getAcquisitionMode() == ConnectionAcquisitionMode.IMMEDIATELY) {
+&nbsp;            this.acquireConnectionIfNeeded();
+&nbsp;        }
+&nbsp;
+&nbsp;        this.providerDisablesAutoCommit = jdbcSessionContext.doesConnectionProviderDisableAutoCommit();
+&nbsp;        if (this.providerDisablesAutoCommit) {
+&nbsp;            log.debug(&quot;`hibernate.connection.provider_disables_autocommit` was enabled.  This setting should only be enabled when you are certain that the Connections given to Hibernate by the ConnectionProvider have auto-commit disabled.  Enabling this setting when the Connections do not have auto-commit disabled will lead to Hibernate executing SQL operations outside of any JDBC/SQL transaction.&quot;);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public LogicalConnectionManagedImpl(JdbcConnectionAccess jdbcConnectionAccess, JdbcSessionContext jdbcSessionContext, ResourceRegistry resourceRegistry, JdbcServices jdbcServices) {
+&nbsp;        this(jdbcConnectionAccess, jdbcSessionContext, jdbcServices.getSqlExceptionHelper(), resourceRegistry);
+&nbsp;    }
+&nbsp;
+&nbsp;    private PhysicalConnectionHandlingMode determineConnectionHandlingMode(PhysicalConnectionHandlingMode connectionHandlingMode, JdbcConnectionAccess jdbcConnectionAccess) {
+<b class="fc">&nbsp;        return connectionHandlingMode.getReleaseMode() == ConnectionReleaseMode.AFTER_STATEMENT &amp;&amp; !jdbcConnectionAccess.supportsAggressiveRelease() ? PhysicalConnectionHandlingMode.DELAYED_ACQUISITION_AND_RELEASE_AFTER_TRANSACTION : connectionHandlingMode;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private LogicalConnectionManagedImpl(JdbcConnectionAccess jdbcConnectionAccess, JdbcSessionContext jdbcSessionContext, boolean closed) {</b>
+&nbsp;        this(jdbcConnectionAccess, jdbcSessionContext, (ResourceRegistry)(new ResourceRegistryStandardImpl()), (JdbcServices)jdbcSessionContext.getJdbcServices());
+<b class="fc">&nbsp;        this.closed = closed;</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private Connection acquireConnectionIfNeeded() {
+<b class="fc">&nbsp;        if (this.physicalConnection == null) {</b>
+&nbsp;            try {
+<b class="pc">&nbsp;                this.physicalConnection = this.jdbcConnectionAccess.obtainConnection();</b>
+<b class="nc">&nbsp;            } catch (SQLException e) {</b>
+&nbsp;                throw this.sqlExceptionHelper.convert(e, &quot;Unable to acquire JDBC Connection&quot;);
+&nbsp;            } finally {
+<b class="fc">&nbsp;                this.observer.jdbcConnectionAcquisitionEnd(this.physicalConnection);</b>
+<b class="pc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return this.physicalConnection;
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isOpen() {
+&nbsp;        return !this.closed;
+&nbsp;    }
+&nbsp;
+&nbsp;    public PhysicalConnectionHandlingMode getConnectionHandlingMode() {
+&nbsp;        return this.connectionHandlingMode;
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isPhysicallyConnected() {
+&nbsp;        return this.physicalConnection != null;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public Connection getPhysicalConnection() {
+<b class="nc">&nbsp;        this.errorIfClosed();</b>
+&nbsp;        return this.acquireConnectionIfNeeded();
+&nbsp;    }
+&nbsp;
+&nbsp;    public void afterStatement() {
+&nbsp;        super.afterStatement();
+&nbsp;        if (this.connectionHandlingMode.getReleaseMode() == ConnectionReleaseMode.AFTER_STATEMENT) {
+&nbsp;            if (this.getResourceRegistry().hasRegisteredResources()) {
+<b class="pc">&nbsp;                log.debug(&quot;Skipping aggressive release of JDBC Connection after-statement due to held resources&quot;);</b>
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                log.debug(&quot;Initiating JDBC connection release from afterStatement&quot;);</b>
+&nbsp;                this.releaseConnection();
+&nbsp;            }
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void beforeTransactionCompletion() {
+&nbsp;        super.beforeTransactionCompletion();
+&nbsp;        if (this.connectionHandlingMode.getReleaseMode() == ConnectionReleaseMode.BEFORE_TRANSACTION_COMPLETION) {
+<b class="nc">&nbsp;            log.debug(&quot;Initiating JDBC connection release from beforeTransactionCompletion&quot;);</b>
+&nbsp;            this.releaseConnection();
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    public void afterTransaction() {</b>
+&nbsp;        super.afterTransaction();
+&nbsp;        if (this.connectionHandlingMode.getReleaseMode() != ConnectionReleaseMode.ON_CLOSE) {
+&nbsp;            log.debug(&quot;Initiating JDBC connection release from afterTransaction&quot;);
+<b class="nc">&nbsp;            this.releaseConnection();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public Connection manualDisconnect() {
+<b class="nc">&nbsp;        if (this.closed) {</b>
+&nbsp;            throw new ResourceClosedException(&quot;Logical connection is closed&quot;);
+&nbsp;        } else {
+<b class="nc">&nbsp;            Connection c = this.physicalConnection;</b>
+&nbsp;            this.releaseConnection();
+&nbsp;            return c;
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void manualReconnect(Connection suppliedConnection) {
+&nbsp;        if (this.closed) {
+<b class="nc">&nbsp;            throw new ResourceClosedException(&quot;Logical connection is closed&quot;);</b>
+&nbsp;        } else {
+&nbsp;            throw new IllegalStateException(&quot;Cannot manually reconnect unless Connection was originally supplied by user&quot;);
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private void releaseConnection() {
+&nbsp;        Connection localVariableConnection = this.physicalConnection;
+&nbsp;        if (localVariableConnection != null) {
+&nbsp;            this.physicalConnection = null;
+<b class="nc">&nbsp;</b>
+&nbsp;            try {
+&nbsp;                try {
+&nbsp;                    this.getResourceRegistry().releaseResources();
+&nbsp;                    if (!localVariableConnection.isClosed()) {
+<b class="nc">&nbsp;                        this.sqlExceptionHelper.logAndClearWarnings(localVariableConnection);</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                } finally {
+&nbsp;                    this.jdbcConnectionAccess.releaseConnection(localVariableConnection);
+&nbsp;                }
+&nbsp;            } catch (SQLException e) {
+<b class="nc">&nbsp;                throw this.sqlExceptionHelper.convert(e, &quot;Unable to release JDBC Connection&quot;);</b>
+&nbsp;            } finally {
+<b class="nc">&nbsp;                this.observer.jdbcConnectionReleaseEnd();</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void serialize(ObjectOutputStream oos) throws IOException {</b>
+&nbsp;        oos.writeBoolean(this.closed);
+&nbsp;    }
+&nbsp;
+&nbsp;    public static LogicalConnectionManagedImpl deserialize(ObjectInputStream ois, JdbcConnectionAccess jdbcConnectionAccess, JdbcSessionContext jdbcSessionContext) throws IOException {
+&nbsp;        boolean isClosed = ois.readBoolean();
+&nbsp;        return new LogicalConnectionManagedImpl(jdbcConnectionAccess, jdbcSessionContext, isClosed);
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public Connection close() {</b>
+<b class="nc">&nbsp;        if (this.closed) {</b>
+&nbsp;            return null;
+&nbsp;        } else {
+&nbsp;            this.getResourceRegistry().releaseResources();
+&nbsp;            log.trace(&quot;Closing logical connection&quot;);
+&nbsp;
+<b class="nc">&nbsp;            try {</b>
+&nbsp;                this.releaseConnection();
+<b class="nc">&nbsp;            } finally {</b>
+&nbsp;                this.closed = true;
+&nbsp;                log.trace(&quot;Logical connection closed&quot;);
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            return null;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Connection getConnectionForTransactionManagement() {
+&nbsp;        return this.getPhysicalConnection();
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void begin() {</b>
+&nbsp;        this.initiallyAutoCommit = !this.doConnectionsFromProviderHaveAutoCommitDisabled() &amp;&amp; determineInitialAutoCommitMode(this.getConnectionForTransactionManagement());
+<b class="nc">&nbsp;        super.begin();</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    protected void afterCompletion() {
+&nbsp;        this.resetConnection(this.initiallyAutoCommit);
+&nbsp;        this.initiallyAutoCommit = false;
+&nbsp;        this.afterTransaction();
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    protected boolean doConnectionsFromProviderHaveAutoCommitDisabled() {
+&nbsp;        return this.providerDisablesAutoCommit;
+<b class="nc">&nbsp;    }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>

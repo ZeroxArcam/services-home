@@ -1,0 +1,371 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ClassLoaderServiceImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.boot.registry.classloading.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: ClassLoaderServiceImpl (org.hibernate.boot.registry.classloading.internal)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ClassLoaderServiceImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    56.2%
+  </span>
+  <span class="absValue">
+    (9/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    31.6%
+  </span>
+  <span class="absValue">
+    (12/38)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    43%
+  </span>
+  <span class="absValue">
+    (34/79)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ClassLoaderServiceImpl$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/2)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    61.1%
+  </span>
+  <span class="absValue">
+    (11/18)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    31.6%
+  </span>
+  <span class="absValue">
+    (12/38)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    44.4%
+  </span>
+  <span class="absValue">
+    (36/81)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.boot.registry.classloading.internal;
+&nbsp;
+&nbsp;import java.io.InputStream;
+&nbsp;import java.lang.reflect.InvocationHandler;
+&nbsp;import java.lang.reflect.Proxy;
+&nbsp;import java.net.URL;
+&nbsp;import java.security.AccessController;
+&nbsp;import java.security.PrivilegedAction;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.Enumeration;
+&nbsp;import java.util.LinkedHashSet;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import java.util.concurrent.ConcurrentMap;
+&nbsp;import org.hibernate.Internal;
+&nbsp;import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
+&nbsp;import org.hibernate.boot.registry.classloading.spi.ClassLoadingException;
+&nbsp;import org.hibernate.internal.CoreLogging;
+&nbsp;import org.hibernate.internal.CoreMessageLogger;
+&nbsp;
+&nbsp;public class ClassLoaderServiceImpl implements ClassLoaderService {
+&nbsp;    private static final CoreMessageLogger log = CoreLogging.messageLogger(ClassLoaderServiceImpl.class);
+&nbsp;    private static final String CLASS_PATH_SCHEME = &quot;classpath://&quot;;
+&nbsp;    private final ConcurrentMap&lt;Class&lt;?&gt;, AggregatedServiceLoader&lt;?&gt;&gt; serviceLoaders;
+&nbsp;    private volatile AggregatedClassLoader aggregatedClassLoader;
+&nbsp;
+&nbsp;    public ClassLoaderServiceImpl() {
+&nbsp;        this(ClassLoaderServiceImpl.class.getClassLoader());
+&nbsp;    }
+&nbsp;
+&nbsp;    public ClassLoaderServiceImpl(ClassLoader classLoader) {
+<b class="fc">&nbsp;        this(Collections.singletonList(classLoader), TcclLookupPrecedence.AFTER);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public ClassLoaderServiceImpl(Collection&lt;ClassLoader&gt; providedClassLoaders, final TcclLookupPrecedence lookupPrecedence) {
+<b class="fc">&nbsp;        this.serviceLoaders = new ConcurrentHashMap();</b>
+&nbsp;        final LinkedHashSet&lt;ClassLoader&gt; orderedClassLoaderSet = new LinkedHashSet();
+&nbsp;        if (providedClassLoaders != null) {
+&nbsp;            for(ClassLoader classLoader : providedClassLoaders) {
+&nbsp;                if (classLoader != null) {
+&nbsp;                    orderedClassLoaderSet.add(classLoader);
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        orderedClassLoaderSet.add(ClassLoaderServiceImpl.class.getClassLoader());
+&nbsp;        this.aggregatedClassLoader = (AggregatedClassLoader)AccessController.doPrivileged(new PrivilegedAction&lt;AggregatedClassLoader&gt;() {
+&nbsp;            public AggregatedClassLoader run() {
+&nbsp;                return new AggregatedClassLoader(orderedClassLoaderSet, lookupPrecedence);
+&nbsp;            }
+&nbsp;        });
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    /** @deprecated */
+&nbsp;    @Deprecated
+&nbsp;    @Internal
+&nbsp;    public static ClassLoaderServiceImpl fromConfigSettings(Map configValues) {
+&nbsp;        List&lt;ClassLoader&gt; providedClassLoaders = new ArrayList();
+&nbsp;        Collection&lt;ClassLoader&gt; classLoaders = (Collection)configValues.get(&quot;hibernate.classLoaders&quot;);
+&nbsp;        if (classLoaders != null) {
+<b class="fc">&nbsp;            providedClassLoaders.addAll(classLoaders);</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return new ClassLoaderServiceImpl(providedClassLoaders, TcclLookupPrecedence.from(configValues, TcclLookupPrecedence.AFTER));
+<b class="pc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="pc">&nbsp;    public &lt;T&gt; Class&lt;T&gt; classForName(String className) {</b>
+<b class="fc">&nbsp;        try {</b>
+&nbsp;            return Class.forName(className, true, this.getAggregatedClassLoader());
+&nbsp;        } catch (LinkageError | Exception e) {
+&nbsp;            throw new ClassLoadingException(&quot;Unable to load class [&quot; + className + &quot;]&quot;, e);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public URL locateResource(String name) {</b>
+&nbsp;        try {
+&nbsp;            return new URL(name);
+<b class="fc">&nbsp;        } catch (Exception var5) {</b>
+&nbsp;            name = this.stripClasspathScheme(name);
+<b class="fc">&nbsp;</b>
+&nbsp;            try {
+&nbsp;                URL url = this.getAggregatedClassLoader().getResource(name);
+&nbsp;                if (url != null) {
+&nbsp;                    return url;
+&nbsp;                }
+&nbsp;            } catch (Exception var4) {
+&nbsp;            }
+&nbsp;
+&nbsp;            if (name.startsWith(&quot;/&quot;)) {
+&nbsp;                name = name.substring(1);
+&nbsp;
+&nbsp;                try {
+&nbsp;                    URL url = this.getAggregatedClassLoader().getResource(name);
+&nbsp;                    if (url != null) {
+&nbsp;                        return url;
+&nbsp;                    }
+&nbsp;                } catch (Exception var3) {
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            return null;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public InputStream locateResourceStream(String name) {</b>
+&nbsp;        try {
+<b class="nc">&nbsp;            log.tracef(&quot;trying via [new URL(\&quot;%s\&quot;)]&quot;, name);</b>
+&nbsp;            return (new URL(name)).openStream();
+&nbsp;        } catch (Exception var7) {
+&nbsp;            name = this.stripClasspathScheme(name);
+&nbsp;
+&nbsp;            try {
+&nbsp;                log.tracef(&quot;trying via [ClassLoader.getResourceAsStream(\&quot;%s\&quot;)]&quot;, name);
+&nbsp;                InputStream stream = this.getAggregatedClassLoader().getResourceAsStream(name);
+<b class="fc">&nbsp;                if (stream != null) {</b>
+&nbsp;                    return stream;
+&nbsp;                }
+<b class="fc">&nbsp;            } catch (Exception var5) {</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            String stripped = name.startsWith(&quot;/&quot;) ? name.substring(1) : null;
+&nbsp;            if (stripped != null) {
+&nbsp;                try {
+&nbsp;                    log.tracef(&quot;trying via [new URL(\&quot;%s\&quot;)]&quot;, stripped);
+&nbsp;                    return (new URL(stripped)).openStream();
+<b class="fc">&nbsp;                } catch (Exception var6) {</b>
+&nbsp;                    try {
+&nbsp;                        log.tracef(&quot;trying via [ClassLoader.getResourceAsStream(\&quot;%s\&quot;)]&quot;, stripped);
+&nbsp;                        InputStream stream = this.getAggregatedClassLoader().getResourceAsStream(stripped);
+&nbsp;                        if (stream != null) {
+&nbsp;                            return stream;
+&nbsp;                        }
+<b class="fc">&nbsp;                    } catch (Exception var4) {</b>
+&nbsp;                    }
+&nbsp;                }
+<b class="fc">&nbsp;            }</b>
+<b class="pc">&nbsp;</b>
+<b class="fc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public List&lt;URL&gt; locateResources(String name) {
+&nbsp;        ArrayList&lt;URL&gt; urls = new ArrayList();
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            Enumeration&lt;URL&gt; urlEnumeration = this.getAggregatedClassLoader().getResources(name);
+&nbsp;            if (urlEnumeration != null &amp;&amp; urlEnumeration.hasMoreElements()) {
+<b class="nc">&nbsp;                while(urlEnumeration.hasMoreElements()) {</b>
+<b class="nc">&nbsp;                    urls.add((URL)urlEnumeration.nextElement());</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;        } catch (Exception var4) {
+&nbsp;        }
+&nbsp;
+&nbsp;        return urls;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public &lt;S&gt; Collection&lt;S&gt; loadJavaServices(Class&lt;S&gt; serviceContract) {
+&nbsp;        AggregatedServiceLoader&lt;S&gt; serviceLoader = (AggregatedServiceLoader)this.serviceLoaders.get(serviceContract);
+&nbsp;        if (serviceLoader == null) {
+&nbsp;            serviceLoader = AggregatedServiceLoader.create(this.getAggregatedClassLoader(), serviceContract);
+&nbsp;            this.serviceLoaders.put(serviceContract, serviceLoader);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return serviceLoader.getAll();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;T&gt; T generateProxy(InvocationHandler handler, Class... interfaces) {
+&nbsp;        return (T)Proxy.newProxyInstance(this.getAggregatedClassLoader(), interfaces, handler);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public Package packageForNameOrNull(String packageName) {</b>
+&nbsp;        try {
+&nbsp;            return Class.forName(packageName + &quot;.package-info&quot;, true, this.getAggregatedClassLoader()).getPackage();
+<b class="nc">&nbsp;        } catch (ClassNotFoundException var3) {</b>
+<b class="nc">&nbsp;            log.packageNotFound(packageName);</b>
+<b class="nc">&nbsp;            return null;</b>
+<b class="nc">&nbsp;        } catch (LinkageError e) {</b>
+&nbsp;            log.linkageError(packageName, e);
+&nbsp;            return null;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public &lt;T&gt; T workWithClassLoader(ClassLoaderService.Work&lt;T&gt; work) {</b>
+&nbsp;        return (T)work.doWork(this.getAggregatedClassLoader());
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private AggregatedClassLoader getAggregatedClassLoader() {</b>
+<b class="nc">&nbsp;        AggregatedClassLoader aggregated = this.aggregatedClassLoader;</b>
+&nbsp;        if (aggregated == null) {
+&nbsp;            throw log.usingStoppedClassLoaderService();
+&nbsp;        } else {
+&nbsp;            return aggregated;
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private String stripClasspathScheme(String name) {</b>
+<b class="nc">&nbsp;        if (name == null) {</b>
+&nbsp;            return null;
+&nbsp;        } else {
+&nbsp;            return name.startsWith(&quot;classpath://&quot;) ? name.substring(&quot;classpath://&quot;.length()) : name;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public void stop() {</b>
+&nbsp;        for(AggregatedServiceLoader&lt;?&gt; serviceLoader : this.serviceLoaders.values()) {
+&nbsp;            serviceLoader.close();
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        this.serviceLoaders.clear();</b>
+&nbsp;        this.aggregatedClassLoader = null;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
+</div>
+</body>
+</html>

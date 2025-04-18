@@ -1,0 +1,232 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > DefaultInitializeCollectionEventListener</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.event.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: DefaultInitializeCollectionEventListener (org.hibernate.event.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DefaultInitializeCollectionEventListener</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    40%
+  </span>
+  <span class="absValue">
+    (2/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/32)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    3.6%
+  </span>
+  <span class="absValue">
+    (2/56)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.event.internal;
+&nbsp;
+&nbsp;import org.hibernate.HibernateException;
+&nbsp;import org.hibernate.cache.spi.access.CollectionDataAccess;
+&nbsp;import org.hibernate.cache.spi.entry.CollectionCacheEntry;
+&nbsp;import org.hibernate.collection.spi.PersistentCollection;
+&nbsp;import org.hibernate.engine.internal.CacheHelper;
+&nbsp;import org.hibernate.engine.spi.CollectionEntry;
+&nbsp;import org.hibernate.engine.spi.PersistenceContext;
+&nbsp;import org.hibernate.engine.spi.SessionFactoryImplementor;
+&nbsp;import org.hibernate.engine.spi.SessionImplementor;
+&nbsp;import org.hibernate.event.spi.InitializeCollectionEvent;
+&nbsp;import org.hibernate.event.spi.InitializeCollectionEventListener;
+&nbsp;import org.hibernate.internal.CoreLogging;
+&nbsp;import org.hibernate.internal.CoreMessageLogger;
+&nbsp;import org.hibernate.metamodel.model.domain.NavigableRole;
+&nbsp;import org.hibernate.persister.collection.CollectionPersister;
+&nbsp;import org.hibernate.pretty.MessageHelper;
+&nbsp;import org.hibernate.sql.results.internal.ResultsHelper;
+&nbsp;import org.hibernate.stat.spi.StatisticsImplementor;
+&nbsp;
+&nbsp;public class DefaultInitializeCollectionEventListener implements InitializeCollectionEventListener {
+&nbsp;    private static final CoreMessageLogger LOG = CoreLogging.messageLogger(DefaultInitializeCollectionEventListener.class);
+&nbsp;
+&nbsp;    public DefaultInitializeCollectionEventListener() {
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public void onInitializeCollection(InitializeCollectionEvent event) throws HibernateException {</b>
+&nbsp;        PersistentCollection&lt;?&gt; collection = event.getCollection();
+&nbsp;        SessionImplementor source = event.getSession();
+&nbsp;        PersistenceContext persistenceContext = source.getPersistenceContextInternal();
+&nbsp;        CollectionEntry ce = persistenceContext.getCollectionEntry(collection);
+&nbsp;        if (ce == null) {
+&nbsp;            throw new HibernateException(&quot;collection was evicted&quot;);
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            if (!collection.wasInitialized()) {</b>
+&nbsp;                CollectionPersister loadedPersister = ce.getLoadedPersister();
+<b class="nc">&nbsp;                Object loadedKey = ce.getLoadedKey();</b>
+<b class="nc">&nbsp;                if (LOG.isTraceEnabled()) {</b>
+<b class="nc">&nbsp;                    LOG.tracev(&quot;Initializing collection {0}&quot;, MessageHelper.collectionInfoString(loadedPersister, collection, loadedKey, source));</b>
+<b class="nc">&nbsp;                    LOG.trace(&quot;Checking second-level cache&quot;);</b>
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                boolean foundInCache = this.initializeCollectionFromCache(loadedKey, loadedPersister, collection, source);</b>
+<b class="nc">&nbsp;                if (foundInCache) {</b>
+<b class="nc">&nbsp;                    if (LOG.isTraceEnabled()) {</b>
+<b class="nc">&nbsp;                        LOG.trace(&quot;Collection initialized from cache&quot;);</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                } else {</b>
+&nbsp;                    if (LOG.isTraceEnabled()) {
+<b class="nc">&nbsp;                        LOG.trace(&quot;Collection not cached&quot;);</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    loadedPersister.initialize(loadedKey, source);</b>
+<b class="nc">&nbsp;                    handlePotentiallyEmptyCollection(collection, persistenceContext, loadedKey, loadedPersister);</b>
+<b class="nc">&nbsp;                    if (LOG.isTraceEnabled()) {</b>
+<b class="nc">&nbsp;                        LOG.trace(&quot;Collection initialized&quot;);</b>
+&nbsp;                    }
+&nbsp;
+&nbsp;                    StatisticsImplementor statistics = source.getFactory().getStatistics();
+<b class="nc">&nbsp;                    if (statistics.isStatisticsEnabled()) {</b>
+<b class="nc">&nbsp;                        statistics.fetchCollection(loadedPersister.getRole());</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public static void handlePotentiallyEmptyCollection(PersistentCollection&lt;?&gt; collection, PersistenceContext persistenceContext, Object loadedKey, CollectionPersister loadedPersister) {</b>
+<b class="nc">&nbsp;        if (!collection.wasInitialized()) {</b>
+<b class="nc">&nbsp;            collection.initializeEmptyCollection(loadedPersister);</b>
+&nbsp;            ResultsHelper.finalizeCollectionLoading(persistenceContext, loadedPersister, collection, loadedKey, true);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean initializeCollectionFromCache(Object id, CollectionPersister persister, PersistentCollection&lt;?&gt; collection, SessionImplementor source) {
+&nbsp;        if (source.getLoadQueryInfluencers().hasEnabledFilters() &amp;&amp; persister.isAffectedByEnabledFilters(source)) {
+&nbsp;            LOG.trace(&quot;Disregarding cached version (if any) of collection due to enabled filters&quot;);
+&nbsp;            return false;
+&nbsp;        } else if (persister.hasCache() &amp;&amp; source.getCacheMode().isGetEnabled()) {
+<b class="nc">&nbsp;            SessionFactoryImplementor factory = source.getFactory();</b>
+<b class="nc">&nbsp;            CollectionDataAccess cacheAccessStrategy = persister.getCacheAccessStrategy();</b>
+<b class="nc">&nbsp;            Object ck = cacheAccessStrategy.generateCacheKey(id, persister, factory, source.getTenantIdentifier());</b>
+&nbsp;            Object ce = CacheHelper.fromSharedCache(source, ck, persister, cacheAccessStrategy);
+&nbsp;            StatisticsImplementor statistics = factory.getStatistics();
+&nbsp;            if (statistics.isStatisticsEnabled()) {
+&nbsp;                NavigableRole navigableRole = persister.getNavigableRole();
+&nbsp;                String regionName = cacheAccessStrategy.getRegion().getName();
+&nbsp;                if (ce == null) {
+&nbsp;                    statistics.collectionCacheMiss(navigableRole, regionName);
+&nbsp;                } else {
+&nbsp;                    statistics.collectionCacheHit(navigableRole, regionName);
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            if (ce == null) {
+&nbsp;                return false;
+&nbsp;            } else {
+&nbsp;                CollectionCacheEntry cacheEntry = (CollectionCacheEntry)persister.getCacheEntryStructure().destructure(ce, factory);
+&nbsp;                PersistenceContext persistenceContext = source.getPersistenceContextInternal();
+&nbsp;                cacheEntry.assemble(collection, persister, persistenceContext.getCollectionOwner(id, persister));
+&nbsp;                persistenceContext.getCollectionEntry(collection).postInitialize(collection, source);
+&nbsp;                return true;
+&nbsp;            }
+&nbsp;        } else {
+&nbsp;            return false;
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:57</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,298 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > HealthEndpointSupport</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.boot.actuate.health</a>
+</div>
+
+<h1>Coverage Summary for Class: HealthEndpointSupport (org.springframework.boot.actuate.health)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">HealthEndpointSupport</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/70)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/76)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.boot.actuate.health;
+&nbsp;
+&nbsp;import java.time.Duration;
+&nbsp;import java.time.Instant;
+&nbsp;import java.util.LinkedHashMap;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.stream.Collectors;
+&nbsp;import org.apache.commons.logging.Log;
+&nbsp;import org.apache.commons.logging.LogFactory;
+&nbsp;import org.springframework.boot.actuate.endpoint.ApiVersion;
+&nbsp;import org.springframework.boot.actuate.endpoint.SecurityContext;
+&nbsp;import org.springframework.boot.actuate.endpoint.web.WebServerNamespace;
+&nbsp;import org.springframework.boot.convert.DurationStyle;
+&nbsp;import org.springframework.core.log.LogMessage;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.StringUtils;
+&nbsp;
+&nbsp;abstract class HealthEndpointSupport&lt;C, T&gt; {
+&nbsp;    private static final Log logger = LogFactory.getLog(HealthEndpointSupport.class);
+&nbsp;    static final Health DEFAULT_HEALTH = Health.up().build();
+&nbsp;    private final ContributorRegistry&lt;C&gt; registry;
+&nbsp;    private final HealthEndpointGroups groups;
+&nbsp;    private final Duration slowIndicatorLoggingThreshold;
+&nbsp;
+&nbsp;    HealthEndpointSupport(ContributorRegistry&lt;C&gt; registry, HealthEndpointGroups groups, Duration slowIndicatorLoggingThreshold) {
+&nbsp;        Assert.notNull(registry, &quot;Registry must not be null&quot;);
+&nbsp;        Assert.notNull(groups, &quot;Groups must not be null&quot;);
+&nbsp;        this.registry = registry;
+&nbsp;        this.groups = groups;
+&nbsp;        this.slowIndicatorLoggingThreshold = slowIndicatorLoggingThreshold;
+&nbsp;    }
+&nbsp;
+&nbsp;    HealthResult&lt;T&gt; getHealth(ApiVersion apiVersion, WebServerNamespace serverNamespace, SecurityContext securityContext, boolean showAll, String... path) {
+&nbsp;        if (path.length &gt; 0) {
+&nbsp;            HealthEndpointGroup group = this.getHealthGroup(serverNamespace, path);
+&nbsp;            if (group != null) {
+&nbsp;                return this.getHealth(apiVersion, group, securityContext, showAll, path, 1);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return this.getHealth(apiVersion, this.groups.getPrimary(), securityContext, showAll, path, 0);</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private HealthEndpointGroup getHealthGroup(WebServerNamespace serverNamespace, String... path) {
+&nbsp;        if (this.groups.get(path[0]) != null) {
+&nbsp;            return this.groups.get(path[0]);
+&nbsp;        } else if (serverNamespace != null) {
+&nbsp;            AdditionalHealthEndpointPath additionalPath = AdditionalHealthEndpointPath.of(serverNamespace, path[0]);
+&nbsp;            return this.groups.get(additionalPath);
+&nbsp;        } else {
+&nbsp;            return null;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private HealthResult&lt;T&gt; getHealth(ApiVersion apiVersion, HealthEndpointGroup group, SecurityContext securityContext, boolean showAll, String[] path, int pathOffset) {
+&nbsp;        boolean showComponents = showAll || group.showComponents(securityContext);
+&nbsp;        boolean showDetails = showAll || group.showDetails(securityContext);
+&nbsp;        boolean isSystemHealth = group == this.groups.getPrimary() &amp;&amp; pathOffset == 0;
+<b class="nc">&nbsp;        boolean isRoot = path.length - pathOffset == 0;</b>
+<b class="nc">&nbsp;        if (!showComponents &amp;&amp; !isRoot) {</b>
+<b class="nc">&nbsp;            return null;</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            Object contributor = this.getContributor(path, pathOffset);</b>
+<b class="nc">&nbsp;            if (contributor == null) {</b>
+&nbsp;                return null;
+&nbsp;            } else {
+&nbsp;                String name = this.getName(path, pathOffset);
+&nbsp;                Set&lt;String&gt; groupNames = isSystemHealth ? this.groups.getNames() : null;
+<b class="nc">&nbsp;                T health = (T)this.getContribution(apiVersion, group, name, contributor, showComponents, showDetails, groupNames);</b>
+<b class="nc">&nbsp;                return health != null ? new HealthResult(health, group) : null;</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private Object getContributor(String[] path, int pathOffset) {</b>
+&nbsp;        Object contributor;
+&nbsp;        for(contributor = this.registry; pathOffset &lt; path.length; ++pathOffset) {
+&nbsp;            if (!(contributor instanceof NamedContributors)) {
+<b class="nc">&nbsp;                return null;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            contributor = ((NamedContributors)contributor).getContributor(path[pathOffset]);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return contributor;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private String getName(String[] path, int pathOffset) {
+&nbsp;        StringBuilder name;
+&nbsp;        for(name = new StringBuilder(); pathOffset &lt; path.length; ++pathOffset) {
+<b class="nc">&nbsp;            name.append(!name.isEmpty() ? &quot;/&quot; : &quot;&quot;);</b>
+<b class="nc">&nbsp;            name.append(path[pathOffset]);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return name.toString();</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private T getContribution(ApiVersion apiVersion, HealthEndpointGroup group, String name, Object contributor, boolean showComponents, boolean showDetails, Set&lt;String&gt; groupNames) {</b>
+<b class="nc">&nbsp;        if (contributor instanceof NamedContributors) {</b>
+<b class="nc">&nbsp;            return (T)this.getAggregateContribution(apiVersion, group, name, (NamedContributors)contributor, showComponents, showDetails, groupNames);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            return (T)(contributor == null || !name.isEmpty() &amp;&amp; !group.isMember(name) ? null : this.getLoggedHealth(contributor, name, showDetails));</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private T getAggregateContribution(ApiVersion apiVersion, HealthEndpointGroup group, String name, NamedContributors&lt;C&gt; namedContributors, boolean showComponents, boolean showDetails, Set&lt;String&gt; groupNames) {
+&nbsp;        String prefix = StringUtils.hasText(name) ? name + &quot;/&quot; : &quot;&quot;;
+&nbsp;        Map&lt;String, T&gt; contributions = new LinkedHashMap();
+&nbsp;
+<b class="nc">&nbsp;        for(NamedContributor&lt;C&gt; child : namedContributors) {</b>
+<b class="nc">&nbsp;            T contribution = (T)this.getContribution(apiVersion, group, prefix + child.getName(), child.getContributor(), showComponents, showDetails, (Set)null);</b>
+<b class="nc">&nbsp;            if (contribution != null) {</b>
+<b class="nc">&nbsp;                contributions.put(child.getName(), contribution);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        if (contributions.isEmpty()) {
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        } else {
+&nbsp;            return (T)this.aggregateContributions(apiVersion, contributions, group.getStatusAggregator(), showComponents, groupNames);
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private T getLoggedHealth(C contributor, String name, boolean showDetails) {</b>
+<b class="nc">&nbsp;        Instant start = Instant.now();</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        Object var5;
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            var5 = this.getHealth(contributor, showDetails);
+&nbsp;        } finally {
+&nbsp;            if (logger.isWarnEnabled() &amp;&amp; this.slowIndicatorLoggingThreshold != null) {
+&nbsp;                Duration duration = Duration.between(start, Instant.now());
+&nbsp;                if (duration.compareTo(this.slowIndicatorLoggingThreshold) &gt; 0) {
+<b class="nc">&nbsp;                    String contributorClassName = contributor.getClass().getName();</b>
+<b class="nc">&nbsp;                    Object contributorIdentifier = !StringUtils.hasLength(name) ? contributorClassName : contributorClassName + &quot; (&quot; + name + &quot;)&quot;;</b>
+&nbsp;                    logger.warn(LogMessage.format(&quot;Health contributor %s took %s to respond&quot;, contributorIdentifier, DurationStyle.SIMPLE.print(duration)));
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        return (T)var5;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected abstract T getHealth(C contributor, boolean includeDetails);
+&nbsp;
+<b class="nc">&nbsp;    protected abstract T aggregateContributions(ApiVersion apiVersion, Map&lt;String, T&gt; contributions, StatusAggregator statusAggregator, boolean showComponents, Set&lt;String&gt; groupNames);</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected final CompositeHealth getCompositeHealth(ApiVersion apiVersion, Map&lt;String, HealthComponent&gt; components, StatusAggregator statusAggregator, boolean showComponents, Set&lt;String&gt; groupNames) {</b>
+<b class="nc">&nbsp;        Status status = statusAggregator.getAggregateStatus((Set)components.values().stream().map(this::getStatus).collect(Collectors.toSet()));</b>
+&nbsp;        Map&lt;String, HealthComponent&gt; instances = showComponents ? components : null;
+<b class="nc">&nbsp;        return (CompositeHealth)(groupNames != null ? new SystemHealth(apiVersion, status, instances, groupNames) : new CompositeHealth(apiVersion, status, instances));</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private Status getStatus(HealthComponent component) {
+<b class="nc">&nbsp;        return component != null ? component.getStatus() : Status.UNKNOWN;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    static class HealthResult&lt;T&gt; {</b>
+&nbsp;        private final T health;
+&nbsp;        private final HealthEndpointGroup group;
+&nbsp;
+&nbsp;        HealthResult(T health, HealthEndpointGroup group) {
+<b class="nc">&nbsp;            this.health = health;</b>
+&nbsp;            this.group = group;
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        T getHealth() {
+<b class="nc">&nbsp;            return this.health;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        HealthEndpointGroup getGroup() {</b>
+<b class="nc">&nbsp;            return this.group;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:57</div>
+</div>
+</body>
+</html>

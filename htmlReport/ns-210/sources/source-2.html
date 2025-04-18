@@ -1,0 +1,187 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ClassBasedValidatorDescriptor</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.validator.internal.engine.constraintvalidation</a>
+</div>
+
+<h1>Coverage Summary for Class: ClassBasedValidatorDescriptor (org.hibernate.validator.internal.engine.constraintvalidation)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ClassBasedValidatorDescriptor</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    44.4%
+  </span>
+  <span class="absValue">
+    (4/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (2/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    47.6%
+  </span>
+  <span class="absValue">
+    (10/21)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.validator.internal.engine.constraintvalidation;
+&nbsp;
+&nbsp;import jakarta.validation.ConstraintValidator;
+&nbsp;import jakarta.validation.ConstraintValidatorFactory;
+&nbsp;import jakarta.validation.constraintvalidation.SupportedValidationTarget;
+&nbsp;import jakarta.validation.constraintvalidation.ValidationTarget;
+&nbsp;import java.lang.annotation.Annotation;
+&nbsp;import java.lang.invoke.MethodHandles;
+&nbsp;import java.lang.reflect.Type;
+&nbsp;import java.util.Arrays;
+&nbsp;import java.util.EnumSet;
+&nbsp;import org.hibernate.validator.internal.util.TypeHelper;
+&nbsp;import org.hibernate.validator.internal.util.logging.Log;
+&nbsp;import org.hibernate.validator.internal.util.logging.LoggerFactory;
+&nbsp;
+&nbsp;class ClassBasedValidatorDescriptor&lt;A extends Annotation&gt; implements ConstraintValidatorDescriptor&lt;A&gt; {
+&nbsp;    private static final Log LOG = LoggerFactory.make(MethodHandles.lookup());
+&nbsp;    private final Class&lt;? extends ConstraintValidator&lt;A, ?&gt;&gt; validatorClass;
+&nbsp;    private final Type validatedType;
+&nbsp;    private final EnumSet&lt;ValidationTarget&gt; validationTargets;
+&nbsp;
+&nbsp;    private ClassBasedValidatorDescriptor(Class&lt;? extends ConstraintValidator&lt;A, ?&gt;&gt; validatorClass) {
+&nbsp;        this.validatorClass = validatorClass;
+&nbsp;        this.validatedType = TypeHelper.extractValidatedType(validatorClass);
+&nbsp;        this.validationTargets = determineValidationTargets(validatorClass);
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public static &lt;T extends Annotation&gt; ClassBasedValidatorDescriptor&lt;T&gt; of(Class&lt;? extends ConstraintValidator&lt;T, ?&gt;&gt; validatorClass, Class&lt;? extends Annotation&gt; registeredConstraintAnnotationType) {
+&nbsp;        Type definedConstraintAnnotationType = TypeHelper.extractConstraintType(validatorClass);
+&nbsp;        if (!registeredConstraintAnnotationType.equals(definedConstraintAnnotationType)) {
+&nbsp;            throw LOG.getConstraintValidatorDefinitionConstraintMismatchException(validatorClass, registeredConstraintAnnotationType, definedConstraintAnnotationType);
+&nbsp;        } else {
+<b class="fc">&nbsp;            return new ClassBasedValidatorDescriptor&lt;T&gt;(validatorClass);</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    public static &lt;T extends Annotation&gt; ClassBasedValidatorDescriptor&lt;T&gt; ofBuiltin(Class&lt;? extends ConstraintValidator&lt;T, ?&gt;&gt; validatorClass, Class&lt;? extends Annotation&gt; registeredConstraintAnnotationType) {
+&nbsp;        return new ClassBasedValidatorDescriptor&lt;T&gt;(validatorClass);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private static EnumSet&lt;ValidationTarget&gt; determineValidationTargets(Class&lt;? extends ConstraintValidator&lt;?, ?&gt;&gt; validatorClass) {</b>
+<b class="nc">&nbsp;        SupportedValidationTarget supportedTargetAnnotation = (SupportedValidationTarget)validatorClass.getAnnotation(SupportedValidationTarget.class);</b>
+<b class="nc">&nbsp;        return supportedTargetAnnotation == null ? EnumSet.of(ValidationTarget.ANNOTATED_ELEMENT) : EnumSet.copyOf(Arrays.asList(supportedTargetAnnotation.value()));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Class&lt;? extends ConstraintValidator&lt;A, ?&gt;&gt; getValidatorClass() {
+<b class="nc">&nbsp;        return this.validatorClass;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public ConstraintValidator&lt;A, ?&gt; newInstance(ConstraintValidatorFactory constraintValidatorFactory) {
+&nbsp;        ConstraintValidator&lt;A, ?&gt; constraintValidator = constraintValidatorFactory.getInstance(this.validatorClass);
+&nbsp;        if (constraintValidator == null) {
+&nbsp;            throw LOG.getConstraintValidatorFactoryMustNotReturnNullException(this.validatorClass);
+&nbsp;        } else {
+&nbsp;            return constraintValidator;
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Type getValidatedType() {
+<b class="fc">&nbsp;        return this.validatedType;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public EnumSet&lt;ValidationTarget&gt; getValidationTargets() {
+<b class="fc">&nbsp;        return this.validationTargets;</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:54</div>
+</div>
+</body>
+</html>

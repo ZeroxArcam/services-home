@@ -1,0 +1,223 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > SingleIdEntityLoaderStandardImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.loader.ast.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: SingleIdEntityLoaderStandardImpl (org.hibernate.loader.ast.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SingleIdEntityLoaderStandardImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (5/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    15%
+  </span>
+  <span class="absValue">
+    (3/20)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    36.5%
+  </span>
+  <span class="absValue">
+    (19/52)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.loader.ast.internal;
+&nbsp;
+&nbsp;import java.util.EnumMap;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Objects;
+&nbsp;import java.util.function.BiFunction;
+&nbsp;import org.hibernate.Internal;
+&nbsp;import org.hibernate.LockMode;
+&nbsp;import org.hibernate.LockOptions;
+&nbsp;import org.hibernate.engine.spi.LoadQueryInfluencers;
+&nbsp;import org.hibernate.engine.spi.SessionFactoryImplementor;
+&nbsp;import org.hibernate.engine.spi.SharedSessionContractImplementor;
+&nbsp;import org.hibernate.loader.ast.spi.CascadingFetchProfile;
+&nbsp;import org.hibernate.metamodel.mapping.EntityIdentifierMapping;
+&nbsp;import org.hibernate.metamodel.mapping.EntityMappingType;
+&nbsp;import org.hibernate.sql.ast.tree.select.SelectStatement;
+&nbsp;import org.hibernate.sql.exec.spi.JdbcParametersList;
+&nbsp;import org.hibernate.sql.results.graph.DomainResult;
+&nbsp;
+&nbsp;public class SingleIdEntityLoaderStandardImpl&lt;T&gt; extends SingleIdEntityLoaderSupport&lt;T&gt; {
+&nbsp;    private final EnumMap&lt;LockMode, SingleIdLoadPlan&lt;T&gt;&gt; selectByLockMode;
+&nbsp;    private EnumMap&lt;CascadingFetchProfile, SingleIdLoadPlan&lt;T&gt;&gt; selectByInternalCascadeProfile;
+&nbsp;    private final BiFunction&lt;LockOptions, LoadQueryInfluencers, SingleIdLoadPlan&lt;T&gt;&gt; loadPlanCreator;
+&nbsp;
+<b class="fc">&nbsp;    public SingleIdEntityLoaderStandardImpl(EntityMappingType entityDescriptor, LoadQueryInfluencers loadQueryInfluencers) {</b>
+&nbsp;        this(entityDescriptor, loadQueryInfluencers, (lockOptions, influencers) -&gt; createLoadPlan(entityDescriptor, lockOptions, influencers, influencers.getSessionFactory()));
+&nbsp;    }
+&nbsp;
+&nbsp;    protected SingleIdEntityLoaderStandardImpl(EntityMappingType entityDescriptor, LoadQueryInfluencers influencers, BiFunction&lt;LockOptions, LoadQueryInfluencers, SingleIdLoadPlan&lt;T&gt;&gt; loadPlanCreator) {
+&nbsp;        super(entityDescriptor, influencers.getSessionFactory());
+&nbsp;        this.selectByLockMode = new EnumMap(LockMode.class);
+&nbsp;        this.loadPlanCreator = loadPlanCreator;
+<b class="fc">&nbsp;        LockOptions lockOptions = LockOptions.NONE;</b>
+&nbsp;        SingleIdLoadPlan&lt;T&gt; plan = (SingleIdLoadPlan)loadPlanCreator.apply(LockOptions.NONE, influencers);
+&nbsp;        if (this.isLoadPlanReusable(lockOptions, influencers)) {
+<b class="fc">&nbsp;            this.selectByLockMode.put(lockOptions.getLockMode(), plan);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public T load(Object key, LockOptions lockOptions, Boolean readOnly, SharedSessionContractImplementor session) {
+&nbsp;        SingleIdLoadPlan&lt;T&gt; loadPlan = this.resolveLoadPlan(lockOptions, session.getLoadQueryInfluencers(), session.getFactory());
+&nbsp;        return (T)loadPlan.load(key, readOnly, true, session);
+&nbsp;    }
+&nbsp;
+&nbsp;    public T load(Object key, Object entityInstance, LockOptions lockOptions, Boolean readOnly, SharedSessionContractImplementor session) {
+&nbsp;        SingleIdLoadPlan&lt;T&gt; loadPlan = this.resolveLoadPlan(lockOptions, session.getLoadQueryInfluencers(), session.getFactory());
+&nbsp;        return (T)loadPlan.load(key, entityInstance, readOnly, false, session);
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    @Internal</b>
+<b class="fc">&nbsp;    public SingleIdLoadPlan&lt;T&gt; resolveLoadPlan(LockOptions lockOptions, LoadQueryInfluencers loadQueryInfluencers, SessionFactoryImplementor sessionFactory) {</b>
+&nbsp;        if (this.getLoadable().isAffectedByEnabledFilters(loadQueryInfluencers, true)) {
+&nbsp;            return (SingleIdLoadPlan)this.loadPlanCreator.apply(lockOptions, loadQueryInfluencers);
+<b class="fc">&nbsp;        } else {</b>
+<b class="fc">&nbsp;            return loadQueryInfluencers.hasEnabledCascadingFetchProfile() &amp;&amp; LockMode.PESSIMISTIC_READ.greaterThan(lockOptions.getLockMode()) ? this.getInternalCascadeLoadPlan(lockOptions, loadQueryInfluencers, sessionFactory) : this.getRegularLoadPlan(lockOptions, loadQueryInfluencers, sessionFactory);</b>
+<b class="pc">&nbsp;        }</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private SingleIdLoadPlan&lt;T&gt; getRegularLoadPlan(LockOptions lockOptions, LoadQueryInfluencers loadQueryInfluencers, SessionFactoryImplementor sessionFactory) {
+&nbsp;        if (this.isLoadPlanReusable(lockOptions, loadQueryInfluencers)) {
+&nbsp;            SingleIdLoadPlan&lt;T&gt; existing = (SingleIdLoadPlan)this.selectByLockMode.get(lockOptions.getLockMode());
+&nbsp;            if (existing != null) {
+<b class="nc">&nbsp;                return existing;</b>
+&nbsp;            } else {
+<b class="nc">&nbsp;                SingleIdLoadPlan&lt;T&gt; plan = (SingleIdLoadPlan)this.loadPlanCreator.apply(lockOptions, loadQueryInfluencers);</b>
+<b class="nc">&nbsp;                this.selectByLockMode.put(lockOptions.getLockMode(), plan);</b>
+&nbsp;                return plan;
+<b class="nc">&nbsp;            }</b>
+&nbsp;        } else {
+&nbsp;            return (SingleIdLoadPlan)this.loadPlanCreator.apply(lockOptions, loadQueryInfluencers);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private SingleIdLoadPlan&lt;T&gt; getInternalCascadeLoadPlan(LockOptions lockOptions, LoadQueryInfluencers loadQueryInfluencers, SessionFactoryImplementor sessionFactory) {
+&nbsp;        CascadingFetchProfile fetchProfile = loadQueryInfluencers.getEnabledCascadingFetchProfile();
+&nbsp;        if (this.selectByInternalCascadeProfile == null) {
+&nbsp;            this.selectByInternalCascadeProfile = new EnumMap(CascadingFetchProfile.class);
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            SingleIdLoadPlan&lt;T&gt; existing = (SingleIdLoadPlan)this.selectByInternalCascadeProfile.get(fetchProfile);
+<b class="nc">&nbsp;            if (existing != null) {</b>
+<b class="nc">&nbsp;                return existing;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        SingleIdLoadPlan&lt;T&gt; plan = (SingleIdLoadPlan)this.loadPlanCreator.apply(lockOptions, loadQueryInfluencers);
+&nbsp;        this.selectByInternalCascadeProfile.put(fetchProfile, plan);
+&nbsp;        return plan;
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean isLoadPlanReusable(LockOptions lockOptions, LoadQueryInfluencers loadQueryInfluencers) {
+&nbsp;        return lockOptions.getTimeOut() == -1 &amp;&amp; !this.getLoadable().isAffectedByEntityGraph(loadQueryInfluencers) &amp;&amp; !this.getLoadable().isAffectedByEnabledFetchProfiles(loadQueryInfluencers);
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private static &lt;T&gt; SingleIdLoadPlan&lt;T&gt; createLoadPlan(EntityMappingType loadable, LockOptions lockOptions, LoadQueryInfluencers queryInfluencers, SessionFactoryImplementor sessionFactory) {
+&nbsp;        JdbcParametersList.Builder jdbcParametersBuilder = JdbcParametersList.newBuilder();
+<b class="nc">&nbsp;        EntityIdentifierMapping var10002 = loadable.getIdentifierMapping();</b>
+&nbsp;        Objects.requireNonNull(jdbcParametersBuilder);
+<b class="nc">&nbsp;        SelectStatement sqlAst = LoaderSelectBuilder.createSelect(loadable, (List)null, var10002, (DomainResult)null, 1, queryInfluencers, lockOptions, jdbcParametersBuilder::add, sessionFactory);</b>
+&nbsp;        return new SingleIdLoadPlan(loadable, loadable.getIdentifierMapping(), sqlAst, jdbcParametersBuilder.build(), lockOptions, sessionFactory);
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
+</div>
+</body>
+</html>

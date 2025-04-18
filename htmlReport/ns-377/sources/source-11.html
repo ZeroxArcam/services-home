@@ -1,0 +1,213 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > OverridingClassLoader</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.core</a>
+</div>
+
+<h1>Coverage Summary for Class: OverridingClassLoader (org.springframework.core)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">OverridingClassLoader</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    30%
+  </span>
+  <span class="absValue">
+    (3/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    11.1%
+  </span>
+  <span class="absValue">
+    (2/18)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    21.2%
+  </span>
+  <span class="absValue">
+    (7/33)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.core;
+&nbsp;
+&nbsp;import java.io.IOException;
+&nbsp;import java.io.InputStream;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.FileCopyUtils;
+&nbsp;
+&nbsp;public class OverridingClassLoader extends DecoratingClassLoader {
+&nbsp;    public static final String[] DEFAULT_EXCLUDED_PACKAGES = new String[]{&quot;java.&quot;, &quot;javax.&quot;, &quot;sun.&quot;, &quot;oracle.&quot;, &quot;javassist.&quot;, &quot;org.aspectj.&quot;, &quot;net.sf.cglib.&quot;};
+&nbsp;    private static final String CLASS_FILE_SUFFIX = &quot;.class&quot;;
+&nbsp;    @Nullable
+&nbsp;    private final ClassLoader overrideDelegate;
+&nbsp;
+&nbsp;    public OverridingClassLoader(@Nullable ClassLoader parent) {
+&nbsp;        this(parent, (ClassLoader)null);
+&nbsp;    }
+&nbsp;
+&nbsp;    public OverridingClassLoader(@Nullable ClassLoader parent, @Nullable ClassLoader overrideDelegate) {
+&nbsp;        super(parent);
+&nbsp;        this.overrideDelegate = overrideDelegate;
+&nbsp;
+&nbsp;        for(String packageName : DEFAULT_EXCLUDED_PACKAGES) {
+&nbsp;            this.excludePackage(packageName);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public Class&lt;?&gt; loadClass(String name) throws ClassNotFoundException {
+&nbsp;        return this.overrideDelegate != null &amp;&amp; this.isEligibleForOverriding(name) ? this.overrideDelegate.loadClass(name) : super.loadClass(name);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected Class&lt;?&gt; loadClass(String name, boolean resolve) throws ClassNotFoundException {
+&nbsp;        if (this.isEligibleForOverriding(name)) {
+&nbsp;            Class&lt;?&gt; result = this.loadClassForOverriding(name);
+<b class="fc">&nbsp;            if (result != null) {</b>
+&nbsp;                if (resolve) {
+&nbsp;                    this.resolveClass(result);
+&nbsp;                }
+&nbsp;
+&nbsp;                return result;
+<b class="fc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        return super.loadClass(name, resolve);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected boolean isEligibleForOverriding(String className) {
+&nbsp;        return !this.isExcluded(className);
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    protected Class&lt;?&gt; loadClassForOverriding(String name) throws ClassNotFoundException {
+&nbsp;        Class&lt;?&gt; result = this.findLoadedClass(name);
+<b class="fc">&nbsp;        if (result == null) {</b>
+&nbsp;            byte[] bytes = this.loadBytesForClass(name);
+&nbsp;            if (bytes != null) {
+&nbsp;                result = this.defineClass(name, bytes, 0, bytes.length);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return result;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    @Nullable</b>
+<b class="fc">&nbsp;    protected byte[] loadBytesForClass(String name) throws ClassNotFoundException {</b>
+<b class="fc">&nbsp;        InputStream is = this.openStreamForClass(name);</b>
+<b class="fc">&nbsp;        if (is == null) {</b>
+&nbsp;            return null;
+&nbsp;        } else {
+&nbsp;            try {
+&nbsp;                byte[] bytes = FileCopyUtils.copyToByteArray(is);
+&nbsp;                return this.transformIfNecessary(name, bytes);
+&nbsp;            } catch (IOException ex) {
+<b class="nc">&nbsp;                throw new ClassNotFoundException(&quot;Cannot load resource for class [&quot; + name + &quot;]&quot;, ex);</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    protected InputStream openStreamForClass(String name) {
+&nbsp;        String internalName = name.replace(&#39;.&#39;, &#39;/&#39;) + &quot;.class&quot;;
+<b class="nc">&nbsp;        return this.getParent().getResourceAsStream(internalName);</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected byte[] transformIfNecessary(String name, byte[] bytes) {</b>
+<b class="nc">&nbsp;        return bytes;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    static {
+&nbsp;        ClassLoader.registerAsParallelCapable();
+<b class="nc">&nbsp;    }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
+</div>
+</body>
+</html>

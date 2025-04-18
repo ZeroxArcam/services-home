@@ -1,0 +1,298 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > DefaultCacheAwareContextLoaderDelegate</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.test.context.cache</a>
+</div>
+
+<h1>Coverage Summary for Class: DefaultCacheAwareContextLoaderDelegate (org.springframework.test.context.cache)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DefaultCacheAwareContextLoaderDelegate</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    56.2%
+  </span>
+  <span class="absValue">
+    (9/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    25%
+  </span>
+  <span class="absValue">
+    (9/36)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    43.5%
+  </span>
+  <span class="absValue">
+    (40/92)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.test.context.cache;
+&nbsp;
+&nbsp;import java.util.List;
+&nbsp;import org.apache.commons.logging.Log;
+&nbsp;import org.apache.commons.logging.LogFactory;
+&nbsp;import org.springframework.aot.AotDetector;
+&nbsp;import org.springframework.context.ApplicationContext;
+&nbsp;import org.springframework.context.ApplicationContextInitializer;
+&nbsp;import org.springframework.context.ConfigurableApplicationContext;
+&nbsp;import org.springframework.context.support.GenericApplicationContext;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.test.annotation.DirtiesContext;
+&nbsp;import org.springframework.test.context.ApplicationContextFailureProcessor;
+&nbsp;import org.springframework.test.context.CacheAwareContextLoaderDelegate;
+&nbsp;import org.springframework.test.context.ContextLoadException;
+&nbsp;import org.springframework.test.context.ContextLoader;
+&nbsp;import org.springframework.test.context.MergedContextConfiguration;
+&nbsp;import org.springframework.test.context.SmartContextLoader;
+&nbsp;import org.springframework.test.context.aot.AotContextLoader;
+&nbsp;import org.springframework.test.context.aot.AotTestContextInitializers;
+&nbsp;import org.springframework.test.context.aot.TestContextAotException;
+&nbsp;import org.springframework.test.context.util.TestContextSpringFactoriesUtils;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;
+&nbsp;public class DefaultCacheAwareContextLoaderDelegate implements CacheAwareContextLoaderDelegate {
+&nbsp;    private static final Log logger = LogFactory.getLog(DefaultCacheAwareContextLoaderDelegate.class);
+&nbsp;    static final ContextCache defaultContextCache = new DefaultContextCache();
+&nbsp;    private final List&lt;ApplicationContextFailureProcessor&gt; contextFailureProcessors;
+&nbsp;    private final AotTestContextInitializers aotTestContextInitializers;
+&nbsp;    private final ContextCache contextCache;
+&nbsp;    private final int failureThreshold;
+&nbsp;
+&nbsp;    public DefaultCacheAwareContextLoaderDelegate() {
+&nbsp;        this(defaultContextCache);
+&nbsp;    }
+&nbsp;
+&nbsp;    public DefaultCacheAwareContextLoaderDelegate(ContextCache contextCache) {
+&nbsp;        this(contextCache, ContextCacheUtils.retrieveContextFailureThreshold());
+&nbsp;    }
+&nbsp;
+&nbsp;    private DefaultCacheAwareContextLoaderDelegate(ContextCache contextCache, int failureThreshold) {
+&nbsp;        this.contextFailureProcessors = TestContextSpringFactoriesUtils.loadFactoryImplementations(ApplicationContextFailureProcessor.class);
+&nbsp;        this.aotTestContextInitializers = new AotTestContextInitializers();
+&nbsp;        Assert.notNull(contextCache, &quot;ContextCache must not be null&quot;);
+&nbsp;        Assert.isTrue(failureThreshold &gt; 0, &quot;&#39;failureThreshold&#39; must be positive&quot;);
+&nbsp;        this.contextCache = contextCache;
+&nbsp;        this.failureThreshold = failureThreshold;
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isContextLoaded(MergedContextConfiguration mergedConfig) {
+&nbsp;        mergedConfig = this.replaceIfNecessary(mergedConfig);
+&nbsp;        synchronized(this.contextCache) {
+&nbsp;            return this.contextCache.contains(mergedConfig);
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public ApplicationContext loadContext(MergedContextConfiguration mergedConfig) {
+&nbsp;        mergedConfig = this.replaceIfNecessary(mergedConfig);
+&nbsp;        synchronized(this.contextCache) {
+&nbsp;            ApplicationContext context = this.contextCache.get(mergedConfig);
+<b class="fc">&nbsp;</b>
+&nbsp;            try {
+&nbsp;                if (context == null) {
+&nbsp;                    int failureCount = this.contextCache.getFailureCount(mergedConfig);
+&nbsp;                    if (failureCount &gt;= this.failureThreshold) {
+<b class="fc">&nbsp;                        throw new IllegalStateException(&quot;ApplicationContext failure threshold (%d) exceeded: skipping repeated attempt to load context for %s&quot;.formatted(this.failureThreshold, mergedConfig));</b>
+&nbsp;                    }
+&nbsp;
+<b class="fc">&nbsp;                    try {</b>
+<b class="fc">&nbsp;                        if (mergedConfig instanceof AotMergedContextConfiguration) {</b>
+&nbsp;                            AotMergedContextConfiguration aotMergedConfig = (AotMergedContextConfiguration)mergedConfig;
+<b class="fc">&nbsp;                            context = this.loadContextInAotMode(aotMergedConfig);</b>
+&nbsp;                        } else {
+&nbsp;                            context = this.loadContextInternal(mergedConfig);
+&nbsp;                        }
+&nbsp;
+&nbsp;                        if (logger.isTraceEnabled()) {
+&nbsp;                            logger.trace(&quot;Storing ApplicationContext [%s] in cache under key %s&quot;.formatted(System.identityHashCode(context), mergedConfig));
+&nbsp;                        }
+&nbsp;
+&nbsp;                        this.contextCache.put(mergedConfig, context);
+&nbsp;                    } catch (Exception ex) {
+&nbsp;                        if (logger.isTraceEnabled()) {
+&nbsp;                            logger.trace(&quot;Incrementing ApplicationContext failure count for &quot; + String.valueOf(mergedConfig));
+&nbsp;                        }
+&nbsp;
+&nbsp;                        this.contextCache.incrementFailureCount(mergedConfig);
+&nbsp;                        Throwable cause = ex;
+&nbsp;                        if (ex instanceof ContextLoadException) {
+&nbsp;                            ContextLoadException cle = (ContextLoadException)ex;
+&nbsp;                            cause = cle.getCause();
+&nbsp;
+<b class="fc">&nbsp;                            for(ApplicationContextFailureProcessor contextFailureProcessor : this.contextFailureProcessors) {</b>
+&nbsp;                                try {
+&nbsp;                                    contextFailureProcessor.processLoadFailure(cle.getApplicationContext(), cause);
+&nbsp;                                } catch (Throwable throwable) {
+&nbsp;                                    if (logger.isDebugEnabled()) {
+&nbsp;                                        logger.debug(&quot;Ignoring exception thrown from ApplicationContextFailureProcessor [%s]: %s&quot;.formatted(contextFailureProcessor, throwable));
+&nbsp;                                    }
+&nbsp;                                }
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;
+<b class="fc">&nbsp;                        throw new IllegalStateException(&quot;Failed to load ApplicationContext for &quot; + String.valueOf(mergedConfig), cause);</b>
+&nbsp;                    }
+&nbsp;                } else if (logger.isTraceEnabled()) {
+&nbsp;                    logger.trace(&quot;Retrieved ApplicationContext [%s] from cache with key %s&quot;.formatted(System.identityHashCode(context), mergedConfig));
+&nbsp;                }
+&nbsp;            } finally {
+&nbsp;                this.contextCache.logStatistics();
+&nbsp;            }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;            return context;</b>
+<b class="pc">&nbsp;        }</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    public void closeContext(MergedContextConfiguration mergedConfig, @Nullable DirtiesContext.HierarchyMode hierarchyMode) {
+&nbsp;        mergedConfig = this.replaceIfNecessary(mergedConfig);
+&nbsp;        synchronized(this.contextCache) {
+&nbsp;            this.contextCache.remove(mergedConfig, hierarchyMode);
+&nbsp;        }
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    protected ContextCache getContextCache() {</b>
+<b class="nc">&nbsp;        return this.contextCache;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected ApplicationContext loadContextInternal(MergedContextConfiguration mergedConfig) throws Exception {
+&nbsp;        ContextLoader contextLoader = this.getContextLoader(mergedConfig);
+<b class="fc">&nbsp;        if (contextLoader instanceof SmartContextLoader smartContextLoader) {</b>
+<b class="fc">&nbsp;            return smartContextLoader.loadContext(mergedConfig);</b>
+<b class="fc">&nbsp;        } else {</b>
+&nbsp;            String[] locations = mergedConfig.getLocations();
+<b class="pc">&nbsp;            Assert.notNull(locations, () -&gt; &quot;Cannot load an ApplicationContext with a NULL &#39;locations&#39; array. Consider annotating test class [%s] with @ContextConfiguration or @ContextHierarchy.&quot;.formatted(mergedConfig.getTestClass().getName()));</b>
+<b class="fc">&nbsp;            return contextLoader.loadContext(locations);</b>
+<b class="pc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected ApplicationContext loadContextInAotMode(AotMergedContextConfiguration aotMergedConfig) throws Exception {
+<b class="nc">&nbsp;        Class&lt;?&gt; testClass = aotMergedConfig.getTestClass();</b>
+&nbsp;        ApplicationContextInitializer&lt;ConfigurableApplicationContext&gt; contextInitializer = this.aotTestContextInitializers.getContextInitializer(testClass);
+&nbsp;        Assert.state(contextInitializer != null, () -&gt; &quot;Failed to load AOT ApplicationContextInitializer for test class [%s]&quot;.formatted(testClass.getName()));
+<b class="pc">&nbsp;        ContextLoader contextLoader = this.getContextLoader(aotMergedConfig);</b>
+<b class="nc">&nbsp;        if (logger.isTraceEnabled()) {</b>
+&nbsp;            logger.trace(&quot;Loading ApplicationContext for AOT runtime for &quot; + String.valueOf(aotMergedConfig.getOriginal()));
+&nbsp;        } else if (logger.isDebugEnabled()) {
+<b class="fc">&nbsp;            logger.debug(&quot;Loading ApplicationContext for AOT runtime for test class &quot; + aotMergedConfig.getTestClass().getName());</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if (contextLoader instanceof AotContextLoader aotContextLoader) {</b>
+<b class="nc">&nbsp;            ApplicationContext var7 = aotContextLoader.loadContextForAotRuntime(aotMergedConfig.getOriginal(), contextInitializer);</b>
+&nbsp;            if (var7 instanceof GenericApplicationContext gac) {
+<b class="nc">&nbsp;                gac.registerShutdownHook();</b>
+&nbsp;                return gac;
+&nbsp;            }
+<b class="pc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        throw new TestContextAotException(&quot;Cannot load ApplicationContext for AOT runtime for %s. The configured ContextLoader [%s] must be an AotContextLoader and must create a GenericApplicationContext.&quot;.formatted(aotMergedConfig.getOriginal(), contextLoader.getClass().getName()));
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="pc">&nbsp;    private ContextLoader getContextLoader(MergedContextConfiguration mergedConfig) {</b>
+<b class="fc">&nbsp;        ContextLoader contextLoader = mergedConfig.getContextLoader();</b>
+<b class="pc">&nbsp;        Assert.notNull(contextLoader, () -&gt; &quot;Cannot load an ApplicationContext with a NULL &#39;contextLoader&#39;. Consider annotating test class [%s] with @ContextConfiguration or @ContextHierarchy.&quot;.formatted(mergedConfig.getTestClass().getName()));</b>
+&nbsp;        return contextLoader;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private MergedContextConfiguration replaceIfNecessary(MergedContextConfiguration mergedConfig) {
+<b class="nc">&nbsp;        if (AotDetector.useGeneratedArtifacts()) {</b>
+<b class="nc">&nbsp;            Class&lt;?&gt; testClass = mergedConfig.getTestClass();</b>
+<b class="nc">&nbsp;            Class&lt;? extends ApplicationContextInitializer&lt;?&gt;&gt; contextInitializerClass = this.aotTestContextInitializers.getContextInitializerClass(testClass);</b>
+&nbsp;            Assert.state(contextInitializerClass != null, () -&gt; &quot;Failed to load AOT ApplicationContextInitializer class for test class [%s]. This can occur if AOT processing has not taken place for the test suite. It can also occur if AOT processing failed for the test class, in which case you can consult the logs generated during AOT processing.&quot;.formatted(testClass.getName()));
+&nbsp;            return new AotMergedContextConfiguration(testClass, contextInitializerClass, mergedConfig, this);
+&nbsp;        } else {
+&nbsp;            return mergedConfig;
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:57</div>
+</div>
+</body>
+</html>

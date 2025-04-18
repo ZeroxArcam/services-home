@@ -1,0 +1,811 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > BeanDeserializerFactory</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.fasterxml.jackson.databind.deser</a>
+</div>
+
+<h1>Coverage Summary for Class: BeanDeserializerFactory (com.fasterxml.jackson.databind.deser)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">BeanDeserializerFactory</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    11.1%
+  </span>
+  <span class="absValue">
+    (3/27)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0.4%
+  </span>
+  <span class="absValue">
+    (1/254)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    1.5%
+  </span>
+  <span class="absValue">
+    (6/393)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package com.fasterxml.jackson.databind.deser;
+&nbsp;
+&nbsp;import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+&nbsp;import com.fasterxml.jackson.annotation.JsonIncludeProperties;
+&nbsp;import com.fasterxml.jackson.annotation.ObjectIdGenerator;
+&nbsp;import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+&nbsp;import com.fasterxml.jackson.annotation.ObjectIdResolver;
+&nbsp;import com.fasterxml.jackson.databind.AbstractTypeResolver;
+&nbsp;import com.fasterxml.jackson.databind.AnnotationIntrospector;
+&nbsp;import com.fasterxml.jackson.databind.BeanDescription;
+&nbsp;import com.fasterxml.jackson.databind.BeanProperty;
+&nbsp;import com.fasterxml.jackson.databind.DeserializationConfig;
+&nbsp;import com.fasterxml.jackson.databind.DeserializationContext;
+&nbsp;import com.fasterxml.jackson.databind.JavaType;
+&nbsp;import com.fasterxml.jackson.databind.JsonDeserializer;
+&nbsp;import com.fasterxml.jackson.databind.JsonMappingException;
+&nbsp;import com.fasterxml.jackson.databind.JsonNode;
+&nbsp;import com.fasterxml.jackson.databind.KeyDeserializer;
+&nbsp;import com.fasterxml.jackson.databind.MapperFeature;
+&nbsp;import com.fasterxml.jackson.databind.PropertyMetadata;
+&nbsp;import com.fasterxml.jackson.databind.PropertyName;
+&nbsp;import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+&nbsp;import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+&nbsp;import com.fasterxml.jackson.databind.cfg.DeserializerFactoryConfig;
+&nbsp;import com.fasterxml.jackson.databind.deser.impl.ErrorThrowingDeserializer;
+&nbsp;import com.fasterxml.jackson.databind.deser.impl.FieldProperty;
+&nbsp;import com.fasterxml.jackson.databind.deser.impl.MethodProperty;
+&nbsp;import com.fasterxml.jackson.databind.deser.impl.ObjectIdReader;
+&nbsp;import com.fasterxml.jackson.databind.deser.impl.PropertyBasedObjectIdGenerator;
+&nbsp;import com.fasterxml.jackson.databind.deser.impl.SetterlessProperty;
+&nbsp;import com.fasterxml.jackson.databind.deser.impl.UnsupportedTypeDeserializer;
+&nbsp;import com.fasterxml.jackson.databind.deser.std.ThrowableDeserializer;
+&nbsp;import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
+&nbsp;import com.fasterxml.jackson.databind.introspect.AnnotatedField;
+&nbsp;import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
+<b class="fc">&nbsp;import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;</b>
+&nbsp;import com.fasterxml.jackson.databind.introspect.AnnotatedParameter;
+&nbsp;import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
+&nbsp;import com.fasterxml.jackson.databind.introspect.ObjectIdInfo;
+&nbsp;import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
+&nbsp;import com.fasterxml.jackson.databind.jsontype.impl.SubTypeValidator;
+&nbsp;import com.fasterxml.jackson.databind.node.ObjectNode;
+&nbsp;import com.fasterxml.jackson.databind.util.BeanUtil;
+&nbsp;import com.fasterxml.jackson.databind.util.ClassUtil;
+&nbsp;import com.fasterxml.jackson.databind.util.IgnorePropertiesUtil;
+&nbsp;import com.fasterxml.jackson.databind.util.SimpleBeanPropertyDefinition;
+&nbsp;import java.io.Serializable;
+<b class="fc">&nbsp;import java.util.ArrayList;</b>
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.HashMap;
+<b class="fc">&nbsp;import java.util.Iterator;</b>
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Set;
+&nbsp;
+&nbsp;public class BeanDeserializerFactory extends BasicDeserializerFactory implements Serializable {
+&nbsp;    private static final long serialVersionUID = 1L;
+&nbsp;    private static final Class&lt;?&gt;[] INIT_CAUSE_PARAMS = new Class[]{Throwable.class};
+&nbsp;    public static final BeanDeserializerFactory instance = new BeanDeserializerFactory(new DeserializerFactoryConfig());
+&nbsp;
+&nbsp;    public BeanDeserializerFactory(DeserializerFactoryConfig config) {
+<b class="pc">&nbsp;        super(config);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public DeserializerFactory withConfig(DeserializerFactoryConfig config) {
+&nbsp;        if (this._factoryConfig == config) {
+&nbsp;            return this;
+&nbsp;        } else {
+&nbsp;            ClassUtil.verifyMustOverride(BeanDeserializerFactory.class, this, &quot;withConfig&quot;);
+&nbsp;            return new BeanDeserializerFactory(config);
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public JsonDeserializer&lt;Object&gt; createBeanDeserializer(DeserializationContext ctxt, JavaType type, BeanDescription beanDesc) throws JsonMappingException {
+&nbsp;        DeserializationConfig config = ctxt.getConfig();
+&nbsp;        JsonDeserializer&lt;?&gt; deser = this._findCustomBeanDeserializer(type, config, beanDesc);
+&nbsp;        if (deser == null) {
+&nbsp;            if (type.isThrowable()) {
+&nbsp;                return this.buildThrowableDeserializer(ctxt, type, beanDesc);
+&nbsp;            } else {
+&nbsp;                if (type.isAbstract() &amp;&amp; !type.isPrimitive() &amp;&amp; !type.isEnumType()) {
+&nbsp;                    JavaType concreteType = this.materializeAbstractType(ctxt, type, beanDesc);
+&nbsp;                    if (concreteType != null) {
+&nbsp;                        beanDesc = config.introspect(concreteType);
+&nbsp;                        return this.buildBeanDeserializer(ctxt, concreteType, beanDesc);
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                deser = this.findStdDeserializer(ctxt, type, beanDesc);
+&nbsp;                if (deser != null) {
+&nbsp;                    return deser;
+<b class="nc">&nbsp;                } else if (!this.isPotentialBeanType(type.getRawClass())) {</b>
+&nbsp;                    return null;
+<b class="nc">&nbsp;                } else {</b>
+<b class="nc">&nbsp;                    this._validateSubType(ctxt, type, beanDesc);</b>
+&nbsp;                    deser = this._findUnsupportedTypeDeserializer(ctxt, type, beanDesc);
+<b class="nc">&nbsp;                    return deser != null ? deser : this.buildBeanDeserializer(ctxt, type, beanDesc);</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        } else {
+&nbsp;            if (this._factoryConfig.hasDeserializerModifiers()) {
+<b class="nc">&nbsp;                for(BeanDeserializerModifier mod : this._factoryConfig.deserializerModifiers()) {</b>
+&nbsp;                    deser = mod.modifyDeserializer(ctxt.getConfig(), beanDesc, deser);
+&nbsp;                }
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            return deser;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public JsonDeserializer&lt;Object&gt; createBuilderBasedDeserializer(DeserializationContext ctxt, JavaType valueType, BeanDescription valueBeanDesc, Class&lt;?&gt; builderClass) throws JsonMappingException {
+&nbsp;        JavaType builderType;
+&nbsp;        if (ctxt.isEnabled(MapperFeature.INFER_BUILDER_TYPE_BINDINGS)) {
+<b class="nc">&nbsp;            builderType = ctxt.getTypeFactory().constructParametricType(builderClass, valueType.getBindings());</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            builderType = ctxt.constructType(builderClass);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        BeanDescription builderDesc = ctxt.getConfig().introspectForBuilder(builderType, valueBeanDesc);
+<b class="nc">&nbsp;        return this.buildBuilderBasedDeserializer(ctxt, valueType, builderDesc);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected JsonDeserializer&lt;?&gt; findStdDeserializer(DeserializationContext ctxt, JavaType type, BeanDescription beanDesc) throws JsonMappingException {
+&nbsp;        JsonDeserializer&lt;?&gt; deser = this.findDefaultDeserializer(ctxt, type, beanDesc);
+<b class="nc">&nbsp;        if (deser != null &amp;&amp; this._factoryConfig.hasDeserializerModifiers()) {</b>
+<b class="nc">&nbsp;            for(BeanDeserializerModifier mod : this._factoryConfig.deserializerModifiers()) {</b>
+<b class="nc">&nbsp;                deser = mod.modifyDeserializer(ctxt.getConfig(), beanDesc, deser);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return deser;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected JsonDeserializer&lt;Object&gt; _findUnsupportedTypeDeserializer(DeserializationContext ctxt, JavaType type, BeanDescription beanDesc) throws JsonMappingException {
+<b class="nc">&nbsp;        String errorMsg = BeanUtil.checkUnsupportedType(type);</b>
+&nbsp;        return errorMsg != null &amp;&amp; ctxt.getConfig().findMixInClassFor(type.getRawClass()) == null ? new UnsupportedTypeDeserializer(type, errorMsg) : null;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected JavaType materializeAbstractType(DeserializationContext ctxt, JavaType type, BeanDescription beanDesc) throws JsonMappingException {</b>
+<b class="nc">&nbsp;        for(AbstractTypeResolver r : this._factoryConfig.abstractTypeResolvers()) {</b>
+<b class="nc">&nbsp;            JavaType concrete = r.resolveAbstractType(ctxt.getConfig(), beanDesc);</b>
+&nbsp;            if (concrete != null) {
+&nbsp;                return concrete;
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return null;
+&nbsp;    }
+&nbsp;
+&nbsp;    public JsonDeserializer&lt;Object&gt; buildBeanDeserializer(DeserializationContext ctxt, JavaType type, BeanDescription beanDesc) throws JsonMappingException {
+&nbsp;        ValueInstantiator valueInstantiator;
+&nbsp;        try {
+&nbsp;            valueInstantiator = this.findValueInstantiator(ctxt, beanDesc);
+&nbsp;        } catch (NoClassDefFoundError error) {
+&nbsp;            return new ErrorThrowingDeserializer(error);
+<b class="nc">&nbsp;        } catch (IllegalArgumentException e0) {</b>
+<b class="nc">&nbsp;            throw InvalidDefinitionException.from(ctxt.getParser(), ClassUtil.exceptionMessage(e0), beanDesc, (BeanPropertyDefinition)null).withCause(e0);</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        BeanDeserializerBuilder builder = this.constructBeanDeserializerBuilder(ctxt, beanDesc);
+<b class="nc">&nbsp;        builder.setValueInstantiator(valueInstantiator);</b>
+&nbsp;        this.addBeanProps(ctxt, beanDesc, builder);
+&nbsp;        this.addObjectIdReader(ctxt, beanDesc, builder);
+<b class="nc">&nbsp;        this.addBackReferenceProperties(ctxt, beanDesc, builder);</b>
+&nbsp;        this.addInjectables(ctxt, beanDesc, builder);
+&nbsp;        DeserializationConfig config = ctxt.getConfig();
+&nbsp;        if (this._factoryConfig.hasDeserializerModifiers()) {
+&nbsp;            for(BeanDeserializerModifier mod : this._factoryConfig.deserializerModifiers()) {
+&nbsp;                builder = mod.updateBuilder(config, beanDesc, builder);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        JsonDeserializer&lt;?&gt; deserializer;
+&nbsp;        if (type.isAbstract() &amp;&amp; !valueInstantiator.canInstantiate()) {
+&nbsp;            deserializer = builder.buildAbstract();
+&nbsp;        } else {
+<b class="nc">&nbsp;            deserializer = builder.build();</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if (this._factoryConfig.hasDeserializerModifiers()) {</b>
+<b class="nc">&nbsp;            for(BeanDeserializerModifier mod : this._factoryConfig.deserializerModifiers()) {</b>
+<b class="nc">&nbsp;                deserializer = mod.modifyDeserializer(config, beanDesc, deserializer);</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return deserializer;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected JsonDeserializer&lt;Object&gt; buildBuilderBasedDeserializer(DeserializationContext ctxt, JavaType valueType, BeanDescription builderDesc) throws JsonMappingException {
+&nbsp;        ValueInstantiator valueInstantiator;
+&nbsp;        try {
+&nbsp;            valueInstantiator = this.findValueInstantiator(ctxt, builderDesc);
+&nbsp;        } catch (NoClassDefFoundError error) {
+&nbsp;            return new ErrorThrowingDeserializer(error);
+&nbsp;        } catch (IllegalArgumentException e) {
+&nbsp;            throw InvalidDefinitionException.from(ctxt.getParser(), ClassUtil.exceptionMessage(e), builderDesc, (BeanPropertyDefinition)null);
+&nbsp;        }
+&nbsp;
+&nbsp;        DeserializationConfig config = ctxt.getConfig();
+&nbsp;        BeanDeserializerBuilder builder = this.constructBeanDeserializerBuilder(ctxt, builderDesc);
+&nbsp;        builder.setValueInstantiator(valueInstantiator);
+&nbsp;        this.addBeanProps(ctxt, builderDesc, builder);
+&nbsp;        this.addObjectIdReader(ctxt, builderDesc, builder);
+<b class="nc">&nbsp;        this.addBackReferenceProperties(ctxt, builderDesc, builder);</b>
+<b class="nc">&nbsp;        this.addInjectables(ctxt, builderDesc, builder);</b>
+&nbsp;        JsonPOJOBuilder.Value builderConfig = builderDesc.findPOJOBuilderConfig();
+&nbsp;        String buildMethodName = builderConfig == null ? &quot;build&quot; : builderConfig.buildMethodName;
+<b class="nc">&nbsp;        AnnotatedMethod buildMethod = builderDesc.findMethod(buildMethodName, (Class[])null);</b>
+<b class="nc">&nbsp;        if (buildMethod != null &amp;&amp; config.canOverrideAccessModifiers()) {</b>
+&nbsp;            ClassUtil.checkAndFixAccess(buildMethod.getMember(), config.isEnabled(MapperFeature.OVERRIDE_PUBLIC_ACCESS_MODIFIERS));
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        builder.setPOJOBuilder(buildMethod, builderConfig);
+&nbsp;        if (this._factoryConfig.hasDeserializerModifiers()) {
+&nbsp;            for(BeanDeserializerModifier mod : this._factoryConfig.deserializerModifiers()) {
+&nbsp;                builder = mod.updateBuilder(config, builderDesc, builder);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        JsonDeserializer&lt;?&gt; deserializer = builder.buildBuilderBased(valueType, buildMethodName);</b>
+<b class="nc">&nbsp;        if (this._factoryConfig.hasDeserializerModifiers()) {</b>
+<b class="nc">&nbsp;            for(BeanDeserializerModifier mod : this._factoryConfig.deserializerModifiers()) {</b>
+<b class="nc">&nbsp;                deserializer = mod.modifyDeserializer(config, builderDesc, deserializer);</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        return deserializer;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void addObjectIdReader(DeserializationContext ctxt, BeanDescription beanDesc, BeanDeserializerBuilder builder) throws JsonMappingException {
+&nbsp;        ObjectIdInfo objectIdInfo = beanDesc.getObjectIdInfo();
+&nbsp;        if (objectIdInfo != null) {
+&nbsp;            Class&lt;?&gt; implClass = objectIdInfo.getGeneratorType();
+&nbsp;            ObjectIdResolver resolver = ctxt.objectIdResolverInstance(beanDesc.getClassInfo(), objectIdInfo);
+&nbsp;            JavaType idType;
+&nbsp;            SettableBeanProperty idProp;
+&nbsp;            ObjectIdGenerator&lt;?&gt; gen;
+&nbsp;            if (implClass == ObjectIdGenerators.PropertyGenerator.class) {
+&nbsp;                PropertyName propName = objectIdInfo.getPropertyName();
+&nbsp;                idProp = builder.findProperty(propName);
+&nbsp;                if (idProp == null) {
+&nbsp;                    throw new IllegalArgumentException(String.format(&quot;Invalid Object Id definition for %s: cannot find property with name %s&quot;, ClassUtil.getTypeDescription(beanDesc.getType()), ClassUtil.name(propName)));
+&nbsp;                }
+&nbsp;
+&nbsp;                idType = idProp.getType();
+&nbsp;                gen = new PropertyBasedObjectIdGenerator(objectIdInfo.getScope());
+&nbsp;            } else {
+&nbsp;                JavaType type = ctxt.constructType(implClass);
+&nbsp;                idType = ctxt.getTypeFactory().findTypeParameters(type, ObjectIdGenerator.class)[0];
+&nbsp;                idProp = null;
+&nbsp;                gen = ctxt.objectIdGeneratorInstance(beanDesc.getClassInfo(), objectIdInfo);
+&nbsp;            }
+&nbsp;
+&nbsp;            JsonDeserializer&lt;?&gt; deser = ctxt.findRootValueDeserializer(idType);
+&nbsp;            builder.setObjectIdReader(ObjectIdReader.construct(idType, objectIdInfo.getPropertyName(), gen, deser, idProp, resolver));
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public JsonDeserializer&lt;Object&gt; buildThrowableDeserializer(DeserializationContext ctxt, JavaType type, BeanDescription beanDesc) throws JsonMappingException {
+&nbsp;        DeserializationConfig config = ctxt.getConfig();
+&nbsp;        BeanDeserializerBuilder builder = this.constructBeanDeserializerBuilder(ctxt, beanDesc);
+&nbsp;        builder.setValueInstantiator(this.findValueInstantiator(ctxt, beanDesc));
+<b class="nc">&nbsp;        this.addBeanProps(ctxt, beanDesc, builder);</b>
+<b class="nc">&nbsp;        Iterator&lt;SettableBeanProperty&gt; it = builder.getProperties();</b>
+&nbsp;
+<b class="nc">&nbsp;        while(it.hasNext()) {</b>
+&nbsp;            SettableBeanProperty prop = (SettableBeanProperty)it.next();
+<b class="nc">&nbsp;            if (&quot;setCause&quot;.equals(prop.getMember().getName())) {</b>
+<b class="nc">&nbsp;                it.remove();</b>
+&nbsp;                break;
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        AnnotatedMethod am = beanDesc.findMethod(&quot;initCause&quot;, INIT_CAUSE_PARAMS);
+<b class="nc">&nbsp;        if (am != null) {</b>
+<b class="nc">&nbsp;            String name = &quot;cause&quot;;</b>
+&nbsp;            PropertyNamingStrategy pts = config.getPropertyNamingStrategy();
+<b class="nc">&nbsp;            if (pts != null) {</b>
+<b class="nc">&nbsp;                name = pts.nameForSetterMethod(config, am, &quot;cause&quot;);</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            SimpleBeanPropertyDefinition propDef = SimpleBeanPropertyDefinition.construct(ctxt.getConfig(), am, new PropertyName(name));
+&nbsp;            SettableBeanProperty prop = this.constructSettableProperty(ctxt, beanDesc, propDef, am.getParameterType(0));
+&nbsp;            if (prop != null) {
+&nbsp;                builder.addOrReplaceProperty(prop, true);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        if (this._factoryConfig.hasDeserializerModifiers()) {</b>
+&nbsp;            for(BeanDeserializerModifier mod : this._factoryConfig.deserializerModifiers()) {
+&nbsp;                builder = mod.updateBuilder(config, beanDesc, builder);
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        JsonDeserializer&lt;?&gt; deserializer = builder.build();</b>
+&nbsp;        if (deserializer instanceof BeanDeserializer) {
+&nbsp;            deserializer = ThrowableDeserializer.construct(ctxt, (BeanDeserializer)deserializer);
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        if (this._factoryConfig.hasDeserializerModifiers()) {
+&nbsp;            for(BeanDeserializerModifier mod : this._factoryConfig.deserializerModifiers()) {
+&nbsp;                deserializer = mod.modifyDeserializer(config, beanDesc, deserializer);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return deserializer;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected BeanDeserializerBuilder constructBeanDeserializerBuilder(DeserializationContext ctxt, BeanDescription beanDesc) {
+&nbsp;        return new BeanDeserializerBuilder(beanDesc, ctxt);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void addBeanProps(DeserializationContext ctxt, BeanDescription beanDesc, BeanDeserializerBuilder builder) throws JsonMappingException {
+&nbsp;        boolean isConcrete = !beanDesc.getType().isAbstract();
+&nbsp;        SettableBeanProperty[] creatorProps = isConcrete ? builder.getValueInstantiator().getFromObjectArguments(ctxt.getConfig()) : null;
+<b class="nc">&nbsp;        boolean hasCreatorProps = creatorProps != null;</b>
+&nbsp;        JsonIgnoreProperties.Value ignorals = ctxt.getConfig().getDefaultPropertyIgnorals(beanDesc.getBeanClass(), beanDesc.getClassInfo());
+<b class="nc">&nbsp;        Set&lt;String&gt; ignored;</b>
+&nbsp;        if (ignorals != null) {
+&nbsp;            boolean ignoreAny = ignorals.getIgnoreUnknown();
+&nbsp;            builder.setIgnoreUnknownProperties(ignoreAny);
+&nbsp;            ignored = ignorals.findIgnoredForDeserialization();
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            for(String propName : ignored) {</b>
+&nbsp;                builder.addIgnorable(propName);
+&nbsp;            }
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            ignored = Collections.emptySet();</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        JsonIncludeProperties.Value inclusions = ctxt.getConfig().getDefaultPropertyInclusions(beanDesc.getBeanClass(), beanDesc.getClassInfo());</b>
+<b class="nc">&nbsp;        Set&lt;String&gt; included = null;</b>
+&nbsp;        if (inclusions != null) {
+&nbsp;            included = inclusions.getIncluded();
+<b class="nc">&nbsp;            if (included != null) {</b>
+<b class="nc">&nbsp;                for(String propName : included) {</b>
+&nbsp;                    builder.addIncludable(propName);
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        SettableAnyProperty anySetter = this._resolveAnySetter(ctxt, beanDesc, creatorProps);
+<b class="nc">&nbsp;        if (anySetter != null) {</b>
+<b class="nc">&nbsp;            builder.setAnySetter(anySetter);</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            Collection&lt;String&gt; ignored2 = beanDesc.getIgnoredPropertyNames();</b>
+&nbsp;            if (ignored2 != null) {
+&nbsp;                for(String propName : ignored2) {
+<b class="nc">&nbsp;                    builder.addIgnorable(propName);</b>
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        boolean useGettersAsSetters = ctxt.isEnabled(MapperFeature.USE_GETTERS_AS_SETTERS) &amp;&amp; ctxt.isEnabled(MapperFeature.AUTO_DETECT_GETTERS);
+&nbsp;        List&lt;BeanPropertyDefinition&gt; propDefs = this.filterBeanProps(ctxt, beanDesc, builder, beanDesc.findProperties(), ignored, included);
+<b class="nc">&nbsp;        if (this._factoryConfig.hasDeserializerModifiers()) {</b>
+&nbsp;            for(BeanDeserializerModifier mod : this._factoryConfig.deserializerModifiers()) {
+&nbsp;                propDefs = mod.updateProperties(ctxt.getConfig(), beanDesc, propDefs);
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        for(BeanPropertyDefinition propDef : propDefs) {</b>
+&nbsp;            SettableBeanProperty prop = null;
+&nbsp;            if (propDef.hasSetter()) {
+<b class="nc">&nbsp;                AnnotatedMethod setter = propDef.getSetter();</b>
+&nbsp;                JavaType propertyType = setter.getParameterType(0);
+&nbsp;                prop = this.constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+&nbsp;            } else if (propDef.hasField()) {
+&nbsp;                AnnotatedField field = propDef.getField();
+&nbsp;                JavaType propertyType = field.getType();
+&nbsp;                prop = this.constructSettableProperty(ctxt, beanDesc, propDef, propertyType);
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                AnnotatedMethod getter = propDef.getGetter();</b>
+&nbsp;                if (getter != null) {
+&nbsp;                    if (useGettersAsSetters &amp;&amp; this._isSetterlessType(getter.getRawType())) {
+<b class="nc">&nbsp;                        if (!builder.hasIgnorable(propDef.getName())) {</b>
+&nbsp;                            prop = this.constructSetterlessProperty(ctxt, beanDesc, propDef);
+&nbsp;                        }
+&nbsp;                    } else if (!propDef.hasConstructorParameter()) {
+&nbsp;                        PropertyMetadata md = propDef.getMetadata();
+<b class="nc">&nbsp;                        if (md.getMergeInfo() != null) {</b>
+&nbsp;                            prop = this.constructSetterlessProperty(ctxt, beanDesc, propDef);
+&nbsp;                        }
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            if (hasCreatorProps &amp;&amp; propDef.hasConstructorParameter()) {</b>
+&nbsp;                String name = propDef.getName();
+<b class="nc">&nbsp;                CreatorProperty cprop = null;</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                for(SettableBeanProperty cp : creatorProps) {
+<b class="nc">&nbsp;                    if (name.equals(cp.getName()) &amp;&amp; cp instanceof CreatorProperty) {</b>
+<b class="nc">&nbsp;                        cprop = (CreatorProperty)cp;</b>
+&nbsp;                        break;
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                if (cprop == null) {</b>
+&nbsp;                    List&lt;String&gt; n = new ArrayList();
+&nbsp;
+<b class="nc">&nbsp;                    for(SettableBeanProperty cp : creatorProps) {</b>
+<b class="nc">&nbsp;                        n.add(cp.getName());</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;
+&nbsp;                    ctxt.reportBadPropertyDefinition(beanDesc, propDef, &quot;Could not find creator property with name %s (known Creator properties: %s)&quot;, new Object[]{ClassUtil.name(name), n});
+&nbsp;                } else {
+&nbsp;                    if (prop != null) {
+&nbsp;                        cprop.setFallbackSetter(prop);
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    Class&lt;?&gt;[] views = propDef.findViews();</b>
+&nbsp;                    if (views == null) {
+<b class="nc">&nbsp;                        views = beanDesc.findDefaultViews();</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;
+<b class="nc">&nbsp;                    cprop.setViews(views);</b>
+&nbsp;                    builder.addCreatorProperty(cprop);
+&nbsp;                }
+&nbsp;            } else if (prop != null) {
+&nbsp;                Class&lt;?&gt;[] views = propDef.findViews();
+&nbsp;                if (views == null) {
+&nbsp;                    views = beanDesc.findDefaultViews();
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                prop.setViews(views);</b>
+<b class="nc">&nbsp;                builder.addProperty(prop);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private SettableAnyProperty _resolveAnySetter(DeserializationContext ctxt, BeanDescription beanDesc, SettableBeanProperty[] creatorProps) throws JsonMappingException {</b>
+<b class="nc">&nbsp;        if (creatorProps != null) {</b>
+&nbsp;            for(SettableBeanProperty prop : creatorProps) {
+<b class="nc">&nbsp;                AnnotatedMember member = prop.getMember();</b>
+<b class="nc">&nbsp;                if (member != null &amp;&amp; Boolean.TRUE.equals(ctxt.getAnnotationIntrospector().hasAnySetter(member))) {</b>
+<b class="nc">&nbsp;                    return this.constructAnySetter(ctxt, beanDesc, member);</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        AnnotatedMember anySetter = beanDesc.findAnySetterAccessor();</b>
+<b class="nc">&nbsp;        return anySetter != null ? this.constructAnySetter(ctxt, beanDesc, anySetter) : null;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private boolean _isSetterlessType(Class&lt;?&gt; rawType) {
+<b class="nc">&nbsp;        return Collection.class.isAssignableFrom(rawType) || Map.class.isAssignableFrom(rawType);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @deprecated */
+<b class="nc">&nbsp;    @Deprecated</b>
+<b class="nc">&nbsp;    protected List&lt;BeanPropertyDefinition&gt; filterBeanProps(DeserializationContext ctxt, BeanDescription beanDesc, BeanDeserializerBuilder builder, List&lt;BeanPropertyDefinition&gt; propDefsIn, Set&lt;String&gt; ignored) throws JsonMappingException {</b>
+<b class="nc">&nbsp;        return this.filterBeanProps(ctxt, beanDesc, builder, propDefsIn, ignored, (Set)null);</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    protected List&lt;BeanPropertyDefinition&gt; filterBeanProps(DeserializationContext ctxt, BeanDescription beanDesc, BeanDeserializerBuilder builder, List&lt;BeanPropertyDefinition&gt; propDefsIn, Set&lt;String&gt; ignored, Set&lt;String&gt; included) {</b>
+&nbsp;        ArrayList&lt;BeanPropertyDefinition&gt; result = new ArrayList(Math.max(4, propDefsIn.size()));
+&nbsp;        HashMap&lt;Class&lt;?&gt;, Boolean&gt; ignoredTypes = new HashMap();
+&nbsp;
+<b class="nc">&nbsp;        for(BeanPropertyDefinition property : propDefsIn) {</b>
+<b class="nc">&nbsp;            String name = property.getName();</b>
+&nbsp;            if (!IgnorePropertiesUtil.shouldIgnore(name, ignored, included)) {
+&nbsp;                if (!property.hasConstructorParameter()) {
+&nbsp;                    Class&lt;?&gt; rawPropertyType = property.getRawPrimaryType();
+<b class="nc">&nbsp;                    if (rawPropertyType != null &amp;&amp; this.isIgnorableType(ctxt.getConfig(), property, rawPropertyType, ignoredTypes)) {</b>
+<b class="nc">&nbsp;                        builder.addIgnorable(name);</b>
+<b class="nc">&nbsp;                        continue;</b>
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+&nbsp;                result.add(property);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        return result;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void addBackReferenceProperties(DeserializationContext ctxt, BeanDescription beanDesc, BeanDeserializerBuilder builder) throws JsonMappingException {
+&nbsp;        List&lt;BeanPropertyDefinition&gt; refProps = beanDesc.findBackReferences();
+&nbsp;        if (refProps != null) {
+&nbsp;            for(BeanPropertyDefinition refProp : refProps) {
+&nbsp;                String refName = refProp.findReferenceName();
+&nbsp;                builder.addBackReferenceProperty(refName, this.constructSettableProperty(ctxt, beanDesc, refProp, refProp.getPrimaryType()));
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /** @deprecated */
+&nbsp;    @Deprecated
+&nbsp;    protected void addReferenceProperties(DeserializationContext ctxt, BeanDescription beanDesc, BeanDeserializerBuilder builder) throws JsonMappingException {
+&nbsp;        this.addBackReferenceProperties(ctxt, beanDesc, builder);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void addInjectables(DeserializationContext ctxt, BeanDescription beanDesc, BeanDeserializerBuilder builder) throws JsonMappingException {
+&nbsp;        Map&lt;Object, AnnotatedMember&gt; raw = beanDesc.findInjectables();
+&nbsp;        if (raw != null) {
+&nbsp;            for(Map.Entry&lt;Object, AnnotatedMember&gt; entry : raw.entrySet()) {
+&nbsp;                AnnotatedMember m = (AnnotatedMember)entry.getValue();
+<b class="nc">&nbsp;                builder.addInjectable(PropertyName.construct(m.getName()), m.getType(), beanDesc.getClassAnnotations(), m, entry.getKey());</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected SettableAnyProperty constructAnySetter(DeserializationContext ctxt, BeanDescription beanDesc, AnnotatedMember mutator) throws JsonMappingException {
+&nbsp;        boolean isField = mutator instanceof AnnotatedField;
+&nbsp;        boolean isParameter = mutator instanceof AnnotatedParameter;
+&nbsp;        int parameterIndex = -1;
+<b class="nc">&nbsp;        BeanProperty prop;</b>
+<b class="nc">&nbsp;        JavaType keyType;</b>
+<b class="nc">&nbsp;        JavaType valueType;</b>
+&nbsp;        if (mutator instanceof AnnotatedMethod) {
+<b class="nc">&nbsp;            AnnotatedMethod am = (AnnotatedMethod)mutator;</b>
+<b class="nc">&nbsp;            keyType = am.getParameterType(0);</b>
+<b class="nc">&nbsp;            JavaType valueType = am.getParameterType(1);</b>
+&nbsp;            valueType = this.resolveMemberAndTypeAnnotations(ctxt, mutator, valueType);
+<b class="nc">&nbsp;            prop = new BeanProperty.Std(PropertyName.construct(mutator.getName()), valueType, (PropertyName)null, mutator, PropertyMetadata.STD_OPTIONAL);</b>
+<b class="nc">&nbsp;        } else if (isField) {</b>
+<b class="nc">&nbsp;            AnnotatedField af = (AnnotatedField)mutator;</b>
+&nbsp;            JavaType fieldType = af.getType();
+&nbsp;            if (!fieldType.isMapLikeType()) {
+<b class="nc">&nbsp;                if (!fieldType.hasRawClass(JsonNode.class) &amp;&amp; !fieldType.hasRawClass(ObjectNode.class)) {</b>
+&nbsp;                    return (SettableAnyProperty)ctxt.reportBadDefinition(beanDesc.getType(), String.format(&quot;Unsupported type for any-setter: %s -- only support `Map`s, `JsonNode` and `ObjectNode` &quot;, ClassUtil.getTypeDescription(fieldType)));
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                fieldType = this.resolveMemberAndTypeAnnotations(ctxt, mutator, fieldType);</b>
+<b class="nc">&nbsp;                valueType = ctxt.constructType(JsonNode.class);</b>
+<b class="nc">&nbsp;                BeanProperty prop = new BeanProperty.Std(PropertyName.construct(mutator.getName()), fieldType, (PropertyName)null, mutator, PropertyMetadata.STD_OPTIONAL);</b>
+<b class="nc">&nbsp;                return SettableAnyProperty.constructForJsonNodeField(ctxt, prop, mutator, valueType, ctxt.findRootValueDeserializer(valueType));</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            fieldType = this.resolveMemberAndTypeAnnotations(ctxt, mutator, fieldType);</b>
+&nbsp;            keyType = fieldType.getKeyType();
+&nbsp;            valueType = fieldType.getContentType();
+&nbsp;            prop = new BeanProperty.Std(PropertyName.construct(mutator.getName()), fieldType, (PropertyName)null, mutator, PropertyMetadata.STD_OPTIONAL);
+&nbsp;        } else {
+&nbsp;            if (!isParameter) {
+<b class="nc">&nbsp;                return (SettableAnyProperty)ctxt.reportBadDefinition(beanDesc.getType(), String.format(&quot;Unrecognized mutator type for any-setter: %s&quot;, ClassUtil.nameOf(mutator.getClass())));</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            AnnotatedParameter af = (AnnotatedParameter)mutator;
+&nbsp;            JavaType paramType = af.getType();
+&nbsp;            parameterIndex = af.getIndex();
+<b class="nc">&nbsp;            if (!paramType.isMapLikeType()) {</b>
+<b class="nc">&nbsp;                if (!paramType.hasRawClass(JsonNode.class) &amp;&amp; !paramType.hasRawClass(ObjectNode.class)) {</b>
+<b class="nc">&nbsp;                    return (SettableAnyProperty)ctxt.reportBadDefinition(beanDesc.getType(), String.format(&quot;Unsupported type for any-setter: %s -- only support `Map`s, `JsonNode` and `ObjectNode` &quot;, ClassUtil.getTypeDescription(paramType)));</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                paramType = this.resolveMemberAndTypeAnnotations(ctxt, mutator, paramType);</b>
+&nbsp;                valueType = ctxt.constructType(JsonNode.class);
+&nbsp;                BeanProperty prop = new BeanProperty.Std(PropertyName.construct(mutator.getName()), paramType, (PropertyName)null, mutator, PropertyMetadata.STD_OPTIONAL);
+&nbsp;                return SettableAnyProperty.constructForJsonNodeParameter(ctxt, prop, mutator, valueType, ctxt.findRootValueDeserializer(valueType), parameterIndex);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            paramType = this.resolveMemberAndTypeAnnotations(ctxt, mutator, paramType);
+&nbsp;            keyType = paramType.getKeyType();
+<b class="nc">&nbsp;            valueType = paramType.getContentType();</b>
+<b class="nc">&nbsp;            prop = new BeanProperty.Std(PropertyName.construct(mutator.getName()), paramType, (PropertyName)null, mutator, PropertyMetadata.STD_OPTIONAL);</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        KeyDeserializer keyDeser = this.findKeyDeserializerFromAnnotation(ctxt, mutator);</b>
+<b class="nc">&nbsp;        if (keyDeser == null) {</b>
+&nbsp;            keyDeser = (KeyDeserializer)keyType.getValueHandler();
+&nbsp;        }
+&nbsp;
+&nbsp;        if (keyDeser == null) {
+<b class="nc">&nbsp;            keyDeser = ctxt.findKeyDeserializer(keyType, prop);</b>
+<b class="nc">&nbsp;        } else if (keyDeser instanceof ContextualKeyDeserializer) {</b>
+&nbsp;            keyDeser = ((ContextualKeyDeserializer)keyDeser).createContextual(ctxt, prop);
+&nbsp;        }
+&nbsp;
+&nbsp;        JsonDeserializer&lt;Object&gt; deser = this.findContentDeserializerFromAnnotation(ctxt, mutator);
+<b class="nc">&nbsp;        if (deser == null) {</b>
+<b class="nc">&nbsp;            deser = (JsonDeserializer)valueType.getValueHandler();</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if (deser != null) {</b>
+<b class="nc">&nbsp;            deser = ctxt.handlePrimaryContextualization(deser, prop, valueType);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        TypeDeserializer typeDeser = (TypeDeserializer)valueType.getTypeHandler();
+&nbsp;        if (isField) {
+<b class="nc">&nbsp;            return SettableAnyProperty.constructForMapField(ctxt, prop, mutator, valueType, keyDeser, deser, typeDeser);</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            return isParameter ? SettableAnyProperty.constructForMapParameter(ctxt, prop, mutator, valueType, keyDeser, deser, typeDeser, parameterIndex) : SettableAnyProperty.constructForMethod(ctxt, prop, mutator, valueType, keyDeser, deser, typeDeser);</b>
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected SettableBeanProperty constructSettableProperty(DeserializationContext ctxt, BeanDescription beanDesc, BeanPropertyDefinition propDef, JavaType propType0) throws JsonMappingException {
+&nbsp;        AnnotatedMember mutator = propDef.getNonConstructorMutator();
+<b class="nc">&nbsp;        if (mutator == null) {</b>
+&nbsp;            ctxt.reportBadPropertyDefinition(beanDesc, propDef, &quot;No non-constructor mutator available&quot;, new Object[0]);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        JavaType type = this.resolveMemberAndTypeAnnotations(ctxt, mutator, propType0);
+&nbsp;        TypeDeserializer typeDeser = (TypeDeserializer)type.getTypeHandler();
+&nbsp;        SettableBeanProperty prop;
+&nbsp;        if (mutator instanceof AnnotatedMethod) {
+<b class="nc">&nbsp;            prop = new MethodProperty(propDef, type, typeDeser, beanDesc.getClassAnnotations(), (AnnotatedMethod)mutator);</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            prop = new FieldProperty(propDef, type, typeDeser, beanDesc.getClassAnnotations(), (AnnotatedField)mutator);
+&nbsp;        }
+&nbsp;
+&nbsp;        JsonDeserializer&lt;?&gt; deser = this.findDeserializerFromAnnotation(ctxt, mutator);
+&nbsp;        if (deser == null) {
+&nbsp;            deser = (JsonDeserializer)type.getValueHandler();
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        if (deser != null) {
+&nbsp;            deser = ctxt.handlePrimaryContextualization(deser, prop, type);
+&nbsp;            prop = prop.withValueDeserializer(deser);
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        AnnotationIntrospector.ReferenceProperty ref = propDef.findReferenceType();</b>
+<b class="nc">&nbsp;        if (ref != null &amp;&amp; ref.isManagedReference()) {</b>
+&nbsp;            prop.setManagedReferenceName(ref.getName());
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        ObjectIdInfo objectIdInfo = propDef.findObjectIdInfo();</b>
+&nbsp;        if (objectIdInfo != null) {
+&nbsp;            prop.setObjectIdInfo(objectIdInfo);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return prop;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    protected SettableBeanProperty constructSetterlessProperty(DeserializationContext ctxt, BeanDescription beanDesc, BeanPropertyDefinition propDef) throws JsonMappingException {
+<b class="nc">&nbsp;        AnnotatedMethod getter = propDef.getGetter();</b>
+&nbsp;        JavaType type = this.resolveMemberAndTypeAnnotations(ctxt, getter, getter.getType());
+<b class="nc">&nbsp;        TypeDeserializer typeDeser = (TypeDeserializer)type.getTypeHandler();</b>
+&nbsp;        SettableBeanProperty prop = new SetterlessProperty(propDef, type, typeDeser, beanDesc.getClassAnnotations(), getter);
+&nbsp;        JsonDeserializer&lt;?&gt; deser = this.findDeserializerFromAnnotation(ctxt, getter);
+<b class="nc">&nbsp;        if (deser == null) {</b>
+<b class="nc">&nbsp;            deser = (JsonDeserializer)type.getValueHandler();</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if (deser != null) {</b>
+<b class="nc">&nbsp;            deser = ctxt.handlePrimaryContextualization(deser, prop, type);</b>
+&nbsp;            prop = prop.withValueDeserializer(deser);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return prop;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected boolean isPotentialBeanType(Class&lt;?&gt; type) {
+<b class="nc">&nbsp;        String typeStr = ClassUtil.canBeABeanType(type);</b>
+<b class="nc">&nbsp;        if (typeStr != null) {</b>
+<b class="nc">&nbsp;            throw new IllegalArgumentException(&quot;Cannot deserialize Class &quot; + type.getName() + &quot; (of type &quot; + typeStr + &quot;) as a Bean&quot;);</b>
+&nbsp;        } else if (ClassUtil.isProxyType(type)) {
+<b class="nc">&nbsp;            throw new IllegalArgumentException(&quot;Cannot deserialize Proxy class &quot; + type.getName() + &quot; as a Bean&quot;);</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            typeStr = ClassUtil.isLocalType(type, true);
+&nbsp;            if (typeStr != null) {
+&nbsp;                throw new IllegalArgumentException(&quot;Cannot deserialize Class &quot; + type.getName() + &quot; (of type &quot; + typeStr + &quot;) as a Bean&quot;);
+&nbsp;            } else {
+&nbsp;                return true;
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected boolean isIgnorableType(DeserializationConfig config, BeanPropertyDefinition propDef, Class&lt;?&gt; type, Map&lt;Class&lt;?&gt;, Boolean&gt; ignoredTypes) {
+<b class="nc">&nbsp;        Boolean status = (Boolean)ignoredTypes.get(type);</b>
+<b class="nc">&nbsp;        if (status != null) {</b>
+<b class="nc">&nbsp;            return status;</b>
+<b class="nc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            if (type != String.class &amp;&amp; !type.isPrimitive()) {</b>
+&nbsp;                status = config.getConfigOverride(type).getIsIgnoredType();
+&nbsp;                if (status == null) {
+&nbsp;                    BeanDescription desc = config.introspectClassAnnotations(type);
+&nbsp;                    status = config.getAnnotationIntrospector().isIgnorableType(desc.getClassInfo());
+<b class="nc">&nbsp;                    if (status == null) {</b>
+<b class="nc">&nbsp;                        status = Boolean.FALSE;</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;            } else {
+<b class="nc">&nbsp;                status = Boolean.FALSE;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            ignoredTypes.put(type, status);
+&nbsp;            return status;
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected void _validateSubType(DeserializationContext ctxt, JavaType type, BeanDescription beanDesc) throws JsonMappingException {</b>
+&nbsp;        SubTypeValidator.instance().validateSubType(ctxt, type, beanDesc);
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:57</div>
+</div>
+</body>
+</html>

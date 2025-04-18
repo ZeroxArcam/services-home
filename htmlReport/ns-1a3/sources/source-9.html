@@ -1,0 +1,233 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > PersistentTableStrategy</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.query.sqm.mutation.internal.temptable</a>
+</div>
+
+<h1>Coverage Summary for Class: PersistentTableStrategy (org.hibernate.query.sqm.mutation.internal.temptable)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PersistentTableStrategy</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/38)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.query.sqm.mutation.internal.temptable;
+&nbsp;
+&nbsp;import java.sql.Connection;
+&nbsp;import java.sql.SQLException;
+&nbsp;import org.hibernate.dialect.temptable.TemporaryTable;
+&nbsp;import org.hibernate.dialect.temptable.TemporaryTableHelper;
+&nbsp;import org.hibernate.engine.config.spi.ConfigurationService;
+&nbsp;import org.hibernate.engine.config.spi.StandardConverters;
+&nbsp;import org.hibernate.engine.jdbc.connections.spi.JdbcConnectionAccess;
+&nbsp;import org.hibernate.engine.spi.SessionFactoryImplementor;
+&nbsp;import org.hibernate.metamodel.mapping.EntityMappingType;
+&nbsp;import org.hibernate.metamodel.mapping.internal.MappingModelCreationProcess;
+&nbsp;import org.jboss.logging.Logger;
+&nbsp;
+&nbsp;public abstract class PersistentTableStrategy {
+&nbsp;    private static final Logger log = Logger.getLogger(PersistentTableStrategy.class);
+&nbsp;    public static final String SHORT_NAME = &quot;persistent&quot;;
+&nbsp;    public static final String CREATE_ID_TABLES = &quot;hibernate.query.mutation_strategy.persistent.create_tables&quot;;
+&nbsp;    public static final String DROP_ID_TABLES = &quot;hibernate.query.mutation_strategy.persistent.drop_tables&quot;;
+&nbsp;    public static final String SCHEMA = &quot;hibernate.query.mutation_strategy.persistent.schema&quot;;
+&nbsp;    public static final String CATALOG = &quot;hibernate.query.mutation_strategy.persistent.catalog&quot;;
+&nbsp;    private final TemporaryTable temporaryTable;
+&nbsp;    private final SessionFactoryImplementor sessionFactory;
+&nbsp;    private boolean prepared;
+&nbsp;    private boolean dropIdTables;
+<b class="nc">&nbsp;</b>
+&nbsp;    public PersistentTableStrategy(TemporaryTable temporaryTable, SessionFactoryImplementor sessionFactory) {
+&nbsp;        this.temporaryTable = temporaryTable;
+&nbsp;        this.sessionFactory = sessionFactory;
+&nbsp;        if (sessionFactory.getJdbcServices().getDialect().getTemporaryTableAfterUseAction() == AfterUseAction.DROP) {
+&nbsp;            throw new IllegalArgumentException(&quot;Persistent ID tables cannot use AfterUseAction.DROP : &quot; + temporaryTable.getTableExpression());
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public EntityMappingType getEntityDescriptor() {
+&nbsp;        return this.getTemporaryTable().getEntityDescriptor();
+&nbsp;    }
+&nbsp;
+&nbsp;    public void prepare(MappingModelCreationProcess mappingModelCreationProcess, JdbcConnectionAccess connectionAccess) {
+&nbsp;        if (!this.prepared) {
+&nbsp;            this.prepared = true;
+&nbsp;            ConfigurationService configService = (ConfigurationService)mappingModelCreationProcess.getCreationContext().getBootstrapContext().getServiceRegistry().requireService(ConfigurationService.class);
+&nbsp;            boolean createIdTables = (Boolean)configService.getSetting(&quot;hibernate.query.mutation_strategy.persistent.create_tables&quot;, StandardConverters.BOOLEAN, true);
+&nbsp;            if (createIdTables) {
+&nbsp;                log.debugf(&quot;Creating persistent ID table : %s&quot;, this.getTemporaryTable().getTableExpression());
+&nbsp;                TemporaryTableHelper.TemporaryTableCreationWork temporaryTableCreationWork = new TemporaryTableHelper.TemporaryTableCreationWork(this.getTemporaryTable(), this.sessionFactory);
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                Connection connection;</b>
+<b class="nc">&nbsp;                try {</b>
+&nbsp;                    connection = connectionAccess.obtainConnection();
+<b class="nc">&nbsp;                } catch (UnsupportedOperationException var17) {</b>
+<b class="nc">&nbsp;                    log.debug(&quot;Unable to obtain JDBC connection; assuming ID tables already exist or wont be needed&quot;);</b>
+&nbsp;                    return;
+&nbsp;                } catch (SQLException e) {
+&nbsp;                    log.error(&quot;Unable obtain JDBC Connection&quot;, e);
+&nbsp;                    return;
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                try {
+&nbsp;                    temporaryTableCreationWork.execute(connection);
+&nbsp;                    this.dropIdTables = (Boolean)configService.getSetting(&quot;hibernate.query.mutation_strategy.persistent.drop_tables&quot;, StandardConverters.BOOLEAN, false);
+&nbsp;                } finally {
+<b class="nc">&nbsp;                    try {</b>
+&nbsp;                        connectionAccess.releaseConnection(connection);
+&nbsp;                    } catch (SQLException var15) {
+&nbsp;                    }
+<b class="nc">&nbsp;</b>
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    public void release(SessionFactoryImplementor sessionFactory, JdbcConnectionAccess connectionAccess) {
+&nbsp;        if (this.dropIdTables) {
+<b class="nc">&nbsp;            this.dropIdTables = false;</b>
+&nbsp;            TemporaryTable temporaryTable = this.getTemporaryTable();
+&nbsp;            log.debugf(&quot;Dropping persistent ID table : %s&quot;, temporaryTable.getTableExpression());
+<b class="nc">&nbsp;            TemporaryTableHelper.TemporaryTableDropWork temporaryTableDropWork = new TemporaryTableHelper.TemporaryTableDropWork(temporaryTable, sessionFactory);</b>
+&nbsp;
+&nbsp;            Connection connection;
+&nbsp;            try {
+<b class="nc">&nbsp;                connection = connectionAccess.obtainConnection();</b>
+&nbsp;            } catch (UnsupportedOperationException var16) {
+<b class="nc">&nbsp;                log.debugf(&quot;Unable to obtain JDBC connection; unable to drop persistent ID table : %s&quot;, temporaryTable.getTableExpression());</b>
+<b class="nc">&nbsp;                return;</b>
+&nbsp;            } catch (SQLException e) {
+&nbsp;                log.error(&quot;Unable obtain JDBC Connection&quot;, e);
+&nbsp;                return;
+&nbsp;            }
+<b class="nc">&nbsp;</b>
+&nbsp;            try {
+&nbsp;                temporaryTableDropWork.execute(connection);
+&nbsp;            } finally {
+<b class="nc">&nbsp;                try {</b>
+&nbsp;                    connectionAccess.releaseConnection(connection);
+&nbsp;                } catch (SQLException var14) {
+&nbsp;                }
+<b class="nc">&nbsp;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public TemporaryTable getTemporaryTable() {</b>
+&nbsp;        return this.temporaryTable;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public SessionFactoryImplementor getSessionFactory() {
+&nbsp;        return this.sessionFactory;
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
+</div>
+</body>
+</html>

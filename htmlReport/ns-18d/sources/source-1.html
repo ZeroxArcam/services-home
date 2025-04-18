@@ -1,0 +1,318 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > AbstractDeleteCoordinator</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.persister.entity.mutation</a>
+</div>
+
+<h1>Coverage Summary for Class: AbstractDeleteCoordinator (org.hibernate.persister.entity.mutation)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AbstractDeleteCoordinator</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    5.9%
+  </span>
+  <span class="absValue">
+    (1/17)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    1.8%
+  </span>
+  <span class="absValue">
+    (1/55)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    5.7%
+  </span>
+  <span class="absValue">
+    (5/87)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.persister.entity.mutation;
+&nbsp;
+&nbsp;import org.hibernate.engine.OptimisticLockStyle;
+&nbsp;import org.hibernate.engine.jdbc.batch.internal.BasicBatchKey;
+&nbsp;import org.hibernate.engine.jdbc.mutation.JdbcValueBindings;
+&nbsp;import org.hibernate.engine.jdbc.mutation.MutationExecutor;
+&nbsp;import org.hibernate.engine.jdbc.mutation.ParameterUsage;
+&nbsp;import org.hibernate.engine.jdbc.mutation.TableInclusionChecker;
+&nbsp;import org.hibernate.engine.jdbc.mutation.group.PreparedStatementDetails;
+&nbsp;import org.hibernate.engine.jdbc.mutation.internal.ModelMutationHelper;
+&nbsp;import org.hibernate.engine.spi.EntityEntry;
+&nbsp;import org.hibernate.engine.spi.PersistenceContext;
+&nbsp;import org.hibernate.engine.spi.SessionFactoryImplementor;
+&nbsp;import org.hibernate.engine.spi.SharedSessionContractImplementor;
+&nbsp;import org.hibernate.metamodel.mapping.AttributeMapping;
+&nbsp;import org.hibernate.metamodel.mapping.EntityRowIdMapping;
+&nbsp;import org.hibernate.metamodel.mapping.EntityVersionMapping;
+&nbsp;import org.hibernate.persister.entity.AbstractEntityPersister;
+&nbsp;import org.hibernate.sql.model.MutationOperation;
+&nbsp;import org.hibernate.sql.model.MutationOperationGroup;
+&nbsp;import org.hibernate.sql.model.ValuesAnalysis;
+&nbsp;
+&nbsp;public abstract class AbstractDeleteCoordinator extends AbstractMutationCoordinator implements DeleteCoordinator {
+&nbsp;    private final BasicBatchKey batchKey;
+&nbsp;    private final MutationOperationGroup staticOperationGroup;
+&nbsp;    private MutationOperationGroup noVersionDeleteGroup;
+&nbsp;
+&nbsp;    public AbstractDeleteCoordinator(AbstractEntityPersister entityPersister, SessionFactoryImplementor factory) {
+&nbsp;        super(entityPersister, factory);
+&nbsp;        this.batchKey = new BasicBatchKey(entityPersister.getEntityName() + &quot;#DELETE&quot;);
+&nbsp;        this.staticOperationGroup = this.generateOperationGroup(&quot;&quot;, (Object[])null, true, (SharedSessionContractImplementor)null);
+&nbsp;        if (!entityPersister.isVersioned()) {
+&nbsp;            this.noVersionDeleteGroup = this.staticOperationGroup;
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public MutationOperationGroup getStaticMutationOperationGroup() {
+&nbsp;        return this.staticOperationGroup;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+<b class="fc">&nbsp;    public BasicBatchKey getBatchKey() {</b>
+<b class="fc">&nbsp;        return this.batchKey;</b>
+<b class="pc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    protected abstract MutationOperationGroup generateOperationGroup(Object var1, Object[] var2, boolean var3, SharedSessionContractImplementor var4);
+&nbsp;
+&nbsp;    public void delete(Object entity, Object id, Object version, SharedSessionContractImplementor session) {
+&nbsp;        boolean isImpliedOptimisticLocking = this.entityPersister().optimisticLockStyle().isAllOrDirty();
+&nbsp;        PersistenceContext persistenceContext = session.getPersistenceContextInternal();
+<b class="nc">&nbsp;        EntityEntry entry = persistenceContext.getEntry(entity);</b>
+&nbsp;        Object[] loadedState = entry != null &amp;&amp; isImpliedOptimisticLocking ? entry.getLoadedState() : null;
+&nbsp;        Object rowId = entry != null ? entry.getRowId() : null;
+&nbsp;        if ((!isImpliedOptimisticLocking || loadedState == null) &amp;&amp; (rowId != null || !this.entityPersister().hasRowId())) {
+&nbsp;            this.doStaticDelete(entity, id, rowId, entry == null ? null : entry.getLoadedState(), version, session);
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            this.doDynamicDelete(entity, id, rowId, loadedState, session);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void doDynamicDelete(Object entity, Object id, Object rowId, Object[] loadedState, SharedSessionContractImplementor session) {
+&nbsp;        MutationOperationGroup operationGroup = this.generateOperationGroup((Object)null, loadedState, true, session);
+&nbsp;        MutationExecutor mutationExecutor = this.executor(session, operationGroup);
+&nbsp;
+&nbsp;        for(int i = 0; i &lt; operationGroup.getNumberOfOperations(); ++i) {
+&nbsp;            MutationOperation mutation = operationGroup.getOperation(i);
+&nbsp;            if (mutation != null) {
+&nbsp;                String tableName = mutation.getTableDetails().getTableName();
+&nbsp;                mutationExecutor.getPreparedStatementDetails(tableName);
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        this.applyDynamicDeleteTableDetails(id, rowId, loadedState, mutationExecutor, operationGroup, session);</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        try {</b>
+&nbsp;            mutationExecutor.execute(entity, (ValuesAnalysis)null, (TableInclusionChecker)null, (statementDetails, affectedRowCount, batchPosition) -&gt; ModelMutationHelper.identifiedResultsCheck(statementDetails, affectedRowCount, batchPosition, this.entityPersister(), id, this.factory()), session);
+<b class="nc">&nbsp;        } finally {</b>
+<b class="nc">&nbsp;            mutationExecutor.release();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected void applyDynamicDeleteTableDetails(Object id, Object rowId, Object[] loadedState, MutationExecutor mutationExecutor, MutationOperationGroup operationGroup, SharedSessionContractImplementor session) {
+&nbsp;        this.applyLocking((Object)null, loadedState, mutationExecutor, session);
+&nbsp;        this.applyId(id, (Object)null, mutationExecutor, operationGroup, session);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void applyLocking(Object version, Object[] loadedState, MutationExecutor mutationExecutor, SharedSessionContractImplementor session) {
+&nbsp;        JdbcValueBindings jdbcValueBindings = mutationExecutor.getJdbcValueBindings();
+&nbsp;        OptimisticLockStyle optimisticLockStyle = this.entityPersister().optimisticLockStyle();
+<b class="nc">&nbsp;        switch (optimisticLockStyle) {</b>
+<b class="nc">&nbsp;            case VERSION:</b>
+&nbsp;                this.applyVersionLocking(version, jdbcValueBindings);
+<b class="nc">&nbsp;                break;</b>
+<b class="nc">&nbsp;            case ALL:</b>
+<b class="nc">&nbsp;            case DIRTY:</b>
+<b class="nc">&nbsp;                this.applyAllOrDirtyLocking(loadedState, session, jdbcValueBindings);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private void applyAllOrDirtyLocking(Object[] loadedState, SharedSessionContractImplementor session, JdbcValueBindings jdbcValueBindings) {</b>
+&nbsp;        if (loadedState != null) {
+&nbsp;            AbstractEntityPersister persister = this.entityPersister();
+&nbsp;            boolean[] versionability = persister.getPropertyVersionability();
+&nbsp;
+&nbsp;            for(int attributeIndex = 0; attributeIndex &lt; versionability.length; ++attributeIndex) {
+&nbsp;                AttributeMapping attribute;
+&nbsp;                if (versionability[attributeIndex] &amp;&amp; !(attribute = persister.getAttributeMapping(attributeIndex)).isPluralAttributeMapping()) {
+&nbsp;                    Object loadedValue = loadedState[attributeIndex];
+&nbsp;                    if (loadedValue != null) {
+<b class="nc">&nbsp;                        String mutationTableName = persister.getAttributeMutationTableName(attributeIndex);</b>
+&nbsp;                        attribute.breakDownJdbcValues(loadedValue, 0, jdbcValueBindings, mutationTableName, (valueIndex, bindings, tableName, jdbcValue, jdbcValueMapping) -&gt; {
+&nbsp;                            if (jdbcValue != null) {
+&nbsp;                                bindings.bindValue(jdbcValue, tableName, jdbcValueMapping.getSelectionExpression(), ParameterUsage.RESTRICT);
+<b class="nc">&nbsp;                            }</b>
+&nbsp;                        }, session);
+&nbsp;                    }
+&nbsp;                }
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void applyVersionLocking(Object version, JdbcValueBindings jdbcValueBindings) {
+&nbsp;        AbstractEntityPersister persister = this.entityPersister();
+&nbsp;        EntityVersionMapping versionMapping = persister.getVersionMapping();
+<b class="nc">&nbsp;        if (version != null &amp;&amp; versionMapping != null) {</b>
+&nbsp;            jdbcValueBindings.bindValue(version, persister.physicalTableNameForMutation(versionMapping), versionMapping.getSelectionExpression(), ParameterUsage.RESTRICT);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void applyId(Object id, Object rowId, MutationExecutor mutationExecutor, MutationOperationGroup operationGroup, SharedSessionContractImplementor session) {
+&nbsp;        JdbcValueBindings jdbcValueBindings = mutationExecutor.getJdbcValueBindings();
+&nbsp;        EntityRowIdMapping rowIdMapping = this.entityPersister().getRowIdMapping();
+&nbsp;
+&nbsp;        for(int position = 0; position &lt; operationGroup.getNumberOfOperations(); ++position) {
+<b class="nc">&nbsp;            MutationOperation jdbcMutation = operationGroup.getOperation(position);</b>
+<b class="nc">&nbsp;            EntityTableMapping tableDetails = (EntityTableMapping)jdbcMutation.getTableDetails();</b>
+&nbsp;            this.breakDownKeyJdbcValues(id, rowId, session, jdbcValueBindings, tableDetails);
+&nbsp;            PreparedStatementDetails statementDetails = mutationExecutor.getPreparedStatementDetails(tableDetails.getTableName());
+&nbsp;            if (statementDetails != null) {
+&nbsp;                statementDetails.resolveStatement();
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected void doStaticDelete(Object entity, Object id, Object rowId, Object[] loadedState, Object version, SharedSessionContractImplementor session) {</b>
+&nbsp;        boolean applyVersion;
+<b class="nc">&nbsp;        MutationOperationGroup operationGroupToUse;</b>
+&nbsp;        if (entity == null) {
+&nbsp;            applyVersion = false;
+&nbsp;            operationGroupToUse = this.resolveNoVersionDeleteGroup(session);
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            applyVersion = true;
+&nbsp;            operationGroupToUse = this.staticOperationGroup;
+&nbsp;        }
+&nbsp;
+&nbsp;        MutationExecutor mutationExecutor = this.executor(session, operationGroupToUse);
+&nbsp;
+&nbsp;        for(int position = 0; position &lt; this.staticOperationGroup.getNumberOfOperations(); ++position) {
+&nbsp;            MutationOperation mutation = this.staticOperationGroup.getOperation(position);
+<b class="nc">&nbsp;            if (mutation != null) {</b>
+<b class="nc">&nbsp;                mutationExecutor.getPreparedStatementDetails(mutation.getTableDetails().getTableName());</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        this.applyStaticDeleteTableDetails(id, rowId, loadedState, version, applyVersion, mutationExecutor, session);
+<b class="nc">&nbsp;        mutationExecutor.execute(entity, (ValuesAnalysis)null, (TableInclusionChecker)null, (statementDetails, affectedRowCount, batchPosition) -&gt; ModelMutationHelper.identifiedResultsCheck(statementDetails, affectedRowCount, batchPosition, this.entityPersister(), id, this.factory()), session);</b>
+<b class="nc">&nbsp;        mutationExecutor.release();</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    protected void applyStaticDeleteTableDetails(Object id, Object rowId, Object[] loadedState, Object version, boolean applyVersion, MutationExecutor mutationExecutor, SharedSessionContractImplementor session) {</b>
+&nbsp;        if (applyVersion) {
+&nbsp;            this.applyLocking(version, (Object[])null, mutationExecutor, session);
+&nbsp;        }
+&nbsp;
+&nbsp;        JdbcValueBindings jdbcValueBindings = mutationExecutor.getJdbcValueBindings();
+<b class="nc">&nbsp;        this.bindPartitionColumnValueBindings(loadedState, session, jdbcValueBindings);</b>
+&nbsp;        this.applyId(id, rowId, mutationExecutor, this.staticOperationGroup, session);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private MutationExecutor executor(SharedSessionContractImplementor session, MutationOperationGroup group) {</b>
+&nbsp;        return this.mutationExecutorService.createExecutor(this.resolveBatchKeyAccess(false, session), group, session);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    protected MutationOperationGroup resolveNoVersionDeleteGroup(SharedSessionContractImplementor session) {
+&nbsp;        if (this.noVersionDeleteGroup == null) {
+&nbsp;            this.noVersionDeleteGroup = this.generateOperationGroup(&quot;&quot;, (Object[])null, false, session);
+&nbsp;        }
+&nbsp;
+&nbsp;        return this.noVersionDeleteGroup;
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:59</div>
+</div>
+</body>
+</html>

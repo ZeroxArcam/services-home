@@ -1,0 +1,1377 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ConstructorResolver</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.beans.factory.support</a>
+</div>
+
+<h1>Coverage Summary for Class: ConstructorResolver (org.springframework.beans.factory.support)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ConstructorResolver</td>
+<td class="coverageStat">
+  <span class="percent">
+    34.1%
+  </span>
+  <span class="absValue">
+    (15/44)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    27.7%
+  </span>
+  <span class="absValue">
+    (128/462)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    39.2%
+  </span>
+  <span class="absValue">
+    (240/613)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ConstructorResolver$ArgumentsHolder</td>
+<td class="coverageStat">
+  <span class="percent">
+    80%
+  </span>
+  <span class="absValue">
+    (4/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    70%
+  </span>
+  <span class="absValue">
+    (7/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    73.1%
+  </span>
+  <span class="absValue">
+    (19/26)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ConstructorResolver$ConstructorDependencyDescriptor</td>
+<td class="coverageStat">
+  <span class="percent">
+    80%
+  </span>
+  <span class="absValue">
+    (4/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    25%
+  </span>
+  <span class="absValue">
+    (1/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    83.3%
+  </span>
+  <span class="absValue">
+    (5/6)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    42.6%
+  </span>
+  <span class="absValue">
+    (23/54)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    28.6%
+  </span>
+  <span class="absValue">
+    (136/476)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    40.9%
+  </span>
+  <span class="absValue">
+    (264/645)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.beans.factory.support;
+&nbsp;
+&nbsp;import java.beans.ConstructorProperties;
+&nbsp;import java.lang.reflect.Array;
+&nbsp;import java.lang.reflect.Constructor;
+&nbsp;import java.lang.reflect.Executable;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;import java.lang.reflect.Modifier;
+&nbsp;import java.util.ArrayDeque;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Arrays;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.Deque;
+&nbsp;import java.util.HashSet;
+&nbsp;import java.util.LinkedHashSet;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.function.Function;
+&nbsp;import java.util.function.Predicate;
+&nbsp;import java.util.function.Supplier;
+&nbsp;import org.apache.commons.logging.Log;
+&nbsp;import org.springframework.beans.BeanMetadataElement;
+&nbsp;import org.springframework.beans.BeanUtils;
+&nbsp;import org.springframework.beans.BeanWrapper;
+&nbsp;import org.springframework.beans.BeanWrapperImpl;
+&nbsp;import org.springframework.beans.BeansException;
+&nbsp;import org.springframework.beans.TypeConverter;
+&nbsp;import org.springframework.beans.TypeMismatchException;
+&nbsp;import org.springframework.beans.factory.BeanCreationException;
+&nbsp;import org.springframework.beans.factory.BeanDefinitionStoreException;
+&nbsp;import org.springframework.beans.factory.BeanFactory;
+&nbsp;import org.springframework.beans.factory.FactoryBean;
+&nbsp;import org.springframework.beans.factory.InjectionPoint;
+&nbsp;import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+&nbsp;import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
+&nbsp;import org.springframework.beans.factory.UnsatisfiedDependencyException;
+&nbsp;import org.springframework.beans.factory.config.BeanDefinition;
+&nbsp;import org.springframework.beans.factory.config.BeanReference;
+&nbsp;import org.springframework.beans.factory.config.ConstructorArgumentValues;
+&nbsp;import org.springframework.beans.factory.config.DependencyDescriptor;
+&nbsp;import org.springframework.beans.factory.config.RuntimeBeanReference;
+&nbsp;import org.springframework.beans.factory.config.TypedStringValue;
+&nbsp;import org.springframework.core.CollectionFactory;
+&nbsp;import org.springframework.core.KotlinDetector;
+&nbsp;import org.springframework.core.MethodParameter;
+&nbsp;import org.springframework.core.NamedThreadLocal;
+&nbsp;import org.springframework.core.ParameterNameDiscoverer;
+&nbsp;import org.springframework.core.ResolvableType;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.ClassUtils;
+&nbsp;import org.springframework.util.CollectionUtils;
+&nbsp;import org.springframework.util.MethodInvoker;
+&nbsp;import org.springframework.util.ObjectUtils;
+&nbsp;import org.springframework.util.ReflectionUtils;
+&nbsp;import org.springframework.util.StringUtils;
+&nbsp;
+&nbsp;class ConstructorResolver {
+&nbsp;    private static final Object[] EMPTY_ARGS = new Object[0];
+&nbsp;    private static final NamedThreadLocal&lt;InjectionPoint&gt; currentInjectionPoint = new NamedThreadLocal(&quot;Current injection point&quot;);
+&nbsp;    private final AbstractAutowireCapableBeanFactory beanFactory;
+&nbsp;    private final Log logger;
+&nbsp;
+&nbsp;    public ConstructorResolver(AbstractAutowireCapableBeanFactory beanFactory) {
+&nbsp;        this.beanFactory = beanFactory;
+&nbsp;        this.logger = beanFactory.getLogger();
+&nbsp;    }
+&nbsp;
+&nbsp;    public BeanWrapper autowireConstructor(String beanName, RootBeanDefinition mbd, @Nullable Constructor&lt;?&gt;[] chosenCtors, @Nullable Object[] explicitArgs) {
+&nbsp;        BeanWrapperImpl bw = new BeanWrapperImpl();
+&nbsp;        this.beanFactory.initBeanWrapper(bw);
+&nbsp;        Constructor&lt;?&gt; constructorToUse = null;
+&nbsp;        ArgumentsHolder argsHolderToUse = null;
+&nbsp;        Object[] argsToUse = null;
+&nbsp;        if (explicitArgs != null) {
+&nbsp;            argsToUse = explicitArgs;
+&nbsp;        } else {
+&nbsp;            Object[] argsToResolve = null;
+&nbsp;            synchronized(mbd.constructorArgumentLock) {
+&nbsp;                constructorToUse = (Constructor)mbd.resolvedConstructorOrFactoryMethod;
+&nbsp;                if (constructorToUse != null &amp;&amp; mbd.constructorArgumentsResolved) {
+&nbsp;                    argsToUse = mbd.resolvedConstructorArguments;
+&nbsp;                    if (argsToUse == null) {
+&nbsp;                        argsToResolve = mbd.preparedConstructorArguments;
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            if (argsToResolve != null) {
+&nbsp;                argsToUse = this.resolvePreparedArguments(beanName, mbd, bw, constructorToUse, argsToResolve);
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if (constructorToUse == null || argsToUse == null) {</b>
+&nbsp;            Constructor&lt;?&gt;[] candidates = chosenCtors;
+<b class="fc">&nbsp;            if (chosenCtors == null) {</b>
+&nbsp;                Class&lt;?&gt; beanClass = mbd.getBeanClass();
+&nbsp;
+&nbsp;                try {
+&nbsp;                    candidates = mbd.isNonPublicAccessAllowed() ? beanClass.getDeclaredConstructors() : beanClass.getConstructors();
+&nbsp;                } catch (Throwable ex) {
+&nbsp;                    throw new BeanCreationException(mbd.getResourceDescription(), beanName, &quot;Resolution of declared constructors on bean Class [&quot; + beanClass.getName() + &quot;] from ClassLoader [&quot; + String.valueOf(beanClass.getClassLoader()) + &quot;] failed&quot;, ex);
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            if (candidates.length == 1 &amp;&amp; explicitArgs == null &amp;&amp; !mbd.hasConstructorArgumentValues()) {
+&nbsp;                Constructor&lt;?&gt; uniqueCandidate = candidates[0];
+&nbsp;                if (uniqueCandidate.getParameterCount() == 0) {
+<b class="fc">&nbsp;                    synchronized(mbd.constructorArgumentLock) {</b>
+<b class="fc">&nbsp;                        mbd.resolvedConstructorOrFactoryMethod = uniqueCandidate;</b>
+<b class="fc">&nbsp;                        mbd.constructorArgumentsResolved = true;</b>
+&nbsp;                        mbd.resolvedConstructorArguments = EMPTY_ARGS;
+&nbsp;                    }
+&nbsp;
+&nbsp;                    bw.setBeanInstance(this.instantiate(beanName, mbd, uniqueCandidate, EMPTY_ARGS));
+&nbsp;                    return bw;
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            boolean autowiring = chosenCtors != null || mbd.getResolvedAutowireMode() == 3;
+&nbsp;            ConstructorArgumentValues resolvedValues = null;
+&nbsp;            int minNrOfArgs;
+&nbsp;            if (explicitArgs != null) {
+&nbsp;                minNrOfArgs = explicitArgs.length;
+&nbsp;            } else {
+&nbsp;                ConstructorArgumentValues cargs = mbd.getConstructorArgumentValues();
+&nbsp;                resolvedValues = new ConstructorArgumentValues();
+&nbsp;                minNrOfArgs = this.resolveConstructorArguments(beanName, mbd, bw, cargs, resolvedValues);
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            AutowireUtils.sortConstructors(candidates);</b>
+<b class="fc">&nbsp;            int minTypeDiffWeight = Integer.MAX_VALUE;</b>
+&nbsp;            Set&lt;Constructor&lt;?&gt;&gt; ambiguousConstructors = null;
+<b class="fc">&nbsp;            Deque&lt;UnsatisfiedDependencyException&gt; causes = null;</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;            for(Constructor&lt;?&gt; candidate : candidates) {</b>
+&nbsp;                int parameterCount = candidate.getParameterCount();
+<b class="pc">&nbsp;                if (constructorToUse != null &amp;&amp; argsToUse != null &amp;&amp; argsToUse.length &gt; parameterCount) {</b>
+<b class="nc">&nbsp;                    break;</b>
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                if (parameterCount &gt;= minNrOfArgs) {</b>
+<b class="fc">&nbsp;                    Class&lt;?&gt;[] paramTypes = candidate.getParameterTypes();</b>
+<b class="fc">&nbsp;                    ArgumentsHolder argsHolder;</b>
+<b class="pc">&nbsp;                    if (resolvedValues != null) {</b>
+&nbsp;                        try {
+<b class="nc">&nbsp;                            String[] paramNames = null;</b>
+<b class="nc">&nbsp;                            if (resolvedValues.containsNamedArgument()) {</b>
+<b class="nc">&nbsp;                                paramNames = ConstructorResolver.ConstructorPropertiesChecker.evaluate(candidate, parameterCount);</b>
+&nbsp;                                if (paramNames == null) {
+&nbsp;                                    ParameterNameDiscoverer pnd = this.beanFactory.getParameterNameDiscoverer();
+<b class="fc">&nbsp;                                    if (pnd != null) {</b>
+<b class="pc">&nbsp;                                        paramNames = pnd.getParameterNames(candidate);</b>
+<b class="nc">&nbsp;                                    }</b>
+&nbsp;                                }
+&nbsp;                            }
+&nbsp;
+<b class="pc">&nbsp;                            argsHolder = this.createArgumentArray(beanName, mbd, resolvedValues, bw, paramTypes, paramNames, this.getUserDeclaredConstructor(candidate), autowiring, candidates.length == 1);</b>
+&nbsp;                        } catch (UnsatisfiedDependencyException var27) {
+<b class="fc">&nbsp;                            if (this.logger.isTraceEnabled()) {</b>
+<b class="fc">&nbsp;                                Log var10000 = this.logger;</b>
+<b class="fc">&nbsp;                                String var10001 = String.valueOf(candidate);</b>
+&nbsp;                                var10000.trace(&quot;Ignoring constructor [&quot; + var10001 + &quot;] of bean &#39;&quot; + beanName + &quot;&#39;: &quot; + String.valueOf(var27));
+<b class="pc">&nbsp;                            }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;                            if (causes == null) {
+&nbsp;                                causes = new ArrayDeque(1);
+<b class="nc">&nbsp;                            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                            causes.add(var27);</b>
+&nbsp;                            continue;
+&nbsp;                        }
+&nbsp;                    } else {
+<b class="pc">&nbsp;                        if (parameterCount != explicitArgs.length) {</b>
+<b class="fc">&nbsp;                            continue;</b>
+<b class="pc">&nbsp;                        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                        argsHolder = new ArgumentsHolder(explicitArgs);</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                    int typeDiffWeight = mbd.isLenientConstructorResolution() ? argsHolder.getTypeDifferenceWeight(paramTypes) : argsHolder.getAssignabilityWeight(paramTypes);</b>
+<b class="nc">&nbsp;                    if (typeDiffWeight &lt; minTypeDiffWeight) {</b>
+<b class="nc">&nbsp;                        constructorToUse = candidate;</b>
+&nbsp;                        argsHolderToUse = argsHolder;
+&nbsp;                        argsToUse = argsHolder.arguments;
+&nbsp;                        minTypeDiffWeight = typeDiffWeight;
+&nbsp;                        ambiguousConstructors = null;
+<b class="fc">&nbsp;                    } else if (constructorToUse != null &amp;&amp; typeDiffWeight == minTypeDiffWeight) {</b>
+<b class="pc">&nbsp;                        if (ambiguousConstructors == null) {</b>
+<b class="fc">&nbsp;                            ambiguousConstructors = new LinkedHashSet();</b>
+&nbsp;                            ambiguousConstructors.add(constructorToUse);
+&nbsp;                        }
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;                        ambiguousConstructors.add(candidate);</b>
+&nbsp;                    }
+&nbsp;                }
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;            if (constructorToUse == null) {</b>
+&nbsp;                if (causes == null) {
+&nbsp;                    throw new BeanCreationException(mbd.getResourceDescription(), beanName, &quot;Could not resolve matching constructor on bean class [&quot; + mbd.getBeanClassName() + &quot;] (hint: specify index/type/name arguments for simple parameters to avoid type ambiguities. You should also check the consistency of arguments when mixing indexed and named arguments, especially in case of bean definition inheritance)&quot;);
+<b class="fc">&nbsp;                }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;                UnsatisfiedDependencyException ex = (UnsatisfiedDependencyException)causes.removeLast();</b>
+<b class="fc">&nbsp;</b>
+&nbsp;                for(Exception cause : causes) {
+<b class="fc">&nbsp;                    this.beanFactory.onSuppressedException(cause);</b>
+<b class="fc">&nbsp;                }</b>
+&nbsp;
+<b class="pc">&nbsp;                throw ex;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            if (ambiguousConstructors != null &amp;&amp; !mbd.isLenientConstructorResolution()) {
+&nbsp;                String var10002 = mbd.getResourceDescription();
+<b class="pc">&nbsp;                String var10004 = mbd.getBeanClassName();</b>
+&nbsp;                throw new BeanCreationException(var10002, beanName, &quot;Ambiguous constructor matches found on bean class [&quot; + var10004 + &quot;] (hint: specify index/type/name arguments for simple parameters to avoid type ambiguities): &quot; + String.valueOf(ambiguousConstructors));
+&nbsp;            }
+&nbsp;
+&nbsp;            if (explicitArgs == null &amp;&amp; argsHolderToUse != null) {
+<b class="fc">&nbsp;                argsHolderToUse.storeCache(mbd, constructorToUse);</b>
+<b class="pc">&nbsp;            }</b>
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+<b class="pc">&nbsp;        Assert.state(argsToUse != null, &quot;Unresolved constructor arguments&quot;);</b>
+<b class="nc">&nbsp;        bw.setBeanInstance(this.instantiate(beanName, mbd, constructorToUse, argsToUse));</b>
+<b class="nc">&nbsp;        return bw;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private Object instantiate(String beanName, RootBeanDefinition mbd, Constructor&lt;?&gt; constructorToUse, Object[] argsToUse) {</b>
+&nbsp;        try {
+&nbsp;            InstantiationStrategy strategy = this.beanFactory.getInstantiationStrategy();
+&nbsp;            return strategy.instantiate(mbd, beanName, this.beanFactory, constructorToUse, argsToUse);
+<b class="fc">&nbsp;        } catch (Throwable ex) {</b>
+<b class="pc">&nbsp;            throw new BeanCreationException(mbd.getResourceDescription(), beanName, ex.getMessage(), ex);</b>
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public void resolveFactoryMethodIfPossible(RootBeanDefinition mbd) {</b>
+&nbsp;        Class&lt;?&gt; factoryClass;
+&nbsp;        boolean isStatic;
+<b class="nc">&nbsp;        if (mbd.getFactoryBeanName() != null) {</b>
+<b class="nc">&nbsp;            factoryClass = this.beanFactory.getType(mbd.getFactoryBeanName());</b>
+&nbsp;            isStatic = false;
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            factoryClass = mbd.getBeanClass();
+&nbsp;            isStatic = true;
+&nbsp;        }
+&nbsp;
+&nbsp;        Assert.state(factoryClass != null, &quot;Unresolvable factory class&quot;);
+<b class="nc">&nbsp;        factoryClass = ClassUtils.getUserClass(factoryClass);</b>
+&nbsp;        Method[] candidates = this.getCandidateMethods(factoryClass, mbd);
+&nbsp;        Method uniqueCandidate = null;
+<b class="nc">&nbsp;</b>
+&nbsp;        for(Method candidate : candidates) {
+&nbsp;            if ((!isStatic || this.isStaticCandidate(candidate, factoryClass)) &amp;&amp; mbd.isFactoryMethod(candidate)) {
+<b class="pc">&nbsp;                if (uniqueCandidate == null) {</b>
+<b class="fc">&nbsp;                    uniqueCandidate = candidate;</b>
+&nbsp;                } else if (this.isParamMismatch(uniqueCandidate, candidate)) {
+<b class="pc">&nbsp;                    uniqueCandidate = null;</b>
+<b class="fc">&nbsp;                    break;</b>
+<b class="fc">&nbsp;                }</b>
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;        mbd.factoryMethodToIntrospect = uniqueCandidate;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private boolean isParamMismatch(Method uniqueCandidate, Method candidate) {</b>
+<b class="nc">&nbsp;        int uniqueCandidateParameterCount = uniqueCandidate.getParameterCount();</b>
+&nbsp;        int candidateParameterCount = candidate.getParameterCount();
+<b class="nc">&nbsp;        return uniqueCandidateParameterCount != candidateParameterCount || !Arrays.equals(uniqueCandidate.getParameterTypes(), candidate.getParameterTypes());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private Method[] getCandidateMethods(Class&lt;?&gt; factoryClass, RootBeanDefinition mbd) {
+<b class="pc">&nbsp;        return mbd.isNonPublicAccessAllowed() ? ReflectionUtils.getUniqueDeclaredMethods(factoryClass) : factoryClass.getMethods();</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private boolean isStaticCandidate(Method method, Class&lt;?&gt; factoryClass) {</b>
+<b class="nc">&nbsp;        return Modifier.isStatic(method.getModifiers()) &amp;&amp; method.getDeclaringClass() == factoryClass;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public BeanWrapper instantiateUsingFactoryMethod(String beanName, RootBeanDefinition mbd, @Nullable Object[] explicitArgs) {
+<b class="nc">&nbsp;        BeanWrapperImpl bw = new BeanWrapperImpl();</b>
+<b class="nc">&nbsp;        this.beanFactory.initBeanWrapper(bw);</b>
+&nbsp;        String factoryBeanName = mbd.getFactoryBeanName();
+&nbsp;        Object factoryBean;
+&nbsp;        Class&lt;?&gt; factoryClass;
+&nbsp;        boolean isStatic;
+<b class="pc">&nbsp;        if (factoryBeanName != null) {</b>
+<b class="nc">&nbsp;            if (factoryBeanName.equals(beanName)) {</b>
+<b class="nc">&nbsp;                throw new BeanDefinitionStoreException(mbd.getResourceDescription(), beanName, &quot;factory-bean reference points back to the same bean definition&quot;);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            factoryBean = this.beanFactory.getBean(factoryBeanName);
+&nbsp;            if (mbd.isSingleton() &amp;&amp; this.beanFactory.containsSingleton(beanName)) {
+<b class="pc">&nbsp;                throw new ImplicitlyAppearedSingletonException();</b>
+<b class="fc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            this.beanFactory.registerDependentBean(factoryBeanName, beanName);
+&nbsp;            factoryClass = factoryBean.getClass();
+<b class="pc">&nbsp;            isStatic = false;</b>
+<b class="fc">&nbsp;        } else {</b>
+<b class="fc">&nbsp;            if (!mbd.hasBeanClass()) {</b>
+&nbsp;                throw new BeanDefinitionStoreException(mbd.getResourceDescription(), beanName, &quot;bean definition declares neither a bean class nor a factory-bean reference&quot;);
+&nbsp;            }
+&nbsp;
+&nbsp;            factoryBean = null;
+&nbsp;            factoryClass = mbd.getBeanClass();
+&nbsp;            isStatic = true;
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;        Method factoryMethodToUse = null;
+&nbsp;        ArgumentsHolder argsHolderToUse = null;
+<b class="nc">&nbsp;        Object[] argsToUse = null;</b>
+&nbsp;        if (explicitArgs != null) {
+&nbsp;            argsToUse = explicitArgs;
+&nbsp;        } else {
+&nbsp;            Object[] argsToResolve = null;
+&nbsp;            synchronized(mbd.constructorArgumentLock) {
+&nbsp;                factoryMethodToUse = (Method)mbd.resolvedConstructorOrFactoryMethod;
+&nbsp;                if (factoryMethodToUse != null &amp;&amp; mbd.constructorArgumentsResolved) {
+&nbsp;                    argsToUse = mbd.resolvedConstructorArguments;
+&nbsp;                    if (argsToUse == null) {
+&nbsp;                        argsToResolve = mbd.preparedConstructorArguments;
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            if (argsToResolve != null) {
+&nbsp;                argsToUse = this.resolvePreparedArguments(beanName, mbd, bw, factoryMethodToUse, argsToResolve);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        if (factoryMethodToUse == null || argsToUse == null) {</b>
+<b class="nc">&nbsp;            factoryClass = ClassUtils.getUserClass(factoryClass);</b>
+&nbsp;            List&lt;Method&gt; candidates = null;
+<b class="nc">&nbsp;            if (mbd.isFactoryMethodUnique) {</b>
+<b class="nc">&nbsp;                if (factoryMethodToUse == null) {</b>
+<b class="nc">&nbsp;                    factoryMethodToUse = mbd.getResolvedFactoryMethod();</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                if (factoryMethodToUse != null) {</b>
+&nbsp;                    candidates = Collections.singletonList(factoryMethodToUse);
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            if (candidates == null) {
+&nbsp;                candidates = new ArrayList();
+&nbsp;                Method[] rawCandidates = this.getCandidateMethods(factoryClass, mbd);
+<b class="nc">&nbsp;</b>
+&nbsp;                for(Method candidate : rawCandidates) {
+&nbsp;                    if ((!isStatic || this.isStaticCandidate(candidate, factoryClass)) &amp;&amp; mbd.isFactoryMethod(candidate)) {
+&nbsp;                        candidates.add(candidate);
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            if (candidates.size() == 1 &amp;&amp; explicitArgs == null &amp;&amp; !mbd.hasConstructorArgumentValues()) {
+&nbsp;                Method uniqueCandidate = (Method)candidates.get(0);
+&nbsp;                if (uniqueCandidate.getParameterCount() == 0) {
+&nbsp;                    mbd.factoryMethodToIntrospect = uniqueCandidate;
+&nbsp;                    synchronized(mbd.constructorArgumentLock) {
+&nbsp;                        mbd.resolvedConstructorOrFactoryMethod = uniqueCandidate;
+&nbsp;                        mbd.constructorArgumentsResolved = true;
+&nbsp;                        mbd.resolvedConstructorArguments = EMPTY_ARGS;
+<b class="pc">&nbsp;                    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;                    bw.setBeanInstance(this.instantiate(beanName, mbd, factoryBean, uniqueCandidate, EMPTY_ARGS));
+&nbsp;                    return bw;
+&nbsp;                }
+<b class="pc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            if (candidates.size() &gt; 1) {
+&nbsp;                candidates.sort(AutowireUtils.EXECUTABLE_COMPARATOR);
+&nbsp;            }
+&nbsp;
+&nbsp;            ConstructorArgumentValues resolvedValues = null;
+&nbsp;            boolean autowiring = mbd.getResolvedAutowireMode() == 3;
+&nbsp;            int minTypeDiffWeight = Integer.MAX_VALUE;
+&nbsp;            Set&lt;Method&gt; ambiguousFactoryMethods = null;
+&nbsp;            int minNrOfArgs;
+&nbsp;            if (explicitArgs != null) {
+&nbsp;                minNrOfArgs = explicitArgs.length;
+&nbsp;            } else if (mbd.hasConstructorArgumentValues()) {
+&nbsp;                ConstructorArgumentValues cargs = mbd.getConstructorArgumentValues();
+&nbsp;                resolvedValues = new ConstructorArgumentValues();
+&nbsp;                minNrOfArgs = this.resolveConstructorArguments(beanName, mbd, bw, cargs, resolvedValues);
+&nbsp;            } else {
+&nbsp;                minNrOfArgs = 0;
+&nbsp;            }
+&nbsp;
+&nbsp;            Deque&lt;UnsatisfiedDependencyException&gt; causes = null;
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;            for(Method candidate : candidates) {</b>
+&nbsp;                int parameterCount = candidate.getParameterCount();
+&nbsp;                if (parameterCount &gt;= minNrOfArgs) {
+&nbsp;                    Class&lt;?&gt;[] paramTypes = candidate.getParameterTypes();
+&nbsp;                    ArgumentsHolder argsHolder;
+&nbsp;                    if (explicitArgs != null) {
+<b class="fc">&nbsp;                        if (paramTypes.length != explicitArgs.length) {</b>
+<b class="fc">&nbsp;                            continue;</b>
+<b class="pc">&nbsp;                        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                        argsHolder = new ArgumentsHolder(explicitArgs);
+&nbsp;                    } else {
+<b class="fc">&nbsp;                        try {</b>
+<b class="pc">&nbsp;                            String[] paramNames = null;</b>
+<b class="nc">&nbsp;                            if (resolvedValues != null &amp;&amp; resolvedValues.containsNamedArgument()) {</b>
+&nbsp;                                ParameterNameDiscoverer pnd = this.beanFactory.getParameterNameDiscoverer();
+<b class="fc">&nbsp;                                if (pnd != null) {</b>
+<b class="fc">&nbsp;                                    paramNames = pnd.getParameterNames(candidate);</b>
+<b class="fc">&nbsp;                                }</b>
+&nbsp;                            }
+&nbsp;
+&nbsp;                            argsHolder = this.createArgumentArray(beanName, mbd, resolvedValues, bw, paramTypes, paramNames, candidate, autowiring, candidates.size() == 1);
+<b class="pc">&nbsp;                        } catch (UnsatisfiedDependencyException var27) {</b>
+<b class="nc">&nbsp;                            if (this.logger.isTraceEnabled()) {</b>
+&nbsp;                                Log var10000 = this.logger;
+&nbsp;                                String var10001 = String.valueOf(candidate);
+<b class="fc">&nbsp;                                var10000.trace(&quot;Ignoring factory method [&quot; + var10001 + &quot;] of bean &#39;&quot; + beanName + &quot;&#39;: &quot; + String.valueOf(var27));</b>
+<b class="fc">&nbsp;                            }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;                            if (causes == null) {
+&nbsp;                                causes = new ArrayDeque(1);
+<b class="fc">&nbsp;                            }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;                            causes.add(var27);</b>
+&nbsp;                            continue;
+<b class="pc">&nbsp;                        }</b>
+<b class="nc">&nbsp;                    }</b>
+&nbsp;
+&nbsp;                    int typeDiffWeight = mbd.isLenientConstructorResolution() ? argsHolder.getTypeDifferenceWeight(paramTypes) : argsHolder.getAssignabilityWeight(paramTypes);
+<b class="fc">&nbsp;                    if (typeDiffWeight &lt; minTypeDiffWeight) {</b>
+<b class="fc">&nbsp;                        factoryMethodToUse = candidate;</b>
+<b class="fc">&nbsp;                        argsHolderToUse = argsHolder;</b>
+<b class="pc">&nbsp;                        argsToUse = argsHolder.arguments;</b>
+&nbsp;                        minTypeDiffWeight = typeDiffWeight;
+<b class="nc">&nbsp;                        ambiguousFactoryMethods = null;</b>
+<b class="nc">&nbsp;                    } else if (factoryMethodToUse != null &amp;&amp; typeDiffWeight == minTypeDiffWeight &amp;&amp; !mbd.isLenientConstructorResolution() &amp;&amp; paramTypes.length == factoryMethodToUse.getParameterCount() &amp;&amp; !Arrays.equals(paramTypes, factoryMethodToUse.getParameterTypes())) {</b>
+<b class="nc">&nbsp;                        if (ambiguousFactoryMethods == null) {</b>
+&nbsp;                            ambiguousFactoryMethods = new LinkedHashSet();
+&nbsp;                            ambiguousFactoryMethods.add(factoryMethodToUse);
+<b class="fc">&nbsp;                        }</b>
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;                        ambiguousFactoryMethods.add(candidate);</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+<b class="pc">&nbsp;</b>
+&nbsp;            if (factoryMethodToUse == null || argsToUse == null) {
+&nbsp;                if (causes != null) {
+<b class="fc">&nbsp;                    UnsatisfiedDependencyException ex = (UnsatisfiedDependencyException)causes.removeLast();</b>
+&nbsp;
+<b class="fc">&nbsp;                    for(Exception cause : causes) {</b>
+<b class="fc">&nbsp;                        this.beanFactory.onSuppressedException(cause);</b>
+<b class="pc">&nbsp;                    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;                    throw ex;
+<b class="pc">&nbsp;                }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;                List&lt;String&gt; argTypes = new ArrayList(minNrOfArgs);
+&nbsp;                if (explicitArgs != null) {
+<b class="fc">&nbsp;                    for(Object arg : explicitArgs) {</b>
+<b class="fc">&nbsp;                        argTypes.add(arg != null ? arg.getClass().getSimpleName() : &quot;null&quot;);</b>
+<b class="fc">&nbsp;                    }</b>
+<b class="fc">&nbsp;                } else if (resolvedValues != null) {</b>
+<b class="pc">&nbsp;                    Set&lt;ConstructorArgumentValues.ValueHolder&gt; valueHolders = CollectionUtils.newLinkedHashSet(resolvedValues.getArgumentCount());</b>
+<b class="fc">&nbsp;                    valueHolders.addAll(resolvedValues.getIndexedArgumentValues().values());</b>
+&nbsp;                    valueHolders.addAll(resolvedValues.getGenericArgumentValues());
+&nbsp;
+&nbsp;                    for(ConstructorArgumentValues.ValueHolder value : valueHolders) {
+&nbsp;                        String argType = value.getType() != null ? ClassUtils.getShortName(value.getType()) : (value.getValue() != null ? value.getValue().getClass().getSimpleName() : &quot;null&quot;);
+<b class="pc">&nbsp;                        argTypes.add(argType);</b>
+<b class="fc">&nbsp;                    }</b>
+<b class="fc">&nbsp;                }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;                String argDesc = StringUtils.collectionToCommaDelimitedString(argTypes);</b>
+<b class="fc">&nbsp;                String var10002 = mbd.getResourceDescription();</b>
+<b class="fc">&nbsp;                String var10004 = factoryClass.getName();</b>
+<b class="fc">&nbsp;                throw new BeanCreationException(var10002, beanName, &quot;No matching factory method found on class [&quot; + var10004 + &quot;]: &quot; + (mbd.getFactoryBeanName() != null ? &quot;factory bean &#39;&quot; + mbd.getFactoryBeanName() + &quot;&#39;; &quot; : &quot;&quot;) + &quot;factory method &#39;&quot; + mbd.getFactoryMethodName() + &quot;(&quot; + argDesc + &quot;)&#39;. Check that a method with the specified name &quot; + (minNrOfArgs &gt; 0 ? &quot;and arguments &quot; : &quot;&quot;) + &quot;exists and that it is &quot; + (isStatic ? &quot;static&quot; : &quot;non-static&quot;) + &quot;.&quot;);</b>
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;            if (Void.TYPE == factoryMethodToUse.getReturnType()) {</b>
+&nbsp;                String var54 = mbd.getResourceDescription();
+&nbsp;                String var57 = mbd.getFactoryMethodName();
+&nbsp;                throw new BeanCreationException(var54, beanName, &quot;Invalid factory method &#39;&quot; + var57 + &quot;&#39; on class [&quot; + factoryClass.getName() + &quot;]: needs to have a non-void return type!&quot;);
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;            if (KotlinDetector.isKotlinPresent() &amp;&amp; KotlinDetector.isSuspendingFunction(factoryMethodToUse)) {
+&nbsp;                String var53 = mbd.getResourceDescription();
+<b class="fc">&nbsp;                String var56 = mbd.getFactoryMethodName();</b>
+<b class="fc">&nbsp;                throw new BeanCreationException(var53, beanName, &quot;Invalid factory method &#39;&quot; + var56 + &quot;&#39; on class [&quot; + factoryClass.getName() + &quot;]: suspending functions are not supported!&quot;);</b>
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;            if (ambiguousFactoryMethods != null) {
+&nbsp;                String var52 = mbd.getResourceDescription();
+<b class="pc">&nbsp;                String var55 = factoryClass.getName();</b>
+<b class="nc">&nbsp;                throw new BeanCreationException(var52, beanName, &quot;Ambiguous factory method matches found on class [&quot; + var55 + &quot;] (hint: specify index/type/name arguments for simple parameters to avoid type ambiguities): &quot; + String.valueOf(ambiguousFactoryMethods));</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            if (explicitArgs == null &amp;&amp; argsHolderToUse != null) {
+&nbsp;                mbd.factoryMethodToIntrospect = factoryMethodToUse;
+<b class="fc">&nbsp;                argsHolderToUse.storeCache(mbd, factoryMethodToUse);</b>
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;        bw.setBeanInstance(this.instantiate(beanName, mbd, factoryBean, factoryMethodToUse, argsToUse));
+&nbsp;        return bw;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private Object instantiate(String beanName, RootBeanDefinition mbd, @Nullable Object factoryBean, Method factoryMethod, Object[] args) {
+&nbsp;        try {
+<b class="fc">&nbsp;            return this.beanFactory.getInstantiationStrategy().instantiate(mbd, beanName, this.beanFactory, factoryBean, factoryMethod, args);</b>
+&nbsp;        } catch (Throwable ex) {
+<b class="fc">&nbsp;            throw new BeanCreationException(mbd.getResourceDescription(), beanName, ex.getMessage(), ex);</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+<b class="pc">&nbsp;</b>
+&nbsp;    private int resolveConstructorArguments(String beanName, RootBeanDefinition mbd, BeanWrapper bw, ConstructorArgumentValues cargs, ConstructorArgumentValues resolvedValues) {
+&nbsp;        TypeConverter customConverter = this.beanFactory.getCustomTypeConverter();
+<b class="fc">&nbsp;        TypeConverter converter = (TypeConverter)(customConverter != null ? customConverter : bw);</b>
+<b class="pc">&nbsp;        BeanDefinitionValueResolver valueResolver = new BeanDefinitionValueResolver(this.beanFactory, beanName, mbd, converter);</b>
+&nbsp;        int minNrOfArgs = cargs.getArgumentCount();
+<b class="nc">&nbsp;</b>
+&nbsp;        for(Map.Entry&lt;Integer, ConstructorArgumentValues.ValueHolder&gt; entry : cargs.getIndexedArgumentValues().entrySet()) {
+&nbsp;            int index = (Integer)entry.getKey();
+<b class="nc">&nbsp;            if (index &lt; 0) {</b>
+&nbsp;                throw new BeanCreationException(mbd.getResourceDescription(), beanName, &quot;Invalid constructor argument index: &quot; + index);
+&nbsp;            }
+&nbsp;
+&nbsp;            if (index + 1 &gt; minNrOfArgs) {
+<b class="fc">&nbsp;                minNrOfArgs = index + 1;</b>
+<b class="pc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            ConstructorArgumentValues.ValueHolder valueHolder = (ConstructorArgumentValues.ValueHolder)entry.getValue();</b>
+<b class="nc">&nbsp;            if (valueHolder.isConverted()) {</b>
+&nbsp;                resolvedValues.addIndexedArgumentValue(index, valueHolder);
+&nbsp;            } else {
+<b class="fc">&nbsp;                Object resolvedValue = valueResolver.resolveValueIfNecessary(&quot;constructor argument&quot;, valueHolder.getValue());</b>
+<b class="fc">&nbsp;                ConstructorArgumentValues.ValueHolder resolvedValueHolder = new ConstructorArgumentValues.ValueHolder(resolvedValue, valueHolder.getType(), valueHolder.getName());</b>
+&nbsp;                resolvedValueHolder.setSource(valueHolder);
+&nbsp;                resolvedValues.addIndexedArgumentValue(index, resolvedValueHolder);
+<b class="pc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        for(ConstructorArgumentValues.ValueHolder valueHolder : cargs.getGenericArgumentValues()) {
+<b class="pc">&nbsp;            if (valueHolder.isConverted()) {</b>
+<b class="fc">&nbsp;                resolvedValues.addGenericArgumentValue(valueHolder);</b>
+&nbsp;            } else {
+<b class="fc">&nbsp;                Object resolvedValue = valueResolver.resolveValueIfNecessary(&quot;constructor argument&quot;, valueHolder.getValue());</b>
+&nbsp;                ConstructorArgumentValues.ValueHolder resolvedValueHolder = new ConstructorArgumentValues.ValueHolder(resolvedValue, valueHolder.getType(), valueHolder.getName());
+&nbsp;                resolvedValueHolder.setSource(valueHolder);
+&nbsp;                resolvedValues.addGenericArgumentValue(resolvedValueHolder);
+&nbsp;            }
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;        return minNrOfArgs;
+<b class="pc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private ArgumentsHolder createArgumentArray(String beanName, RootBeanDefinition mbd, @Nullable ConstructorArgumentValues resolvedValues, BeanWrapper bw, Class&lt;?&gt;[] paramTypes, @Nullable String[] paramNames, Executable executable, boolean autowiring, boolean fallback) throws UnsatisfiedDependencyException {</b>
+<b class="fc">&nbsp;        TypeConverter customConverter = this.beanFactory.getCustomTypeConverter();</b>
+<b class="fc">&nbsp;        TypeConverter converter = (TypeConverter)(customConverter != null ? customConverter : bw);</b>
+<b class="fc">&nbsp;        ArgumentsHolder args = new ArgumentsHolder(paramTypes.length);</b>
+&nbsp;        Set&lt;ConstructorArgumentValues.ValueHolder&gt; usedValueHolders = new HashSet(paramTypes.length);
+&nbsp;        Set&lt;String&gt; allAutowiredBeanNames = new LinkedHashSet(paramTypes.length * 2);
+&nbsp;
+&nbsp;        for(int paramIndex = 0; paramIndex &lt; paramTypes.length; ++paramIndex) {
+&nbsp;            Class&lt;?&gt; paramType = paramTypes[paramIndex];
+&nbsp;            String paramName = paramNames != null ? paramNames[paramIndex] : &quot;&quot;;
+<b class="nc">&nbsp;            ConstructorArgumentValues.ValueHolder valueHolder = null;</b>
+<b class="nc">&nbsp;            if (resolvedValues != null) {</b>
+<b class="nc">&nbsp;                valueHolder = resolvedValues.getArgumentValue(paramIndex, paramType, paramName, usedValueHolders);</b>
+<b class="nc">&nbsp;                if (valueHolder == null &amp;&amp; (!autowiring || paramTypes.length == resolvedValues.getArgumentCount())) {</b>
+<b class="nc">&nbsp;                    valueHolder = resolvedValues.getGenericArgumentValue((Class)null, (String)null, usedValueHolders);</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+<b class="nc">&nbsp;            if (valueHolder != null) {</b>
+&nbsp;                usedValueHolders.add(valueHolder);
+&nbsp;                Object originalValue = valueHolder.getValue();
+&nbsp;                Object convertedValue;
+&nbsp;                if (valueHolder.isConverted()) {
+<b class="pc">&nbsp;                    convertedValue = valueHolder.getConvertedValue();</b>
+<b class="nc">&nbsp;                    args.preparedArguments[paramIndex] = convertedValue;</b>
+<b class="nc">&nbsp;                } else {</b>
+<b class="nc">&nbsp;                    MethodParameter methodParam = MethodParameter.forExecutable(executable, paramIndex);</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                    try {
+&nbsp;                        convertedValue = converter.convertIfNecessary(originalValue, paramType, methodParam);
+&nbsp;                    } catch (TypeMismatchException ex) {
+<b class="nc">&nbsp;                        String var10002 = mbd.getResourceDescription();</b>
+<b class="nc">&nbsp;                        InjectionPoint var10004 = new InjectionPoint(methodParam);</b>
+<b class="nc">&nbsp;                        String var10005 = ObjectUtils.nullSafeClassName(valueHolder.getValue());</b>
+<b class="nc">&nbsp;                        throw new UnsatisfiedDependencyException(var10002, beanName, var10004, &quot;Could not convert argument value of type [&quot; + var10005 + &quot;] to required type [&quot; + paramType.getName() + &quot;]: &quot; + ex.getMessage());</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    Object sourceHolder = valueHolder.getSource();</b>
+<b class="nc">&nbsp;                    if (sourceHolder instanceof ConstructorArgumentValues.ValueHolder) {</b>
+<b class="nc">&nbsp;                        ConstructorArgumentValues.ValueHolder constructorValueHolder = (ConstructorArgumentValues.ValueHolder)sourceHolder;</b>
+<b class="nc">&nbsp;                        Object sourceValue = constructorValueHolder.getValue();</b>
+<b class="nc">&nbsp;                        args.resolveNecessary = true;</b>
+<b class="nc">&nbsp;                        args.preparedArguments[paramIndex] = sourceValue;</b>
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                args.arguments[paramIndex] = convertedValue;
+<b class="nc">&nbsp;                args.rawArguments[paramIndex] = originalValue;</b>
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                MethodParameter methodParam = MethodParameter.forExecutable(executable, paramIndex);</b>
+<b class="nc">&nbsp;                if (!autowiring) {</b>
+<b class="nc">&nbsp;                    throw new UnsatisfiedDependencyException(mbd.getResourceDescription(), beanName, new InjectionPoint(methodParam), &quot;Ambiguous argument values for parameter of type [&quot; + paramType.getName() + &quot;] - did you specify the correct bean references as arguments?&quot;);</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                try {
+<b class="pc">&nbsp;                    ConstructorDependencyDescriptor desc = new ConstructorDependencyDescriptor(methodParam, true);</b>
+<b class="nc">&nbsp;                    Set&lt;String&gt; autowiredBeanNames = new LinkedHashSet(2);</b>
+<b class="nc">&nbsp;                    Object arg = this.resolveAutowiredArgument(desc, paramType, beanName, autowiredBeanNames, converter, fallback);</b>
+<b class="nc">&nbsp;                    if (arg != null) {</b>
+&nbsp;                        this.setShortcutIfPossible(desc, paramType, autowiredBeanNames);
+<b class="pc">&nbsp;                    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                    allAutowiredBeanNames.addAll(autowiredBeanNames);</b>
+<b class="nc">&nbsp;                    args.rawArguments[paramIndex] = arg;</b>
+&nbsp;                    args.arguments[paramIndex] = arg;
+<b class="pc">&nbsp;                    args.preparedArguments[paramIndex] = desc;</b>
+<b class="nc">&nbsp;                    args.resolveNecessary = true;</b>
+<b class="nc">&nbsp;                } catch (BeansException ex) {</b>
+&nbsp;                    throw new UnsatisfiedDependencyException(mbd.getResourceDescription(), beanName, new InjectionPoint(methodParam), ex);
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+<b class="pc">&nbsp;</b>
+<b class="fc">&nbsp;        this.registerDependentBeans(executable, beanName, allAutowiredBeanNames);</b>
+<b class="fc">&nbsp;        return args;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private Object[] resolvePreparedArguments(String beanName, RootBeanDefinition mbd, BeanWrapper bw, Executable executable, Object[] argsToResolve) {
+<b class="fc">&nbsp;        TypeConverter customConverter = this.beanFactory.getCustomTypeConverter();</b>
+<b class="fc">&nbsp;        TypeConverter converter = (TypeConverter)(customConverter != null ? customConverter : bw);</b>
+&nbsp;        BeanDefinitionValueResolver valueResolver = new BeanDefinitionValueResolver(this.beanFactory, beanName, mbd, converter);
+&nbsp;        Class&lt;?&gt;[] paramTypes = executable.getParameterTypes();
+&nbsp;        Object[] resolvedArgs = new Object[argsToResolve.length];
+&nbsp;
+&nbsp;        for(int argIndex = 0; argIndex &lt; argsToResolve.length; ++argIndex) {
+&nbsp;            Object argValue = argsToResolve[argIndex];
+<b class="fc">&nbsp;            Class&lt;?&gt; paramType = paramTypes[argIndex];</b>
+&nbsp;            boolean convertNecessary = false;
+&nbsp;            if (argValue instanceof ConstructorDependencyDescriptor descriptor) {
+&nbsp;                try {
+<b class="nc">&nbsp;                    argValue = this.resolveAutowiredArgument(descriptor, paramType, beanName, (Set)null, converter, true);</b>
+&nbsp;                } catch (BeansException ex) {
+&nbsp;                    Set&lt;String&gt; autowiredBeanNames = null;
+&nbsp;                    if (descriptor.hasShortcut()) {
+&nbsp;                        descriptor.setShortcut((String)null);
+&nbsp;                        autowiredBeanNames = new LinkedHashSet(2);
+&nbsp;                    }
+&nbsp;
+&nbsp;                    this.logger.debug(&quot;Failed to resolve cached argument&quot;, ex);
+&nbsp;                    argValue = this.resolveAutowiredArgument(descriptor, paramType, beanName, autowiredBeanNames, converter, true);
+&nbsp;                    if (autowiredBeanNames != null &amp;&amp; !descriptor.hasShortcut()) {
+&nbsp;                        if (argValue != null) {
+<b class="fc">&nbsp;                            this.setShortcutIfPossible(descriptor, paramType, autowiredBeanNames);</b>
+<b class="pc">&nbsp;                        }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;                        this.registerDependentBeans(executable, beanName, autowiredBeanNames);
+&nbsp;                    }
+<b class="fc">&nbsp;                }</b>
+&nbsp;            } else if (argValue instanceof BeanMetadataElement) {
+<b class="fc">&nbsp;                argValue = valueResolver.resolveValueIfNecessary(&quot;constructor argument&quot;, argValue);</b>
+<b class="fc">&nbsp;                convertNecessary = true;</b>
+<b class="pc">&nbsp;            } else if (argValue instanceof String) {</b>
+<b class="nc">&nbsp;                String text = (String)argValue;</b>
+&nbsp;                argValue = this.beanFactory.evaluateBeanDefinitionString(text, mbd);
+&nbsp;                convertNecessary = true;
+<b class="pc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            if (convertNecessary) {
+<b class="fc">&nbsp;                MethodParameter methodParam = MethodParameter.forExecutable(executable, argIndex);</b>
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;                try {</b>
+&nbsp;                    argValue = converter.convertIfNecessary(argValue, paramType, methodParam);
+&nbsp;                } catch (TypeMismatchException ex) {
+<b class="fc">&nbsp;                    String var10002 = mbd.getResourceDescription();</b>
+<b class="fc">&nbsp;                    InjectionPoint var10004 = new InjectionPoint(methodParam);</b>
+<b class="fc">&nbsp;                    String var10005 = ObjectUtils.nullSafeClassName(argValue);</b>
+<b class="fc">&nbsp;                    throw new UnsatisfiedDependencyException(var10002, beanName, var10004, &quot;Could not convert argument value of type [&quot; + var10005 + &quot;] to required type [&quot; + paramType.getName() + &quot;]: &quot; + ex.getMessage());</b>
+<b class="fc">&nbsp;                }</b>
+<b class="fc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            resolvedArgs[argIndex] = argValue;
+&nbsp;        }
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;        return resolvedArgs;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private Constructor&lt;?&gt; getUserDeclaredConstructor(Constructor&lt;?&gt; constructor) {
+<b class="nc">&nbsp;        Class&lt;?&gt; declaringClass = constructor.getDeclaringClass();</b>
+<b class="nc">&nbsp;        Class&lt;?&gt; userClass = ClassUtils.getUserClass(declaringClass);</b>
+<b class="nc">&nbsp;        if (userClass != declaringClass) {</b>
+<b class="nc">&nbsp;            try {</b>
+<b class="nc">&nbsp;                return userClass.getDeclaredConstructor(constructor.getParameterTypes());</b>
+<b class="nc">&nbsp;            } catch (NoSuchMethodException var5) {</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        return constructor;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    Object resolveAutowiredArgument(DependencyDescriptor descriptor, Class&lt;?&gt; paramType, String beanName, @Nullable Set&lt;String&gt; autowiredBeanNames, TypeConverter typeConverter, boolean fallback) {
+&nbsp;        if (InjectionPoint.class.isAssignableFrom(paramType)) {
+&nbsp;            InjectionPoint injectionPoint = (InjectionPoint)currentInjectionPoint.get();
+&nbsp;            if (injectionPoint == null) {
+&nbsp;                throw new IllegalStateException(&quot;No current InjectionPoint available for &quot; + String.valueOf(descriptor));
+&nbsp;            } else {
+&nbsp;                return injectionPoint;
+&nbsp;            }
+<b class="fc">&nbsp;        } else {</b>
+<b class="pc">&nbsp;            try {</b>
+&nbsp;                return this.beanFactory.resolveDependency(descriptor, beanName, autowiredBeanNames, typeConverter);
+<b class="fc">&nbsp;            } catch (NoUniqueBeanDefinitionException ex) {</b>
+<b class="fc">&nbsp;                throw ex;</b>
+<b class="fc">&nbsp;            } catch (NoSuchBeanDefinitionException ex) {</b>
+&nbsp;                if (fallback) {
+<b class="fc">&nbsp;                    if (paramType.isArray()) {</b>
+<b class="fc">&nbsp;                        return Array.newInstance(paramType.componentType(), 0);</b>
+<b class="pc">&nbsp;                    }</b>
+&nbsp;
+<b class="fc">&nbsp;                    if (CollectionFactory.isApproximableCollectionType(paramType)) {</b>
+<b class="fc">&nbsp;                        return CollectionFactory.createCollection(paramType, 0);</b>
+<b class="fc">&nbsp;                    }</b>
+&nbsp;
+&nbsp;                    if (CollectionFactory.isApproximableMapType(paramType)) {
+&nbsp;                        return CollectionFactory.createMap(paramType, 0);
+<b class="pc">&nbsp;                    }</b>
+<b class="fc">&nbsp;                }</b>
+&nbsp;
+&nbsp;                throw ex;
+<b class="fc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private void setShortcutIfPossible(ConstructorDependencyDescriptor descriptor, Class&lt;?&gt; paramType, Set&lt;String&gt; autowiredBeanNames) {</b>
+&nbsp;        if (autowiredBeanNames.size() == 1) {
+<b class="pc">&nbsp;            String autowiredBeanName = (String)autowiredBeanNames.iterator().next();</b>
+<b class="nc">&nbsp;            if (this.beanFactory.containsBean(autowiredBeanName) &amp;&amp; this.beanFactory.isTypeMatch(autowiredBeanName, paramType)) {</b>
+<b class="nc">&nbsp;                descriptor.setShortcut(autowiredBeanName);</b>
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    private void registerDependentBeans(Executable executable, String beanName, Set&lt;String&gt; autowiredBeanNames) {
+&nbsp;        for(String autowiredBeanName : autowiredBeanNames) {
+<b class="nc">&nbsp;            this.beanFactory.registerDependentBean(autowiredBeanName, beanName);</b>
+<b class="nc">&nbsp;            if (this.logger.isDebugEnabled()) {</b>
+&nbsp;                this.logger.debug(&quot;Autowiring by type from bean name &#39;&quot; + beanName + &quot;&#39; via &quot; + (executable instanceof Constructor ? &quot;constructor&quot; : &quot;factory method&quot;) + &quot; to bean named &#39;&quot; + autowiredBeanName + &quot;&#39;&quot;);
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="fc">&nbsp;    }</b>
+<b class="pc">&nbsp;</b>
+<b class="fc">&nbsp;    public Executable resolveConstructorOrFactoryMethod(String beanName, RootBeanDefinition mbd) {</b>
+<b class="fc">&nbsp;        Supplier&lt;ResolvableType&gt; beanType = () -&gt; this.getBeanType(beanName, mbd);</b>
+<b class="fc">&nbsp;        List&lt;ResolvableType&gt; valueTypes = mbd.hasConstructorArgumentValues() ? this.determineParameterValueTypes(mbd) : Collections.emptyList();</b>
+&nbsp;        Method resolvedFactoryMethod = this.resolveFactoryMethod(beanName, mbd, valueTypes);
+&nbsp;        if (resolvedFactoryMethod != null) {
+<b class="fc">&nbsp;            return resolvedFactoryMethod;</b>
+<b class="fc">&nbsp;        } else {</b>
+&nbsp;            Class&lt;?&gt; factoryBeanClass = this.getFactoryBeanClass(beanName, mbd);
+&nbsp;            if (factoryBeanClass != null &amp;&amp; !factoryBeanClass.equals(mbd.getResolvableType().toClass())) {
+<b class="fc">&nbsp;                ResolvableType resolvableType = mbd.getResolvableType();</b>
+&nbsp;                boolean isCompatible = ResolvableType.forClass(factoryBeanClass).as(FactoryBean.class).getGeneric(new int[]{0}).isAssignableFrom(resolvableType);
+&nbsp;                Assert.state(isCompatible, () -&gt; String.format(&quot;Incompatible target type &#39;%s&#39; for factory bean &#39;%s&#39;&quot;, resolvableType.toClass().getName(), factoryBeanClass.getName()));
+<b class="fc">&nbsp;                Constructor&lt;?&gt; constructor = this.resolveConstructor(beanName, mbd, () -&gt; ResolvableType.forClass(factoryBeanClass), valueTypes);</b>
+<b class="fc">&nbsp;                if (constructor != null) {</b>
+<b class="fc">&nbsp;                    return constructor;</b>
+<b class="fc">&nbsp;                } else {</b>
+&nbsp;                    String var11 = String.valueOf(mbd);
+&nbsp;                    throw new IllegalStateException(&quot;No suitable FactoryBean constructor found for &quot; + var11 + &quot; and argument types &quot; + String.valueOf(valueTypes));
+&nbsp;                }
+<b class="fc">&nbsp;            } else {</b>
+<b class="fc">&nbsp;                Constructor&lt;?&gt; constructor = this.resolveConstructor(beanName, mbd, beanType, valueTypes);</b>
+<b class="fc">&nbsp;                if (constructor != null) {</b>
+&nbsp;                    return constructor;
+<b class="pc">&nbsp;                } else {</b>
+<b class="fc">&nbsp;                    String var10002 = String.valueOf(mbd);</b>
+&nbsp;                    throw new IllegalStateException(&quot;No constructor or factory method candidate found for &quot; + var10002 + &quot; and argument types &quot; + String.valueOf(valueTypes));
+<b class="fc">&nbsp;                }</b>
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    private List&lt;ResolvableType&gt; determineParameterValueTypes(RootBeanDefinition mbd) {
+&nbsp;        List&lt;ResolvableType&gt; parameterTypes = new ArrayList();
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        for(ConstructorArgumentValues.ValueHolder valueHolder : mbd.getConstructorArgumentValues().getIndexedArgumentValues().values()) {</b>
+&nbsp;            parameterTypes.add(this.determineParameterValueType(mbd, valueHolder));
+&nbsp;        }
+&nbsp;
+&nbsp;        for(ConstructorArgumentValues.ValueHolder valueHolder : mbd.getConstructorArgumentValues().getGenericArgumentValues()) {
+<b class="fc">&nbsp;            parameterTypes.add(this.determineParameterValueType(mbd, valueHolder));</b>
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+&nbsp;        return parameterTypes;
+&nbsp;    }
+&nbsp;
+&nbsp;    private ResolvableType determineParameterValueType(RootBeanDefinition mbd, ConstructorArgumentValues.ValueHolder valueHolder) {
+&nbsp;        if (valueHolder.getType() != null) {
+&nbsp;            return ResolvableType.forClass(ClassUtils.resolveClassName(valueHolder.getType(), this.beanFactory.getBeanClassLoader()));
+&nbsp;        } else {
+&nbsp;            Object value = valueHolder.getValue();
+<b class="nc">&nbsp;            if (value instanceof BeanReference) {</b>
+<b class="nc">&nbsp;                BeanReference br = (BeanReference)value;</b>
+<b class="nc">&nbsp;                if (value instanceof RuntimeBeanReference) {</b>
+&nbsp;                    RuntimeBeanReference rbr = (RuntimeBeanReference)value;
+<b class="nc">&nbsp;                    if (rbr.getBeanType() != null) {</b>
+&nbsp;                        return ResolvableType.forClass(rbr.getBeanType());
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                return ResolvableType.forClass(this.beanFactory.getType(br.getBeanName(), false));</b>
+<b class="nc">&nbsp;            } else if (value instanceof BeanDefinition) {</b>
+<b class="nc">&nbsp;                BeanDefinition innerBd = (BeanDefinition)value;</b>
+&nbsp;                String nameToUse = &quot;(inner bean)&quot;;
+<b class="nc">&nbsp;                ResolvableType type = this.getBeanType(nameToUse, this.beanFactory.getMergedBeanDefinition(nameToUse, innerBd, mbd));</b>
+&nbsp;                return FactoryBean.class.isAssignableFrom(type.toClass()) ? type.as(FactoryBean.class).getGeneric(new int[]{0}) : type;
+&nbsp;            } else if (value instanceof TypedStringValue) {
+&nbsp;                TypedStringValue typedValue = (TypedStringValue)value;
+&nbsp;                return typedValue.hasTargetType() ? ResolvableType.forClass(typedValue.getTargetType()) : ResolvableType.forClass(String.class);
+<b class="nc">&nbsp;            } else if (value instanceof Class) {</b>
+<b class="nc">&nbsp;                Class&lt;?&gt; clazz = (Class)value;</b>
+&nbsp;                return ResolvableType.forClassWithGenerics(Class.class, new Class[]{clazz});
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                return ResolvableType.forInstance(value);</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    @Nullable</b>
+&nbsp;    private Constructor&lt;?&gt; resolveConstructor(String beanName, RootBeanDefinition mbd, Supplier&lt;ResolvableType&gt; beanType, List&lt;ResolvableType&gt; valueTypes) {
+&nbsp;        Class&lt;?&gt; type = ClassUtils.getUserClass(((ResolvableType)beanType.get()).toClass());
+<b class="nc">&nbsp;        Constructor&lt;?&gt;[] ctors = this.beanFactory.determineConstructorsFromBeanPostProcessors(type, beanName);</b>
+<b class="nc">&nbsp;        if (ctors == null) {</b>
+&nbsp;            if (!mbd.hasConstructorArgumentValues()) {
+<b class="nc">&nbsp;                ctors = mbd.getPreferredConstructors();</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            if (ctors == null) {
+<b class="nc">&nbsp;                ctors = mbd.isNonPublicAccessAllowed() ? type.getDeclaredConstructors() : type.getConstructors();</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        if (ctors.length == 1) {</b>
+<b class="nc">&nbsp;            return ctors[0];</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            Function&lt;Constructor&lt;?&gt;, List&lt;ResolvableType&gt;&gt; parameterTypesFactory = (executable) -&gt; {
+<b class="nc">&nbsp;                List&lt;ResolvableType&gt; types = new ArrayList();</b>
+<b class="nc">&nbsp;</b>
+&nbsp;                for(int i = 0; i &lt; executable.getParameterCount(); ++i) {
+<b class="nc">&nbsp;                    types.add(ResolvableType.forConstructorParameter(executable, i));</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                return types;</b>
+<b class="nc">&nbsp;            };</b>
+<b class="nc">&nbsp;            List&lt;Constructor&lt;?&gt;&gt; matches = Arrays.stream(ctors).filter((executable) -&gt; this.match((List)parameterTypesFactory.apply(executable), valueTypes, ConstructorResolver.FallbackMode.NONE)).toList();</b>
+<b class="nc">&nbsp;            if (matches.size() == 1) {</b>
+&nbsp;                return (Constructor)matches.get(0);
+&nbsp;            } else {
+<b class="nc">&nbsp;                List&lt;Constructor&lt;?&gt;&gt; assignableElementFallbackMatches = Arrays.stream(ctors).filter((executable) -&gt; this.match((List)parameterTypesFactory.apply(executable), valueTypes, ConstructorResolver.FallbackMode.ASSIGNABLE_ELEMENT)).toList();</b>
+&nbsp;                if (assignableElementFallbackMatches.size() == 1) {
+<b class="nc">&nbsp;                    return (Constructor)assignableElementFallbackMatches.get(0);</b>
+&nbsp;                } else {
+&nbsp;                    List&lt;Constructor&lt;?&gt;&gt; typeConversionFallbackMatches = Arrays.stream(ctors).filter((executable) -&gt; this.match((List)parameterTypesFactory.apply(executable), valueTypes, ConstructorResolver.FallbackMode.TYPE_CONVERSION)).toList();
+&nbsp;                    return typeConversionFallbackMatches.size() == 1 ? (Constructor)typeConversionFallbackMatches.get(0) : null;
+<b class="fc">&nbsp;                }</b>
+<b class="fc">&nbsp;            }</b>
+<b class="pc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    @Nullable
+&nbsp;    private Method resolveFactoryMethod(String beanName, RootBeanDefinition mbd, List&lt;ResolvableType&gt; valueTypes) {
+&nbsp;        if (mbd.isFactoryMethodUnique) {
+&nbsp;            Method resolvedFactoryMethod = mbd.getResolvedFactoryMethod();
+&nbsp;            if (resolvedFactoryMethod != null) {
+&nbsp;                return resolvedFactoryMethod;
+<b class="fc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        String factoryMethodName = mbd.getFactoryMethodName();
+&nbsp;        if (factoryMethodName == null) {
+&nbsp;            return null;
+&nbsp;        } else {
+&nbsp;            String factoryBeanName = mbd.getFactoryBeanName();
+&nbsp;            Class&lt;?&gt; factoryClass;
+&nbsp;            boolean isStatic;
+<b class="pc">&nbsp;            if (factoryBeanName != null) {</b>
+<b class="nc">&nbsp;                factoryClass = this.beanFactory.getType(factoryBeanName);</b>
+<b class="nc">&nbsp;                isStatic = false;</b>
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                factoryClass = this.beanFactory.resolveBeanClass(mbd, beanName, new Class[0]);
+<b class="nc">&nbsp;                isStatic = true;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            Assert.state(factoryClass != null, () -&gt; &quot;Failed to determine bean class of &quot; + String.valueOf(mbd));
+<b class="fc">&nbsp;            Method[] rawCandidates = this.getCandidateMethods(factoryClass, mbd);</b>
+&nbsp;            List&lt;Method&gt; candidates = new ArrayList();
+&nbsp;
+&nbsp;            for(Method candidate : rawCandidates) {
+&nbsp;                if ((!isStatic || this.isStaticCandidate(candidate, factoryClass)) &amp;&amp; mbd.isFactoryMethod(candidate)) {
+&nbsp;                    candidates.add(candidate);
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            Method result = null;</b>
+<b class="nc">&nbsp;            if (candidates.size() == 1) {</b>
+&nbsp;                result = (Method)candidates.get(0);
+<b class="nc">&nbsp;            } else if (candidates.size() &gt; 1) {</b>
+<b class="nc">&nbsp;                Function&lt;Method, List&lt;ResolvableType&gt;&gt; parameterTypesFactory = (method) -&gt; {</b>
+&nbsp;                    List&lt;ResolvableType&gt; types = new ArrayList();
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                    for(int i = 0; i &lt; method.getParameterCount(); ++i) {</b>
+&nbsp;                        types.add(ResolvableType.forMethodParameter(method, i));
+&nbsp;                    }
+&nbsp;
+&nbsp;                    return types;
+&nbsp;                };
+&nbsp;                result = this.resolveFactoryMethod(candidates, parameterTypesFactory, valueTypes);
+&nbsp;            }
+&nbsp;
+&nbsp;            if (result == null) {
+<b class="fc">&nbsp;                String var10002 = mbd.getResourceDescription();</b>
+<b class="fc">&nbsp;                String var10004 = factoryClass.getName();</b>
+<b class="fc">&nbsp;                throw new BeanCreationException(var10002, beanName, &quot;No matching factory method found on class [&quot; + var10004 + &quot;]: &quot; + (mbd.getFactoryBeanName() != null ? &quot;factory bean &#39;&quot; + mbd.getFactoryBeanName() + &quot;&#39;; &quot; : &quot;&quot;) + &quot;factory method &#39;&quot; + mbd.getFactoryMethodName() + &quot;&#39;. &quot;);</b>
+<b class="pc">&nbsp;            } else {</b>
+<b class="fc">&nbsp;                return result;</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Nullable
+&nbsp;    private Method resolveFactoryMethod(List&lt;Method&gt; executables, Function&lt;Method, List&lt;ResolvableType&gt;&gt; parameterTypesFactory, List&lt;ResolvableType&gt; valueTypes) {
+&nbsp;        List&lt;Method&gt; matches = executables.stream().filter((executable) -&gt; this.match((List)parameterTypesFactory.apply(executable), valueTypes, ConstructorResolver.FallbackMode.NONE)).toList();
+<b class="fc">&nbsp;        if (matches.size() == 1) {</b>
+<b class="fc">&nbsp;            return (Method)matches.get(0);</b>
+<b class="pc">&nbsp;        } else {</b>
+<b class="nc">&nbsp;            List&lt;Method&gt; assignableElementFallbackMatches = executables.stream().filter((executable) -&gt; this.match((List)parameterTypesFactory.apply(executable), valueTypes, ConstructorResolver.FallbackMode.ASSIGNABLE_ELEMENT)).toList();</b>
+<b class="nc">&nbsp;            if (assignableElementFallbackMatches.size() == 1) {</b>
+&nbsp;                return (Method)assignableElementFallbackMatches.get(0);
+&nbsp;            } else {
+&nbsp;                List&lt;Method&gt; typeConversionFallbackMatches = executables.stream().filter((executable) -&gt; this.match((List)parameterTypesFactory.apply(executable), valueTypes, ConstructorResolver.FallbackMode.TYPE_CONVERSION)).toList();
+&nbsp;                Assert.state(typeConversionFallbackMatches.size() &lt;= 1, () -&gt; {
+&nbsp;                    String var10000 = String.valueOf(valueTypes);
+&nbsp;                    return &quot;Multiple matches with parameters &#39;&quot; + var10000 + &quot;&#39;: &quot; + String.valueOf(typeConversionFallbackMatches);
+&nbsp;                });
+&nbsp;                return typeConversionFallbackMatches.size() == 1 ? (Method)typeConversionFallbackMatches.get(0) : null;
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private boolean match(List&lt;ResolvableType&gt; parameterTypes, List&lt;ResolvableType&gt; valueTypes, FallbackMode fallbackMode) {</b>
+<b class="nc">&nbsp;        if (parameterTypes.size() != valueTypes.size()) {</b>
+<b class="nc">&nbsp;            return false;</b>
+&nbsp;        } else {
+&nbsp;            for(int i = 0; i &lt; parameterTypes.size(); ++i) {
+<b class="nc">&nbsp;                if (!this.isMatch((ResolvableType)parameterTypes.get(i), (ResolvableType)valueTypes.get(i), fallbackMode)) {</b>
+<b class="nc">&nbsp;                    return false;</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private boolean isMatch(ResolvableType parameterType, ResolvableType valueType, FallbackMode fallbackMode) {</b>
+<b class="nc">&nbsp;        if (this.isAssignable(valueType).test(parameterType)) {</b>
+<b class="nc">&nbsp;            return true;</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            boolean var10000;</b>
+&nbsp;            switch (fallbackMode) {
+&nbsp;                case ASSIGNABLE_ELEMENT -&gt; var10000 = this.isAssignable(valueType).test(this.extractElementType(parameterType));
+&nbsp;                case TYPE_CONVERSION -&gt; var10000 = this.typeConversionFallback(valueType).test(parameterType);
+&nbsp;                default -&gt; var10000 = false;
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            return var10000;</b>
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private Predicate&lt;ResolvableType&gt; isAssignable(ResolvableType valueType) {
+&nbsp;        return (parameterType) -&gt; valueType == ResolvableType.NONE || parameterType.isAssignableFrom(valueType);
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private ResolvableType extractElementType(ResolvableType parameterType) {</b>
+<b class="nc">&nbsp;        if (parameterType.isArray()) {</b>
+<b class="nc">&nbsp;            return parameterType.getComponentType();</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            return Collection.class.isAssignableFrom(parameterType.toClass()) ? parameterType.as(Collection.class).getGeneric(new int[]{0}) : ResolvableType.NONE;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private Predicate&lt;ResolvableType&gt; typeConversionFallback(ResolvableType valueType) {
+&nbsp;        return (parameterType) -&gt; this.valueOrCollection(valueType, this::isStringForClassFallback).test(parameterType) ? true : this.valueOrCollection(valueType, this::isSimpleValueType).test(parameterType);
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private Predicate&lt;ResolvableType&gt; valueOrCollection(ResolvableType valueType, Function&lt;ResolvableType, Predicate&lt;ResolvableType&gt;&gt; predicateProvider) {</b>
+<b class="nc">&nbsp;        return (parameterType) -&gt; {</b>
+&nbsp;            if (((Predicate)predicateProvider.apply(valueType)).test(parameterType)) {
+<b class="nc">&nbsp;                return true;</b>
+<b class="nc">&nbsp;            } else {</b>
+<b class="nc">&nbsp;                return ((Predicate)predicateProvider.apply(this.extractElementType(valueType))).test(this.extractElementType(parameterType)) ? true : ((Predicate)predicateProvider.apply(valueType)).test(this.extractElementType(parameterType));</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        };</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private Predicate&lt;ResolvableType&gt; isStringForClassFallback(ResolvableType valueType) {</b>
+&nbsp;        return (parameterType) -&gt; valueType.isAssignableFrom(String.class) &amp;&amp; parameterType.isAssignableFrom(Class.class);
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private Predicate&lt;ResolvableType&gt; isSimpleValueType(ResolvableType valueType) {</b>
+<b class="nc">&nbsp;        return (parameterType) -&gt; BeanUtils.isSimpleValueType(parameterType.toClass()) &amp;&amp; BeanUtils.isSimpleValueType(valueType.toClass());</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    @Nullable
+<b class="nc">&nbsp;    private Class&lt;?&gt; getFactoryBeanClass(String beanName, RootBeanDefinition mbd) {</b>
+<b class="nc">&nbsp;        Class&lt;?&gt; beanClass = this.beanFactory.resolveBeanClass(mbd, beanName, new Class[0]);</b>
+<b class="nc">&nbsp;        return beanClass != null &amp;&amp; FactoryBean.class.isAssignableFrom(beanClass) ? beanClass : null;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private ResolvableType getBeanType(String beanName, RootBeanDefinition mbd) {
+<b class="nc">&nbsp;        ResolvableType resolvableType = mbd.getResolvableType();</b>
+<b class="nc">&nbsp;        return resolvableType != ResolvableType.NONE ? resolvableType : ResolvableType.forClass(this.beanFactory.resolveBeanClass(mbd, beanName, new Class[0]));</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    static InjectionPoint setCurrentInjectionPoint(@Nullable InjectionPoint injectionPoint) {
+&nbsp;        InjectionPoint old = (InjectionPoint)currentInjectionPoint.get();
+&nbsp;        if (injectionPoint != null) {
+&nbsp;            currentInjectionPoint.set(injectionPoint);
+&nbsp;        } else {
+&nbsp;            currentInjectionPoint.remove();
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return old;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    @Nullable
+<b class="nc">&nbsp;    static Constructor&lt;?&gt;[] determinePreferredConstructors(Class&lt;?&gt; clazz) {</b>
+<b class="nc">&nbsp;        Constructor&lt;?&gt; primaryCtor = BeanUtils.findPrimaryConstructor(clazz);</b>
+&nbsp;
+&nbsp;        Constructor&lt;?&gt; defaultCtor;
+<b class="nc">&nbsp;        try {</b>
+<b class="nc">&nbsp;            defaultCtor = clazz.getDeclaredConstructor();</b>
+&nbsp;        } catch (NoSuchMethodException var4) {
+&nbsp;            defaultCtor = null;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        if (primaryCtor != null) {</b>
+<b class="nc">&nbsp;            return defaultCtor != null &amp;&amp; !primaryCtor.equals(defaultCtor) ? new Constructor[]{primaryCtor, defaultCtor} : new Constructor[]{primaryCtor};</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            Constructor&lt;?&gt;[] ctors = clazz.getConstructors();</b>
+&nbsp;            if (ctors.length == 1) {
+<b class="nc">&nbsp;                return defaultCtor != null &amp;&amp; !ctors[0].equals(defaultCtor) ? new Constructor[]{ctors[0], defaultCtor} : ctors;</b>
+<b class="nc">&nbsp;            } else {</b>
+&nbsp;                if (ctors.length == 0) {
+<b class="nc">&nbsp;                    ctors = clazz.getDeclaredConstructors();</b>
+<b class="nc">&nbsp;                    if (ctors.length == 1) {</b>
+<b class="nc">&nbsp;                        return ctors;</b>
+&nbsp;                    }
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;                return null;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private static class ArgumentsHolder {
+<b class="nc">&nbsp;        public final Object[] rawArguments;</b>
+<b class="nc">&nbsp;        public final Object[] arguments;</b>
+<b class="nc">&nbsp;        public final Object[] preparedArguments;</b>
+&nbsp;        public boolean resolveNecessary = false;
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        public ArgumentsHolder(int size) {</b>
+&nbsp;            this.rawArguments = new Object[size];
+&nbsp;            this.arguments = new Object[size];
+&nbsp;            this.preparedArguments = new Object[size];
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        public ArgumentsHolder(Object[] args) {</b>
+<b class="nc">&nbsp;            this.rawArguments = args;</b>
+<b class="nc">&nbsp;            this.arguments = args;</b>
+&nbsp;            this.preparedArguments = args;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        public int getTypeDifferenceWeight(Class&lt;?&gt;[] paramTypes) {</b>
+<b class="nc">&nbsp;            int typeDiffWeight = MethodInvoker.getTypeDifferenceWeight(paramTypes, this.arguments);</b>
+<b class="nc">&nbsp;            int rawTypeDiffWeight = MethodInvoker.getTypeDifferenceWeight(paramTypes, this.rawArguments) - 1024;</b>
+&nbsp;            return Math.min(rawTypeDiffWeight, typeDiffWeight);
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        public int getAssignabilityWeight(Class&lt;?&gt;[] paramTypes) {</b>
+<b class="nc">&nbsp;            for(int i = 0; i &lt; paramTypes.length; ++i) {</b>
+&nbsp;                if (!ClassUtils.isAssignableValue(paramTypes[i], this.arguments[i])) {
+&nbsp;                    return Integer.MAX_VALUE;
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            for(int i = 0; i &lt; paramTypes.length; ++i) {
+<b class="nc">&nbsp;                if (!ClassUtils.isAssignableValue(paramTypes[i], this.rawArguments[i])) {</b>
+<b class="nc">&nbsp;                    return 2147483135;</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;            return 2147482623;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public void storeCache(RootBeanDefinition mbd, Executable constructorOrFactoryMethod) {
+<b class="nc">&nbsp;            synchronized(mbd.constructorArgumentLock) {</b>
+<b class="nc">&nbsp;                mbd.resolvedConstructorOrFactoryMethod = constructorOrFactoryMethod;</b>
+<b class="nc">&nbsp;                mbd.constructorArgumentsResolved = true;</b>
+&nbsp;                if (this.resolveNecessary) {
+<b class="nc">&nbsp;                    mbd.preparedConstructorArguments = this.preparedArguments;</b>
+<b class="nc">&nbsp;                } else {</b>
+<b class="nc">&nbsp;                    mbd.resolvedConstructorArguments = this.arguments;</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            }
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private static class ConstructorPropertiesChecker {
+&nbsp;        private ConstructorPropertiesChecker() {
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        @Nullable</b>
+<b class="nc">&nbsp;        public static String[] evaluate(Constructor&lt;?&gt; candidate, int paramCount) {</b>
+<b class="nc">&nbsp;            ConstructorProperties cp = (ConstructorProperties)candidate.getAnnotation(ConstructorProperties.class);</b>
+<b class="nc">&nbsp;            if (cp != null) {</b>
+&nbsp;                String[] names = cp.value();
+<b class="nc">&nbsp;                if (names.length != paramCount) {</b>
+&nbsp;                    throw new IllegalStateException(&quot;Constructor annotated with @ConstructorProperties but not corresponding to actual number of parameters (&quot; + paramCount + &quot;): &quot; + String.valueOf(candidate));
+&nbsp;                } else {
+<b class="nc">&nbsp;                    return names;</b>
+&nbsp;                }
+&nbsp;            } else {
+&nbsp;                return null;
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private static class ConstructorDependencyDescriptor extends DependencyDescriptor {</b>
+<b class="nc">&nbsp;        @Nullable</b>
+<b class="nc">&nbsp;        private volatile String shortcut;</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        public ConstructorDependencyDescriptor(MethodParameter methodParameter, boolean required) {</b>
+&nbsp;            super(methodParameter, required);
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        public void setShortcut(@Nullable String shortcut) {
+<b class="nc">&nbsp;            this.shortcut = shortcut;</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        public boolean hasShortcut() {
+<b class="nc">&nbsp;            return this.shortcut != null;</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        @Nullable</b>
+<b class="nc">&nbsp;        public Object resolveShortcut(BeanFactory beanFactory) {</b>
+<b class="nc">&nbsp;            String shortcut = this.shortcut;</b>
+<b class="nc">&nbsp;            return shortcut != null ? beanFactory.getBean(shortcut, this.getDependencyType()) : null;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean usesStandardBeanLookup() {
+&nbsp;            return true;
+&nbsp;        }
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private static enum FallbackMode {
+<b class="nc">&nbsp;        NONE,</b>
+<b class="nc">&nbsp;        ASSIGNABLE_ELEMENT,</b>
+<b class="nc">&nbsp;        TYPE_CONVERSION;</b>
+&nbsp;
+&nbsp;        private FallbackMode() {
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:58</div>
+</div>
+</body>
+</html>

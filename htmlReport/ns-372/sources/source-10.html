@@ -1,0 +1,338 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ConditionEvaluator</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.context.annotation</a>
+</div>
+
+<h1>Coverage Summary for Class: ConditionEvaluator (org.springframework.context.annotation)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ConditionEvaluator</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (6/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    71.9%
+  </span>
+  <span class="absValue">
+    (23/32)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    87.5%
+  </span>
+  <span class="absValue">
+    (28/32)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ConditionEvaluator$ConditionContextImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    80%
+  </span>
+  <span class="absValue">
+    (8/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    60%
+  </span>
+  <span class="absValue">
+    (12/20)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    76.7%
+  </span>
+  <span class="absValue">
+    (23/30)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    87.5%
+  </span>
+  <span class="absValue">
+    (14/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    67.3%
+  </span>
+  <span class="absValue">
+    (35/52)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    82.3%
+  </span>
+  <span class="absValue">
+    (51/62)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.context.annotation;
+&nbsp;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.List;
+&nbsp;import org.springframework.beans.BeanUtils;
+&nbsp;import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+&nbsp;import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+&nbsp;import org.springframework.context.ConfigurableApplicationContext;
+&nbsp;import org.springframework.context.annotation.ConfigurationCondition.ConfigurationPhase;
+&nbsp;import org.springframework.core.annotation.AnnotationAwareOrderComparator;
+&nbsp;import org.springframework.core.env.Environment;
+&nbsp;import org.springframework.core.env.EnvironmentCapable;
+&nbsp;import org.springframework.core.env.StandardEnvironment;
+&nbsp;import org.springframework.core.io.DefaultResourceLoader;
+&nbsp;import org.springframework.core.io.ResourceLoader;
+&nbsp;import org.springframework.core.type.AnnotatedTypeMetadata;
+&nbsp;import org.springframework.core.type.AnnotationMetadata;
+&nbsp;import org.springframework.lang.Nullable;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;import org.springframework.util.ClassUtils;
+&nbsp;import org.springframework.util.MultiValueMap;
+&nbsp;
+&nbsp;class ConditionEvaluator {
+&nbsp;    private final ConditionContextImpl context;
+&nbsp;
+&nbsp;    public ConditionEvaluator(@Nullable BeanDefinitionRegistry registry, @Nullable Environment environment, @Nullable ResourceLoader resourceLoader) {
+&nbsp;        this.context = new ConditionContextImpl(registry, environment, resourceLoader);
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean shouldSkip(AnnotatedTypeMetadata metadata) {
+&nbsp;        return this.shouldSkip(metadata, (ConfigurationCondition.ConfigurationPhase)null);
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean shouldSkip(@Nullable AnnotatedTypeMetadata metadata, @Nullable ConfigurationCondition.ConfigurationPhase phase) {
+&nbsp;        if (metadata != null &amp;&amp; metadata.isAnnotated(Conditional.class.getName())) {
+&nbsp;            if (phase == null) {
+&nbsp;                if (metadata instanceof AnnotationMetadata) {
+&nbsp;                    AnnotationMetadata annotationMetadata = (AnnotationMetadata)metadata;
+&nbsp;                    if (ConfigurationClassUtils.isConfigurationCandidate(annotationMetadata)) {
+&nbsp;                        return this.shouldSkip(metadata, ConfigurationPhase.PARSE_CONFIGURATION);
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                return this.shouldSkip(metadata, ConfigurationPhase.REGISTER_BEAN);
+&nbsp;            } else {
+&nbsp;                for(Condition condition : this.collectConditions(metadata)) {
+&nbsp;                    ConfigurationCondition.ConfigurationPhase requiredPhase = null;
+&nbsp;                    if (condition instanceof ConfigurationCondition) {
+&nbsp;                        ConfigurationCondition configurationCondition = (ConfigurationCondition)condition;
+&nbsp;                        requiredPhase = configurationCondition.getConfigurationPhase();
+<b class="fc">&nbsp;                    }</b>
+&nbsp;
+<b class="fc">&nbsp;                    if ((requiredPhase == null || requiredPhase == phase) &amp;&amp; !condition.matches(this.context, metadata)) {</b>
+&nbsp;                        return true;
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                return false;
+&nbsp;            }
+&nbsp;        } else {
+&nbsp;            return false;
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    List&lt;Condition&gt; collectConditions(@Nullable AnnotatedTypeMetadata metadata) {</b>
+&nbsp;        if (metadata != null &amp;&amp; metadata.isAnnotated(Conditional.class.getName())) {
+&nbsp;            List&lt;Condition&gt; conditions = new ArrayList();
+&nbsp;
+&nbsp;            for(String[] conditionClasses : this.getConditionClasses(metadata)) {
+&nbsp;                for(String conditionClass : conditionClasses) {
+&nbsp;                    Condition condition = this.getCondition(conditionClass, this.context.getClassLoader());
+&nbsp;                    conditions.add(condition);
+&nbsp;                }
+&nbsp;            }
+<b class="pc">&nbsp;</b>
+<b class="fc">&nbsp;            AnnotationAwareOrderComparator.sort(conditions);</b>
+&nbsp;            return conditions;
+&nbsp;        } else {
+<b class="pc">&nbsp;            return Collections.emptyList();</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private List&lt;String[]&gt; getConditionClasses(AnnotatedTypeMetadata metadata) {
+<b class="nc">&nbsp;        MultiValueMap&lt;String, Object&gt; attributes = metadata.getAllAnnotationAttributes(Conditional.class.getName(), true);</b>
+&nbsp;        Object values = attributes != null ? attributes.get(&quot;value&quot;) : null;
+&nbsp;        return (List)(values != null ? values : Collections.emptyList());
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private Condition getCondition(String conditionClassName, @Nullable ClassLoader classloader) {</b>
+<b class="fc">&nbsp;        Class&lt;?&gt; conditionClass = ClassUtils.resolveClassName(conditionClassName, classloader);</b>
+<b class="fc">&nbsp;        return (Condition)BeanUtils.instantiateClass(conditionClass);</b>
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private static class ConditionContextImpl implements ConditionContext {</b>
+&nbsp;        @Nullable
+&nbsp;        private final BeanDefinitionRegistry registry;
+&nbsp;        @Nullable
+<b class="fc">&nbsp;        private final ConfigurableListableBeanFactory beanFactory;</b>
+&nbsp;        private final Environment environment;
+&nbsp;        private final ResourceLoader resourceLoader;
+&nbsp;        @Nullable
+&nbsp;        private final ClassLoader classLoader;
+&nbsp;
+&nbsp;        public ConditionContextImpl(@Nullable BeanDefinitionRegistry registry, @Nullable Environment environment, @Nullable ResourceLoader resourceLoader) {
+&nbsp;            this.registry = registry;
+&nbsp;            this.beanFactory = deduceBeanFactory(registry);
+&nbsp;            this.environment = environment != null ? environment : deduceEnvironment(registry);
+<b class="pc">&nbsp;            this.resourceLoader = resourceLoader != null ? resourceLoader : deduceResourceLoader(registry);</b>
+<b class="fc">&nbsp;            this.classLoader = deduceClassLoader(resourceLoader, this.beanFactory);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        @Nullable</b>
+<b class="fc">&nbsp;        private static ConfigurableListableBeanFactory deduceBeanFactory(@Nullable BeanDefinitionRegistry source) {</b>
+<b class="fc">&nbsp;            if (source instanceof ConfigurableListableBeanFactory configurableListableBeanFactory) {</b>
+<b class="fc">&nbsp;                return configurableListableBeanFactory;</b>
+<b class="fc">&nbsp;            } else if (source instanceof ConfigurableApplicationContext configurableApplicationContext) {</b>
+&nbsp;                return configurableApplicationContext.getBeanFactory();
+&nbsp;            } else {
+<b class="fc">&nbsp;                return null;</b>
+<b class="fc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        private static Environment deduceEnvironment(@Nullable BeanDefinitionRegistry source) {
+&nbsp;            if (source instanceof EnvironmentCapable environmentCapable) {
+<b class="fc">&nbsp;                return environmentCapable.getEnvironment();</b>
+<b class="pc">&nbsp;            } else {</b>
+<b class="pc">&nbsp;                return new StandardEnvironment();</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        private static ResourceLoader deduceResourceLoader(@Nullable BeanDefinitionRegistry source) {</b>
+<b class="fc">&nbsp;            if (source instanceof ResourceLoader resourceLoader) {</b>
+&nbsp;                return resourceLoader;
+&nbsp;            } else {
+&nbsp;                return new DefaultResourceLoader();
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        @Nullable
+&nbsp;        private static ClassLoader deduceClassLoader(@Nullable ResourceLoader resourceLoader, @Nullable ConfigurableListableBeanFactory beanFactory) {
+&nbsp;            if (resourceLoader != null) {
+&nbsp;                ClassLoader classLoader = resourceLoader.getClassLoader();
+&nbsp;                if (classLoader != null) {
+&nbsp;                    return classLoader;
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            return beanFactory != null ? beanFactory.getBeanClassLoader() : ClassUtils.getDefaultClassLoader();
+&nbsp;        }
+&nbsp;
+&nbsp;        public BeanDefinitionRegistry getRegistry() {
+&nbsp;            Assert.state(this.registry != null, &quot;No BeanDefinitionRegistry available&quot;);
+&nbsp;            return this.registry;
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+&nbsp;        @Nullable
+<b class="fc">&nbsp;        public ConfigurableListableBeanFactory getBeanFactory() {</b>
+<b class="fc">&nbsp;            return this.beanFactory;</b>
+<b class="pc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;        public Environment getEnvironment() {</b>
+&nbsp;            return this.environment;
+&nbsp;        }
+&nbsp;
+&nbsp;        public ResourceLoader getResourceLoader() {
+<b class="fc">&nbsp;            return this.resourceLoader;</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+<b class="fc">&nbsp;        @Nullable</b>
+<b class="fc">&nbsp;        public ClassLoader getClassLoader() {</b>
+&nbsp;            return this.classLoader;
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
+</div>
+</body>
+</html>

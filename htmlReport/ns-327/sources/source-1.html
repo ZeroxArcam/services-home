@@ -1,0 +1,225 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > BufferingApplicationStartup</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.springframework.boot.context.metrics.buffering</a>
+</div>
+
+<h1>Coverage Summary for Class: BufferingApplicationStartup (org.springframework.boot.context.metrics.buffering)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">BufferingApplicationStartup</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/37)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.springframework.boot.context.metrics.buffering;
+&nbsp;
+&nbsp;import java.time.Clock;
+&nbsp;import java.time.Instant;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Iterator;
+&nbsp;import java.util.List;
+&nbsp;import java.util.concurrent.ConcurrentLinkedQueue;
+&nbsp;import java.util.concurrent.atomic.AtomicInteger;
+&nbsp;import java.util.concurrent.atomic.AtomicReference;
+&nbsp;import java.util.function.Predicate;
+&nbsp;import org.springframework.core.metrics.ApplicationStartup;
+&nbsp;import org.springframework.core.metrics.StartupStep;
+&nbsp;import org.springframework.util.Assert;
+&nbsp;
+&nbsp;public class BufferingApplicationStartup implements ApplicationStartup {
+&nbsp;    private final int capacity;
+&nbsp;    private final Clock clock;
+&nbsp;    private Instant startTime;
+&nbsp;    private final AtomicInteger idSeq;
+&nbsp;    private Predicate&lt;StartupStep&gt; filter;
+&nbsp;    private final AtomicReference&lt;BufferedStartupStep&gt; current;
+&nbsp;    private final AtomicInteger estimatedSize;
+&nbsp;    private final ConcurrentLinkedQueue&lt;StartupTimeline.TimelineEvent&gt; events;
+&nbsp;
+&nbsp;    public BufferingApplicationStartup(int capacity) {
+&nbsp;        this(capacity, Clock.systemDefaultZone());
+&nbsp;    }
+&nbsp;
+&nbsp;    BufferingApplicationStartup(int capacity, Clock clock) {
+&nbsp;        this.idSeq = new AtomicInteger();
+&nbsp;        this.filter = (step) -&gt; true;
+&nbsp;        this.current = new AtomicReference();
+&nbsp;        this.estimatedSize = new AtomicInteger();
+&nbsp;        this.events = new ConcurrentLinkedQueue();
+&nbsp;        this.capacity = capacity;
+&nbsp;        this.clock = clock;
+&nbsp;        this.startTime = clock.instant();
+&nbsp;    }
+&nbsp;
+&nbsp;    public void startRecording() {
+&nbsp;        Assert.state(this.events.isEmpty(), &quot;Cannot restart recording once steps have been buffered.&quot;);
+&nbsp;        this.startTime = this.clock.instant();
+&nbsp;    }
+&nbsp;
+&nbsp;    public void addFilter(Predicate&lt;StartupStep&gt; filter) {
+&nbsp;        this.filter = this.filter.and(filter);
+&nbsp;    }
+&nbsp;
+&nbsp;    public StartupStep start(String name) {
+&nbsp;        int id = this.idSeq.getAndIncrement();
+&nbsp;        Instant start = this.clock.instant();
+&nbsp;
+&nbsp;        BufferedStartupStep current;
+&nbsp;        BufferedStartupStep next;
+<b class="nc">&nbsp;        do {</b>
+&nbsp;            current = (BufferedStartupStep)this.current.get();
+<b class="nc">&nbsp;            BufferedStartupStep parent = this.getLatestActive(current);</b>
+&nbsp;            next = new BufferedStartupStep(parent, name, (long)id, start, this::record);
+<b class="nc">&nbsp;        } while(!this.current.compareAndSet(current, next));</b>
+&nbsp;
+<b class="nc">&nbsp;        return next;</b>
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    private void record(BufferedStartupStep step) {
+&nbsp;        if (this.filter.test(step) &amp;&amp; this.estimatedSize.get() &lt; this.capacity) {
+&nbsp;            this.estimatedSize.incrementAndGet();
+&nbsp;            this.events.add(new StartupTimeline.TimelineEvent(step, this.clock.instant()));
+&nbsp;        }
+&nbsp;
+&nbsp;        BufferedStartupStep current;
+<b class="nc">&nbsp;        BufferedStartupStep next;</b>
+&nbsp;        do {
+&nbsp;            current = (BufferedStartupStep)this.current.get();
+<b class="nc">&nbsp;            next = this.getLatestActive(current);</b>
+<b class="nc">&nbsp;        } while(!this.current.compareAndSet(current, next));</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private BufferedStartupStep getLatestActive(BufferedStartupStep step) {
+&nbsp;        while(step != null &amp;&amp; step.isEnded()) {
+&nbsp;            step = step.getParent();
+&nbsp;        }
+&nbsp;
+&nbsp;        return step;
+&nbsp;    }
+&nbsp;
+&nbsp;    public StartupTimeline getBufferedTimeline() {
+<b class="nc">&nbsp;        return new StartupTimeline(this.startTime, new ArrayList(this.events));</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public StartupTimeline drainBufferedTimeline() {
+&nbsp;        List&lt;StartupTimeline.TimelineEvent&gt; events = new ArrayList();
+&nbsp;        Iterator&lt;StartupTimeline.TimelineEvent&gt; iterator = this.events.iterator();
+&nbsp;
+&nbsp;        while(iterator.hasNext()) {
+&nbsp;            events.add((StartupTimeline.TimelineEvent)iterator.next());
+&nbsp;            iterator.remove();
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        this.estimatedSize.set(0);
+&nbsp;        return new StartupTimeline(this.startTime, events);
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:55</div>
+</div>
+</body>
+</html>

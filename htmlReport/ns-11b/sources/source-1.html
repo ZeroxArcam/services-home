@@ -1,0 +1,677 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > AbstractPropertyHolder</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.boot.model.internal</a>
+</div>
+
+<h1>Coverage Summary for Class: AbstractPropertyHolder (org.hibernate.boot.model.internal)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AbstractPropertyHolder</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    73.3%
+  </span>
+  <span class="absValue">
+    (22/30)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    34.5%
+  </span>
+  <span class="absValue">
+    (58/168)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    49.8%
+  </span>
+  <span class="absValue">
+    (125/251)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.boot.model.internal;
+&nbsp;
+&nbsp;import jakarta.persistence.AssociationOverride;
+&nbsp;import jakarta.persistence.AssociationOverrides;
+&nbsp;import jakarta.persistence.AttributeOverride;
+&nbsp;import jakarta.persistence.AttributeOverrides;
+&nbsp;import jakarta.persistence.Column;
+&nbsp;import jakarta.persistence.Embeddable;
+&nbsp;import jakarta.persistence.Entity;
+&nbsp;import jakarta.persistence.ForeignKey;
+&nbsp;import jakarta.persistence.JoinColumn;
+&nbsp;import jakarta.persistence.JoinTable;
+&nbsp;import jakarta.persistence.MappedSuperclass;
+&nbsp;import java.lang.annotation.Annotation;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import org.hibernate.AnnotationException;
+&nbsp;import org.hibernate.AssertionFailure;
+&nbsp;import org.hibernate.annotations.ColumnTransformer;
+&nbsp;import org.hibernate.annotations.ColumnTransformers;
+&nbsp;import org.hibernate.annotations.TimeZoneColumn;
+&nbsp;import org.hibernate.annotations.common.reflection.XAnnotatedElement;
+&nbsp;import org.hibernate.annotations.common.reflection.XClass;
+&nbsp;import org.hibernate.annotations.common.reflection.XProperty;
+&nbsp;import org.hibernate.boot.model.convert.internal.ClassBasedConverterDescriptor;
+&nbsp;import org.hibernate.boot.model.convert.spi.ConverterDescriptor;
+&nbsp;import org.hibernate.boot.model.naming.Identifier;
+&nbsp;import org.hibernate.boot.model.naming.ImplicitBasicColumnNameSource;
+&nbsp;import org.hibernate.boot.model.source.spi.AttributePath;
+&nbsp;import org.hibernate.boot.spi.MetadataBuildingContext;
+&nbsp;import org.hibernate.internal.CoreLogging;
+&nbsp;import org.hibernate.internal.util.StringHelper;
+&nbsp;import org.jboss.logging.Logger;
+&nbsp;
+&nbsp;public abstract class AbstractPropertyHolder implements PropertyHolder {
+&nbsp;    private static final Logger log = CoreLogging.logger(AbstractPropertyHolder.class);
+&nbsp;    protected AbstractPropertyHolder parent;
+&nbsp;    private Map&lt;String, Column[]&gt; holderColumnOverride;
+&nbsp;    private Map&lt;String, Column[]&gt; currentPropertyColumnOverride;
+&nbsp;    private Map&lt;String, ColumnTransformer&gt; holderColumnTransformerOverride;
+&nbsp;    private Map&lt;String, ColumnTransformer&gt; currentPropertyColumnTransformerOverride;
+&nbsp;    private Map&lt;String, JoinColumn[]&gt; holderJoinColumnOverride;
+&nbsp;    private Map&lt;String, JoinColumn[]&gt; currentPropertyJoinColumnOverride;
+&nbsp;    private Map&lt;String, JoinTable&gt; holderJoinTableOverride;
+&nbsp;    private Map&lt;String, JoinTable&gt; currentPropertyJoinTableOverride;
+&nbsp;    private Map&lt;String, ForeignKey&gt; holderForeignKeyOverride;
+&nbsp;    private Map&lt;String, ForeignKey&gt; currentPropertyForeignKeyOverride;
+<b class="fc">&nbsp;    private final String path;</b>
+&nbsp;    private final MetadataBuildingContext context;
+&nbsp;    private Boolean isInIdClass;
+&nbsp;
+&nbsp;    AbstractPropertyHolder(String path, PropertyHolder parent, XClass clazzToProcess, MetadataBuildingContext context) {
+&nbsp;        this.path = path;
+&nbsp;        this.parent = (AbstractPropertyHolder)parent;
+&nbsp;        this.context = context;
+&nbsp;        this.buildHierarchyColumnOverride(clazzToProcess);
+&nbsp;    }
+&nbsp;
+&nbsp;    protected abstract String normalizeCompositePathForLogging(String var1);
+&nbsp;
+&nbsp;    protected abstract String normalizeCompositePath(String var1);
+&nbsp;
+&nbsp;    protected abstract AttributeConversionInfo locateAttributeConversionInfo(XProperty var1);
+&nbsp;
+&nbsp;    protected abstract AttributeConversionInfo locateAttributeConversionInfo(String var1);
+&nbsp;
+&nbsp;    public ConverterDescriptor resolveAttributeConverterDescriptor(XProperty property) {
+&nbsp;        AttributeConversionInfo info = this.locateAttributeConversionInfo(property);
+<b class="fc">&nbsp;        if (info != null) {</b>
+<b class="fc">&nbsp;            if (info.isConversionDisabled()) {</b>
+<b class="fc">&nbsp;                return null;</b>
+<b class="fc">&nbsp;            } else {</b>
+<b class="fc">&nbsp;                try {</b>
+&nbsp;                    return this.makeAttributeConverterDescriptor(info);
+&nbsp;                } catch (Exception e) {
+&nbsp;                    throw this.buildExceptionFromInstantiationError(info, e);
+&nbsp;                }
+&nbsp;            }
+&nbsp;        } else {
+&nbsp;            log.debugf(&quot;Attempting to locate auto-apply AttributeConverter for property [%s:%s]&quot;, this.path, property.getName());
+&nbsp;            return this.context.getMetadataCollector().getConverterRegistry().getAttributeConverterAutoApplyHandler().findAutoApplyConverterForAttribute(property, this.context);
+&nbsp;        }
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="pc">&nbsp;    protected IllegalStateException buildExceptionFromInstantiationError(AttributeConversionInfo info, Exception e) {</b>
+<b class="nc">&nbsp;        return Void.TYPE.equals(info.getConverterClass()) ? new IllegalStateException(&quot;Unable to instantiate AttributeConverter: you left @Convert.converter to its default value void.&quot;, e) : new IllegalStateException(String.format(&quot;Unable to instantiate AttributeConverter [%s]&quot;, info.getConverterClass().getName()), e);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected ConverterDescriptor makeAttributeConverterDescriptor(AttributeConversionInfo conversion) {
+&nbsp;        try {
+<b class="nc">&nbsp;            return new ClassBasedConverterDescriptor(conversion.getConverterClass(), false, this.context.getBootstrapContext().getClassmateContext());</b>
+&nbsp;        } catch (Exception e) {
+&nbsp;            throw new AnnotationException(&quot;Unable to create AttributeConverter instance&quot;, e);
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isInIdClass() {
+&nbsp;        if (this.isInIdClass != null) {
+<b class="fc">&nbsp;            return this.isInIdClass;</b>
+&nbsp;        } else {
+<b class="fc">&nbsp;            return this.parent != null ? this.parent.isInIdClass() : false;</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    public void setInIdClass(Boolean isInIdClass) {
+&nbsp;        this.isInIdClass = isInIdClass;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+&nbsp;    public String getPath() {
+&nbsp;        return this.path;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    protected MetadataBuildingContext getContext() {
+&nbsp;        return this.context;
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void setCurrentProperty(XProperty property) {
+<b class="nc">&nbsp;        if (property == null) {</b>
+<b class="nc">&nbsp;            this.currentPropertyColumnOverride = null;</b>
+&nbsp;            this.currentPropertyColumnTransformerOverride = null;
+<b class="nc">&nbsp;            this.currentPropertyJoinColumnOverride = null;</b>
+&nbsp;            this.currentPropertyJoinTableOverride = null;
+&nbsp;            this.currentPropertyForeignKeyOverride = null;
+&nbsp;        } else {
+&nbsp;            this.currentPropertyColumnOverride = buildColumnOverride(property, this.getPath(), this.context);
+&nbsp;            if (this.currentPropertyColumnOverride.isEmpty()) {
+&nbsp;                this.currentPropertyColumnOverride = null;
+&nbsp;            }
+&nbsp;
+<b class="nc">&nbsp;            this.currentPropertyColumnTransformerOverride = buildColumnTransformerOverride(property);</b>
+<b class="nc">&nbsp;            if (this.currentPropertyColumnTransformerOverride.isEmpty()) {</b>
+<b class="nc">&nbsp;                this.currentPropertyColumnTransformerOverride = null;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;
+&nbsp;            this.currentPropertyJoinColumnOverride = buildJoinColumnOverride(property, this.getPath());
+&nbsp;            if (this.currentPropertyJoinColumnOverride.isEmpty()) {
+<b class="nc">&nbsp;                this.currentPropertyJoinColumnOverride = null;</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            this.currentPropertyJoinTableOverride = buildJoinTableOverride(property, this.getPath());
+&nbsp;            if (this.currentPropertyJoinTableOverride.isEmpty()) {
+&nbsp;                this.currentPropertyJoinTableOverride = null;
+<b class="pc">&nbsp;            }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;            this.currentPropertyForeignKeyOverride = buildForeignKeyOverride(property, this.getPath());
+<b class="pc">&nbsp;            if (this.currentPropertyForeignKeyOverride.isEmpty()) {</b>
+<b class="nc">&nbsp;                this.currentPropertyForeignKeyOverride = null;</b>
+&nbsp;            }
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public Column[] getOverriddenColumn(String propertyName) {
+<b class="nc">&nbsp;        Column[] result = this.getExactOverriddenColumn(propertyName);</b>
+&nbsp;        if (result == null &amp;&amp; propertyName.contains(&quot;.collection&amp;&amp;element.&quot;)) {
+&nbsp;            result = this.getExactOverriddenColumn(propertyName.replace(&quot;.collection&amp;&amp;element.&quot;, &quot;.&quot;));
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public ColumnTransformer getOverriddenColumnTransformer(String logicalColumnName) {
+&nbsp;        ColumnTransformer override = null;
+&nbsp;        if (this.parent != null) {
+&nbsp;            override = this.parent.getOverriddenColumnTransformer(logicalColumnName);
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if (override == null &amp;&amp; this.currentPropertyColumnTransformerOverride != null) {</b>
+&nbsp;            override = (ColumnTransformer)this.currentPropertyColumnTransformerOverride.get(logicalColumnName);
+&nbsp;        }
+&nbsp;
+&nbsp;        if (override == null &amp;&amp; this.holderColumnTransformerOverride != null) {
+&nbsp;            override = (ColumnTransformer)this.holderColumnTransformerOverride.get(logicalColumnName);
+&nbsp;        }
+&nbsp;
+&nbsp;        return override;
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private Column[] getExactOverriddenColumn(String propertyName) {</b>
+<b class="nc">&nbsp;        Column[] override = null;</b>
+<b class="nc">&nbsp;        if (this.parent != null) {</b>
+<b class="nc">&nbsp;            override = this.parent.getExactOverriddenColumn(propertyName);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if (override == null &amp;&amp; this.currentPropertyColumnOverride != null) {</b>
+<b class="nc">&nbsp;            override = (Column[])this.currentPropertyColumnOverride.get(propertyName);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        if (override == null &amp;&amp; this.holderColumnOverride != null) {
+<b class="nc">&nbsp;            override = (Column[])this.holderColumnOverride.get(propertyName);</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return override;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    public JoinColumn[] getOverriddenJoinColumn(String propertyName) {</b>
+<b class="nc">&nbsp;        JoinColumn[] result = this.getExactOverriddenJoinColumn(propertyName);</b>
+&nbsp;        if (result == null &amp;&amp; propertyName.contains(&quot;.collection&amp;&amp;element.&quot;)) {
+&nbsp;            result = this.getExactOverriddenJoinColumn(propertyName.replace(&quot;.collection&amp;&amp;element.&quot;, &quot;.&quot;));
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    private JoinColumn[] getExactOverriddenJoinColumn(String propertyName) {</b>
+<b class="nc">&nbsp;        JoinColumn[] override = null;</b>
+<b class="nc">&nbsp;        if (this.parent != null) {</b>
+&nbsp;            override = this.parent.getExactOverriddenJoinColumn(propertyName);
+&nbsp;        }
+&nbsp;
+&nbsp;        if (override == null &amp;&amp; this.currentPropertyJoinColumnOverride != null) {
+&nbsp;            override = (JoinColumn[])this.currentPropertyJoinColumnOverride.get(propertyName);
+&nbsp;        }
+&nbsp;
+&nbsp;        if (override == null &amp;&amp; this.holderJoinColumnOverride != null) {
+&nbsp;            override = (JoinColumn[])this.holderJoinColumnOverride.get(propertyName);
+&nbsp;        }
+&nbsp;
+&nbsp;        return override;
+<b class="fc">&nbsp;    }</b>
+<b class="pc">&nbsp;</b>
+&nbsp;    public ForeignKey getOverriddenForeignKey(String propertyName) {
+<b class="nc">&nbsp;        ForeignKey result = this.getExactOverriddenForeignKey(propertyName);</b>
+&nbsp;        if (result == null &amp;&amp; propertyName.contains(&quot;.collection&amp;&amp;element.&quot;)) {
+<b class="fc">&nbsp;            result = this.getExactOverriddenForeignKey(propertyName.replace(&quot;.collection&amp;&amp;element.&quot;, &quot;.&quot;));</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        return result;
+&nbsp;    }
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;    private ForeignKey getExactOverriddenForeignKey(String propertyName) {</b>
+<b class="nc">&nbsp;        ForeignKey override = null;</b>
+&nbsp;        if (this.parent != null) {
+<b class="nc">&nbsp;            override = this.parent.getExactOverriddenForeignKey(propertyName);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="nc">&nbsp;        if (override == null &amp;&amp; this.currentPropertyForeignKeyOverride != null) {</b>
+<b class="nc">&nbsp;            override = (ForeignKey)this.currentPropertyForeignKeyOverride.get(propertyName);</b>
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        if (override == null &amp;&amp; this.holderForeignKeyOverride != null) {
+&nbsp;            override = (ForeignKey)this.holderForeignKeyOverride.get(propertyName);
+&nbsp;        }
+&nbsp;
+&nbsp;        return override;
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public JoinTable getJoinTable(XProperty property) {</b>
+<b class="pc">&nbsp;        String propertyName = StringHelper.qualify(this.getPath(), property.getName());</b>
+<b class="nc">&nbsp;        JoinTable result = this.getOverriddenJoinTable(propertyName);</b>
+&nbsp;        if (result == null) {
+<b class="pc">&nbsp;            result = (JoinTable)property.getAnnotation(JoinTable.class);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="pc">&nbsp;        return result;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="fc">&nbsp;    public JoinTable getOverriddenJoinTable(String propertyName) {</b>
+&nbsp;        JoinTable result = this.getExactOverriddenJoinTable(propertyName);
+&nbsp;        if (result == null &amp;&amp; propertyName.contains(&quot;.collection&amp;&amp;element.&quot;)) {
+&nbsp;            result = this.getExactOverriddenJoinTable(propertyName.replace(&quot;.collection&amp;&amp;element.&quot;, &quot;.&quot;));
+&nbsp;        }
+&nbsp;
+&nbsp;        return result;
+&nbsp;    }
+&nbsp;
+&nbsp;    private JoinTable getExactOverriddenJoinTable(String propertyName) {
+&nbsp;        JoinTable override = null;
+<b class="fc">&nbsp;        if (this.parent != null) {</b>
+<b class="pc">&nbsp;            override = this.parent.getExactOverriddenJoinTable(propertyName);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if (override == null &amp;&amp; this.currentPropertyJoinTableOverride != null) {</b>
+&nbsp;            override = (JoinTable)this.currentPropertyJoinTableOverride.get(propertyName);
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        if (override == null &amp;&amp; this.holderJoinTableOverride != null) {
+&nbsp;            override = (JoinTable)this.holderJoinTableOverride.get(propertyName);
+&nbsp;        }
+&nbsp;
+&nbsp;        return override;
+<b class="fc">&nbsp;    }</b>
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;    private void buildHierarchyColumnOverride(XClass element) {</b>
+&nbsp;        XClass current = element;
+<b class="pc">&nbsp;        Map&lt;String, Column[]&gt; columnOverride = new HashMap();</b>
+<b class="nc">&nbsp;        Map&lt;String, ColumnTransformer&gt; columnTransformerOverride = new HashMap();</b>
+&nbsp;        Map&lt;String, JoinColumn[]&gt; joinColumnOverride = new HashMap();
+<b class="pc">&nbsp;        Map&lt;String, JoinTable&gt; joinTableOverride = new HashMap();</b>
+<b class="nc">&nbsp;        Map&lt;String, ForeignKey&gt; foreignKeyOverride = new HashMap();</b>
+&nbsp;
+<b class="fc">&nbsp;        for(XClass objectClass = this.context.getBootstrapContext().getReflectionManager().toXClass(Object.class); current != null &amp;&amp; !objectClass.equals(current); current = current.getSuperclass()) {</b>
+&nbsp;            if (current.isAnnotationPresent(Entity.class) || current.isAnnotationPresent(MappedSuperclass.class) || current.isAnnotationPresent(Embeddable.class)) {
+&nbsp;                Map&lt;String, Column[]&gt; currentOverride = buildColumnOverride(current, this.getPath(), this.context);
+&nbsp;                Map&lt;String, ColumnTransformer&gt; currentTransformerOverride = buildColumnTransformerOverride(current);
+&nbsp;                Map&lt;String, JoinColumn[]&gt; currentJoinOverride = buildJoinColumnOverride(current, this.getPath());
+<b class="fc">&nbsp;                Map&lt;String, JoinTable&gt; currentJoinTableOverride = buildJoinTableOverride(current, this.getPath());</b>
+<b class="pc">&nbsp;                Map&lt;String, ForeignKey&gt; currentForeignKeyOverride = buildForeignKeyOverride(current, this.getPath());</b>
+&nbsp;                currentOverride.putAll(columnOverride);
+&nbsp;                currentTransformerOverride.putAll(columnTransformerOverride);
+<b class="nc">&nbsp;                currentJoinOverride.putAll(joinColumnOverride);</b>
+&nbsp;                currentJoinTableOverride.putAll(joinTableOverride);
+<b class="fc">&nbsp;                currentForeignKeyOverride.putAll(foreignKeyOverride);</b>
+&nbsp;                columnOverride = currentOverride;
+&nbsp;                columnTransformerOverride = currentTransformerOverride;
+&nbsp;                joinColumnOverride = currentJoinOverride;
+<b class="fc">&nbsp;                joinTableOverride = currentJoinTableOverride;</b>
+<b class="pc">&nbsp;                foreignKeyOverride = currentForeignKeyOverride;</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;        this.holderColumnOverride = !columnOverride.isEmpty() ? columnOverride : null;</b>
+&nbsp;        this.holderColumnTransformerOverride = !columnTransformerOverride.isEmpty() ? columnTransformerOverride : null;
+<b class="pc">&nbsp;        this.holderJoinColumnOverride = !joinColumnOverride.isEmpty() ? joinColumnOverride : null;</b>
+<b class="nc">&nbsp;        this.holderJoinTableOverride = !joinTableOverride.isEmpty() ? joinTableOverride : null;</b>
+&nbsp;        this.holderForeignKeyOverride = !foreignKeyOverride.isEmpty() ? foreignKeyOverride : null;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private static Map&lt;String, Column[]&gt; buildColumnOverride(XAnnotatedElement element, String path, MetadataBuildingContext context) {
+&nbsp;        Map&lt;String, Column[]&gt; columnOverride = new HashMap();
+&nbsp;        if (element != null) {
+&nbsp;            AttributeOverride singleOverride = (AttributeOverride)element.getAnnotation(AttributeOverride.class);
+&nbsp;            AttributeOverrides multipleOverrides = (AttributeOverrides)element.getAnnotation(AttributeOverrides.class);
+&nbsp;            AttributeOverride[] overrides;
+&nbsp;            if (singleOverride != null) {
+&nbsp;                overrides = new AttributeOverride[]{singleOverride};
+&nbsp;            } else if (multipleOverrides != null) {
+<b class="fc">&nbsp;                overrides = multipleOverrides.value();</b>
+<b class="fc">&nbsp;            } else {</b>
+<b class="pc">&nbsp;                overrides = null;</b>
+<b class="fc">&nbsp;            }</b>
+&nbsp;
+<b class="fc">&nbsp;            if (overrides != null) {</b>
+&nbsp;                Map&lt;String, List&lt;Column&gt;&gt; columnOverrideList = new HashMap();
+&nbsp;
+&nbsp;                for(AttributeOverride depAttr : overrides) {
+&nbsp;                    String qualifiedName = StringHelper.qualify(path, depAttr.name());
+&nbsp;                    if (columnOverrideList.containsKey(qualifiedName)) {
+&nbsp;                        ((List)columnOverrideList.get(qualifiedName)).add(depAttr.column());
+&nbsp;                    } else {
+&nbsp;                        List&lt;Column&gt; list = new ArrayList();
+&nbsp;                        list.add(depAttr.column());
+<b class="fc">&nbsp;                        columnOverrideList.put(qualifiedName, list);</b>
+<b class="pc">&nbsp;                    }</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                for(Map.Entry&lt;String, List&lt;Column&gt;&gt; entry : columnOverrideList.entrySet()) {</b>
+&nbsp;                    columnOverride.put((String)entry.getKey(), (Column[])((List)entry.getValue()).toArray(new Column[0]));
+<b class="fc">&nbsp;                }</b>
+&nbsp;            } else if (TimeZoneStorageHelper.useColumnForTimeZoneStorage(element, context)) {
+&nbsp;                Column column = createTemporalColumn(element, path, context);
+&nbsp;                if (TimeZoneStorageHelper.isOffsetTimeClass(element)) {
+&nbsp;                    columnOverride.put(path + &quot;.utcTime&quot;, new Column[]{column});
+&nbsp;                } else {
+&nbsp;                    columnOverride.put(path + &quot;.instant&quot;, new Column[]{column});
+<b class="fc">&nbsp;                }</b>
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;                Column offsetColumn = createTimeZoneColumn(element, column);</b>
+&nbsp;                columnOverride.put(path + &quot;.zoneOffset&quot;, new Column[]{offsetColumn});
+<b class="pc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+<b class="pc">&nbsp;        return columnOverride;</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="fc">&nbsp;    private static Column createTimeZoneColumn(XAnnotatedElement element, Column column) {</b>
+&nbsp;        TimeZoneColumn timeZoneColumn = (TimeZoneColumn)element.getAnnotation(TimeZoneColumn.class);
+&nbsp;        return timeZoneColumn != null ? new ColumnImpl(timeZoneColumn.name(), false, column.nullable(), timeZoneColumn.insertable(), timeZoneColumn.updatable(), timeZoneColumn.columnDefinition(), timeZoneColumn.table(), 0) : new ColumnImpl(column.name() + &quot;_tz&quot;, false, column.nullable(), column.insertable(), column.updatable(), &quot;&quot;, column.table(), 0);
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    private static Column createTemporalColumn(XAnnotatedElement element, final String path, final MetadataBuildingContext context) {</b>
+<b class="fc">&nbsp;        Column annotatedColumn = (Column)element.getAnnotation(Column.class);</b>
+<b class="fc">&nbsp;        int precision;</b>
+<b class="fc">&nbsp;        if (annotatedColumn != null) {</b>
+<b class="fc">&nbsp;            if (!annotatedColumn.name().isEmpty()) {</b>
+<b class="fc">&nbsp;                return annotatedColumn;</b>
+<b class="pc">&nbsp;            }</b>
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;            precision = annotatedColumn.precision();</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            precision = 0;
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;        Identifier implicitName = context.getObjectNameNormalizer().normalizeIdentifierQuoting(context.getBuildingOptions().getImplicitNamingStrategy().determineBasicColumnName(new ImplicitBasicColumnNameSource() {</b>
+<b class="fc">&nbsp;            final AttributePath attributePath = AttributePath.parse(path);</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;            public AttributePath getAttributePath() {</b>
+<b class="fc">&nbsp;                return this.attributePath;</b>
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;            public boolean isCollectionElement() {</b>
+<b class="fc">&nbsp;                return false;</b>
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;            public MetadataBuildingContext getBuildingContext() {</b>
+<b class="fc">&nbsp;                return context;</b>
+&nbsp;            }
+<b class="fc">&nbsp;        }));</b>
+&nbsp;        return new ColumnImpl(implicitName.getText(), false, true, true, true, &quot;&quot;, &quot;&quot;, precision);
+&nbsp;    }
+<b class="pc">&nbsp;</b>
+<b class="pc">&nbsp;    private static Map&lt;String, ColumnTransformer&gt; buildColumnTransformerOverride(XAnnotatedElement element) {</b>
+<b class="pc">&nbsp;        Map&lt;String, ColumnTransformer&gt; columnOverride = new HashMap();</b>
+<b class="pc">&nbsp;        if (element != null) {</b>
+<b class="pc">&nbsp;            ColumnTransformer singleOverride = (ColumnTransformer)element.getAnnotation(ColumnTransformer.class);</b>
+&nbsp;            ColumnTransformers multipleOverrides = (ColumnTransformers)element.getAnnotation(ColumnTransformers.class);
+&nbsp;            ColumnTransformer[] overrides;
+&nbsp;            if (singleOverride != null) {
+&nbsp;                overrides = new ColumnTransformer[]{singleOverride};
+&nbsp;            } else if (multipleOverrides != null) {
+&nbsp;                overrides = multipleOverrides.value();
+<b class="fc">&nbsp;            } else {</b>
+<b class="pc">&nbsp;                overrides = null;</b>
+<b class="fc">&nbsp;            }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;            if (overrides != null) {
+<b class="pc">&nbsp;                for(ColumnTransformer depAttr : overrides) {</b>
+<b class="nc">&nbsp;                    columnOverride.put(depAttr.forColumn(), depAttr);</b>
+&nbsp;                }
+<b class="pc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        return columnOverride;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private static Map&lt;String, JoinColumn[]&gt; buildJoinColumnOverride(XAnnotatedElement element, String path) {
+<b class="pc">&nbsp;        Map&lt;String, JoinColumn[]&gt; columnOverride = new HashMap();</b>
+<b class="nc">&nbsp;        if (element != null) {</b>
+&nbsp;            AssociationOverride[] overrides = buildAssociationOverrides(element, path);
+<b class="nc">&nbsp;            if (overrides != null) {</b>
+<b class="nc">&nbsp;                for(AssociationOverride depAttr : overrides) {</b>
+&nbsp;                    columnOverride.put(StringHelper.qualify(path, depAttr.name()), depAttr.joinColumns());
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return columnOverride;</b>
+<b class="nc">&nbsp;    }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;    private static Map&lt;String, ForeignKey&gt; buildForeignKeyOverride(XAnnotatedElement element, String path) {
+&nbsp;        Map&lt;String, ForeignKey&gt; foreignKeyOverride = new HashMap();
+&nbsp;        if (element != null) {
+<b class="nc">&nbsp;            AssociationOverride[] overrides = buildAssociationOverrides(element, path);</b>
+<b class="nc">&nbsp;            if (overrides != null) {</b>
+&nbsp;                for(AssociationOverride depAttr : overrides) {
+&nbsp;                    foreignKeyOverride.put(StringHelper.qualify(path, depAttr.name()), depAttr.foreignKey());
+<b class="pc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return foreignKeyOverride;
+&nbsp;    }
+&nbsp;
+&nbsp;    private static AssociationOverride[] buildAssociationOverrides(XAnnotatedElement element, String path) {
+&nbsp;        AssociationOverride singleOverride = (AssociationOverride)element.getAnnotation(AssociationOverride.class);
+<b class="nc">&nbsp;        AssociationOverrides pluralOverrides = (AssociationOverrides)element.getAnnotation(AssociationOverrides.class);</b>
+&nbsp;        AssociationOverride[] overrides;
+&nbsp;        if (singleOverride != null) {
+&nbsp;            overrides = new AssociationOverride[]{singleOverride};
+&nbsp;        } else if (pluralOverrides != null) {
+<b class="nc">&nbsp;            overrides = pluralOverrides.value();</b>
+<b class="nc">&nbsp;        } else {</b>
+&nbsp;            overrides = null;
+&nbsp;        }
+&nbsp;
+&nbsp;        return overrides;
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    private static Map&lt;String, JoinTable&gt; buildJoinTableOverride(XAnnotatedElement element, String path) {
+&nbsp;        Map&lt;String, JoinTable&gt; tableOverride = new HashMap();
+&nbsp;        if (element != null) {
+<b class="nc">&nbsp;            AssociationOverride[] overrides = buildAssociationOverrides(element, path);</b>
+<b class="nc">&nbsp;            if (overrides != null) {</b>
+<b class="nc">&nbsp;                for(AssociationOverride depAttr : overrides) {</b>
+<b class="nc">&nbsp;                    if (depAttr.joinColumns().length == 0) {</b>
+&nbsp;                        tableOverride.put(StringHelper.qualify(path, depAttr.name()), depAttr.joinTable());
+<b class="nc">&nbsp;                    }</b>
+<b class="nc">&nbsp;                }</b>
+<b class="nc">&nbsp;            }</b>
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return tableOverride;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setParentProperty(String parentProperty) {
+<b class="nc">&nbsp;        throw new AssertionFailure(&quot;Setting the parent property to a non component&quot;);</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+<b class="nc">&nbsp;    private static class ColumnImpl implements Column {</b>
+<b class="nc">&nbsp;        private final String name;</b>
+<b class="nc">&nbsp;        private final boolean unique;</b>
+&nbsp;        private final boolean nullable;
+<b class="nc">&nbsp;        private final boolean insertable;</b>
+&nbsp;        private final boolean updatable;
+&nbsp;        private final String columnDefinition;
+&nbsp;        private final String table;
+&nbsp;        private final int precision;
+&nbsp;
+&nbsp;        private ColumnImpl(String name, boolean unique, boolean nullable, boolean insertable, boolean updatable, String columnDefinition, String table, int precision) {
+&nbsp;            this.name = name;
+<b class="nc">&nbsp;            this.unique = unique;</b>
+<b class="nc">&nbsp;            this.nullable = nullable;</b>
+<b class="nc">&nbsp;            this.insertable = insertable;</b>
+<b class="nc">&nbsp;            this.updatable = updatable;</b>
+&nbsp;            this.columnDefinition = columnDefinition;
+<b class="nc">&nbsp;            this.table = table;</b>
+&nbsp;            this.precision = precision;
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        public String name() {
+&nbsp;            return this.name;
+<b class="nc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        public boolean unique() {
+&nbsp;            return this.unique;
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean nullable() {
+&nbsp;            return this.nullable;
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean insertable() {
+&nbsp;            return this.insertable;
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean updatable() {
+&nbsp;            return this.updatable;
+&nbsp;        }
+&nbsp;
+&nbsp;        public String columnDefinition() {
+&nbsp;            return this.columnDefinition;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        public String table() {</b>
+<b class="nc">&nbsp;            return this.table;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        public int length() {
+&nbsp;            return 255;
+&nbsp;        }
+&nbsp;
+&nbsp;        public int precision() {
+&nbsp;            return this.precision;
+&nbsp;        }
+&nbsp;
+&nbsp;        public int scale() {
+<b class="fc">&nbsp;            return 0;</b>
+<b class="pc">&nbsp;        }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;        public Class&lt;? extends Annotation&gt; annotationType() {</b>
+&nbsp;            return Column.class;
+<b class="pc">&nbsp;        }</b>
+<b class="nc">&nbsp;    }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:57</div>
+</div>
+</body>
+</html>

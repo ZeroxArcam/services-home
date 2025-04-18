@@ -1,0 +1,409 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ValidatorFactoryImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.hibernate.validator.internal.engine</a>
+</div>
+
+<h1>Coverage Summary for Class: ValidatorFactoryImpl (org.hibernate.validator.internal.engine)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ValidatorFactoryImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    25%
+  </span>
+  <span class="absValue">
+    (6/24)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (6/18)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    67.7%
+  </span>
+  <span class="absValue">
+    (65/96)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ValidatorFactoryImpl$BeanMetaDataManagerKey</td>
+<td class="coverageStat">
+  <span class="percent">
+    80%
+  </span>
+  <span class="absValue">
+    (4/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (8/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    82.6%
+  </span>
+  <span class="absValue">
+    (19/23)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    34.5%
+  </span>
+  <span class="absValue">
+    (10/29)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    41.2%
+  </span>
+  <span class="absValue">
+    (14/34)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    70.6%
+  </span>
+  <span class="absValue">
+    (84/119)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;//
+&nbsp;// Source code recreated from a .class file by IntelliJ IDEA
+&nbsp;// (powered by FernFlower decompiler)
+&nbsp;//
+&nbsp;
+&nbsp;package org.hibernate.validator.internal.engine;
+&nbsp;
+&nbsp;import jakarta.validation.ClockProvider;
+&nbsp;import jakarta.validation.ConstraintValidatorFactory;
+&nbsp;import jakarta.validation.MessageInterpolator;
+&nbsp;import jakarta.validation.ParameterNameProvider;
+&nbsp;import jakarta.validation.TraversableResolver;
+&nbsp;import jakarta.validation.Validator;
+&nbsp;import jakarta.validation.spi.ConfigurationState;
+&nbsp;import java.lang.invoke.MethodHandles;
+&nbsp;import java.time.Duration;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import java.util.concurrent.ConcurrentMap;
+&nbsp;import org.hibernate.validator.HibernateValidatorContext;
+&nbsp;import org.hibernate.validator.HibernateValidatorFactory;
+&nbsp;import org.hibernate.validator.internal.cfg.context.DefaultConstraintMapping;
+&nbsp;import org.hibernate.validator.internal.engine.constraintvalidation.ConstraintValidatorManager;
+&nbsp;import org.hibernate.validator.internal.engine.constraintvalidation.ConstraintValidatorManagerImpl;
+&nbsp;import org.hibernate.validator.internal.engine.groups.ValidationOrderGenerator;
+&nbsp;import org.hibernate.validator.internal.engine.valueextraction.ValueExtractorManager;
+&nbsp;import org.hibernate.validator.internal.metadata.BeanMetaDataManager;
+&nbsp;import org.hibernate.validator.internal.metadata.BeanMetaDataManagerImpl;
+&nbsp;import org.hibernate.validator.internal.metadata.core.ConstraintHelper;
+&nbsp;import org.hibernate.validator.internal.metadata.provider.MetaDataProvider;
+&nbsp;import org.hibernate.validator.internal.metadata.provider.ProgrammaticMetaDataProvider;
+&nbsp;import org.hibernate.validator.internal.metadata.provider.XmlMetaDataProvider;
+&nbsp;import org.hibernate.validator.internal.properties.javabean.JavaBeanHelper;
+&nbsp;import org.hibernate.validator.internal.util.CollectionHelper;
+&nbsp;import org.hibernate.validator.internal.util.ExecutableHelper;
+&nbsp;import org.hibernate.validator.internal.util.ExecutableParameterNameProvider;
+&nbsp;import org.hibernate.validator.internal.util.TypeResolutionHelper;
+&nbsp;import org.hibernate.validator.internal.util.logging.Log;
+&nbsp;import org.hibernate.validator.internal.util.logging.LoggerFactory;
+&nbsp;import org.hibernate.validator.internal.xml.mapping.MappingXmlParser;
+&nbsp;import org.hibernate.validator.metadata.BeanMetaDataClassNormalizer;
+&nbsp;import org.hibernate.validator.spi.nodenameprovider.PropertyNodeNameProvider;
+&nbsp;import org.hibernate.validator.spi.properties.GetterPropertySelectionStrategy;
+&nbsp;import org.hibernate.validator.spi.scripting.ScriptEvaluatorFactory;
+&nbsp;
+&nbsp;public class ValidatorFactoryImpl implements HibernateValidatorFactory {
+&nbsp;    private static final Log LOG = LoggerFactory.make(MethodHandles.lookup());
+&nbsp;    private final ValidatorFactoryScopedContext validatorFactoryScopedContext;
+&nbsp;    private final Set&lt;DefaultConstraintMapping&gt; constraintMappings;
+&nbsp;    private final ConstraintCreationContext constraintCreationContext;
+&nbsp;    private final ExecutableHelper executableHelper;
+&nbsp;    private final MethodValidationConfiguration methodValidationConfiguration;
+&nbsp;    private final XmlMetaDataProvider xmlMetaDataProvider;
+&nbsp;    private final ConcurrentMap&lt;BeanMetaDataManagerKey, BeanMetaDataManager&gt; beanMetaDataManagers = new ConcurrentHashMap();
+&nbsp;    private final JavaBeanHelper javaBeanHelper;
+&nbsp;    private final BeanMetaDataClassNormalizer beanMetadataClassNormalizer;
+&nbsp;    private final ValidationOrderGenerator validationOrderGenerator;
+&nbsp;
+&nbsp;    public ValidatorFactoryImpl(ConfigurationState configurationState) {
+&nbsp;        ClassLoader externalClassLoader = ValidatorFactoryConfigurationHelper.determineExternalClassLoader(configurationState);
+&nbsp;        ConfigurationImpl hibernateSpecificConfig = null;
+&nbsp;        if (configurationState instanceof ConfigurationImpl) {
+&nbsp;            hibernateSpecificConfig = (ConfigurationImpl)configurationState;
+&nbsp;        }
+&nbsp;
+&nbsp;        Map&lt;String, String&gt; properties = configurationState.getProperties();
+&nbsp;        this.methodValidationConfiguration = (new MethodValidationConfiguration.Builder()).allowOverridingMethodAlterParameterConstraint(ValidatorFactoryConfigurationHelper.determineAllowOverridingMethodAlterParameterConstraint(hibernateSpecificConfig, properties)).allowMultipleCascadedValidationOnReturnValues(ValidatorFactoryConfigurationHelper.determineAllowMultipleCascadedValidationOnReturnValues(hibernateSpecificConfig, properties)).allowParallelMethodsDefineParameterConstraints(ValidatorFactoryConfigurationHelper.determineAllowParallelMethodsDefineParameterConstraints(hibernateSpecificConfig, properties)).build();
+&nbsp;        this.validatorFactoryScopedContext = new ValidatorFactoryScopedContext(configurationState.getMessageInterpolator(), configurationState.getTraversableResolver(), new ExecutableParameterNameProvider(configurationState.getParameterNameProvider()), configurationState.getClockProvider(), ValidatorFactoryConfigurationHelper.determineTemporalValidationTolerance(configurationState, properties), ValidatorFactoryConfigurationHelper.determineScriptEvaluatorFactory(configurationState, properties, externalClassLoader), ValidatorFactoryConfigurationHelper.determineFailFast(hibernateSpecificConfig, properties), ValidatorFactoryConfigurationHelper.determineTraversableResolverResultCacheEnabled(hibernateSpecificConfig, properties), ValidatorFactoryConfigurationHelper.determineConstraintValidatorPayload(hibernateSpecificConfig), ValidatorFactoryConfigurationHelper.determineConstraintExpressionLanguageFeatureLevel(hibernateSpecificConfig, properties), ValidatorFactoryConfigurationHelper.determineCustomViolationExpressionLanguageFeatureLevel(hibernateSpecificConfig, properties), ValidatorFactoryConfigurationHelper.determineShowValidatedValuesInTraceLogs(hibernateSpecificConfig, properties));
+&nbsp;        ConstraintValidatorManager constraintValidatorManager = new ConstraintValidatorManagerImpl(configurationState.getConstraintValidatorFactory(), this.validatorFactoryScopedContext.getConstraintValidatorInitializationContext());
+&nbsp;        this.validationOrderGenerator = new ValidationOrderGenerator();
+&nbsp;        ValueExtractorManager valueExtractorManager = new ValueExtractorManager(configurationState.getValueExtractors());
+&nbsp;        ConstraintHelper constraintHelper = ConstraintHelper.forAllBuiltinConstraints();
+&nbsp;        TypeResolutionHelper typeResolutionHelper = new TypeResolutionHelper();
+&nbsp;        this.constraintCreationContext = new ConstraintCreationContext(constraintHelper, constraintValidatorManager, typeResolutionHelper, valueExtractorManager);
+&nbsp;        this.executableHelper = new ExecutableHelper(typeResolutionHelper);
+&nbsp;        this.javaBeanHelper = new JavaBeanHelper(ValidatorFactoryConfigurationHelper.determineGetterPropertySelectionStrategy(hibernateSpecificConfig, properties, externalClassLoader), ValidatorFactoryConfigurationHelper.determinePropertyNodeNameProvider(hibernateSpecificConfig, properties, externalClassLoader));
+&nbsp;        this.beanMetadataClassNormalizer = ValidatorFactoryConfigurationHelper.determineBeanMetaDataClassNormalizer(hibernateSpecificConfig);
+&nbsp;        ValidatorFactoryConfigurationHelper.registerCustomConstraintValidators(ValidatorFactoryConfigurationHelper.determineServiceLoadedConstraintMappings(typeResolutionHelper, this.javaBeanHelper, externalClassLoader), constraintHelper);
+&nbsp;        MappingXmlParser mappingParser = null;
+&nbsp;        if (!configurationState.getMappingStreams().isEmpty()) {
+&nbsp;            mappingParser = new MappingXmlParser(this.constraintCreationContext, this.javaBeanHelper, externalClassLoader);
+&nbsp;            mappingParser.parse(configurationState.getMappingStreams());
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+&nbsp;        this.constraintMappings = Collections.unmodifiableSet(ValidatorFactoryConfigurationHelper.determineConstraintMappings(typeResolutionHelper, configurationState, this.javaBeanHelper, externalClassLoader));
+&nbsp;        ValidatorFactoryConfigurationHelper.registerCustomConstraintValidators(this.constraintMappings, constraintHelper);
+&nbsp;        if (mappingParser != null &amp;&amp; mappingParser.createConstrainedElements()) {
+&nbsp;            this.xmlMetaDataProvider = new XmlMetaDataProvider(mappingParser);
+&nbsp;        } else {
+&nbsp;            this.xmlMetaDataProvider = null;
+&nbsp;        }
+&nbsp;
+&nbsp;        if (LOG.isDebugEnabled()) {
+&nbsp;            ValidatorFactoryConfigurationHelper.logValidatorFactoryScopedConfiguration(this.validatorFactoryScopedContext);
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public Validator getValidator() {
+&nbsp;        return this.createValidator(this.constraintCreationContext.getConstraintValidatorManager().getDefaultConstraintValidatorFactory(), this.constraintCreationContext, this.validatorFactoryScopedContext, this.methodValidationConfiguration);
+&nbsp;    }
+&nbsp;
+&nbsp;    public MessageInterpolator getMessageInterpolator() {
+&nbsp;        return this.validatorFactoryScopedContext.getMessageInterpolator();
+&nbsp;    }
+&nbsp;
+&nbsp;    public TraversableResolver getTraversableResolver() {
+&nbsp;        return this.validatorFactoryScopedContext.getTraversableResolver();
+&nbsp;    }
+&nbsp;
+&nbsp;    public ConstraintValidatorFactory getConstraintValidatorFactory() {
+&nbsp;        return this.constraintCreationContext.getConstraintValidatorManager().getDefaultConstraintValidatorFactory();
+&nbsp;    }
+&nbsp;
+&nbsp;    public ParameterNameProvider getParameterNameProvider() {
+&nbsp;        return this.validatorFactoryScopedContext.getParameterNameProvider().getDelegate();
+&nbsp;    }
+&nbsp;
+&nbsp;    public ExecutableParameterNameProvider getExecutableParameterNameProvider() {
+&nbsp;        return this.validatorFactoryScopedContext.getParameterNameProvider();
+&nbsp;    }
+&nbsp;
+&nbsp;    public ClockProvider getClockProvider() {
+&nbsp;        return this.validatorFactoryScopedContext.getClockProvider();
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public ScriptEvaluatorFactory getScriptEvaluatorFactory() {
+&nbsp;        return this.validatorFactoryScopedContext.getScriptEvaluatorFactory();
+&nbsp;    }
+&nbsp;
+&nbsp;    public Duration getTemporalValidationTolerance() {
+&nbsp;        return this.validatorFactoryScopedContext.getTemporalValidationTolerance();
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public GetterPropertySelectionStrategy getGetterPropertySelectionStrategy() {</b>
+&nbsp;        return this.javaBeanHelper.getGetterPropertySelectionStrategy();
+<b class="fc">&nbsp;    }</b>
+<b class="pc">&nbsp;</b>
+<b class="fc">&nbsp;    public PropertyNodeNameProvider getPropertyNodeNameProvider() {</b>
+&nbsp;        return this.javaBeanHelper.getPropertyNodeNameProvider();
+&nbsp;    }
+<b class="fc">&nbsp;</b>
+&nbsp;    public boolean isFailFast() {
+<b class="fc">&nbsp;        return this.validatorFactoryScopedContext.isFailFast();</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    MethodValidationConfiguration getMethodValidationConfiguration() {</b>
+<b class="fc">&nbsp;        return this.methodValidationConfiguration;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public boolean isTraversableResolverResultCacheEnabled() {</b>
+&nbsp;        return this.validatorFactoryScopedContext.isTraversableResolverResultCacheEnabled();
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    ConstraintCreationContext getConstraintCreationContext() {</b>
+<b class="fc">&nbsp;        return this.constraintCreationContext;</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public &lt;T&gt; T unwrap(Class&lt;T&gt; type) {</b>
+<b class="fc">&nbsp;        if (type.isAssignableFrom(HibernateValidatorFactory.class)) {</b>
+<b class="fc">&nbsp;            return (T)type.cast(this);</b>
+<b class="fc">&nbsp;        } else {</b>
+<b class="fc">&nbsp;            throw LOG.getTypeNotSupportedForUnwrappingException(type);</b>
+<b class="fc">&nbsp;        }</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public HibernateValidatorContext usingContext() {
+<b class="fc">&nbsp;        return new ValidatorContextImpl(this);</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+&nbsp;    public void close() {
+&nbsp;        this.constraintCreationContext.getConstraintValidatorManager().clear();
+<b class="fc">&nbsp;        this.constraintCreationContext.getConstraintHelper().clear();</b>
+&nbsp;
+<b class="fc">&nbsp;        for(BeanMetaDataManager beanMetaDataManager : this.beanMetaDataManagers.values()) {</b>
+<b class="fc">&nbsp;            beanMetaDataManager.clear();</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+<b class="fc">&nbsp;        this.validatorFactoryScopedContext.getScriptEvaluatorFactory().clear();</b>
+&nbsp;        this.constraintCreationContext.getValueExtractorManager().clear();
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    public ValidatorFactoryScopedContext getValidatorFactoryScopedContext() {</b>
+<b class="fc">&nbsp;        return this.validatorFactoryScopedContext;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    Validator createValidator(ConstraintValidatorFactory constraintValidatorFactory, ConstraintCreationContext constraintCreationContext, ValidatorFactoryScopedContext validatorFactoryScopedContext, MethodValidationConfiguration methodValidationConfiguration) {
+<b class="fc">&nbsp;        BeanMetaDataManager beanMetaDataManager = (BeanMetaDataManager)this.beanMetaDataManagers.computeIfAbsent(new BeanMetaDataManagerKey(validatorFactoryScopedContext.getParameterNameProvider(), constraintCreationContext.getValueExtractorManager(), methodValidationConfiguration), (key) -&gt; new BeanMetaDataManagerImpl(constraintCreationContext, this.executableHelper, validatorFactoryScopedContext.getParameterNameProvider(), this.javaBeanHelper, this.beanMetadataClassNormalizer, this.validationOrderGenerator, this.buildMetaDataProviders(), methodValidationConfiguration));</b>
+<b class="fc">&nbsp;        return new ValidatorImpl(constraintValidatorFactory, beanMetaDataManager, constraintCreationContext.getValueExtractorManager(), constraintCreationContext.getConstraintValidatorManager(), this.validationOrderGenerator, validatorFactoryScopedContext);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private List&lt;MetaDataProvider&gt; buildMetaDataProviders() {
+&nbsp;        List&lt;MetaDataProvider&gt; metaDataProviders = CollectionHelper.newArrayList();
+&nbsp;        if (this.xmlMetaDataProvider != null) {
+&nbsp;            metaDataProviders.add(this.xmlMetaDataProvider);
+&nbsp;        }
+&nbsp;
+&nbsp;        if (!this.constraintMappings.isEmpty()) {
+<b class="fc">&nbsp;            metaDataProviders.add(new ProgrammaticMetaDataProvider(this.constraintCreationContext, this.constraintMappings));</b>
+<b class="pc">&nbsp;        }</b>
+<b class="nc">&nbsp;</b>
+&nbsp;        return metaDataProviders;
+<b class="nc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    private static class BeanMetaDataManagerKey {
+<b class="fc">&nbsp;        private final ExecutableParameterNameProvider parameterNameProvider;</b>
+<b class="fc">&nbsp;        private final ValueExtractorManager valueExtractorManager;</b>
+&nbsp;        private final MethodValidationConfiguration methodValidationConfiguration;
+&nbsp;        private final int hashCode;
+&nbsp;
+&nbsp;        public BeanMetaDataManagerKey(ExecutableParameterNameProvider parameterNameProvider, ValueExtractorManager valueExtractorManager, MethodValidationConfiguration methodValidationConfiguration) {
+&nbsp;            this.parameterNameProvider = parameterNameProvider;
+&nbsp;            this.valueExtractorManager = valueExtractorManager;
+&nbsp;            this.methodValidationConfiguration = methodValidationConfiguration;
+&nbsp;            this.hashCode = buildHashCode(parameterNameProvider, valueExtractorManager, methodValidationConfiguration);
+&nbsp;        }
+<b class="fc">&nbsp;</b>
+&nbsp;        private static int buildHashCode(ExecutableParameterNameProvider parameterNameProvider, ValueExtractorManager valueExtractorManager, MethodValidationConfiguration methodValidationConfiguration) {
+<b class="pc">&nbsp;            int prime = 31;</b>
+<b class="nc">&nbsp;            int result = 1;</b>
+&nbsp;            result = 31 * result + (methodValidationConfiguration == null ? 0 : methodValidationConfiguration.hashCode());
+&nbsp;            result = 31 * result + (parameterNameProvider == null ? 0 : parameterNameProvider.hashCode());
+<b class="fc">&nbsp;            result = 31 * result + (valueExtractorManager == null ? 0 : valueExtractorManager.hashCode());</b>
+&nbsp;            return result;
+&nbsp;        }
+<b class="pc">&nbsp;</b>
+<b class="nc">&nbsp;        public int hashCode() {</b>
+&nbsp;            return this.hashCode;
+&nbsp;        }
+&nbsp;
+&nbsp;        public boolean equals(Object obj) {
+&nbsp;            if (this == obj) {
+<b class="fc">&nbsp;                return true;</b>
+<b class="fc">&nbsp;            } else if (obj == null) {</b>
+&nbsp;                return false;
+&nbsp;            } else if (this.getClass() != obj.getClass()) {
+&nbsp;                return false;
+&nbsp;            } else {
+&nbsp;                BeanMetaDataManagerKey other = (BeanMetaDataManagerKey)obj;
+&nbsp;                return this.methodValidationConfiguration.equals(other.methodValidationConfiguration) &amp;&amp; this.parameterNameProvider.equals(other.parameterNameProvider) &amp;&amp; this.valueExtractorManager.equals(other.valueExtractorManager);
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;</b>
+&nbsp;        public String toString() {
+&nbsp;            return &quot;BeanMetaDataManagerKey [parameterNameProvider=&quot; + this.parameterNameProvider + &quot;, valueExtractorManager=&quot; + this.valueExtractorManager + &quot;, methodValidationConfiguration=&quot; + this.methodValidationConfiguration + &quot;]&quot;;
+&nbsp;        }
+&nbsp;    }
+<b class="nc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-03-31 20:56</div>
+</div>
+</body>
+</html>
