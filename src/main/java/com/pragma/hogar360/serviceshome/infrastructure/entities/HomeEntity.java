@@ -42,6 +42,9 @@ public class HomeEntity {
     @Column(nullable = false)
     private LocalDate publicationDate;
 
+    @Column(nullable = false)
+    private Long userId;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private PublicationStatus publicationStatus;
@@ -53,6 +56,7 @@ public class HomeEntity {
         TRANSACTION_COMPLETED
     }
 
+
     @ManyToOne
     @JoinColumn(name = "location_id", nullable = false)
     private LocationEntity location;
@@ -60,5 +64,7 @@ public class HomeEntity {
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
     private CategoryEntity category;
+
+
 
 }

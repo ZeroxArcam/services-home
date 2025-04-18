@@ -7,6 +7,9 @@ import java.time.LocalDate;
 
 public class HomeQueryModelFactory {
 
+    private static final Long DEFAULT_USER_ID = 1L;
+    private static final Long DEFAULT_HOME_ID = null; // O un valor por defecto si tiene sentido
+
     public static HomeQueryModel createDefaultHomeQueryModel() {
         return new HomeQueryModel(
                 1L, // locationId
@@ -17,7 +20,9 @@ public class HomeQueryModelFactory {
                 3,  // maxBathrooms
                 BigDecimal.valueOf(100000), // minPrice
                 BigDecimal.valueOf(500000), // maxPrice
-                LocalDate.now() // currentDate
+                LocalDate.now(), // currentDate
+                DEFAULT_USER_ID, // userId
+                DEFAULT_HOME_ID  // homeId
         );
     }
 
@@ -55,5 +60,30 @@ public class HomeQueryModelFactory {
         HomeQueryModel model = createDefaultHomeQueryModel();
         model.setMaxPrice(maxPrice);
         return model;
+    }
+
+    // Nuevos métodos factory para incluir userId y homeId si es necesario en algunos tests
+
+    public static HomeQueryModel createHomeQueryModelWithUserId(Long userId) {
+        HomeQueryModel model = createDefaultHomeQueryModel();
+        model.setUserId(userId);
+        return model;
+    }
+
+    public static HomeQueryModel createHomeQueryModelWithHomeId(Long homeId) {
+        HomeQueryModel model = createDefaultHomeQueryModel();
+        model.setHomeId(homeId);
+        return model;
+    }
+
+    public static HomeQueryModel createHomeQueryModelWithUserAndHomeId(Long userId, Long homeId) {
+        HomeQueryModel model = createDefaultHomeQueryModel();
+        model.setUserId(userId);
+        model.setHomeId(homeId);
+        return model;
+    }
+
+    public static HomeQueryModel createHomeQueryModelWithAllParams(Long locationId, Long categoryId, Integer minRooms, Integer maxRooms, Integer minBathrooms, Integer maxBathrooms, BigDecimal minPrice, BigDecimal maxPrice, LocalDate currentDate, Long userId, Long homeId) {
+        return new HomeQueryModel(locationId, categoryId, minRooms, maxRooms, minBathrooms, maxBathrooms, minPrice, maxPrice, currentDate, userId, homeId);
     }
 }

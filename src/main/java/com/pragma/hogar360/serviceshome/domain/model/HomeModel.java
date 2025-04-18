@@ -5,12 +5,14 @@ public class HomeModel {
     private HomeBasicInfoModel basicInfo;
     private HomeDetailsModel propertyDetails;
     private HomePublicationInfoModel publicationInfo;
+    private Long userId;
 
-    public HomeModel(Long id, HomeBasicInfoModel basicInfo, HomeDetailsModel propertyDetails, HomePublicationInfoModel publicationInfo) {
+    public HomeModel(Long id, HomeBasicInfoModel basicInfo, HomeDetailsModel propertyDetails, HomePublicationInfoModel publicationInfo,Long userId) {
         this.id = id;
         this.basicInfo = basicInfo;
         this.propertyDetails = propertyDetails;
         this.publicationInfo = publicationInfo;
+        this.userId = userId;
     }
 
     public Long getId() {
@@ -43,5 +45,13 @@ public class HomeModel {
 
     public void setPublicationInfo(HomePublicationInfoModel publicationInfo) {
         this.publicationInfo = publicationInfo;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 }

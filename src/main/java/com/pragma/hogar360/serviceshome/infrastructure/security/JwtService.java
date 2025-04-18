@@ -3,6 +3,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
@@ -12,37 +13,46 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class JwtService {
 
     @Value("${jwt.secret}")
     private String secretKey;
 
-    public String extractUsername(String token) {
-        System.out.println("JwtService (home) - Token recibido para extraer username: " + token);
-        return extractClaim(token, Claims::getSubject);
+    public Long extractUserIdFromToken(String token) {
+        log.info("JwtService (home) - Token recibido para extraer userId: {}", token);
+        String subject = extractClaim(token, Claims::getSubject);
+        try {
+            Long userId = Long.parseLong(subject);
+            log.debug("JwtService (home) - User ID extraído del subject: {}", userId);
+            return userId;
+        } catch (NumberFormatException e) {
+            log.error("JwtService (home) - Formato inválido de userId en el subject del token: {}", subject);
+            return null; // O podrías lanzar una excepción personalizada
+        }
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-        System.out.println("JwtService (home) - Extracting claim from token: " + token);
+        log.debug("JwtService (home) - Extrayendo claim del token: {}", token);
         final Claims claims = extractAllClaims(token);
-        System.out.println("JwtService (home) - Claim extracted: " + claims);
+        log.trace("JwtService (home) - Claims extraídas: {}", claims);
         return claimsResolver.apply(claims);
     }
 
     public List<SimpleGrantedAuthority> extractRoles(String token) {
-        System.out.println("JwtService (home) - Extracting roles from token: " + token);
+        log.info("JwtService (home) - Extrayendo roles del token: {}", token);
         List<String> rolesFromToken = (List<String>) extractClaim(token, claims -> claims.get("roles"));
 
-        System.out.println("JwtService (home) - Roles extraídas del token (raw): " + rolesFromToken);
+        log.debug("JwtService (home) - Roles extraídas del token (raw): {}", rolesFromToken);
 
         List<SimpleGrantedAuthority> authorities = null;
         if (rolesFromToken != null) {
             authorities = rolesFromToken.stream()
                     .map(SimpleGrantedAuthority::new)
                     .collect(Collectors.toList());
-            System.out.println("JwtService (home) - Authorities creadas: " + authorities);
+            log.debug("JwtService (home) - Authorities creadas: {}", authorities);
         } else {
-            System.out.println("JwtService (home) - No se encontraron roles en el token.");
+            log.warn("JwtService (home) - No se encontraron roles en el token.");
         }
         return authorities;
     }
@@ -60,7 +70,7 @@ public class JwtService {
     }
 
     private Claims extractAllClaims(String token) {
-        System.out.println("JwtService (home) - Parsing token: " + token);
+        log.debug("JwtService (home) - Parsing token: {}", token);
         return Jwts
                 .parserBuilder()
                 .setSigningKey(getSignInKey())

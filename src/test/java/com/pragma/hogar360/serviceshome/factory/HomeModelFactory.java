@@ -7,8 +7,10 @@ import com.pragma.hogar360.serviceshome.domain.model.HomePublicationInfoModel;
 
 public class HomeModelFactory {
 
-    public static HomeModel createHomeModel(Long id, HomeBasicInfoModel basicInfo, HomeDetailsModel propertyDetails, HomePublicationInfoModel publicationInfo) {
-        return new HomeModel(id, basicInfo, propertyDetails, publicationInfo);
+    private static final Long DEFAULT_USER_ID = 1L;
+
+    public static HomeModel createHomeModel(Long id, HomeBasicInfoModel basicInfo, HomeDetailsModel propertyDetails, HomePublicationInfoModel publicationInfo, Long userId) {
+        return new HomeModel(id, basicInfo, propertyDetails, publicationInfo, userId);
     }
 
     public static HomeModel createDefaultHomeModel() {
@@ -16,7 +18,8 @@ public class HomeModelFactory {
                 1L,
                 HomeBasicInfoModelFactory.createDefaultHomeBasicInfoModel(),
                 HomeDetailsModelFactory.createDefaultHomeDetailsModel(),
-                HomePublicationInfoModelFactory.createDefaultHomePublicationInfoModel()
+                HomePublicationInfoModelFactory.createDefaultHomePublicationInfoModel(),
+                DEFAULT_USER_ID
         );
     }
 
@@ -25,7 +28,8 @@ public class HomeModelFactory {
                 1L,
                 basicInfo,
                 HomeDetailsModelFactory.createDefaultHomeDetailsModel(),
-                HomePublicationInfoModelFactory.createDefaultHomePublicationInfoModel()
+                HomePublicationInfoModelFactory.createDefaultHomePublicationInfoModel(),
+                DEFAULT_USER_ID
         );
     }
 
@@ -34,7 +38,8 @@ public class HomeModelFactory {
                 1L,
                 HomeBasicInfoModelFactory.createDefaultHomeBasicInfoModel(),
                 HomeDetailsModelFactory.createHomeDetailsModel(propertyDetails.getDescription(), propertyDetails.getCategory(), propertyDetails.getNumberOfRooms(), propertyDetails.getNumberOfBathrooms()),
-                HomePublicationInfoModelFactory.createDefaultHomePublicationInfoModel()
+                HomePublicationInfoModelFactory.createDefaultHomePublicationInfoModel(),
+                DEFAULT_USER_ID
         );
     }
 
@@ -43,7 +48,8 @@ public class HomeModelFactory {
                 1L,
                 HomeBasicInfoModelFactory.createDefaultHomeBasicInfoModel(),
                 HomeDetailsModelFactory.createDefaultHomeDetailsModel(),
-                publicationInfo
+                publicationInfo,
+                DEFAULT_USER_ID
         );
     }
 
@@ -52,7 +58,22 @@ public class HomeModelFactory {
                 id,
                 HomeBasicInfoModelFactory.createDefaultHomeBasicInfoModel(),
                 HomeDetailsModelFactory.createDefaultHomeDetailsModel(),
-                HomePublicationInfoModelFactory.createDefaultHomePublicationInfoModel()
+                HomePublicationInfoModelFactory.createDefaultHomePublicationInfoModel(),
+                DEFAULT_USER_ID
         );
+    }
+
+    public static HomeModel createHomeModelWithUserId(Long userId) {
+        return createHomeModel(
+                1L,
+                HomeBasicInfoModelFactory.createDefaultHomeBasicInfoModel(),
+                HomeDetailsModelFactory.createDefaultHomeDetailsModel(),
+                HomePublicationInfoModelFactory.createDefaultHomePublicationInfoModel(),
+                userId
+        );
+    }
+
+    public static HomeModel createHomeModelWithAllParams(Long id, HomeBasicInfoModel basicInfo, HomeDetailsModel propertyDetails, HomePublicationInfoModel publicationInfo, Long userId) {
+        return new HomeModel(id, basicInfo, propertyDetails, publicationInfo, userId);
     }
 }

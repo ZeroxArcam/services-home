@@ -12,5 +12,6 @@ public record HomeResponse(Long id,
                            Double price,
                            String cityName,
                            String departmentName,
-                           LocalDate activePublicationDate
+                           LocalDate activePublicationDate,
+                           Long userId
                            ){}

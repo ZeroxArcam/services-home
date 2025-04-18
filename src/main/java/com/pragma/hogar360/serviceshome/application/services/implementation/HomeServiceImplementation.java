@@ -23,8 +23,10 @@ public class HomeServiceImplementation implements HomeService {
     private final HomeServicePort homeServicePort;
 
     @Override
-    public SaveHomeResponse save(SaveHomeRequest request){
-        homeServicePort.save(homeDtoMapper.requestToModel(request));
+    public SaveHomeResponse save(SaveHomeRequest request, Long userId){
+        HomeModel homeModel = homeDtoMapper.requestToModel(request);
+        homeModel.setUserId(userId);
+        homeServicePort.save(homeModel);
         return new SaveHomeResponse(Constants.SAVE_HOME_RESPONSE_MESSAGE, LocalDateTime.now());
     }
     @Override

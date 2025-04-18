@@ -5,6 +5,7 @@ import com.pragma.hogar360.serviceshome.application.dto.response.PagedHomeRespon
 import com.pragma.hogar360.serviceshome.application.dto.response.SaveHomeResponse;
 import com.pragma.hogar360.serviceshome.application.services.HomeService;
 import com.pragma.hogar360.serviceshome.domain.model.HomeQueryModel;
+import com.pragma.hogar360.serviceshome.infrastructure.adapters.authentication.JwtAuthenticationFilter;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -12,6 +13,7 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,8 +44,14 @@ public class HomeController {
                             )
                     )
             )
-            @RequestBody SaveHomeRequest saveHomeRequest) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(homeService.save(saveHomeRequest));
+            @RequestBody SaveHomeRequest saveHomeRequest,
+            HttpServletRequest request
+    ) {
+        Long userId = (Long) request.getAttribute(JwtAuthenticationFilter.USER_ID_REQUEST_ATTRIBUTE);
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(homeService.save(saveHomeRequest, userId));
     }
 
     @GetMapping("/search")
@@ -57,13 +65,15 @@ public class HomeController {
             @Parameter(description = "Sorting direction (ASC or DESC)") @RequestParam(defaultValue = "ASC") String sortDirection,
             @Parameter(description = "Location ID for filtering homes") @RequestParam(required = false) Long locationId,
             @Parameter(description = "Category ID for filtering homes") @RequestParam(required = false) Long categoryId,
+            @Parameter(description = "Seller ID for filtering homes") @RequestParam(required = false) Long userId,
+            @Parameter(description = "Home ID for filtering homes") @RequestParam(required = false) Long homeId,
             @Parameter(description = "Minimum number of rooms") @RequestParam(required = false) Integer minRooms,
             @Parameter(description = "Maximum number of rooms") @RequestParam(required = false) Integer maxRooms,
             @Parameter(description = "Minimum number of bathrooms") @RequestParam(required = false) Integer minBathrooms,
             @Parameter(description = "Maximum number of bathrooms") @RequestParam(required = false) Integer maxBathrooms,
             @Parameter(description = "Minimum price") @RequestParam(required = false) BigDecimal minPrice,
             @Parameter(description = "Maximum price") @RequestParam(required = false) BigDecimal maxPrice,
-            @Parameter(description = "Current date for active publication") @RequestParam(required = false) LocalDate currentDate
+            @Parameter(description = "Current date for active publication (YYYY-MM-DD)") @RequestParam(defaultValue = "2025-01-01") LocalDate currentDate
     ) {
         HomeQueryModel queryModel = new HomeQueryModel();
         queryModel.setLocationId(locationId);
@@ -75,6 +85,8 @@ public class HomeController {
         queryModel.setMinPrice(minPrice);
         queryModel.setMaxPrice(maxPrice);
         queryModel.setCurrentDate(currentDate);
+        queryModel.setUserId(userId);
+        queryModel.setHomeId(homeId);
 
         return ResponseEntity.ok(homeService.findHomesByFilters(queryModel, page, size, sortBy, sortDirection));
     }

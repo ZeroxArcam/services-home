@@ -80,6 +80,8 @@ public class HomePersistenceAdapter implements HomePersistencePort {
                 queryModel.getMaxBathrooms(),
                 queryModel.getMinPrice(),
                 queryModel.getMaxPrice(),
+                queryModel.getUserId(),
+                queryModel.getHomeId(),
                 pageable
         );
 

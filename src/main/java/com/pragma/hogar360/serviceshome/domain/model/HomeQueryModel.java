@@ -13,10 +13,12 @@ public class HomeQueryModel {
     private BigDecimal minPrice;
     private BigDecimal maxPrice;
     private LocalDate currentDate;
+    private Long userId;
+    private Long homeId;
 
     public HomeQueryModel() {}
 
-    public HomeQueryModel(Long locationId, Long categoryId, Integer minRooms, Integer maxRooms, Integer minBathrooms, Integer maxBathrooms, BigDecimal minPrice, BigDecimal maxPrice, LocalDate currentDate) {
+    public HomeQueryModel(Long locationId, Long categoryId, Integer minRooms, Integer maxRooms, Integer minBathrooms, Integer maxBathrooms, BigDecimal minPrice, BigDecimal maxPrice, LocalDate currentDate, Long userId,Long homeId) {
         this.locationId = locationId;
         this.categoryId = categoryId;
         this.minRooms = minRooms;
@@ -26,6 +28,8 @@ public class HomeQueryModel {
         this.minPrice = minPrice;
         this.maxPrice = maxPrice;
         this.currentDate = currentDate;
+        this.userId = userId;
+        this.homeId = homeId;
     }
 
     public Long getLocationId() {
@@ -98,5 +102,21 @@ public class HomeQueryModel {
 
     public void setCurrentDate(LocalDate currentDate) {
         this.currentDate = currentDate;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public Long getHomeId() {
+        return homeId;
+    }
+
+    public void setHomeId(Long homeId) {
+        this.homeId = homeId;
     }
 }

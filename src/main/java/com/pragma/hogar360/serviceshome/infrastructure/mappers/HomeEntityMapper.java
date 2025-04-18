@@ -22,6 +22,7 @@ public interface HomeEntityMapper {
     @Mapping(target = "publicationInfo.activePublicationDate", source = "activePublicationDate")
     @Mapping(target = "publicationInfo.publicationStatus", source = "publicationStatus")
     @Mapping(target = "publicationInfo.publicationDate", source = "publicationDate")
+    @Mapping(target = "userId" , source = "userId")
     HomeModel toModel(HomeEntity homeEntity);
 
     @Mapping(target = "id", source = "id")
@@ -36,6 +37,7 @@ public interface HomeEntityMapper {
     @Mapping(target = "activePublicationDate", source = "publicationInfo.activePublicationDate")
     @Mapping(target = "publicationStatus", source = "publicationInfo.publicationStatus")
     @Mapping(target = "publicationDate", source = "publicationInfo.publicationDate")
+    @Mapping(target = "userId" , source = "userId")
     HomeEntity toEntity(HomeModel homeModel);
 
     default HomeEntity.PublicationStatus mapPublicationStatus(HomePublicationInfoModel.PublicationStatus status) {

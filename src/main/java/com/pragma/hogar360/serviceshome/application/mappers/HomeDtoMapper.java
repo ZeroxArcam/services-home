@@ -23,7 +23,6 @@ public interface HomeDtoMapper {
     HomeModel requestToModel(SaveHomeRequest homeModel);
 
 
-
     default HomeResponse modelToResponse(HomeModel homeModel) {
         return new HomeResponse(
                 homeModel.getId(),
@@ -36,7 +35,8 @@ public interface HomeDtoMapper {
                 homeModel.getBasicInfo().getPrice(),
                 homeModel.getBasicInfo().getLocation().getCityName(),
                 homeModel.getBasicInfo().getLocation().getCity().getDepartment().getName(),
-                homeModel.getPublicationInfo().getActivePublicationDate()
+                homeModel.getPublicationInfo().getActivePublicationDate(),
+                homeModel.getUserId()
         );
     }
 }

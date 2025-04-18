@@ -5,7 +5,7 @@ import com.pragma.hogar360.serviceshome.application.dto.response.SaveHomeRespons
 import com.pragma.hogar360.serviceshome.domain.model.HomeQueryModel;
 
 public interface HomeService {
-    SaveHomeResponse save(SaveHomeRequest request);
+    SaveHomeResponse save(SaveHomeRequest request, Long userId);
     PagedHomeResponse findHomesByFilters(
             HomeQueryModel queryModel,
             Integer page,
