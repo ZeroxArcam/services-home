@@ -21,11 +21,10 @@ public interface HomeDtoMapper {
     @Mapping(target = "publicationInfo.activePublicationDate", source = "activePublicationDate")
     @Mapping(target = "publicationInfo.publicationDate", source = "publicationDate")
     HomeModel requestToModel(SaveHomeRequest homeModel);
-
-
     default HomeResponse modelToResponse(HomeModel homeModel) {
         return new HomeResponse(
                 homeModel.getId(),
+                homeModel.getBasicInfo().getName(),
                 homeModel.getBasicInfo().getLocation().getNeighborhood(),
                 homeModel.getBasicInfo().getAddress(),
                 homeModel.getPropertyDetails().getDescription(),

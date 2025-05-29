@@ -12,6 +12,7 @@ public record PagedHomeResponse(
                 [
                     {
                         "id": 1,
+                        "name": "Acogedora",
                         "neighborhood": "Centro",
                         "address": "Calle 123",
                         "description": "Hermosa casa",
@@ -25,6 +26,7 @@ public record PagedHomeResponse(
                     },
                     {
                         "id": 2,
+                        "name": "Hacienda Rosa",
                         "neighborhood": "La Paz",
                         "address": "Avenida 456",
                         "description": "Casa de campo",
